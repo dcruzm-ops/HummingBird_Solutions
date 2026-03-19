@@ -1,6 +1,6 @@
-# 📌 Estrategia de trabajo del repositorio
+#  Estrategia de trabajo del repositorio
 
-## 🎯 Objetivo
+##  Objetivo
 Definir las reglas de trabajo del repositorio para asegurar consistencia entre los 4 integrantes del equipo.
 
 ---
@@ -17,7 +17,7 @@ Definir las reglas de trabajo del repositorio para asegurar consistencia entre l
 
 ---
 
-## 🌿 Estrategia de ramas
+## Estrategia de ramas
 
 ### 🔹 main
 - Rama estable (producción)
