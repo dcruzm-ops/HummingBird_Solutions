@@ -1,0 +1,100 @@
+﻿<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PSA.WebApp</title>
+
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/PSA.WebApp.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-layout">
+        <header class="topbar border-bottom shadow-sm">
+            <nav class="navbar navbar-expand-lg">
+                <div class="container-fluid">
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="sidebarToggle"
+                                class="btn btn-outline-secondary d-lg-none"
+                                type="button"
+                                aria-label="Abrir o cerrar navegación lateral"
+                                aria-controls="sidebar">
+                            ☰
+                        </button>
+
+                        <a class="navbar-brand fw-bold" asp-area="" asp-page="/Index">
+                            PSA
+                        </a>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="themeToggle"
+                                class="btn btn-outline-dark"
+                                type="button"
+                                aria-label="Cambiar modo claro y oscuro">
+                            🌙
+                        </button>
+
+                        <a class="btn btn-outline-primary btn-sm" asp-area="" asp-page="/Cuenta/Perfil">Mi perfil</a>
+                        <a class="btn btn-outline-danger btn-sm" asp-area="" asp-page="/Auth/Logout">Cerrar sesión</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="app-body">
+            <aside id="sidebar" class="sidebar border-end" aria-label="Navegación principal">
+                <nav>
+                    <ul class="nav flex-column sidebar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Index">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Usuarios/Index">Usuarios</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Fincas/Index">Fincas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Evaluaciones/Index">Evaluaciones</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Pagos/Index">Pagos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Auditoria/Index">Auditoría</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Notificaciones/Index">Notificaciones</a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <main class="main-content" role="main">
+                <section class="content-wrapper container-fluid py-4" aria-labelledby="page-title">
+                    <header class="mb-4">
+                        <h1 id="page-title" class="h3 mb-0">@ViewData["Title"]</h1>
+                    </header>
+
+                    @RenderBody()
+                </section>
+            </main>
+        </div>
+
+        <footer class="footer border-top text-muted py-3">
+            <div class="container-fluid">
+                &copy; 2026 - PSA.WebApp
+            </div>
+        </footer>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
