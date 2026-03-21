@@ -1,0 +1,12 @@
+[
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.HealthController",
+    "Method": "Test",
+    "RelativePath": "api/Health/test",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  }
+]
