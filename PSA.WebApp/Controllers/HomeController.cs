@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using PSA.WebApp.Models;
-using System.Diagnostics;
 
 namespace PSA.WebApp.Controllers
 {

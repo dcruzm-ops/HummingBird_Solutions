@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "PSA.WebAPI": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:59665;http://localhost:59667"
+    }
+  }
+}
