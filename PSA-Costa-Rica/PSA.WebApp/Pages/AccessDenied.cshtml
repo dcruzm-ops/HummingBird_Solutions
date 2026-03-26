@@ -1,0 +1,13 @@
+﻿@page
+@model PSA.WebApp.Pages.AccessDeniedModel
+@{
+    ViewData["Title"] = "Acceso denegado";
+}
+
+<section aria-labelledby="access-denied-title">
+    <h2 id="access-denied-title">Acceso denegado</h2>
+    <p class="helper-text">
+        No tienes permisos para acceder a este módulo.
+    </p>
+    <a asp-page="/Index" class="button-secondary">Volver al inicio</a>
+</section>

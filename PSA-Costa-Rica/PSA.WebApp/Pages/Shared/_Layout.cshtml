@@ -1,4 +1,9 @@
 ﻿<!DOCTYPE html>
+@using Microsoft.AspNetCore.Http
+@{
+    var rol = Context.Session.GetString("rol");
+}
+
 <html lang="es" data-theme="light">
 <head>
     <meta charset="utf-8" />
@@ -24,7 +29,7 @@
                             ☰
                         </button>
 
-                        <a class="navbar-brand fw-bold" asp-area="" asp-page="/Index">
+                        <a class="navbar-brand fw-bold" asp-page="/Index">
                             PSA
                         </a>
                     </div>
@@ -37,8 +42,15 @@
                             🌙
                         </button>
 
-                        <a class="btn btn-outline-primary btn-sm" asp-area="" asp-page="/Cuenta/Perfil">Mi perfil</a>
-                        <a class="btn btn-outline-danger btn-sm" asp-area="" asp-page="/Auth/Logout">Cerrar sesión</a>
+                        @if (!string.IsNullOrWhiteSpace(rol))
+                        {
+                            <span class="btn btn-outline-primary btn-sm disabled">@rol</span>
+                            <a class="btn btn-outline-danger btn-sm" asp-controller="Auth" asp-action="Logout">Cerrar sesión</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-primary btn-sm" asp-controller="Auth" asp-action="Login">Iniciar sesión</a>
+                        }
                     </div>
                 </div>
             </nav>
@@ -49,26 +61,29 @@
                 <nav>
                     <ul class="nav flex-column sidebar-nav">
                         <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Index">Inicio</a>
+                            <a class="nav-link" asp-page="/Index">Inicio</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Usuarios/Index">Usuarios</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Fincas/Index">Fincas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Evaluaciones/Index">Evaluaciones</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Pagos/Index">Pagos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Auditoria/Index">Auditoría</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-page="/Notificaciones/Index">Notificaciones</a>
-                        </li>
+
+                        @if (rol == "ADMIN")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Admin/Index">Panel Administrador</a>
+                            </li>
+                        }
+
+                        @if (rol == "DUENO")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Dueno/Index">Panel Dueño</a>
+                            </li>
+                        }
+
+                        @if (rol == "INGENIERO")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Ingeniero/Index">Panel Ingeniero</a>
+                            </li>
+                        }
                     </ul>
                 </nav>
             </aside>
