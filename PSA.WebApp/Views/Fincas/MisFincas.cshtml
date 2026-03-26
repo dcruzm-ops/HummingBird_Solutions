@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Mis fincas";
+}
+<section class="seccion-pagina propietario-fincas">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Módulo del propietario</span>
+            <h2>Listado de fincas</h2>
+            <p>Base visual para la pantalla del issue de “Mis fincas”.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Fincas" asp-action="RegistrarFinca">Registrar finca</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="barra-filtros">
+            <div class="campo-formulario campo-inline">
+                <label for="buscarFinca">Buscar</label>
+                <input id="buscarFinca" type="search" placeholder="Nombre, expediente o ubicación" />
+            </div>
+            <div class="campo-formulario campo-inline">
+                <label for="estadoFiltro">Estado</label>
+                <select id="estadoFiltro">
+                    <option>Todos</option>
+                    <option>Pendiente</option>
+                    <option>Asignada para evaluación</option>
+                    <option>Aprobada</option>
+                    <option>Rechazada</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Finca</th>
+                        <th>Expediente</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Evaluación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Los Laureles</td>
+                        <td>PSA-2026-001</td>
+                        <td>Cartago</td>
+                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
+                        <td>Sin iniciar</td>
+                        <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Ver detalle</a></td>
+                    </tr>
+                    <tr>
+                        <td>El Bosque Azul</td>
+                        <td>PSA-2026-002</td>
+                        <td>San José</td>
+                        <td><span class="badge-estado badge-info">Asignada</span></td>
+                        <td>En proceso</td>
+                        <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="2">Ver detalle</a></td>
+                    </tr>
+                    <tr>
+                        <td>Río Verde</td>
+                        <td>PSA-2025-014</td>
+                        <td>Alajuela</td>
+                        <td><span class="badge-estado badge-exito">Aprobada</span></td>
+                        <td>Finalizada</td>
+                        <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="3">Ver detalle</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

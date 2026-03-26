@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Detalle de finca";
+}
+<section class="seccion-pagina propietario-detalle-finca">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Expediente #@ViewBag.FincaId</span>
+            <h2>Finca Los Laureles</h2>
+            <p>Vista tipo detalle para el módulo del dueño.</p>
+        </div>
+        <div class="grupo-acciones">
+            <button type="button" class="boton-secundario">Actualizar cuenta bancaria</button>
+            <button type="button" class="boton-primario">Adjuntar evidencia</button>
+        </div>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Estado de finca</span>
+            <strong>Pendiente</strong>
+            <small>En espera de asignación técnica</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Estado de evaluación</span>
+            <strong>Sin iniciar</strong>
+            <small>No existe evaluación abierta</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Plan anual</span>
+            <strong>No disponible</strong>
+            <small>Se genera tras aprobación</small>
+        </article>
+    </div>
+
+    <div class="grid-dos-paneles">
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Datos generales</h3>
+            </div>
+            <dl class="lista-detalle">
+                <div><dt>Expediente</dt><dd>PSA-2026-001</dd></div>
+                <div><dt>Propietario</dt><dd>Dennis Cruz</dd></div>
+                <div><dt>Ubicación</dt><dd>Cartago, Costa Rica</dd></div>
+                <div><dt>Hectáreas</dt><dd>24.5</dd></div>
+            </dl>
+        </section>
+
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Características</h3>
+            </div>
+            <ul class="lista-timeline">
+                <li>Cobertura principal: Bosque.</li>
+                <li>Cuenta bancaria: Pendiente de registro.</li>
+                <li>Última actualización: 26/03/2026.</li>
+            </ul>
+        </section>
+    </div>
+
+    <div class="grid-dos-paneles">
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Evidencias</h3>
+            </div>
+            <div class="estado-vacio-inline">
+                <p>No hay evidencias adjuntas todavía.</p>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Historial de pagos</h3>
+            </div>
+            <div class="estado-vacio-inline">
+                <p>La finca aún no cuenta con plan de pago asociado.</p>
+            </div>
+        </section>
+    </div>
+</section>
