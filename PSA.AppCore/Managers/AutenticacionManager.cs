@@ -34,12 +34,9 @@ namespace PSA.AppCore.Managers
             if (dto.Contrasena != dto.ConfirmacionContrasena)
                 throw new Exception("La contraseña y la confirmación no coinciden.");
 
-            if (dto.IdRol <= 0)
-                throw new Exception("El IdRol debe ser mayor a 0.");
-
-            var rolExiste = await _usuarioDAO.ExisteRolAsync(dto.IdRol);
+            var rolExiste = await _usuarioDAO.ExisteRolAsync(idRolPropietario);
             if (!rolExiste)
-                throw new Exception("El rol indicado no existe. Verifica el IdRol enviado.");
+                throw new Exception("No existe el rol por defecto 'Propietario' (IdRol = 2).");
 
             var usuarioExistente = await _usuarioDAO.ObtenerPorEmailAsync(dto.Email.Trim());
 
@@ -58,6 +55,41 @@ namespace PSA.AppCore.Managers
             };
 
             return await _usuarioDAO.CrearUsuarioAsync(usuario);
+        }
+
+        public async Task<RespuestaInicioSesionDTO> IniciarSesionAsync(InicioSesionDTO dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                throw new Exception("El correo electrónico es requerido.");
+
+            if (string.IsNullOrWhiteSpace(dto.Contrasena))
+                throw new Exception("La contraseña es requerida.");
+
+            var usuario = await _usuarioDAO.ObtenerPorEmailAsync(dto.Email.Trim());
+
+            if (usuario == null)
+                throw new Exception("Credenciales inválidas.");
+
+            var contrasenaValida = _servicioHashContrasena.VerificarHash(
+                usuario.PasswordHash,
+                dto.Contrasena
+            );
+
+            if (!contrasenaValida)
+                throw new Exception("Credenciales inválidas.");
+
+            var fechaAcceso = DateTime.Now;
+            await _usuarioDAO.ActualizarUltimoAccesoAsync(usuario.IdUsuario, fechaAcceso);
+
+            return new RespuestaInicioSesionDTO
+            {
+                IdUsuario = usuario.IdUsuario,
+                NombreCompleto = usuario.NombreCompleto,
+                Email = usuario.Email,
+                IdRol = usuario.IdRol,
+                UltimoAcceso = fechaAcceso,
+                Mensaje = "Inicio de sesión exitoso."
+            };
         }
     }
 }

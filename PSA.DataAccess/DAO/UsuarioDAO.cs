@@ -112,5 +112,21 @@ WHERE IdRol = @IdRol;";
 
             return resultado != null;
         }
+
+        public async Task ActualizarUltimoAccesoAsync(int idUsuario, DateTime fechaUltimoAcceso)
+        {
+            const string sql = @"
+UPDATE Usuarios
+SET UltimoAcceso = @UltimoAcceso
+WHERE IdUsuario = @IdUsuario;";
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@UltimoAcceso", fechaUltimoAcceso);
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+            await connection.OpenAsync();
+            await command.ExecuteNonQueryAsync();
+        }
     }
 }
