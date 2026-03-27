@@ -5,6 +5,13 @@
     ViewData["Title"] = "Iniciar sesión";
 }
 <div class="tarjeta-autenticacion">
+    @if (TempData["MensajeExito"] is string mensajeExito && !string.IsNullOrWhiteSpace(mensajeExito))
+    {
+        <div class="alert alert-success" role="status">
+            @mensajeExito
+        </div>
+    }
+
     <div class="cabecera-formulario">
         <span class="eyebrow">Acceso seguro</span>
         <h2>Bienvenido</h2>
