@@ -40,12 +40,10 @@ namespace PSA.WebApp.Controllers
                 return View(dto);
             }
 
-            var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:59665";
-
             try
             {
                 var client = _httpClientFactory.CreateClient();
-                var response = await client.PostAsJsonAsync($"{apiBaseUrl}/api/Autenticacion/iniciar-sesion", dto);
+                var response = await PostToApiAsync(client, "/api/Autenticacion/iniciar-sesion", dto);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -93,12 +91,10 @@ namespace PSA.WebApp.Controllers
                 return View(dto);
             }
 
-            var apiBaseUrl = _configuration["ApiSettings:BaseUrl"] ?? "https://localhost:59665";
-
             try
             {
                 var client = _httpClientFactory.CreateClient();
-                var response = await client.PostAsJsonAsync($"{apiBaseUrl}/api/Autenticacion/registrar", dto);
+                var response = await PostToApiAsync(client, "/api/Autenticacion/registrar", dto);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -169,6 +165,45 @@ namespace PSA.WebApp.Controllers
             }
 
             return "No fue posible completar la operación.";
+        }
+
+        private async Task<HttpResponseMessage> PostToApiAsync<TRequest>(
+            HttpClient client,
+            string path,
+            TRequest payload)
+        {
+            Exception? ultimaExcepcion = null;
+
+            foreach (var baseUrl in GetApiBaseUrls())
+            {
+                try
+                {
+                    var response = await client.PostAsJsonAsync($"{baseUrl}{path}", payload);
+                    return response;
+                }
+                catch (Exception ex)
+                {
+                    ultimaExcepcion = ex;
+                }
+            }
+
+            throw new InvalidOperationException(
+                "No fue posible conectar con el API de autenticación en ninguna URL configurada.",
+                ultimaExcepcion
+            );
+        }
+
+        private IEnumerable<string> GetApiBaseUrls()
+        {
+            var configurada = _configuration["ApiSettings:BaseUrl"];
+
+            if (!string.IsNullOrWhiteSpace(configurada))
+            {
+                yield return configurada.TrimEnd('/');
+            }
+
+            yield return "https://localhost:59665";
+            yield return "http://localhost:59667";
         }
     }
 }
