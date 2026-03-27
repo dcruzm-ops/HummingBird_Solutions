@@ -95,5 +95,22 @@ WHERE Email = @Email;";
                     : reader.GetDateTime(reader.GetOrdinal("UltimoAcceso"))
             };
         }
+
+        public async Task<bool> ExisteRolAsync(int idRol)
+        {
+            const string sql = @"
+SELECT 1
+FROM Roles
+WHERE IdRol = @IdRol;";
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdRol", idRol);
+
+            await connection.OpenAsync();
+            var resultado = await command.ExecuteScalarAsync();
+
+            return resultado != null;
+        }
     }
 }
