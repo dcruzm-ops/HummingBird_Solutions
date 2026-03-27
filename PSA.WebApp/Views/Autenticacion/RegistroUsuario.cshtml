@@ -36,16 +36,7 @@
                 <span asp-validation-for="ConfirmacionContrasena" class="text-danger"></span>
             </div>
 
-            <div class="campo-formulario">
-                <label asp-for="IdRol">Rol</label>
-                <select asp-for="IdRol" class="form-control">
-                    <option value="">Seleccione un rol</option>
-                    <option value="1">Dueño de finca</option>
-                    <option value="2">Ingeniero Forestal</option>
-                    <option value="3">Administrador</option>
-                </select>
-                <span asp-validation-for="IdRol" class="text-danger"></span>
-            </div>
+            <p class="texto-ayuda">Las cuentas nuevas se crean con rol <strong>Propietario</strong> por defecto.</p>
 
             <button type="submit" class="boton-primario">Registrarse</button>
         </form>
