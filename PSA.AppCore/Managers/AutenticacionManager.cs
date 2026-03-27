@@ -34,9 +34,12 @@ namespace PSA.AppCore.Managers
             if (dto.Contrasena != dto.ConfirmacionContrasena)
                 throw new Exception("La contraseña y la confirmación no coinciden.");
 
-            var rolExiste = await _usuarioDAO.ExisteRolAsync(idRolPropietario);
+            if (dto.IdRol <= 0)
+                throw new Exception("El IdRol debe ser mayor a 0.");
+
+            var rolExiste = await _usuarioDAO.ExisteRolAsync(dto.IdRol);
             if (!rolExiste)
-                throw new Exception("No existe el rol por defecto 'Propietario' (IdRol = 2).");
+                throw new Exception("El rol indicado no existe. Verifica el IdRol enviado.");
 
             var usuarioExistente = await _usuarioDAO.ObtenerPorEmailAsync(dto.Email.Trim());
 
