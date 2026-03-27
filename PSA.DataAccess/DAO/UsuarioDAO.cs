@@ -95,5 +95,38 @@ WHERE Email = @Email;";
                     : reader.GetDateTime(reader.GetOrdinal("UltimoAcceso"))
             };
         }
+
+        public async Task<bool> ExisteRolAsync(int idRol)
+        {
+            const string sql = @"
+SELECT 1
+FROM Roles
+WHERE IdRol = @IdRol;";
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdRol", idRol);
+
+            await connection.OpenAsync();
+            var resultado = await command.ExecuteScalarAsync();
+
+            return resultado != null;
+        }
+
+        public async Task ActualizarUltimoAccesoAsync(int idUsuario, DateTime fechaUltimoAcceso)
+        {
+            const string sql = @"
+UPDATE Usuarios
+SET UltimoAcceso = @UltimoAcceso
+WHERE IdUsuario = @IdUsuario;";
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@UltimoAcceso", fechaUltimoAcceso);
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+            await connection.OpenAsync();
+            await command.ExecuteNonQueryAsync();
+        }
     }
 }
