@@ -19,8 +19,6 @@ namespace PSA.EntidadesDTO.DTOs
         [Compare("Contrasena", ErrorMessage = "La contraseña y la confirmación no coinciden.")]
         public string ConfirmacionContrasena { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El rol es requerido.")]
-        [Range(1, int.MaxValue, ErrorMessage = "El IdRol debe ser mayor a 0.")]
-        public int IdRol { get; set; }
+        public int IdRol { get; set; } = 2;
     }
 }
