@@ -9,8 +9,8 @@
             <p>Vista tipo detalle para el módulo del dueño.</p>
         </div>
         <div class="grupo-acciones">
-            <button type="button" class="boton-secundario">Actualizar cuenta bancaria</button>
-            <button type="button" class="boton-primario">Adjuntar evidencia</button>
+            <a class="boton-secundario" href="#panelCuentaBancaria">Actualizar cuenta bancaria</a>
+            <a class="boton-primario" href="#panelEvidencias">Adjuntar evidencia</a>
         </div>
     </div>
 
@@ -45,25 +45,26 @@
             </dl>
         </section>
 
-        <section class="tarjeta-panel">
+        <section class="tarjeta-panel" id="panelCuentaBancaria">
             <div class="cabecera-bloque">
                 <h3>Características</h3>
             </div>
             <ul class="lista-timeline">
                 <li>Cobertura principal: Bosque.</li>
-                <li>Cuenta bancaria: Pendiente de registro.</li>
+                <li><a asp-controller="Notificaciones" asp-action="Index">Cuenta bancaria: Pendiente de registro.</a></li>
                 <li>Última actualización: 26/03/2026.</li>
             </ul>
         </section>
     </div>
 
     <div class="grid-dos-paneles">
-        <section class="tarjeta-panel">
+        <section class="tarjeta-panel" id="panelEvidencias">
             <div class="cabecera-bloque">
                 <h3>Evidencias</h3>
             </div>
             <div class="estado-vacio-inline">
                 <p>No hay evidencias adjuntas todavía.</p>
+                <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
             </div>
         </section>
 
@@ -73,6 +74,7 @@
             </div>
             <div class="estado-vacio-inline">
                 <p>La finca aún no cuenta con plan de pago asociado.</p>
+                <a class="boton-link" asp-controller="Pagos" asp-action="HistorialPagos">Ver historial de pagos</a>
             </div>
         </section>
     </div>

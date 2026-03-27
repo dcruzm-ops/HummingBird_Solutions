@@ -8,6 +8,7 @@
             <h2>Validación de cuentas bancarias</h2>
             <p>Base para aprobar o rechazar cuentas asociadas a propietarios.</p>
         </div>
+        <a class="boton-secundario" asp-controller="Administracion" asp-action="GestionUsuarios">Volver a usuarios</a>
     </div>
 
     <section class="tarjeta-panel">
@@ -19,6 +20,7 @@
                         <th>Banco</th>
                         <th>Cuenta</th>
                         <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,6 +29,7 @@
                         <td>Banco Nacional</td>
                         <td>CR12-3456-7890</td>
                         <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
+                        <td><a class="boton-link" asp-controller="Administracion" asp-action="AuditoriaLogs">Registrar revisión</a></td>
                     </tr>
                 </tbody>
             </table>

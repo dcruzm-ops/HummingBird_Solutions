@@ -8,13 +8,14 @@
             <h2>Notificaciones</h2>
             <p>Base para comunicación al propietario sobre cambios de estado y pagos.</p>
         </div>
+        <a class="boton-secundario" asp-controller="Dashboard" asp-action="Dueno">Volver al dashboard</a>
     </div>
 
     <section class="tarjeta-panel">
         <ul class="lista-timeline">
-            <li>Su finca “Los Laureles” fue registrada correctamente.</li>
-            <li>Debe actualizar o registrar una cuenta bancaria para futuros pagos.</li>
-            <li>La evaluación técnica de “Río Verde” ya se encuentra en proceso.</li>
+            <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Su finca “Los Laureles” fue registrada correctamente.</a></li>
+            <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Debe actualizar o registrar una cuenta bancaria para futuros pagos.</a></li>
+            <li><a asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">La evaluación técnica de “Río Verde” ya se encuentra en proceso.</a></li>
         </ul>
     </section>
 </section>

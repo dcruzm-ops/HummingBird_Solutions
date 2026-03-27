@@ -46,9 +46,9 @@
                 <h3>Actividad reciente</h3>
             </div>
             <ul class="lista-timeline">
-                <li>Finca “Los Laureles” actualizada con nueva evidencia.</li>
-                <li>Evaluación técnica de “Finca El Bosque” marcada como en proceso.</li>
-                <li>Cuenta bancaria pendiente de validación administrativa.</li>
+                <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Finca “Los Laureles” actualizada con nueva evidencia.</a></li>
+                <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="2">Evaluación técnica de “Finca El Bosque” marcada como en proceso.</a></li>
+                <li><a asp-controller="Notificaciones" asp-action="Index">Cuenta bancaria pendiente de validación administrativa.</a></li>
             </ul>
         </section>
     </div>

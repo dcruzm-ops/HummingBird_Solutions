@@ -9,7 +9,7 @@
         <p>Le enviaremos un enlace o token para restablecer su acceso.</p>
     </div>
 
-    <form class="formulario-base" id="formularioRecuperarContrasena" novalidate>
+    <form class="formulario-base" id="formularioRecuperarContrasena" novalidate method="get" asp-controller="Autenticacion" asp-action="RestablecerContrasena">
         <div class="campo-formulario">
             <label for="correoRecuperacion">Correo electrónico</label>
             <input id="correoRecuperacion" name="correoRecuperacion" type="email" placeholder="usuario@correo.com" />

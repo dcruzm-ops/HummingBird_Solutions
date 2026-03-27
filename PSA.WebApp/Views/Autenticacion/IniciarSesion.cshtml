@@ -9,7 +9,7 @@
         <p>Ingrese su correo y contraseña para continuar.</p>
     </div>
 
-    <form class="formulario-base" id="formularioIniciarSesion" novalidate>
+    <form class="formulario-base" id="formularioIniciarSesion" novalidate method="get" asp-controller="Dashboard" asp-action="Dueno">
         <div class="campo-formulario">
             <label for="correo">Correo electrónico</label>
             <input id="correo" name="correo" type="email" placeholder="usuario@correo.com" />
@@ -34,5 +34,11 @@
             ¿Aún no tiene cuenta?
             <a asp-controller="Autenticacion" asp-action="RegistroUsuario">Registrarse</a>
         </p>
+    </div>
+
+    <div class="lista-accesos">
+        <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Dueno">Entrar como dueño</a>
+        <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Ingeniero">Entrar como ingeniero</a>
+        <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Administrador">Entrar como administrador</a>
     </div>
 </div>
