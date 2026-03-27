@@ -20,6 +20,7 @@ namespace PSA.EntidadesDTO.DTOs
         public string ConfirmacionContrasena { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El rol es requerido.")]
+        [Range(1, int.MaxValue, ErrorMessage = "El IdRol debe ser mayor a 0.")]
         public int IdRol { get; set; }
     }
 }
