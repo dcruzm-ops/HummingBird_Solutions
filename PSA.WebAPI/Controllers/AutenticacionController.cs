@@ -1,44 +1,40 @@
 using Microsoft.AspNetCore.Mvc;
+using PSA.AppCore.Managers;
+using PSA.EntidadesDTO.DTOs;
 
-namespace PSA.WebApp.Controllers
+namespace PSA.WebAPI.Controllers
 {
-    public class AutenticacionController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AutenticacionController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult IniciarSesion()
+        private readonly AutenticacionManager _autenticacionManager;
+
+        public AutenticacionController(AutenticacionManager autenticacionManager)
         {
-            ViewBag.EsAutenticacion = true;
-            ViewBag.TituloPagina = "Iniciar sesión";
-            ViewBag.SubtituloPagina = "Acceda al sistema PSA Costa Rica con sus credenciales.";
-            return View();
+            _autenticacionManager = autenticacionManager;
         }
 
-        [HttpGet]
-        public IActionResult RegistroUsuario()
+        [HttpPost("registrar")]
+        public async Task<IActionResult> Registrar([FromBody] RegistrarUsuarioDTO dto)
         {
-            ViewBag.EsAutenticacion = true;
-            ViewBag.TituloPagina = "Registro de usuario";
-            ViewBag.SubtituloPagina = "Cree su cuenta para registrar fincas y dar seguimiento a sus procesos.";
-            return View();
-        }
+            try
+            {
+                var idUsuario = await _autenticacionManager.RegistrarUsuarioAsync(dto);
 
-        [HttpGet]
-        public IActionResult RecuperarContrasena()
-        {
-            ViewBag.EsAutenticacion = true;
-            ViewBag.TituloPagina = "Recuperar contraseña";
-            ViewBag.SubtituloPagina = "Ingrese su correo electrónico para iniciar el proceso de recuperación.";
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult RestablecerContrasena(string? token = null)
-        {
-            ViewBag.EsAutenticacion = true;
-            ViewBag.TokenRecuperacion = token ?? "TOKEN-DE-EJEMPLO";
-            ViewBag.TituloPagina = "Restablecer contraseña";
-            ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
-            return View();
+                return Ok(new
+                {
+                    IdUsuario = idUsuario,
+                    Mensaje = "Usuario registrado correctamente."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Mensaje = ex.Message
+                });
+            }
         }
     }
 }

@@ -1,70 +1,62 @@
+@model PSA.EntidadesDTO.DTOs.RegistrarUsuarioDTO
+
 @{
     Layout = "~/Views/Shared/_LayoutAutenticacion.cshtml";
     ViewData["Title"] = "Registro de usuario";
 }
-<div class="tarjeta-autenticacion">
-    <div class="cabecera-formulario">
-        <span class="eyebrow">Nuevo acceso</span>
-        <h2>Crear cuenta</h2>
-        <p>Registre un usuario base para el rol de dueño de finca.</p>
-    </div>
 
-    <form class="formulario-base" id="formularioRegistroUsuario" novalidate method="get" asp-controller="Dashboard" asp-action="Dueno">
-        <div class="grid-dos-columnas">
+<section class="contenedor-autenticacion">
+    <div class="tarjeta-autenticacion">
+        <h1>Registro de usuario</h1>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <form asp-controller="Autenticacion" asp-action="RegistroUsuario" method="post">
             <div class="campo-formulario">
-                <label for="nombre">Nombre</label>
-                <input id="nombre" name="nombre" type="text" placeholder="Nombre" />
+                <label asp-for="NombreCompleto"></label>
+                <input asp-for="NombreCompleto" class="form-control" />
+                <span asp-validation-for="NombreCompleto" class="text-danger"></span>
             </div>
+
             <div class="campo-formulario">
-                <label for="apellido">Apellido</label>
-                <input id="apellido" name="apellido" type="text" placeholder="Apellido" />
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-        </div>
 
-        <div class="campo-formulario">
-            <label for="correoRegistro">Correo electrónico</label>
-            <input id="correoRegistro" name="correoRegistro" type="email" placeholder="usuario@correo.com" />
-        </div>
-
-        <div class="campo-formulario">
-            <label for="telefono">Teléfono</label>
-            <input id="telefono" name="telefono" type="tel" placeholder="8888-8888" />
-        </div>
-
-        <div class="grid-dos-columnas">
             <div class="campo-formulario">
-                <label for="contrasenaRegistro">Contraseña</label>
-                <input id="contrasenaRegistro" name="contrasenaRegistro" type="password" placeholder="Mínimo 8 caracteres" />
+                <label asp-for="Contrasena"></label>
+                <input asp-for="Contrasena" type="password" class="form-control" />
+                <span asp-validation-for="Contrasena" class="text-danger"></span>
             </div>
+
             <div class="campo-formulario">
-                <label for="confirmarContrasena">Confirmar contraseña</label>
-                <input id="confirmarContrasena" name="confirmarContrasena" type="password" placeholder="Repita la contraseña" />
+                <label asp-for="ConfirmacionContrasena"></label>
+                <input asp-for="ConfirmacionContrasena" type="password" class="form-control" />
+                <span asp-validation-for="ConfirmacionContrasena" class="text-danger"></span>
             </div>
-        </div>
 
-        <div class="campo-formulario">
-            <label for="rolRegistro">Rol inicial</label>
-            <select id="rolRegistro" name="rolRegistro">
-                <option value="Dueno">Dueño de finca</option>
-                <option value="Ingeniero">Ingeniero forestal</option>
-                <option value="Administrador">Administrador</option>
-            </select>
-        </div>
+            <div class="campo-formulario">
+                <label asp-for="IdRol">Rol</label>
+                <select asp-for="IdRol" class="form-control">
+                    <option value="">Seleccione un rol</option>
+                    <option value="1">Dueño de finca</option>
+                    <option value="2">Ingeniero Forestal</option>
+                    <option value="3">Administrador</option>
+                </select>
+                <span asp-validation-for="IdRol" class="text-danger"></span>
+            </div>
 
-        <label class="control-check">
-            <input type="checkbox" id="terminos" name="terminos" />
-            <span>Acepto las condiciones base de uso del sistema.</span>
-        </label>
+            <button type="submit" class="boton-primario">Registrarse</button>
+        </form>
 
-        <div class="fila-acciones-formulario">
-            <button type="submit" class="boton-primario boton-bloque">Registrar usuario</button>
-        </div>
-    </form>
-
-    <div class="pie-formulario">
-        <p>
+        <p class="mt-3">
             ¿Ya tiene cuenta?
             <a asp-controller="Autenticacion" asp-action="IniciarSesion">Iniciar sesión</a>
         </p>
     </div>
-</div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

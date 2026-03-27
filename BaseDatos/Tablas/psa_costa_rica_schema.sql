@@ -74,6 +74,10 @@ CREATE TABLE dbo.Usuarios
 );
 GO
 
+ALTER TABLE Usuarios
+ALTER COLUMN PasswordHash NVARCHAR(500) NULL;
+GO
+
 /* =========================================
    3. TokensRecuperacion
    ========================================= */

@@ -9,7 +9,9 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
+		<ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
 		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
 	</ItemGroup>
 
 </Project>

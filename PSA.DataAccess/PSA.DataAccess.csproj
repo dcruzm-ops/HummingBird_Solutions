@@ -9,6 +9,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
 	</ItemGroup>
 
 </Project>
