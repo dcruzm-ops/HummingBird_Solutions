@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -9,13 +10,16 @@ namespace PSA.WebApp.Controllers
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly AutenticacionManager _autenticacionManager;
 
         public AutenticacionController(
             IHttpClientFactory httpClientFactory,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            AutenticacionManager autenticacionManager)
         {
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
+            _autenticacionManager = autenticacionManager;
         }
 
         [HttpGet]
@@ -64,8 +68,7 @@ namespace PSA.WebApp.Controllers
             }
             catch
             {
-                ModelState.AddModelError(string.Empty, "No se pudo conectar con el API de autenticación.");
-                return View(dto);
+                return await IniciarSesionConFallbackLocalAsync(dto);
             }
         }
 
@@ -109,8 +112,7 @@ namespace PSA.WebApp.Controllers
             }
             catch
             {
-                ModelState.AddModelError(string.Empty, "No se pudo conectar con el API de autenticación.");
-                return View(dto);
+                return await RegistrarConFallbackLocalAsync(dto);
             }
         }
 
@@ -204,6 +206,36 @@ namespace PSA.WebApp.Controllers
 
             yield return "https://localhost:59665";
             yield return "http://localhost:59667";
+        }
+
+        private async Task<IActionResult> RegistrarConFallbackLocalAsync(RegistrarUsuarioDTO dto)
+        {
+            try
+            {
+                await _autenticacionManager.RegistrarUsuarioAsync(dto);
+                TempData["MensajeExito"] = "Usuario registrado correctamente (modo local). Ya puede iniciar sesión.";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(nameof(RegistroUsuario), dto);
+            }
+        }
+
+        private async Task<IActionResult> IniciarSesionConFallbackLocalAsync(InicioSesionDTO dto)
+        {
+            try
+            {
+                var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local)";
+                return RedirectToAction(GetDashboardActionByRole(respuesta.IdRol), "Dashboard");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(nameof(IniciarSesion), dto);
+            }
         }
     }
 }

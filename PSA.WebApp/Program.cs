@@ -1,3 +1,7 @@
+using PSA.AppCore.Managers;
+using PSA.AppCore.Servicios;
+using PSA.DataAccess.DAO;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
@@ -10,6 +14,23 @@ builder.Services.AddHttpClient("AuthApi")
         handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
         return handler;
     });
+
+builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
+
+builder.Services.AddScoped<UsuarioDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
+    }
+
+    return new UsuarioDAO(connectionString);
+});
+
+builder.Services.AddScoped<AutenticacionManager>();
 
 var app = builder.Build();
 
