@@ -11,7 +11,7 @@
 
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-        <form asp-controller="Autenticacion" asp-action="RegistroUsuario" method="post">
+        <form id="formularioRegistroUsuario" asp-controller="Autenticacion" asp-action="RegistroUsuario" method="post">
             @Html.AntiForgeryToken()
             <div class="campo-formulario">
                 <label asp-for="NombreCompleto">Nombre completo</label>
@@ -39,7 +39,10 @@
 
             <p class="texto-ayuda">Las cuentas nuevas se crean con rol <strong>Propietario</strong> por defecto.</p>
 
-            <button type="submit" class="boton-primario">Registrarse</button>
+            <button type="submit" class="boton-primario" data-loading-button>
+                <span class="spinner-border spinner-border-sm d-none me-2" aria-hidden="true" data-loading-spinner></span>
+                <span data-loading-texto>Registrarse</span>
+            </button>
         </form>
 
         <p class="mt-3">
