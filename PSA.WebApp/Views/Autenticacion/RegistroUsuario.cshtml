@@ -12,27 +12,28 @@
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <form asp-controller="Autenticacion" asp-action="RegistroUsuario" method="post">
+            @Html.AntiForgeryToken()
             <div class="campo-formulario">
-                <label asp-for="NombreCompleto"></label>
-                <input asp-for="NombreCompleto" class="form-control" />
+                <label asp-for="NombreCompleto">Nombre completo</label>
+                <input asp-for="NombreCompleto" class="form-control" placeholder="Ejemplo: María Fernanda Rojas" />
                 <span asp-validation-for="NombreCompleto" class="text-danger"></span>
             </div>
 
             <div class="campo-formulario">
-                <label asp-for="Email"></label>
-                <input asp-for="Email" class="form-control" />
+                <label asp-for="Email">Correo electrónico</label>
+                <input asp-for="Email" class="form-control" placeholder="usuario@correo.com" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
 
             <div class="campo-formulario">
-                <label asp-for="Contrasena"></label>
-                <input asp-for="Contrasena" type="password" class="form-control" />
+                <label asp-for="Contrasena">Contraseña</label>
+                <input asp-for="Contrasena" type="password" class="form-control" placeholder="Mínimo 8 caracteres" />
                 <span asp-validation-for="Contrasena" class="text-danger"></span>
             </div>
 
             <div class="campo-formulario">
-                <label asp-for="ConfirmacionContrasena"></label>
-                <input asp-for="ConfirmacionContrasena" type="password" class="form-control" />
+                <label asp-for="ConfirmacionContrasena">Confirmar contraseña</label>
+                <input asp-for="ConfirmacionContrasena" type="password" class="form-control" placeholder="Repita la contraseña" />
                 <span asp-validation-for="ConfirmacionContrasena" class="text-danger"></span>
             </div>
 
