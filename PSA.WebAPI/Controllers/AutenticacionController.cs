@@ -36,5 +36,22 @@ namespace PSA.WebAPI.Controllers
                 });
             }
         }
+
+        [HttpPost("iniciar-sesion")]
+        public async Task<IActionResult> IniciarSesion([FromBody] InicioSesionDTO dto)
+        {
+            try
+            {
+                var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                return Ok(respuesta);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    Mensaje = ex.Message
+                });
+            }
+        }
     }
 }
