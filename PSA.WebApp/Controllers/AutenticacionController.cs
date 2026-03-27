@@ -42,7 +42,7 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient();
+                var client = _httpClientFactory.CreateClient("AuthApi");
                 var response = await PostToApiAsync(client, "/api/Autenticacion/iniciar-sesion", dto);
 
                 if (!response.IsSuccessStatusCode)
@@ -93,7 +93,7 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient();
+                var client = _httpClientFactory.CreateClient("AuthApi");
                 var response = await PostToApiAsync(client, "/api/Autenticacion/registrar", dto);
 
                 if (!response.IsSuccessStatusCode)
