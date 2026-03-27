@@ -32,10 +32,14 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(options =>
+    {
+        options.RouteTemplate = "openapi/{documentName}.json";
+    });
+
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "PSA WebAPI v1");
+        options.SwaggerEndpoint("/openapi/v1.json", "PSA WebAPI v1");
         options.RoutePrefix = "swagger";
     });
 }
