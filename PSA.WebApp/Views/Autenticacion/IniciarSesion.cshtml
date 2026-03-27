@@ -7,7 +7,7 @@
 <div class="tarjeta-autenticacion">
     @if (TempData["MensajeExito"] is string mensajeExito && !string.IsNullOrWhiteSpace(mensajeExito))
     {
-        <div class="alert alert-success" role="status">
+        <div class="alert alert-success" role="status" data-auto-dismiss-ms="8000">
             @mensajeExito
         </div>
     }
