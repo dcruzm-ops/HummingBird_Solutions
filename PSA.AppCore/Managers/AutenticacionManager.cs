@@ -20,6 +20,8 @@ namespace PSA.AppCore.Managers
 
         public async Task<int> RegistrarUsuarioAsync(RegistrarUsuarioDTO dto)
         {
+            const int idRolPropietario = 2;
+
             if (string.IsNullOrWhiteSpace(dto.NombreCompleto))
                 throw new Exception("El nombre completo es requerido.");
 
@@ -49,7 +51,7 @@ namespace PSA.AppCore.Managers
                 NombreCompleto = dto.NombreCompleto.Trim(),
                 Email = dto.Email.Trim(),
                 PasswordHash = _servicioHashContrasena.GenerarHash(dto.Contrasena),
-                IdRol = dto.IdRol,
+                IdRol = idRolPropietario,
                 Estado = "Activo",
                 FechaCreacion = DateTime.Now,
                 UltimoAcceso = null
