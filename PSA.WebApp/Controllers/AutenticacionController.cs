@@ -1,9 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Security.Claims;
 
 namespace PSA.WebApp.Controllers
 {
@@ -26,6 +29,13 @@ namespace PSA.WebApp.Controllers
         [HttpGet]
         public IActionResult IniciarSesion()
         {
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var idRolClaim = User.FindFirstValue(ClaimTypes.Role);
+                var idRol = int.TryParse(idRolClaim, out var rol) ? rol : 2;
+                return RedirectToAction(GetDashboardActionByRole(idRol), "Dashboard");
+            }
+
             ViewBag.EsAutenticacion = true;
             ViewBag.TituloPagina = "Iniciar sesión";
             ViewBag.SubtituloPagina = "Acceda al sistema PSA Costa Rica con sus credenciales.";
@@ -65,6 +75,7 @@ namespace PSA.WebApp.Controllers
                     return View(dto);
                 }
 
+                await IniciarSesionWebAsync(respuesta);
                 TempData["MensajeExito"] = respuesta.Mensaje;
                 return RedirectToAction(GetDashboardActionByRole(respuesta.IdRol), "Dashboard");
             }
@@ -136,6 +147,15 @@ namespace PSA.WebApp.Controllers
             ViewBag.TituloPagina = "Restablecer contraseña";
             ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
             return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CerrarSesion()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            TempData["MensajeExito"] = "Sesión cerrada correctamente.";
+            return RedirectToAction(nameof(IniciarSesion));
         }
 
         private static string GetDashboardActionByRole(int idRol)
@@ -231,6 +251,7 @@ namespace PSA.WebApp.Controllers
             try
             {
                 var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                await IniciarSesionWebAsync(respuesta);
                 TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local)";
                 return RedirectToAction(GetDashboardActionByRole(respuesta.IdRol), "Dashboard");
             }
@@ -239,6 +260,29 @@ namespace PSA.WebApp.Controllers
                 ModelState.AddModelError(string.Empty, ex.Message);
                 return View(nameof(IniciarSesion), dto);
             }
+        }
+
+        private async Task IniciarSesionWebAsync(RespuestaInicioSesionDTO respuesta)
+        {
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, respuesta.IdUsuario.ToString()),
+                new(ClaimTypes.Name, respuesta.NombreCompleto),
+                new(ClaimTypes.Email, respuesta.Email),
+                new(ClaimTypes.Role, respuesta.IdRol.ToString())
+            };
+
+            var identidad = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identidad);
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+                });
         }
     }
 }

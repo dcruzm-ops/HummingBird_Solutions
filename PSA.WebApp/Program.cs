@@ -1,11 +1,21 @@
 using PSA.AppCore.Managers;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess.DAO;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddHttpClient();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Autenticacion/IniciarSesion";
+        options.AccessDeniedPath = "/Autenticacion/IniciarSesion";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
 
 builder.Services.AddHttpClient("AuthApi")
     .ConfigurePrimaryHttpMessageHandler(() =>
@@ -58,6 +68,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

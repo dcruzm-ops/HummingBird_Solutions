@@ -30,6 +30,9 @@
             <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
         }
 
-        <a class="item-menu" asp-controller="Autenticacion" asp-action="IniciarSesion">Cerrar sesión</a>
+        <form asp-controller="Autenticacion" asp-action="CerrarSesion" method="post" class="w-100">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="item-menu w-100 text-start border-0 bg-transparent p-0">Cerrar sesión</button>
+        </form>
     </nav>
 </aside>

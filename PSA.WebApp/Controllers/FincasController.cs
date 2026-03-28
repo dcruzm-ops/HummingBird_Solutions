@@ -1,17 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using System.Net.Http.Json;
 
 namespace PSA.WebApp.Controllers
 {
+    [Authorize]
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
-        private const int IdPropietarioDemo = 2;
 
         public FincasController(
             FincaDAO fincaDAO,
@@ -45,7 +47,13 @@ namespace PSA.WebApp.Controllers
             ViewBag.SubtituloPagina = "Consulte el estado de sus propiedades registradas y sus procesos asociados.";
             ViewBag.BreadcrumbActual = "Mis fincas";
 
-            var fincas = await ObtenerFincasDesdeApiConFallbackAsync(IdPropietarioDemo);
+            var idPropietario = ObtenerIdUsuarioSesion();
+            if (idPropietario <= 0)
+            {
+                return RedirectToAction("IniciarSesion", "Autenticacion");
+            }
+
+            var fincas = await ObtenerFincasDesdeApiConFallbackAsync(idPropietario);
             return View(fincas);
         }
 
@@ -66,7 +74,13 @@ namespace PSA.WebApp.Controllers
                 return RedirectToAction(nameof(MisFincas));
             }
 
-            var detalle = await ObtenerDetalleDesdeApiConFallbackAsync(idFinca, IdPropietarioDemo);
+            var idPropietario = ObtenerIdUsuarioSesion();
+            if (idPropietario <= 0)
+            {
+                return RedirectToAction("IniciarSesion", "Autenticacion");
+            }
+
+            var detalle = await ObtenerDetalleDesdeApiConFallbackAsync(idFinca, idPropietario);
             if (detalle == null)
             {
                 TempData["MensajeError"] = "No se encontró la finca solicitada para el propietario actual.";
@@ -127,6 +141,12 @@ namespace PSA.WebApp.Controllers
         private string GetApiBaseUrl()
         {
             return (_configuration["ApiSettings:BaseUrl"] ?? "https://localhost:59665").TrimEnd('/');
+        }
+
+        private int ObtenerIdUsuarioSesion()
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(idClaim, out var idUsuario) ? idUsuario : 0;
         }
     }
 }
