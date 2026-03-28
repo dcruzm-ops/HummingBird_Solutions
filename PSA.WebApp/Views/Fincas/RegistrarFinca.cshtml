@@ -122,8 +122,8 @@
                 <div class="campo-formulario">
                     <label asp-for="EstadoFinca">Estado inicial</label>
                     <select asp-for="EstadoFinca">
-                        <option>Pendiente</option>
-                        <option>Asignada para evaluación</option>
+                        <option value="Registrada">Registrada</option>
+                        <option value="EnRevision">En revisión</option>
                     </select>
                     <span asp-validation-for="EstadoFinca"></span>
                 </div>

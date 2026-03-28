@@ -52,7 +52,7 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbActual = "Registrar finca";
 
             model.IdPropietario = ObtenerIdUsuarioSesion();
-            model.EstadoFinca = string.IsNullOrWhiteSpace(model.EstadoFinca) ? "Pendiente" : model.EstadoFinca.Trim();
+            model.EstadoFinca = NormalizarEstadoFinca(model.EstadoFinca);
 
             if (model.IdPropietario <= 0)
             {
@@ -275,6 +275,25 @@ namespace PSA.WebApp.Controllers
         {
             var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return int.TryParse(idClaim, out var idUsuario) ? idUsuario : 0;
+        }
+
+        private static string NormalizarEstadoFinca(string? estado)
+        {
+            var valor = (estado ?? string.Empty).Trim().ToLowerInvariant();
+            return valor switch
+            {
+                "pendiente" => "Registrada",
+                "asignada para evaluación" => "EnRevision",
+                "asignada para evaluacion" => "EnRevision",
+                "en proceso" => "EnRevision",
+                "registrada" => "Registrada",
+                "enrevision" => "EnRevision",
+                "aprobada" => "Aprobada",
+                "rechazada" => "Rechazada",
+                "suspendida" => "Inactiva",
+                "inactiva" => "Inactiva",
+                _ => "Registrada"
+            };
         }
     }
 }

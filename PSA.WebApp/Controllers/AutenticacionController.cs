@@ -17,14 +17,17 @@ namespace PSA.WebApp.Controllers
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
         private readonly AutenticacionManager _autenticacionManager;
+        private readonly RecuperacionContrasenaManager _recuperacionContrasenaManager;
 
         public AutenticacionController(
             IConfiguration configuration,
             AutenticacionManager autenticacionManager,
+            RecuperacionContrasenaManager recuperacionContrasenaManager,
             IServiceProvider serviceProvider)
         {
             _configuration = configuration;
             _autenticacionManager = autenticacionManager;
+            _recuperacionContrasenaManager = recuperacionContrasenaManager;
             _serviceProvider = serviceProvider;
         }
 
@@ -173,8 +176,7 @@ namespace PSA.WebApp.Controllers
             }
             catch
             {
-                ModelState.AddModelError(string.Empty, "No fue posible conectar con el servicio de recuperación en este momento.");
-                return View(model);
+                return RecuperarContrasenaConFallbackLocal(model);
             }
         }
 
@@ -232,8 +234,7 @@ namespace PSA.WebApp.Controllers
             }
             catch
             {
-                ModelState.AddModelError(string.Empty, "No fue posible conectar con el servicio de recuperación en este momento.");
-                return View(model);
+                return RestablecerContrasenaConFallbackLocal(model);
             }
         }
 
@@ -376,6 +377,52 @@ namespace PSA.WebApp.Controllers
                     IsPersistent = true,
                     ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                 });
+        }
+
+        private IActionResult RecuperarContrasenaConFallbackLocal(RecuperarContrasenaViewModel model)
+        {
+            try
+            {
+                var payload = new RecuperarContrasenaDTO { Correo = model.Correo.Trim() };
+                var baseUrlWebApp = $"{Request.Scheme}://{Request.Host}";
+                var respuesta = _recuperacionContrasenaManager.GenerarToken(payload, baseUrlWebApp);
+
+                TempData["MensajeExito"] = respuesta.Mensaje;
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"No fue posible procesar la recuperación: {ex.Message}");
+                return View(nameof(RecuperarContrasena), model);
+            }
+        }
+
+        private IActionResult RestablecerContrasenaConFallbackLocal(RestablecerContrasenaViewModel model)
+        {
+            try
+            {
+                var payload = new RestablecerContrasenaDTO
+                {
+                    Token = model.Token.Trim(),
+                    NuevaContrasena = model.NuevaContrasena,
+                    ConfirmarContrasena = model.ConfirmarContrasena
+                };
+
+                var respuesta = _recuperacionContrasenaManager.RestablecerContrasena(payload);
+                if (!respuesta.Exito)
+                {
+                    ModelState.AddModelError(string.Empty, respuesta.Mensaje);
+                    return View(nameof(RestablecerContrasena), model);
+                }
+
+                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local)";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"No fue posible restablecer la contraseña: {ex.Message}");
+                return View(nameof(RestablecerContrasena), model);
+            }
         }
     }
 }
