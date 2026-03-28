@@ -5,9 +5,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     formulario.addEventListener("submit", function (evento) {
-        evento.preventDefault();
-        var datos = window.psa ? window.psa.serializarFormulario(formulario) : {};
-        console.log("Formulario de finca listo para integrar con API:", datos);
-        alert("Base del formulario de finca creada. Falta conectar la persistencia.");
+        var campoHectareas = document.getElementById("hectareas");
+        if (!campoHectareas) {
+            return;
+        }
+
+        var valor = Number(campoHectareas.value);
+        if (!Number.isFinite(valor) || valor <= 0) {
+            evento.preventDefault();
+            alert("Las hectáreas deben ser un número positivo mayor a 0.");
+            campoHectareas.focus();
+        }
     });
 });

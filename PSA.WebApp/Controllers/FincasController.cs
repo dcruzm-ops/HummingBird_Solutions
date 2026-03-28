@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
+using PSA.EntidadesDTO.DTOs.Fincas;
 using System.Net.Http.Json;
 
 namespace PSA.WebApp.Controllers
@@ -35,7 +36,59 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbPadreTexto = "Mis fincas";
             ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
             ViewBag.BreadcrumbActual = "Registrar finca";
-            return View();
+            return View(new FincaDTO());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarFinca(FincaDTO model)
+        {
+            ViewBag.ModuloActivo = "fincas";
+            ViewBag.RolActivo = "Dueno";
+            ViewBag.TituloPagina = "Registrar finca";
+            ViewBag.SubtituloPagina = "Complete la información principal de la propiedad para iniciar el proceso.";
+            ViewBag.BreadcrumbPadreTexto = "Mis fincas";
+            ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
+            ViewBag.BreadcrumbActual = "Registrar finca";
+
+            model.IdPropietario = ObtenerIdUsuarioSesion();
+            model.EstadoFinca = string.IsNullOrWhiteSpace(model.EstadoFinca) ? "Pendiente" : model.EstadoFinca.Trim();
+
+            if (model.IdPropietario <= 0)
+            {
+                return RedirectToAction("IniciarSesion", "Autenticacion");
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Distrito))
+            {
+                model.Distrito = model.Canton;
+            }
+
+            if (string.IsNullOrWhiteSpace(model.UsoSuelo))
+            {
+                model.UsoSuelo = "Conservación";
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Pendiente))
+            {
+                model.Pendiente = "Media";
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var resultado = await CrearFincaEnApiConFallbackAsync(model);
+
+            if (!resultado.Exito)
+            {
+                ModelState.AddModelError(string.Empty, resultado.Mensaje);
+                return View(model);
+            }
+
+            TempData["MensajeExito"] = "Finca registrada correctamente.";
+            return RedirectToAction(nameof(MisFincas));
         }
 
         [HttpGet]
@@ -90,20 +143,78 @@ namespace PSA.WebApp.Controllers
             return View(detalle);
         }
 
+        private async Task<(bool Exito, string Mensaje)> CrearFincaEnApiConFallbackAsync(FincaDTO model)
+        {
+            try
+            {
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+
+                Exception? ultimaExcepcion = null;
+                foreach (var baseUrl in GetApiBaseUrls())
+                {
+                    try
+                    {
+                        var response = await client.PostAsJsonAsync($"{baseUrl}/api/Finca/Create", model);
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return (true, string.Empty);
+                        }
+
+                        var detalle = await response.Content.ReadAsStringAsync();
+                        return (false, $"El API rechazó el registro: {detalle}");
+                    }
+                    catch (Exception ex)
+                    {
+                        ultimaExcepcion = ex;
+                    }
+                }
+
+                if (ultimaExcepcion != null)
+                {
+                    throw ultimaExcepcion;
+                }
+            }
+            catch
+            {
+                try
+                {
+                    _fincaDAO.Create(model);
+                    return (true, string.Empty);
+                }
+                catch (Exception ex)
+                {
+                    return (false, $"No fue posible registrar la finca: {ex.Message}");
+                }
+            }
+
+            return (false, "No fue posible registrar la finca.");
+        }
+
         private async Task<List<FincaResumenDTO>> ObtenerFincasDesdeApiConFallbackAsync(int idPropietario)
         {
             try
             {
                 var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
                     ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-                var baseUrl = GetApiBaseUrl();
-                var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>(
-                    $"{baseUrl}/api/Fincas/mis-fincas?idPropietario={idPropietario}"
-                );
 
-                if (fincas != null)
+                foreach (var baseUrl in GetApiBaseUrls())
                 {
-                    return fincas;
+                    try
+                    {
+                        var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>(
+                            $"{baseUrl}/api/Fincas/mis-fincas?idPropietario={idPropietario}"
+                        );
+
+                        if (fincas != null)
+                        {
+                            return fincas;
+                        }
+                    }
+                    catch
+                    {
+                        // Probar siguiente URL
+                    }
                 }
             }
             catch
@@ -120,14 +231,24 @@ namespace PSA.WebApp.Controllers
             {
                 var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
                     ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-                var baseUrl = GetApiBaseUrl();
-                var detalle = await client.GetFromJsonAsync<FincaDetalleDTO>(
-                    $"{baseUrl}/api/Fincas/{idFinca}/detalle?idPropietario={idPropietario}"
-                );
 
-                if (detalle != null)
+                foreach (var baseUrl in GetApiBaseUrls())
                 {
-                    return detalle;
+                    try
+                    {
+                        var detalle = await client.GetFromJsonAsync<FincaDetalleDTO>(
+                            $"{baseUrl}/api/Fincas/{idFinca}/detalle?idPropietario={idPropietario}"
+                        );
+
+                        if (detalle != null)
+                        {
+                            return detalle;
+                        }
+                    }
+                    catch
+                    {
+                        // Probar siguiente URL
+                    }
                 }
             }
             catch
@@ -138,9 +259,16 @@ namespace PSA.WebApp.Controllers
             return await _fincaDAO.ObtenerDetalleAsync(idFinca, idPropietario);
         }
 
-        private string GetApiBaseUrl()
+        private IEnumerable<string> GetApiBaseUrls()
         {
-            return (_configuration["ApiSettings:BaseUrl"] ?? "https://localhost:59665").TrimEnd('/');
+            var configurada = _configuration["ApiSettings:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(configurada))
+            {
+                yield return configurada.TrimEnd('/');
+            }
+
+            yield return "https://localhost:59665";
+            yield return "http://localhost:59667";
         }
 
         private int ObtenerIdUsuarioSesion()
