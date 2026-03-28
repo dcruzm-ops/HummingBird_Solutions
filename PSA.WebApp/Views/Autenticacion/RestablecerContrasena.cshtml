@@ -1,3 +1,4 @@
+@model PSA.WebApp.Models.RestablecerContrasenaViewModel
 @{
     Layout = "~/Views/Shared/_LayoutAutenticacion.cshtml";
     ViewData["Title"] = "Restablecer contraseña";
@@ -6,18 +7,29 @@
     <div class="cabecera-formulario">
         <span class="eyebrow">Cambio seguro</span>
         <h2>Restablecer contraseña</h2>
-        <p>Token de referencia: <strong>@ViewBag.TokenRecuperacion</strong></p>
+        <p>Ingrese el token recibido y su nueva contraseña.</p>
     </div>
 
-    <form class="formulario-base" id="formularioRestablecerContrasena" novalidate method="get" asp-controller="Autenticacion" asp-action="IniciarSesion">
+    <form class="formulario-base" id="formularioRestablecerContrasena" method="post" asp-controller="Autenticacion" asp-action="RestablecerContrasena">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="mensaje-sistema mensaje-error"></div>
+
         <div class="campo-formulario">
-            <label for="nuevaContrasena">Nueva contraseña</label>
-            <input id="nuevaContrasena" name="nuevaContrasena" type="password" placeholder="Ingrese la nueva contraseña" />
+            <label asp-for="Token">Token</label>
+            <input asp-for="Token" placeholder="Token de recuperación" />
+            <span asp-validation-for="Token"></span>
         </div>
 
         <div class="campo-formulario">
-            <label for="confirmarNuevaContrasena">Confirmar nueva contraseña</label>
-            <input id="confirmarNuevaContrasena" name="confirmarNuevaContrasena" type="password" placeholder="Repita la contraseña" />
+            <label asp-for="NuevaContrasena">Nueva contraseña</label>
+            <input asp-for="NuevaContrasena" type="password" placeholder="Ingrese la nueva contraseña" />
+            <span asp-validation-for="NuevaContrasena"></span>
+        </div>
+
+        <div class="campo-formulario">
+            <label asp-for="ConfirmarContrasena">Confirmar nueva contraseña</label>
+            <input asp-for="ConfirmarContrasena" type="password" placeholder="Repita la contraseña" />
+            <span asp-validation-for="ConfirmarContrasena"></span>
         </div>
 
         <div class="fila-acciones-formulario">
@@ -31,3 +43,6 @@
         </p>
     </div>
 </div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
