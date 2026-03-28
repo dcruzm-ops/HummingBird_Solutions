@@ -432,11 +432,26 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "PSA.AppCore/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "PSA.DataAccess": "1.0.0",
+          "PSA.EntidadesDTO": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/PSA.AppCore.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PSA.AppCore.dll": {}
+        }
+      },
       "PSA.DataAccess/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
-          "Microsoft.Data.SqlClient": "7.0.0"
+          "Microsoft.Data.SqlClient": "7.0.0",
+          "PSA.EntidadesDTO": "1.0.0"
         },
         "compile": {
           "bin/placeholder/PSA.DataAccess.dll": {}
@@ -1273,6 +1288,11 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "PSA.AppCore/1.0.0": {
+      "type": "project",
+      "path": "../AppCore/PSA.AppCore.csproj",
+      "msbuildProject": "../AppCore/PSA.AppCore.csproj"
+    },
     "PSA.DataAccess/1.0.0": {
       "type": "project",
       "path": "../DataAccess/PSA.DataAccess.csproj",
@@ -1287,6 +1307,7 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "Microsoft.AspNetCore.OpenApi >= 10.0.4",
+      "PSA.AppCore >= 1.0.0",
       "PSA.DataAccess >= 1.0.0",
       "PSA.EntidadesDTO >= 1.0.0",
       "Swashbuckle.AspNetCore >= 10.0.1"
@@ -1299,11 +1320,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
+      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
       "projectName": "PSA.WebAPI",
-      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
+      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
       "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\PSA.WebAPI\\obj\\",
+      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1324,11 +1345,14 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj": {
-              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj"
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj"
             },
-            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
-              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj"
+            },
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
             }
           }
         }

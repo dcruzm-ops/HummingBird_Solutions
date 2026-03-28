@@ -461,6 +461,16 @@
         "build": {
           "buildTransitive/net8.0/_._": {}
         }
+      },
+      "PSA.EntidadesDTO/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/PSA.EntidadesDTO.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/PSA.EntidadesDTO.dll": {}
+        }
       }
     }
   },
@@ -1172,11 +1182,17 @@
         "system.security.cryptography.protecteddata.nuspec",
         "useSharedDesignerContext.txt"
       ]
+    },
+    "PSA.EntidadesDTO/1.0.0": {
+      "type": "project",
+      "path": "../PSA.EntidadesDTO/PSA.EntidadesDTO.csproj",
+      "msbuildProject": "../PSA.EntidadesDTO/PSA.EntidadesDTO.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net10.0": [
-      "Microsoft.Data.SqlClient >= 7.0.0"
+      "Microsoft.Data.SqlClient >= 7.0.0",
+      "PSA.EntidadesDTO >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -1186,11 +1202,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj",
+      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj",
       "projectName": "PSA.DataAccess",
-      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj",
+      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj",
       "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-dev\\HummingBird_Solutions-jared-feature-dev\\PSA-Costa-Rica\\DataAccess\\obj\\",
+      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1210,7 +1226,11 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

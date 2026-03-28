@@ -19,5 +19,10 @@ namespace PSA.DataAccess
                 return connection.State == System.Data.ConnectionState.Open;
             }
         }
+
+        public SqlConnection CreateConnection()
+        {
+            return new SqlConnection(_connectionString);
+        }
     }
 }

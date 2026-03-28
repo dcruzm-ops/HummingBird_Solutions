@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Dashboard del administrador";
+}
+<section class="seccion-pagina administrador-dashboard">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Vista operativa</span>
+            <h2>Resumen administrativo</h2>
+            <p>Monitoree usuarios, parámetros, validaciones bancarias y auditoría.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Administracion" asp-action="GestionUsuarios">Gestionar usuarios</a>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Usuarios activos</span>
+            <strong>28</strong>
+            <small>3 pendientes de aprobación</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Cuentas por validar</span>
+            <strong>5</strong>
+            <small>Revisión administrativa requerida</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Eventos de auditoría</span>
+            <strong>148</strong>
+            <small>Últimas 24 horas</small>
+        </article>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Alertas administrativas</h3>
+        </div>
+        <ul class="lista-timeline">
+            <li>Se detectaron 2 cambios en parámetros de pago.</li>
+            <li>Existe 1 plan de pago sin cuenta bancaria asociada.</li>
+            <li>Hay 3 usuarios sin rol asignado definitivo.</li>
+        </ul>
+    </section>
+</section>

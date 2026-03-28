@@ -1,0 +1,47 @@
+@model PSA.WebApp.Models.RecuperarContrasenaViewModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutAutenticacion.cshtml";
+    ViewData["Title"] = "Recuperar contraseña";
+}
+
+<div class="tarjeta-autenticacion">
+    <div class="cabecera-formulario">
+        <span class="eyebrow">Soporte de acceso</span>
+        <h2>Recuperar contraseña</h2>
+        <p>Le enviaremos un enlace o token para restablecer su acceso.</p>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="alert alert-success">@ViewBag.Mensaje</div>
+    }
+
+    <form id="formularioRecuperarContrasena"
+          class="formulario-base"
+          method="post"
+          asp-controller="Autenticacion"
+          asp-action="RecuperarContrasena">
+        <div class="campo-formulario">
+            <label asp-for="Correo">Correo electrónico</label>
+            <input name="Correo" type="email" placeholder="usuario@correo.com" />
+            <span asp-validation-for="Correo" class="text-danger"></span>
+        </div>
+
+        <div class="fila-acciones-formulario">
+            <button type="submit" class="boton-primario boton-bloque">Enviar instrucciones</button>
+        </div>
+    </form>
+
+    <div class="pie-formulario">
+        <p>
+            ¿Recordó su contraseña?
+            <a asp-controller="Autenticacion" asp-action="IniciarSesion">Volver al inicio de sesión</a>
+        </p>
+    </div>
+</div>

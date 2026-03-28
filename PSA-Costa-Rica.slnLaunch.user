@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "PSA.WebAPI\\PSA.WebAPI.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "PSA.WebApp\\PSA.WebApp.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

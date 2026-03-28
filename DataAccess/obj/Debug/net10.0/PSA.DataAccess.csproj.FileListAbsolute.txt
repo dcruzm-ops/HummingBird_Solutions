@@ -10,3 +10,35 @@ C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingB
 C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-yohel-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\refint\PSA.DataAccess.dll
 C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-yohel-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.pdb
 C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-yohel-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\ref\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.DataAccess.deps.json
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.DataAccess.pdb
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.EntidadesDTO.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.EntidadesDTO.pdb
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.csproj.AssemblyReference.cache
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.AssemblyInfoInputs.cache
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.AssemblyInfo.cs
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.csproj.CoreCompileInputs.cache
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.sourcelink.json
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.Data.48AC0572.Up2Date
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\refint\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.pdb
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-dev\HummingBird_Solutions-jared-feature-dev\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\ref\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.DataAccess.deps.json
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.DataAccess.pdb
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.EntidadesDTO.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\bin\Debug\net10.0\PSA.EntidadesDTO.pdb
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.csproj.AssemblyReference.cache
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.AssemblyInfoInputs.cache
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.AssemblyInfo.cs
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.csproj.CoreCompileInputs.cache
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.sourcelink.json
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.Data.48AC0572.Up2Date
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\refint\PSA.DataAccess.dll
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\PSA.DataAccess.pdb
+C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\DataAccess\obj\Debug\net10.0\ref\PSA.DataAccess.dll

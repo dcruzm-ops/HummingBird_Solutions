@@ -5,6 +5,126 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/Finca/RetrieveAll": {
+      "get": {
+        "tags": [
+          "Finca"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Finca/RetrieveById/{id}": {
+      "get": {
+        "tags": [
+          "Finca"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Finca/Create": {
+      "post": {
+        "tags": [
+          "Finca"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FincaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FincaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FincaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Finca/Update": {
+      "put": {
+        "tags": [
+          "Finca"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FincaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FincaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FincaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Finca/Delete/{id}": {
+      "delete": {
+        "tags": [
+          "Finca"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Health/test": {
       "get": {
         "tags": [
@@ -16,12 +136,245 @@
           }
         }
       }
+    },
+    "/api/RecuperacionContrasena/solicitar": {
+      "post": {
+        "tags": [
+          "RecuperacionContrasena"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecuperarContrasenaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecuperarContrasenaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecuperarContrasenaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/RecuperacionContrasena/validar-token": {
+      "post": {
+        "tags": [
+          "RecuperacionContrasena"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidarTokenDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidarTokenDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidarTokenDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/RecuperacionContrasena/restablecer": {
+      "post": {
+        "tags": [
+          "RecuperacionContrasena"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestablecerContrasenaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestablecerContrasenaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestablecerContrasenaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
-  "components": { },
+  "components": {
+    "schemas": {
+      "FincaDTO": {
+        "required": [
+          "canton",
+          "distrito",
+          "estadoFinca",
+          "idPropietario",
+          "nombreFinca",
+          "pendiente",
+          "provincia",
+          "usoSuelo",
+          "vegetacion"
+        ],
+        "type": "object",
+        "properties": {
+          "idFinca": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idPropietario": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombreFinca": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "provincia": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "canton": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "distrito": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "direccionExacta": {
+            "type": "string",
+            "nullable": true
+          },
+          "latitud": {
+            "maximum": 90,
+            "minimum": -90,
+            "type": "number",
+            "format": "double"
+          },
+          "longitud": {
+            "maximum": 180,
+            "minimum": -180,
+            "type": "number",
+            "format": "double"
+          },
+          "hectareas": {
+            "maximum": 1.7976931348623157E+308,
+            "minimum": 0.01,
+            "type": "number",
+            "format": "double"
+          },
+          "vegetacion": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "tieneRecursosHidricos": {
+            "type": "boolean"
+          },
+          "usoSuelo": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "pendiente": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "estadoFinca": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "fechaRegistro": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaActualizacion": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecuperarContrasenaDTO": {
+        "type": "object",
+        "properties": {
+          "correo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RestablecerContrasenaDTO": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "nuevaContrasena": {
+            "type": "string",
+            "nullable": true
+          },
+          "confirmarContrasena": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidarTokenDTO": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
   "tags": [
     {
+      "name": "Finca"
+    },
+    {
       "name": "Health"
+    },
+    {
+      "name": "RecuperacionContrasena"
     }
   ]
 }

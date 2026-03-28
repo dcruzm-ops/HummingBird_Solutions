@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Gestión de usuarios";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Administración</span>
+            <h2>Gestión de usuarios</h2>
+            <p>Base para administración de usuarios, roles y estados.</p>
+        </div>
+        <button type="button" class="boton-primario">Crear usuario</button>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Dennis Cruz</td>
+                        <td>dennis@psa.cr</td>
+                        <td>Administrador</td>
+                        <td><span class="badge-estado badge-exito">Activo</span></td>
+                    </tr>
+                    <tr>
+                        <td>Laura Mora</td>
+                        <td>laura@psa.cr</td>
+                        <td>Dueño</td>
+                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

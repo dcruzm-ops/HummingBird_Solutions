@@ -9,6 +9,7 @@
       "PSA.WebAPI/1.0.0": {
         "dependencies": {
           "Microsoft.AspNetCore.OpenApi": "10.0.4",
+          "PSA.AppCore": "1.0.0",
           "PSA.DataAccess": "1.0.0",
           "PSA.EntidadesDTO": "1.0.0",
           "Swashbuckle.AspNetCore": "10.0.1"
@@ -295,9 +296,22 @@
           }
         }
       },
+      "PSA.AppCore/1.0.0": {
+        "dependencies": {
+          "PSA.DataAccess": "1.0.0",
+          "PSA.EntidadesDTO": "1.0.0"
+        },
+        "runtime": {
+          "PSA.AppCore.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "PSA.DataAccess/1.0.0": {
         "dependencies": {
-          "Microsoft.Data.SqlClient": "7.0.0"
+          "Microsoft.Data.SqlClient": "7.0.0",
+          "PSA.EntidadesDTO": "1.0.0"
         },
         "runtime": {
           "PSA.DataAccess.dll": {
@@ -468,6 +482,11 @@
       "sha512": "sha512-t8S9IDpjJKsLpLkeBdW8cWtcPyYqrGu93Dej1RO6WwuL/lkFSqWlan3rMJfortqz1mRIh+sys2AFsSA6jWJ3Jg==",
       "path": "system.security.cryptography.protecteddata/9.0.13",
       "hashPath": "system.security.cryptography.protecteddata.9.0.13.nupkg.sha512"
+    },
+    "PSA.AppCore/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "PSA.DataAccess/1.0.0": {
       "type": "project",
