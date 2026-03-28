@@ -1,3 +1,4 @@
+@model PSA.EntidadesDTO.DTOs.Fincas.FincaDTO
 @{
     ViewData["Title"] = "Registrar finca";
 }
@@ -6,67 +7,126 @@
         <div>
             <span class="eyebrow">Nuevo registro</span>
             <h2>Formulario de finca</h2>
-            <p>Base visual para captura de datos principales, ubicación y características.</p>
+            <p>Registro completo conectado con el backend para crear la finca del propietario autenticado.</p>
         </div>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="get" asp-controller="Fincas" asp-action="MisFincas">
+    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" method="post" asp-controller="Fincas" asp-action="RegistrarFinca">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="mensaje-sistema mensaje-error"></div>
+
         <div class="seccion-formulario">
             <h3>Datos generales</h3>
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
-                    <label for="nombreFinca">Nombre de la finca</label>
-                    <input id="nombreFinca" name="nombreFinca" type="text" placeholder="Nombre de la finca" />
+                    <label asp-for="NombreFinca">Nombre de la finca</label>
+                    <input asp-for="NombreFinca" placeholder="Nombre de la finca" />
+                    <span asp-validation-for="NombreFinca"></span>
                 </div>
                 <div class="campo-formulario">
-                    <label for="codigoExpediente">Código de expediente</label>
-                    <input id="codigoExpediente" name="codigoExpediente" type="text" placeholder="PSA-2026-001" />
+                    <label asp-for="Provincia">Provincia</label>
+                    <select asp-for="Provincia">
+                        <option value="">Seleccione una provincia</option>
+                        <option>San José</option>
+                        <option>Alajuela</option>
+                        <option>Cartago</option>
+                        <option>Heredia</option>
+                        <option>Guanacaste</option>
+                        <option>Puntarenas</option>
+                        <option>Limón</option>
+                    </select>
+                    <span asp-validation-for="Provincia"></span>
                 </div>
             </div>
 
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
-                    <label for="provincia">Provincia</label>
-                    <select id="provincia" name="provincia">
-                        <option>San José</option>
-                        <option>Alajuela</option>
-                        <option>Cartago</option>
-                    </select>
+                    <label asp-for="Canton">Cantón</label>
+                    <input asp-for="Canton" placeholder="Cantón" />
+                    <span asp-validation-for="Canton"></span>
                 </div>
                 <div class="campo-formulario">
-                    <label for="canton">Cantón</label>
-                    <input id="canton" name="canton" type="text" placeholder="Cantón" />
-                </div>
-            </div>
-        </div>
-
-        <div class="seccion-formulario">
-            <h3>Características</h3>
-            <div class="grid-tres-columnas">
-                <div class="campo-formulario">
-                    <label for="hectareas">Hectáreas</label>
-                    <input id="hectareas" name="hectareas" type="number" min="0" step="0.01" />
-                </div>
-                <div class="campo-formulario">
-                    <label for="tipoCobertura">Cobertura</label>
-                    <select id="tipoCobertura" name="tipoCobertura">
-                        <option>Bosque</option>
-                        <option>Protección hídrica</option>
-                        <option>Reforestación</option>
-                    </select>
-                </div>
-                <div class="campo-formulario">
-                    <label for="estadoFinca">Estado inicial</label>
-                    <select id="estadoFinca" name="estadoFinca">
-                        <option>Pendiente</option>
-                        <option>Asignada para evaluación</option>
-                    </select>
+                    <label asp-for="Distrito">Distrito</label>
+                    <input asp-for="Distrito" placeholder="Distrito" />
+                    <span asp-validation-for="Distrito"></span>
                 </div>
             </div>
 
             <div class="campo-formulario">
-                <label for="descripcionFinca">Descripción</label>
-                <textarea id="descripcionFinca" name="descripcionFinca" rows="4" placeholder="Información adicional sobre la propiedad"></textarea>
+                <label asp-for="DireccionExacta">Dirección exacta</label>
+                <textarea asp-for="DireccionExacta" rows="3" placeholder="Señas o referencia de ubicación"></textarea>
+            </div>
+        </div>
+
+        <div class="seccion-formulario">
+            <h3>Ubicación y características</h3>
+            <div class="grid-tres-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Latitud">Latitud</label>
+                    <input asp-for="Latitud" type="number" step="0.000001" min="-90" max="90" placeholder="9.9333" />
+                    <span asp-validation-for="Latitud"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Longitud">Longitud</label>
+                    <input asp-for="Longitud" type="number" step="0.000001" min="-180" max="180" placeholder="-84.0833" />
+                    <span asp-validation-for="Longitud"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Hectareas">Hectáreas</label>
+                    <input asp-for="Hectareas" id="hectareas" type="number" min="0.01" step="0.01" />
+                    <span asp-validation-for="Hectareas"></span>
+                </div>
+            </div>
+
+            <div class="grid-tres-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Vegetacion">Vegetación</label>
+                    <select asp-for="Vegetacion">
+                        <option value="">Seleccione</option>
+                        <option>Bosque</option>
+                        <option>Protección hídrica</option>
+                        <option>Reforestación</option>
+                    </select>
+                    <span asp-validation-for="Vegetacion"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="UsoSuelo">Uso de suelo</label>
+                    <select asp-for="UsoSuelo">
+                        <option value="">Seleccione</option>
+                        <option>Conservación</option>
+                        <option>Producción sostenible</option>
+                        <option>Protección</option>
+                    </select>
+                    <span asp-validation-for="UsoSuelo"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Pendiente">Pendiente</label>
+                    <select asp-for="Pendiente">
+                        <option value="">Seleccione</option>
+                        <option>Baja</option>
+                        <option>Media</option>
+                        <option>Alta</option>
+                    </select>
+                    <span asp-validation-for="Pendiente"></span>
+                </div>
+            </div>
+
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="TieneRecursosHidricos">Recursos hídricos</label>
+                    <select asp-for="TieneRecursosHidricos">
+                        <option value="false">No</option>
+                        <option value="true">Sí</option>
+                    </select>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="EstadoFinca">Estado inicial</label>
+                    <select asp-for="EstadoFinca">
+                        <option>Pendiente</option>
+                        <option>Asignada para evaluación</option>
+                    </select>
+                    <span asp-validation-for="EstadoFinca"></span>
+                </div>
             </div>
         </div>
 
@@ -77,5 +137,6 @@
     </form>
 </section>
 @section Scripts{
+    <partial name="_ValidationScriptsPartial" />
     <script src="~/js/registro-finca.js" asp-append-version="true"></script>
 }
