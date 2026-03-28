@@ -1,0 +1,109 @@
+@model List<PSA.WebApp.Models.Fincas.FincaViewModel>
+
+@{
+    ViewData["Title"] = "Mis fincas";
+}
+
+<section class="seccion-pagina propietario-fincas">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Módulo del propietario</span>
+            <h2>Listado de fincas</h2>
+            <p>Consulta de las fincas registradas en el sistema.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Fincas" asp-action="RegistrarFinca">Registrar finca</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="barra-filtros">
+            <div class="campo-formulario campo-inline">
+                <label for="buscarFinca">Buscar</label>
+                <input id="buscarFinca" type="search" placeholder="Nombre o ubicación" />
+            </div>
+            <div class="campo-formulario campo-inline">
+                <label for="estadoFiltro">Estado</label>
+                <select id="estadoFiltro">
+                    <option>Todos</option>
+                    <option>Pendiente</option>
+                    <option>Asignada para evaluación</option>
+                    <option>Aprobada</option>
+                    <option>Rechazada</option>
+                    <option>Inactiva</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Finca</th>
+                        <th>ID</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Hectáreas</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var finca in Model)
+                        {
+                            var ubicacion = $"{finca.Provincia}, {finca.Canton}, {finca.Distrito}";
+                            var claseBadge = "badge-info";
+
+                            if (!string.IsNullOrWhiteSpace(finca.EstadoFinca))
+                            {
+                                switch (finca.EstadoFinca.Trim().ToLower())
+                                {
+                                    case "pendiente":
+                                        claseBadge = "badge-pendiente";
+                                        break;
+                                    case "aprobada":
+                                        claseBadge = "badge-exito";
+                                        break;
+                                    case "rechazada":
+                                        claseBadge = "badge-error";
+                                        break;
+                                    case "asignada para evaluación":
+                                    case "asignada":
+                                    case "inactiva":
+                                        claseBadge = "badge-info";
+                                        break;
+                                    default:
+                                        claseBadge = "badge-info";
+                                        break;
+                                }
+                            }
+
+                            <tr>
+                                <td>@finca.NombreFinca</td>
+                                <td>@finca.IdFinca</td>
+                                <td>@ubicacion</td>
+                                <td>
+                                    <span class="badge-estado @claseBadge">
+                                        @finca.EstadoFinca
+                                    </span>
+                                </td>
+                                <td>@finca.Hectareas</td>
+                                <td>
+                                    <a class="boton-link"
+                                       href="@Url.Action("DetalleFinca", "Fincas", new { id = finca.IdFinca })">
+                                        Ver detalle
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">No hay fincas registradas.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

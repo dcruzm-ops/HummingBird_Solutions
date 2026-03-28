@@ -1,0 +1,5 @@
+.propietario-dashboard .tarjeta-kpi strong,
+.propietario-fincas .cabecera-pagina h2,
+.propietario-detalle-finca .cabecera-pagina h2 {
+    color: var(--color-texto-principal);
+}

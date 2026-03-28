@@ -8,9 +8,10 @@
             <h2>Parámetros de pago</h2>
             <p>Base para precio por hectárea, porcentajes y topes de ajuste.</p>
         </div>
+        <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesPago">Ir a planes de pago</a>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioParametrosPago">
+    <form class="formulario-base formulario-modulo" id="formularioParametrosPago" method="get" asp-controller="Administracion" asp-action="AuditoriaLogs">
         <div class="grid-tres-columnas">
             <div class="campo-formulario">
                 <label for="precioBase">Precio base por hectárea</label>

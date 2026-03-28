@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Fincas pendientes";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Módulo técnico</span>
+            <h2>Fincas registradas o pendientes</h2>
+            <p>Base para el listado operativo del ingeniero forestal.</p>
+        </div>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Finca</th>
+                        <th>Propietario</th>
+                        <th>Estado</th>
+                        <th>Evaluación</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Los Laureles</td>
+                        <td>Dennis Cruz</td>
+                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
+                        <td>Sin iniciar</td>
+                        <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="1">Evaluar</a></td>
+                    </tr>
+                    <tr>
+                        <td>Río Verde</td>
+                        <td>María Soto</td>
+                        <td><span class="badge-estado badge-info">Asignada</span></td>
+                        <td>En proceso</td>
+                        <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="2">Continuar</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

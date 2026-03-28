@@ -2,31 +2,48 @@
     ViewData["Title"] = "PSA Costa Rica";
 }
 
-<h1>
-    PSA Costa Rica
-</h1>
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Portal principal</span>
+            <h2>PSA Costa Rica</h2>
+            <p>Sistema para la gestión de pagos por servicios ambientales en Costa Rica.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Autenticacion" asp-action="IniciarSesion">Iniciar sesión</a>
+    </div>
 
-<p>
-    Sistema para la gestion de Pagos por Servicios Ambientales en Costa Rica.
-</p>
+    <div class="grid-dos-paneles">
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>¿Qué permite este sistema?</h3>
+            </div>
+            <ul class="lista-timeline">
+                <li><a asp-controller="Fincas" asp-action="MisFincas">Gestión de fincas</a></li>
+                <li><a asp-controller="Evaluaciones" asp-action="FincasPendientes">Evaluaciones técnicas</a></li>
+                <li><a asp-controller="Pagos" asp-action="PlanesPago">Control de pagos</a></li>
+            </ul>
+        </section>
 
-<h3>Que permite este sistema?</h3>
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Beneficios</h3>
+            </div>
+            <ul class="lista-timeline">
+                <li><a asp-controller="Reportes" asp-action="Index">Transparencia en procesos</a></li>
+                <li><a asp-controller="Pagos" asp-action="HistorialPagos">Seguimiento de pagos</a></li>
+                <li><a asp-controller="Administracion" asp-action="AuditoriaLogs">Centralización de información</a></li>
+            </ul>
+        </section>
+    </div>
 
-<ul>
-    <li>Gestion de fincas</li>
-    <li>Evaluaciones tecnicas</li>
-    <li>Control de pagos</li>
-</ul>
-
-<h3>Beneficios</h3>
-<ul>
-    <li>Transparencia en procesos</li>
-    <li>Seguimiento de pagos</li>
-    <li>Centralizacion de informacion</li>
-</ul>
-
-<br />
-
-<a href="/Auth/Login">
-    <button>Iniciar sesion</button>
-</a>
+    <section class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Accesos rápidos</h3>
+        </div>
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="IniciarSesion">Acceder al sistema</a>
+            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear cuenta</a>
+            <a class="acceso-rapido" asp-controller="Home" asp-action="Equipo">Conocer el equipo</a>
+        </div>
+    </section>
+</section>

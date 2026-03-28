@@ -1,18 +1,18 @@
 @{
-    ViewData["Title"] = "Nueva evaluación";
+    ViewData["Title"] = "Nueva evaluación técnica";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Finca #@ViewBag.FincaId</span>
+            <span class="eyebrow">Expediente técnico</span>
             <h2>Nueva evaluación técnica</h2>
-            <p>Esqueleto base del formulario técnico.</p>
+            <p>Esqueleto base del formulario técnico para la finca #@ViewBag.FincaId.</p>
         </div>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion">
+    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion" method="get" asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">
         <div class="seccion-formulario">
-            <h3>Visita técnica</h3>
+            <h3>Información de visita</h3>
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label for="fechaVisita">Fecha de visita</label>
@@ -30,7 +30,7 @@
         </div>
 
         <div class="seccion-formulario">
-            <h3>Observaciones</h3>
+            <h3>Resultado técnico</h3>
             <div class="campo-formulario">
                 <label for="observacionesTecnicas">Observaciones</label>
                 <textarea id="observacionesTecnicas" rows="5" placeholder="Observaciones técnicas"></textarea>
@@ -50,6 +50,3 @@
         </div>
     </form>
 </section>
-@section Scripts{
-    <script src="~/js/evaluaciones.js" asp-append-version="true"></script>
-}

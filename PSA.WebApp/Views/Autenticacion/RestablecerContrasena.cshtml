@@ -9,7 +9,7 @@
         <p>Token de referencia: <strong>@ViewBag.TokenRecuperacion</strong></p>
     </div>
 
-    <form class="formulario-base" id="formularioRestablecerContrasena" novalidate>
+    <form class="formulario-base" id="formularioRestablecerContrasena" novalidate method="get" asp-controller="Autenticacion" asp-action="IniciarSesion">
         <div class="campo-formulario">
             <label for="nuevaContrasena">Nueva contraseña</label>
             <input id="nuevaContrasena" name="nuevaContrasena" type="password" placeholder="Ingrese la nueva contraseña" />
@@ -24,4 +24,10 @@
             <button type="submit" class="boton-primario boton-bloque">Guardar nueva contraseña</button>
         </div>
     </form>
+
+    <div class="pie-formulario">
+        <p>
+            <a asp-controller="Autenticacion" asp-action="IniciarSesion">Volver al inicio de sesión</a>
+        </p>
+    </div>
 </div>

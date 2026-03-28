@@ -1,40 +1,63 @@
-using PSA.DataAccess;
-using PSA.AppCore;
+using PSA.AppCore.Managers;
+using PSA.AppCore.Servicios;
 using PSA.DataAccess.DAO;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("No se encontró la cadena de conexión DefaultConnection.");
+Console.WriteLine("Ambiente: " + builder.Environment.EnvironmentName);
+Console.WriteLine("PSAConnection: " + builder.Configuration["ConnectionStrings:PSAConnection"]);
 
-builder.Services.AddSingleton(new DbContextHelper(connectionString));
-
-builder.Services.AddScoped<FincaDAO>();
-builder.Services.AddScoped<FincaService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddCors(options =>
+builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
+
+builder.Services.AddScoped<UsuarioDAO>(sp =>
 {
-    options.AddPolicy("PermitirWebApp", policy =>
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
     {
-        policy.WithOrigins("https://localhost:59664", "http://localhost:59664")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+    }
+
+    return new UsuarioDAO(connectionString);
 });
+
+builder.Services.AddScoped<FincaDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+    }
+
+    return new FincaDAO(connectionString);
+});
+
+builder.Services.AddScoped<AutenticacionManager>();
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger(options =>
+    {
+        options.RouteTemplate = "openapi/{documentName}.json";
+    });
+
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "PSA WebAPI v1");
+        options.RoutePrefix = "swagger";
+    });
 }
 
 app.UseHttpsRedirection();
-app.UseCors("PermitirWebApp");
 app.UseAuthorization();
 app.MapControllers();
 

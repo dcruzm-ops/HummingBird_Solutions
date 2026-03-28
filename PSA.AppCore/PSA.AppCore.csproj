@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>PSA.AppCore</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
+		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+		<PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.0" />
+	</ItemGroup>
+
+</Project>  

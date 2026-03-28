@@ -8,6 +8,7 @@
             <h2>Historial de pagos</h2>
             <p>Resumen básico de cuotas confirmadas, pendientes y atrasadas.</p>
         </div>
+        <a class="boton-secundario" asp-controller="Fincas" asp-action="MisFincas">Volver a mis fincas</a>
     </div>
 
     <section class="tarjeta-panel">
@@ -19,6 +20,7 @@
                         <th>Período</th>
                         <th>Monto</th>
                         <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -27,12 +29,14 @@
                         <td>Enero 2026</td>
                         <td>₡104 166</td>
                         <td><span class="badge-estado badge-exito">Confirmado</span></td>
+                        <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="1">Ver plan</a></td>
                     </tr>
                     <tr>
                         <td>Río Verde</td>
                         <td>Febrero 2026</td>
                         <td>₡104 166</td>
                         <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
+                        <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="1">Ver plan</a></td>
                     </tr>
                 </tbody>
             </table>

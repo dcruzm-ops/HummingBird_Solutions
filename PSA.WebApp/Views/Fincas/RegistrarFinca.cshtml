@@ -1,7 +1,6 @@
 @{
     ViewData["Title"] = "Registrar finca";
 }
-
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
@@ -11,158 +10,63 @@
         </div>
     </div>
 
-    @if (ViewBag.Error != null)
-    {
-        <div style="color:#8b0000; background:#ffe9e9; padding:12px; margin-bottom:16px; border-radius:8px; border:1px solid #f5b5b5;">
-            <strong>Error:</strong> @ViewBag.Error
-        </div>
-    }
-
-    <form asp-controller="Fincas"
-          asp-action="RegistrarFinca"
-          method="post"
-          class="formulario-base formulario-modulo"
-          id="formularioRegistrarFinca">
-
-        @Html.AntiForgeryToken()
-
-        <div id="resumenErrores"
-             style="display:none; color:#8b0000; background:#ffe9e9; padding:12px; margin-bottom:16px; border-radius:8px; border:1px solid #f5b5b5;">
-            <strong>Corrige lo siguiente antes de continuar:</strong>
-            <ul id="listaErrores" style="margin:10px 0 0 20px;"></ul>
-        </div>
-
+    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="get" asp-controller="Fincas" asp-action="MisFincas">
         <div class="seccion-formulario">
             <h3>Datos generales</h3>
-
-            <div class="grid-dos-columnas">
-                <div class="campo-formulario">
-                    <label for="idPropietario">Id del propietario</label>
-                    <input id="idPropietario" name="IdPropietario" type="number" min="1" placeholder="Id del propietario" required />
-                    <span class="mensaje-error" id="error-idPropietario" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-                <div class="campo-formulario">
-                    <label for="codigoExpediente">Código de expediente</label>
-                    <input id="codigoExpediente" name="CodigoExpediente" type="text" placeholder="PSA-2026-001" />
-                    <span class="mensaje-error" id="error-codigoExpediente" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-            </div>
-
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label for="nombreFinca">Nombre de la finca</label>
-                    <input id="nombreFinca" name="NombreFinca" type="text" placeholder="Nombre de la finca" required />
-                    <span class="mensaje-error" id="error-nombreFinca" style="display:none; color:red; margin-top:6px;"></span>
+                    <input id="nombreFinca" name="nombreFinca" type="text" placeholder="Nombre de la finca" />
                 </div>
+                <div class="campo-formulario">
+                    <label for="codigoExpediente">Código de expediente</label>
+                    <input id="codigoExpediente" name="codigoExpediente" type="text" placeholder="PSA-2026-001" />
+                </div>
+            </div>
+
+            <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label for="provincia">Provincia</label>
-                    <select id="provincia" name="Provincia" required>
-                        <option value="">Seleccione una provincia</option>
-                        <option value="San José">San José</option>
-                        <option value="Alajuela">Alajuela</option>
-                        <option value="Cartago">Cartago</option>
-                        <option value="Heredia">Heredia</option>
-                        <option value="Guanacaste">Guanacaste</option>
-                        <option value="Puntarenas">Puntarenas</option>
-                        <option value="Limón">Limón</option>
+                    <select id="provincia" name="provincia">
+                        <option>San José</option>
+                        <option>Alajuela</option>
+                        <option>Cartago</option>
                     </select>
-                    <span class="mensaje-error" id="error-provincia" style="display:none; color:red; margin-top:6px;"></span>
                 </div>
-            </div>
-
-            <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label for="canton">Cantón</label>
-                    <input id="canton" name="Canton" type="text" placeholder="Cantón" required />
-                    <span class="mensaje-error" id="error-canton" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-                <div class="campo-formulario">
-                    <label for="distrito">Distrito</label>
-                    <input id="distrito" name="Distrito" type="text" placeholder="Distrito" required />
-                    <span class="mensaje-error" id="error-distrito" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-            </div>
-
-            <div class="campo-formulario">
-                <label for="direccionExacta">Dirección exacta</label>
-                <textarea id="direccionExacta" name="DireccionExacta" rows="3" placeholder="Dirección exacta de la finca"></textarea>
-                <span class="mensaje-error" id="error-direccionExacta" style="display:none; color:red; margin-top:6px;"></span>
-            </div>
-        </div>
-
-        <div class="seccion-formulario">
-            <h3>Ubicación geográfica</h3>
-
-            <div class="grid-dos-columnas">
-                <div class="campo-formulario">
-                    <label for="latitud">Latitud</label>
-                    <input id="latitud" name="Latitud" type="number" step="0.000001" min="-90" max="90" placeholder="Ej: 9.928069" required />
-                    <span class="mensaje-error" id="error-latitud" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-                <div class="campo-formulario">
-                    <label for="longitud">Longitud</label>
-                    <input id="longitud" name="Longitud" type="number" step="0.000001" min="-180" max="180" placeholder="Ej: -84.090725" required />
-                    <span class="mensaje-error" id="error-longitud" style="display:none; color:red; margin-top:6px;"></span>
+                    <input id="canton" name="canton" type="text" placeholder="Cantón" />
                 </div>
             </div>
         </div>
 
         <div class="seccion-formulario">
             <h3>Características</h3>
-
             <div class="grid-tres-columnas">
                 <div class="campo-formulario">
                     <label for="hectareas">Hectáreas</label>
-                    <input id="hectareas" name="Hectareas" type="number" min="0.01" step="0.01" required />
-                    <span class="mensaje-error" id="error-hectareas" style="display:none; color:red; margin-top:6px;"></span>
+                    <input id="hectareas" name="hectareas" type="number" min="0" step="0.01" />
                 </div>
                 <div class="campo-formulario">
-                    <label for="vegetacion">Cobertura / Vegetación</label>
-                    <select id="vegetacion" name="Vegetacion" required>
-                        <option value="">Seleccione una opción</option>
-                        <option value="Bosque">Bosque</option>
-                        <option value="Protección hídrica">Protección hídrica</option>
-                        <option value="Reforestación">Reforestación</option>
+                    <label for="tipoCobertura">Cobertura</label>
+                    <select id="tipoCobertura" name="tipoCobertura">
+                        <option>Bosque</option>
+                        <option>Protección hídrica</option>
+                        <option>Reforestación</option>
                     </select>
-                    <span class="mensaje-error" id="error-vegetacion" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-                <div class="campo-formulario">
-                    <label for="tieneRecursosHidricos">Recursos hídricos</label>
-                    <select id="tieneRecursosHidricos" name="TieneRecursosHidricos" required>
-                        <option value="">Seleccione una opción</option>
-                        <option value="true">Sí</option>
-                        <option value="false">No</option>
-                    </select>
-                    <span class="mensaje-error" id="error-tieneRecursosHidricos" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-            </div>
-
-            <div class="grid-tres-columnas">
-                <div class="campo-formulario">
-                    <label for="usoSuelo">Uso de suelo</label>
-                    <input id="usoSuelo" name="UsoSuelo" type="text" placeholder="Ej: Agrícola" required />
-                    <span class="mensaje-error" id="error-usoSuelo" style="display:none; color:red; margin-top:6px;"></span>
-                </div>
-                <div class="campo-formulario">
-                    <label for="pendiente">Pendiente</label>
-                    <input id="pendiente" name="Pendiente" type="text" placeholder="Ej: Moderada" required />
-                    <span class="mensaje-error" id="error-pendiente" style="display:none; color:red; margin-top:6px;"></span>
                 </div>
                 <div class="campo-formulario">
                     <label for="estadoFinca">Estado inicial</label>
-                    <select id="estadoFinca" name="EstadoFinca" required>
-                        <option value="">Seleccione una opción</option>
-                        <option value="Inactiva">Inactiva</option>
-                        <option value="Rechazada">Rechazada</option>
+                    <select id="estadoFinca" name="estadoFinca">
+                        <option>Pendiente</option>
+                        <option>Asignada para evaluación</option>
                     </select>
-                    <span class="mensaje-error" id="error-estadoFinca" style="display:none; color:red; margin-top:6px;"></span>
                 </div>
             </div>
 
             <div class="campo-formulario">
                 <label for="descripcionFinca">Descripción</label>
-                <textarea id="descripcionFinca" name="Descripcion" rows="4" placeholder="Información adicional sobre la propiedad"></textarea>
-                <span class="mensaje-error" id="error-descripcionFinca" style="display:none; color:red; margin-top:6px;"></span>
+                <textarea id="descripcionFinca" name="descripcionFinca" rows="4" placeholder="Información adicional sobre la propiedad"></textarea>
             </div>
         </div>
 
@@ -172,86 +76,6 @@
         </div>
     </form>
 </section>
-
-@section Scripts {
-    <script>
-        (function () {
-            const form = document.getElementById("formularioRegistrarFinca");
-            const resumen = document.getElementById("resumenErrores");
-            const listaErrores = document.getElementById("listaErrores");
-
-            function limpiarErrores() {
-                document.querySelectorAll(".mensaje-error").forEach(span => {
-                    span.textContent = "";
-                    span.style.display = "none";
-                });
-
-                document.querySelectorAll("#formularioRegistrarFinca input, #formularioRegistrarFinca select, #formularioRegistrarFinca textarea").forEach(campo => {
-                    campo.style.borderColor = "";
-                });
-
-                resumen.style.display = "none";
-                listaErrores.innerHTML = "";
-            }
-
-            function obtenerNombreCampo(campo) {
-                const label = document.querySelector(`label[for="${campo.id}"]`);
-                return label ? label.textContent.trim() : campo.name;
-            }
-
-            function mensajePersonalizado(campo) {
-                const nombre = obtenerNombreCampo(campo);
-
-                if (campo.validity.valueMissing) return `${nombre}: este campo es obligatorio.`;
-                if (campo.validity.rangeUnderflow) {
-                    if (campo.id === "idPropietario") return `${nombre}: debe ser mayor o igual a 1.`;
-                    if (campo.id === "hectareas") return `${nombre}: debe ser mayor a 0.`;
-                    if (campo.id === "latitud") return `${nombre}: no puede ser menor a -90.`;
-                    if (campo.id === "longitud") return `${nombre}: no puede ser menor a -180.`;
-                    return `${nombre}: el valor ingresado es menor al permitido.`;
-                }
-                if (campo.validity.rangeOverflow) {
-                    if (campo.id === "latitud") return `${nombre}: no puede ser mayor a 90.`;
-                    if (campo.id === "longitud") return `${nombre}: no puede ser mayor a 180.`;
-                    return `${nombre}: el valor ingresado es mayor al permitido.`;
-                }
-                if (campo.validity.badInput) return `${nombre}: ingrese un valor válido.`;
-                if (campo.validity.stepMismatch) return `${nombre}: el formato numérico no es válido.`;
-                return `${nombre}: revise el valor ingresado.`;
-            }
-
-            function mostrarError(campo, mensaje) {
-                const span = document.getElementById("error-" + campo.id);
-                if (span) {
-                    span.textContent = mensaje;
-                    span.style.display = "block";
-                }
-                campo.style.borderColor = "red";
-
-                const li = document.createElement("li");
-                li.textContent = mensaje;
-                listaErrores.appendChild(li);
-            }
-
-            form.addEventListener("submit", function (e) {
-                limpiarErrores();
-
-                let hayErrores = false;
-                const campos = form.querySelectorAll("input, select, textarea");
-
-                campos.forEach(campo => {
-                    if (!campo.checkValidity()) {
-                        hayErrores = true;
-                        mostrarError(campo, mensajePersonalizado(campo));
-                    }
-                });
-
-                if (hayErrores) {
-                    e.preventDefault();
-                    resumen.style.display = "block";
-                    resumen.scrollIntoView({ behavior: "smooth", block: "center" });
-                }
-            });
-        })();
-    </script>
+@section Scripts{
+    <script src="~/js/registro-finca.js" asp-append-version="true"></script>
 }

@@ -34,9 +34,9 @@
             <h3>Alertas administrativas</h3>
         </div>
         <ul class="lista-timeline">
-            <li>Se detectaron 2 cambios en parámetros de pago.</li>
-            <li>Existe 1 plan de pago sin cuenta bancaria asociada.</li>
-            <li>Hay 3 usuarios sin rol asignado definitivo.</li>
+            <li><a asp-controller="Administracion" asp-action="ParametrosPago">Se detectaron 2 cambios en parámetros de pago.</a></li>
+            <li><a asp-controller="Pagos" asp-action="PlanesPago">Existe 1 plan de pago sin cuenta bancaria asociada.</a></li>
+            <li><a asp-controller="Administracion" asp-action="GestionUsuarios">Hay 3 usuarios sin rol asignado definitivo.</a></li>
         </ul>
     </section>
 </section>

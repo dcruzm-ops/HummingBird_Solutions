@@ -12,6 +12,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\AppCore\PSA.AppCore.csproj" />
+		<ProjectReference Include="..\DataAccess\PSA.DataAccess.csproj" />
 		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
 	</ItemGroup>
 

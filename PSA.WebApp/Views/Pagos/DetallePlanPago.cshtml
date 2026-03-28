@@ -8,6 +8,7 @@
             <h2>Detalle del plan de pago</h2>
             <p>Consulta de cuotas mensuales y estado de confirmación.</p>
         </div>
+        <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesPago">Volver a planes</a>
     </div>
 
     <div class="grid-tarjetas-kpi">
@@ -46,6 +47,13 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validar cuenta bancaria</a>
+            <a class="acceso-rapido" asp-controller="Reportes" asp-action="Index">Ir a reportes</a>
         </div>
     </section>
 </section>

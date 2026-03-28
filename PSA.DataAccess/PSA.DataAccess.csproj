@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>PSA.DataAccess</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+	</ItemGroup>
+
+</Project>

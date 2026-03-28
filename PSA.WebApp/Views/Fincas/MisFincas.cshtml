@@ -1,15 +1,14 @@
-@model List<PSA.WebApp.Models.Fincas.FincaViewModel>
+@model List<PSA.EntidadesDTO.DTOs.FincaResumenDTO>
 
 @{
     ViewData["Title"] = "Mis fincas";
 }
-
 <section class="seccion-pagina propietario-fincas">
     <div class="cabecera-pagina">
         <div>
             <span class="eyebrow">Módulo del propietario</span>
             <h2>Listado de fincas</h2>
-            <p>Consulta de las fincas registradas en el sistema.</p>
+            <p>Base visual para la pantalla del issue de “Mis fincas”.</p>
         </div>
         <a class="boton-primario" asp-controller="Fincas" asp-action="RegistrarFinca">Registrar finca</a>
     </div>
@@ -18,7 +17,7 @@
         <div class="barra-filtros">
             <div class="campo-formulario campo-inline">
                 <label for="buscarFinca">Buscar</label>
-                <input id="buscarFinca" type="search" placeholder="Nombre o ubicación" />
+                <input id="buscarFinca" type="search" placeholder="Nombre, expediente o ubicación" />
             </div>
             <div class="campo-formulario campo-inline">
                 <label for="estadoFiltro">Estado</label>
@@ -28,7 +27,6 @@
                     <option>Asignada para evaluación</option>
                     <option>Aprobada</option>
                     <option>Rechazada</option>
-                    <option>Inactiva</option>
                 </select>
             </div>
         </div>
@@ -38,69 +36,42 @@
                 <thead>
                     <tr>
                         <th>Finca</th>
-                        <th>ID</th>
+                        <th>Expediente</th>
                         <th>Ubicación</th>
                         <th>Estado</th>
-                        <th>Hectáreas</th>
+                        <th>Evaluación</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model != null && Model.Any())
+                    @if (Model == null || Model.Count == 0)
                     {
-                        @foreach (var finca in Model)
-                        {
-                            var ubicacion = $"{finca.Provincia}, {finca.Canton}, {finca.Distrito}";
-                            var claseBadge = "badge-info";
-
-                            if (!string.IsNullOrWhiteSpace(finca.EstadoFinca))
-                            {
-                                switch (finca.EstadoFinca.Trim().ToLower())
-                                {
-                                    case "pendiente":
-                                        claseBadge = "badge-pendiente";
-                                        break;
-                                    case "aprobada":
-                                        claseBadge = "badge-exito";
-                                        break;
-                                    case "rechazada":
-                                        claseBadge = "badge-error";
-                                        break;
-                                    case "asignada para evaluación":
-                                    case "asignada":
-                                    case "inactiva":
-                                        claseBadge = "badge-info";
-                                        break;
-                                    default:
-                                        claseBadge = "badge-info";
-                                        break;
-                                }
-                            }
-
-                            <tr>
-                                <td>@finca.NombreFinca</td>
-                                <td>@finca.IdFinca</td>
-                                <td>@ubicacion</td>
-                                <td>
-                                    <span class="badge-estado @claseBadge">
-                                        @finca.EstadoFinca
-                                    </span>
-                                </td>
-                                <td>@finca.Hectareas</td>
-                                <td>
-                                    <a class="boton-link"
-                                       href="@Url.Action("DetalleFinca", "Fincas", new { id = finca.IdFinca })">
-                                        Ver detalle
-                                    </a>
-                                </td>
-                            </tr>
-                        }
+                        <tr>
+                            <td colspan="6">No hay fincas registradas para mostrar.</td>
+                        </tr>
                     }
                     else
                     {
-                        <tr>
-                            <td colspan="6">No hay fincas registradas.</td>
-                        </tr>
+                        @foreach (var finca in Model)
+                        {
+                            var expediente = $"PSA-{finca.FechaRegistro.Year}-{finca.IdFinca:D3}";
+                            var badgeClase = finca.EstadoFinca.Equals("Aprobada", StringComparison.OrdinalIgnoreCase)
+                                ? "badge-exito"
+                                : finca.EstadoFinca.Equals("EnRevision", StringComparison.OrdinalIgnoreCase)
+                                    ? "badge-info"
+                                    : finca.EstadoFinca.Equals("Rechazada", StringComparison.OrdinalIgnoreCase)
+                                        ? "badge-error"
+                                        : "badge-pendiente";
+
+                            <tr>
+                                <td>@finca.NombreFinca</td>
+                                <td>@expediente</td>
+                                <td>@finca.Provincia, @finca.Canton</td>
+                                <td><span class="badge-estado @badgeClase">@finca.EstadoFinca</span></td>
+                                <td>@finca.EstadoEvaluacion</td>
+                                <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="@finca.IdFinca">Ver detalle</a></td>
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>

@@ -8,6 +8,7 @@
             <h2>Fincas registradas o pendientes</h2>
             <p>Base para el listado operativo del ingeniero forestal.</p>
         </div>
+        <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">Evaluaciones en proceso</a>
     </div>
 
     <section class="tarjeta-panel">
@@ -39,6 +40,13 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Ingeniero">Volver al dashboard</a>
+            <a class="acceso-rapido" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Ver historial</a>
         </div>
     </section>
 </section>

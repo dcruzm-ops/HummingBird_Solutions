@@ -8,7 +8,7 @@
             <h2>Gestión de usuarios</h2>
             <p>Base para administración de usuarios, roles y estados.</p>
         </div>
-        <button type="button" class="boton-primario">Crear usuario</button>
+        <a class="boton-primario" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear usuario</a>
     </div>
 
     <section class="tarjeta-panel">
@@ -20,6 +20,7 @@
                         <th>Correo</th>
                         <th>Rol</th>
                         <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,12 +29,14 @@
                         <td>dennis@psa.cr</td>
                         <td>Administrador</td>
                         <td><span class="badge-estado badge-exito">Activo</span></td>
+                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ParametrosPago">Ver permisos</a></td>
                     </tr>
                     <tr>
                         <td>Laura Mora</td>
                         <td>laura@psa.cr</td>
                         <td>Dueño</td>
                         <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
+                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validar cuenta</a></td>
                     </tr>
                 </tbody>
             </table>

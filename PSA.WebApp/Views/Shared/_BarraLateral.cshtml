@@ -15,7 +15,7 @@
             <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Evaluaciones</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
         }
-        else if (rolActivo == "administrador") 
+        else if (rolActivo == "administrador")
         {
             <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Dashboard</a>
             <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Administración</a>
@@ -30,6 +30,9 @@
             <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
         }
 
-        <a class="item-menu" asp-controller="Autenticacion" asp-action="IniciarSesion">Cerrar sesión</a>
+        <form asp-controller="Autenticacion" asp-action="CerrarSesion" method="post" class="w-100">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="item-menu w-100 text-start border-0 bg-transparent p-0">Cerrar sesión</button>
+        </form>
     </nav>
 </aside>

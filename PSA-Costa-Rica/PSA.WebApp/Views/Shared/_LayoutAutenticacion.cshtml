@@ -1,0 +1,43 @@
+@{
+    var titulo = ViewBag.TituloPagina as string ?? ViewData["Title"]?.ToString() ?? "PSA Costa Rica";
+}
+<!DOCTYPE html>
+<html lang="es" data-tema="claro">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@titulo - PSA Costa Rica</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/global.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/componentes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/autenticacion.css" asp-append-version="true" />
+</head>
+<body class="pagina-autenticacion">
+    <main class="autenticacion-layout" role="main">
+        <section class="autenticacion-panel-marca">
+            <div class="marca-sistema">
+                <span class="marca-badge">PSA Costa Rica</span>
+                <h1>Gestión de pagos por servicios ambientales</h1>
+                <p>
+                    Plataforma para registro de fincas, evaluación técnica, parametrización de pagos y trazabilidad operativa.
+                </p>
+                <ul class="lista-beneficios">
+                    <li>Registro centralizado de fincas</li>
+                    <li>Seguimiento por rol</li>
+                    <li>Control de pagos y auditoría</li>
+                </ul>
+            </div>
+        </section>
+        <section class="autenticacion-panel-formulario">
+            @RenderBody()
+        </section>
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/utilidades.js" asp-append-version="true"></script>
+    <script src="~/js/autenticacion.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
