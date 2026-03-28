@@ -26,6 +26,19 @@ builder.Services.AddScoped<UsuarioDAO>(sp =>
     return new UsuarioDAO(connectionString);
 });
 
+builder.Services.AddScoped<FincaDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+    }
+
+    return new FincaDAO(connectionString);
+});
+
 builder.Services.AddScoped<AutenticacionManager>();
 
 var app = builder.Build();

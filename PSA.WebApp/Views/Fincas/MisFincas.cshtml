@@ -1,3 +1,5 @@
+@model List<PSA.EntidadesDTO.DTOs.FincaResumenDTO>
+
 @{
     ViewData["Title"] = "Mis fincas";
 }
@@ -42,30 +44,35 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Los Laureles</td>
-                        <td>PSA-2026-001</td>
-                        <td>Cartago</td>
-                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
-                        <td>Sin iniciar</td>
-                        <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Ver detalle</a></td>
-                    </tr>
-                    <tr>
-                        <td>El Bosque Azul</td>
-                        <td>PSA-2026-002</td>
-                        <td>San José</td>
-                        <td><span class="badge-estado badge-info">Asignada</span></td>
-                        <td>En proceso</td>
-                        <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="2">Ver detalle</a></td>
-                    </tr>
-                    <tr>
-                        <td>Río Verde</td>
-                        <td>PSA-2025-014</td>
-                        <td>Alajuela</td>
-                        <td><span class="badge-estado badge-exito">Aprobada</span></td>
-                        <td>Finalizada</td>
-                        <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="3">Ver detalle</a></td>
-                    </tr>
+                    @if (Model == null || Model.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6">No hay fincas registradas para mostrar.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var finca in Model)
+                        {
+                            var expediente = $"PSA-{finca.FechaRegistro.Year}-{finca.IdFinca:D3}";
+                            var badgeClase = finca.EstadoFinca.Equals("Aprobada", StringComparison.OrdinalIgnoreCase)
+                                ? "badge-exito"
+                                : finca.EstadoFinca.Equals("EnRevision", StringComparison.OrdinalIgnoreCase)
+                                    ? "badge-info"
+                                    : finca.EstadoFinca.Equals("Rechazada", StringComparison.OrdinalIgnoreCase)
+                                        ? "badge-error"
+                                        : "badge-pendiente";
+
+                            <tr>
+                                <td>@finca.NombreFinca</td>
+                                <td>@expediente</td>
+                                <td>@finca.Provincia, @finca.Canton</td>
+                                <td><span class="badge-estado @badgeClase">@finca.EstadoFinca</span></td>
+                                <td>@finca.EstadoEvaluacion</td>
+                                <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="@finca.IdFinca">Ver detalle</a></td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
