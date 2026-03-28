@@ -655,3 +655,9 @@ SELECT *
 FROM dbo.vw_FincasMapa
 ORDER BY IdFinca;
 GO
+
+SELECT * FROM dbo.Roles
+GO
+
+SELECT * FROM dbo.Usuarios
+GO

@@ -1,0 +1,57 @@
+@model PSA.EntidadesDTO.DTOs.RegistrarUsuarioDTO
+
+@{
+    Layout = "~/Views/Shared/_LayoutAutenticacion.cshtml";
+    ViewData["Title"] = "Registro de usuario";
+}
+
+<section class="contenedor-autenticacion">
+    <div class="tarjeta-autenticacion">
+        <h1>Registro de usuario</h1>
+
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <form id="formularioRegistroUsuario" asp-controller="Autenticacion" asp-action="RegistroUsuario" method="post">
+            @Html.AntiForgeryToken()
+            <div class="campo-formulario">
+                <label asp-for="NombreCompleto">Nombre completo</label>
+                <input asp-for="NombreCompleto" class="form-control" placeholder="Ejemplo: María Fernanda Rojas" />
+                <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+            </div>
+
+            <div class="campo-formulario">
+                <label asp-for="Email">Correo electrónico</label>
+                <input asp-for="Email" class="form-control" placeholder="usuario@correo.com" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="campo-formulario">
+                <label asp-for="Contrasena">Contraseña</label>
+                <input asp-for="Contrasena" type="password" class="form-control" placeholder="Mínimo 8 caracteres" />
+                <span asp-validation-for="Contrasena" class="text-danger"></span>
+            </div>
+
+            <div class="campo-formulario">
+                <label asp-for="ConfirmacionContrasena">Confirmar contraseña</label>
+                <input asp-for="ConfirmacionContrasena" type="password" class="form-control" placeholder="Repita la contraseña" />
+                <span asp-validation-for="ConfirmacionContrasena" class="text-danger"></span>
+            </div>
+
+            <p class="texto-ayuda">Las cuentas nuevas se crean con rol <strong>Propietario</strong> por defecto.</p>
+
+            <button type="submit" class="boton-primario" data-loading-button>
+                <span class="spinner-border spinner-border-sm d-none me-2" aria-hidden="true" data-loading-spinner></span>
+                <span data-loading-texto>Registrarse</span>
+            </button>
+        </form>
+
+        <p class="mt-3">
+            ¿Ya tiene cuenta?
+            <a asp-controller="Autenticacion" asp-action="IniciarSesion">Iniciar sesión</a>
+        </p>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

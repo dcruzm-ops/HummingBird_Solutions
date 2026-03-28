@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Auditoría y logs";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Trazabilidad</span>
+            <h2>Auditoría y logs</h2>
+            <p>Base visual para consultar eventos y acciones críticas.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Reportes" asp-action="Index">Ver reportes</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <ul class="lista-timeline">
+            <li><a asp-controller="Administracion" asp-action="ParametrosPago">26/03/2026 08:20 - Usuario Dennis Cruz modificó parámetros de pago.</a></li>
+            <li><a asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">26/03/2026 09:05 - Cuenta bancaria de Laura Mora enviada a validación.</a></li>
+            <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">26/03/2026 10:12 - Evaluación técnica de Río Verde marcada como finalizada.</a></li>
+        </ul>
+    </section>
+</section>
+@section Scripts{
+    <script src="~/js/auditoria.js" asp-append-version="true"></script>
+}

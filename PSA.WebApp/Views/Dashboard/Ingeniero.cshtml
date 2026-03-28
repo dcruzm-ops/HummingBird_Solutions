@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Dashboard del ingeniero";
+}
+<section class="seccion-pagina ingeniero-dashboard">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Vista técnica</span>
+            <h2>Resumen del ingeniero forestal</h2>
+            <p>Administre evaluaciones, visitas y decisiones técnicas.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Evaluaciones" asp-action="FincasPendientes">Ver fincas pendientes</a>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Fincas pendientes</span>
+            <strong>6</strong>
+            <small>Por revisar esta semana</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Evaluaciones abiertas</span>
+            <strong>4</strong>
+            <small>2 requieren visita</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Decisiones emitidas</span>
+            <strong>12</strong>
+            <small>Durante el mes actual</small>
+        </article>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Próximas acciones</h3>
+        </div>
+        <ul class="lista-timeline">
+            <li><a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="12">Registrar visita técnica de la finca #12.</a></li>
+            <li><a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="2">Adjuntar evidencia técnica de la finca “Río Verde”.</a></li>
+            <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Emitir decisión técnica para expediente PSA-2026-004.</a></li>
+        </ul>
+    </section>
+</section>

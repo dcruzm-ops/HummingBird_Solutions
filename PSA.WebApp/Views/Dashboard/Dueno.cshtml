@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Dashboard del dueño";
+}
+<section class="seccion-pagina propietario-dashboard">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Vista general</span>
+            <h2>Resumen del propietario</h2>
+            <p>Seguimiento rápido de fincas, evaluaciones, pagos y notificaciones.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Fincas" asp-action="RegistrarFinca">Registrar finca</a>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Fincas registradas</span>
+            <strong>3</strong>
+            <small>2 activas y 1 en revisión</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Evaluaciones pendientes</span>
+            <strong>1</strong>
+            <small>Última actualización hace 2 días</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Cuotas por confirmar</span>
+            <strong>2</strong>
+            <small>Plan anual 2026</small>
+        </article>
+    </div>
+
+    <div class="grid-dos-paneles">
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Accesos rápidos</h3>
+            </div>
+            <div class="lista-accesos">
+                <a class="acceso-rapido" asp-controller="Fincas" asp-action="MisFincas">Mis fincas</a>
+                <a class="acceso-rapido" asp-controller="Pagos" asp-action="HistorialPagos">Historial de pagos</a>
+                <a class="acceso-rapido" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Actividad reciente</h3>
+            </div>
+            <ul class="lista-timeline">
+                <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Finca “Los Laureles” actualizada con nueva evidencia.</a></li>
+                <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="2">Evaluación técnica de “Finca El Bosque” marcada como en proceso.</a></li>
+                <li><a asp-controller="Notificaciones" asp-action="Index">Cuenta bancaria pendiente de validación administrativa.</a></li>
+            </ul>
+        </section>
+    </div>
+</section>

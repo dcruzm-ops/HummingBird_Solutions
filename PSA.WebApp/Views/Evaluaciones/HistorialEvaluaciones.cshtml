@@ -1,0 +1,45 @@
+@{
+    ViewData["Title"] = "Historial de evaluaciones";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Consulta histórica</span>
+            <h2>Historial de evaluaciones</h2>
+            <p>Base para reportar decisiones técnicas finalizadas.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="FincasPendientes">Volver a pendientes</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Expediente</th>
+                        <th>Finca</th>
+                        <th>Fecha visita</th>
+                        <th>Decisión</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PSA-2025-011</td>
+                        <td>Los Cedros</td>
+                        <td>10/03/2026</td>
+                        <td><span class="badge-estado badge-exito">Califica</span></td>
+                        <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="11">Ver registro</a></td>
+                    </tr>
+                    <tr>
+                        <td>PSA-2025-007</td>
+                        <td>Monte Claro</td>
+                        <td>28/02/2026</td>
+                        <td><span class="badge-estado badge-error">No califica</span></td>
+                        <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="7">Ver registro</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

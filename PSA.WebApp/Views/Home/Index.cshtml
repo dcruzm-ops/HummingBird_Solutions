@@ -2,75 +2,48 @@
     ViewData["Title"] = "PSA Costa Rica";
 }
 
-<div class="container mt-5">
-
-    <div class="text-center mb-5">
-        <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png"
-             alt="PSA" width="100" class="mb-3" />
-
-        <h1 class="display-4">PSA Costa Rica</h1>
-        <p class="lead">
-            Sistema para la gestión de <strong>Pagos por Servicios Ambientales</strong> en Costa Rica
-        </p>
-
-        <a href="/Auth/Login" class="btn btn-success btn-lg mt-3">
-            🚀 Iniciar sesión
-        </a>
-    </div>
-
-    <div class="mb-5">
-        <h2 class="mb-4 text-center">⚙️ ¿Qué permite este sistema?</h2>
-
-        <div class="row text-center">
-
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 p-3">
-                    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" width="70" class="mx-auto mb-3" />
-                    <h5>Gestión de fincas</h5>
-                    <p class="text-muted">Registro y administración de fincas de forma eficiente.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 p-3">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2910/2910791.png" width="70" class="mx-auto mb-3" />
-                    <h5>Evaluaciones técnicas</h5>
-                    <p class="text-muted">Control y seguimiento de evaluaciones realizadas.</p>
-                </div>
-            </div>
-
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm h-100 p-3">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135706.png" width="70" class="mx-auto mb-3" />
-                    <h5>Control de pagos</h5>
-                    <p class="text-muted">Administración clara de pagos y estados financieros.</p>
-                </div>
-            </div>
-
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Portal principal</span>
+            <h2>PSA Costa Rica</h2>
+            <p>Sistema para la gestión de pagos por servicios ambientales en Costa Rica.</p>
         </div>
+        <a class="boton-primario" asp-controller="Autenticacion" asp-action="IniciarSesion">Iniciar sesión</a>
     </div>
 
-    <div class="bg-light p-4 rounded shadow-sm">
-        <h2 class="mb-4 text-center">🌱 Beneficios</h2>
-
-        <div class="row text-center">
-
-            <div class="col-md-4 mb-3">
-                <h5>🔍 Transparencia</h5>
-                <p class="text-muted">Procesos claros y auditables.</p>
+    <div class="grid-dos-paneles">
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>¿Qué permite este sistema?</h3>
             </div>
+            <ul class="lista-timeline">
+                <li><a asp-controller="Fincas" asp-action="MisFincas">Gestión de fincas</a></li>
+                <li><a asp-controller="Evaluaciones" asp-action="FincasPendientes">Evaluaciones técnicas</a></li>
+                <li><a asp-controller="Pagos" asp-action="PlanesPago">Control de pagos</a></li>
+            </ul>
+        </section>
 
-            <div class="col-md-4 mb-3">
-                <h5>📈 Seguimiento</h5>
-                <p class="text-muted">Control completo del estado de pagos.</p>
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Beneficios</h3>
             </div>
+            <ul class="lista-timeline">
+                <li><a asp-controller="Reportes" asp-action="Index">Transparencia en procesos</a></li>
+                <li><a asp-controller="Pagos" asp-action="HistorialPagos">Seguimiento de pagos</a></li>
+                <li><a asp-controller="Administracion" asp-action="AuditoriaLogs">Centralización de información</a></li>
+            </ul>
+        </section>
+    </div>
 
-            <div class="col-md-4 mb-3">
-                <h5>🗂️ Centralización</h5>
-                <p class="text-muted">Toda la información en un solo lugar.</p>
-            </div>
-
+    <section class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Accesos rápidos</h3>
         </div>
-    </div>
-
-</div>
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="IniciarSesion">Acceder al sistema</a>
+            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear cuenta</a>
+            <a class="acceso-rapido" asp-controller="Home" asp-action="Equipo">Conocer el equipo</a>
+        </div>
+    </section>
+</section>

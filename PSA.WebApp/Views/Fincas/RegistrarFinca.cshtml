@@ -1,0 +1,81 @@
+@{
+    ViewData["Title"] = "Registrar finca";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Nuevo registro</span>
+            <h2>Formulario de finca</h2>
+            <p>Base visual para captura de datos principales, ubicación y características.</p>
+        </div>
+    </div>
+
+    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="get" asp-controller="Fincas" asp-action="MisFincas">
+        <div class="seccion-formulario">
+            <h3>Datos generales</h3>
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label for="nombreFinca">Nombre de la finca</label>
+                    <input id="nombreFinca" name="nombreFinca" type="text" placeholder="Nombre de la finca" />
+                </div>
+                <div class="campo-formulario">
+                    <label for="codigoExpediente">Código de expediente</label>
+                    <input id="codigoExpediente" name="codigoExpediente" type="text" placeholder="PSA-2026-001" />
+                </div>
+            </div>
+
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label for="provincia">Provincia</label>
+                    <select id="provincia" name="provincia">
+                        <option>San José</option>
+                        <option>Alajuela</option>
+                        <option>Cartago</option>
+                    </select>
+                </div>
+                <div class="campo-formulario">
+                    <label for="canton">Cantón</label>
+                    <input id="canton" name="canton" type="text" placeholder="Cantón" />
+                </div>
+            </div>
+        </div>
+
+        <div class="seccion-formulario">
+            <h3>Características</h3>
+            <div class="grid-tres-columnas">
+                <div class="campo-formulario">
+                    <label for="hectareas">Hectáreas</label>
+                    <input id="hectareas" name="hectareas" type="number" min="0" step="0.01" />
+                </div>
+                <div class="campo-formulario">
+                    <label for="tipoCobertura">Cobertura</label>
+                    <select id="tipoCobertura" name="tipoCobertura">
+                        <option>Bosque</option>
+                        <option>Protección hídrica</option>
+                        <option>Reforestación</option>
+                    </select>
+                </div>
+                <div class="campo-formulario">
+                    <label for="estadoFinca">Estado inicial</label>
+                    <select id="estadoFinca" name="estadoFinca">
+                        <option>Pendiente</option>
+                        <option>Asignada para evaluación</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <label for="descripcionFinca">Descripción</label>
+                <textarea id="descripcionFinca" name="descripcionFinca" rows="4" placeholder="Información adicional sobre la propiedad"></textarea>
+            </div>
+        </div>
+
+        <div class="fila-acciones-formulario">
+            <a class="boton-secundario" asp-controller="Fincas" asp-action="MisFincas">Cancelar</a>
+            <button type="submit" class="boton-primario">Guardar finca</button>
+        </div>
+    </form>
+</section>
+@section Scripts{
+    <script src="~/js/registro-finca.js" asp-append-version="true"></script>
+}
