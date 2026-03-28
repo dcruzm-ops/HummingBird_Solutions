@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@{
+    var rol = Context.Session.GetString("rol");
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -23,10 +28,55 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" href="/Home/Equipo">Equipo</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/Auth/Login">Login</a>
-                        </li>
-                    </ul>
+
+                        @if (rol == null)
+                            {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Auth/Login">Login</a>
+                            </li>
+                            }
+                            
+                        @if (rol == "ADMIN")
+                            {
+                                <li class="nav-item"> 
+                                    <a class="nav-link text-dark" href="/Admin">Dashboard</a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" href="/Admin/Usuarios">Usuarios</a>
+                                </li>
+                            }
+
+                            @if(rol == "DUENO")
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" href="/Dueno">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Dueno/Fincas">Mis Fincas</a>
+                                </li>
+                                <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Dueno/Pagos">Pagos</a>
+                                </li>
+                            }
+
+                            @if(rol == "INGENIERO")
+                            {
+                                <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Ingeniero">Dashboard</a>
+                                </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" href="/Ingeniero/Evaluaciones">Evaluaciones</a>
+                                </li>
+                            }
+
+                            @if(rol != null)
+                            {
+                                <li class="nav-item">
+                                <a class="nav-link text-danger" href="/Auth/Logout">Cerrar sesion</a>
+                                </li>
+                            }
+                        </ul>
                 </div>
             </div>
         </nav>
