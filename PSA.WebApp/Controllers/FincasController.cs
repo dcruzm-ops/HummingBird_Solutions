@@ -74,6 +74,13 @@ namespace PSA.WebApp.Controllers
                 model.Pendiente = "Media";
             }
 
+            if (model.FechaRegistro == default)
+            {
+                model.FechaRegistro = DateTime.UtcNow;
+            }
+
+            model.FechaActualizacion = DateTime.UtcNow;
+
             if (!ModelState.IsValid)
             {
                 return View(model);

@@ -387,7 +387,7 @@ namespace PSA.WebApp.Controllers
                 var baseUrlWebApp = $"{Request.Scheme}://{Request.Host}";
                 var respuesta = _recuperacionContrasenaManager.GenerarToken(payload, baseUrlWebApp);
 
-                TempData["MensajeExito"] = respuesta.Mensaje;
+                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local, sin envío SMTP automático)";
                 return RedirectToAction(nameof(IniciarSesion));
             }
             catch (Exception ex)
