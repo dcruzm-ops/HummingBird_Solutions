@@ -8,7 +8,7 @@ namespace PSA.WebApp.Controllers
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory? _httpClientFactory;
         private readonly IConfiguration _configuration;
         private const int IdPropietarioDemo = 2;
 
@@ -19,6 +19,14 @@ namespace PSA.WebApp.Controllers
         {
             _fincaDAO = fincaDAO;
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+        }
+
+        public FincasController(
+            FincaDAO fincaDAO,
+            IConfiguration configuration)
+        {
+            _fincaDAO = fincaDAO;
             _configuration = configuration;
         }
 
@@ -79,7 +87,8 @@ namespace PSA.WebApp.Controllers
         {
             try
             {
-                var client = _httpClientFactory.CreateClient("AuthApi");
+                var client = _httpClientFactory?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var baseUrl = GetApiBaseUrl();
                 var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>(
                     $"{baseUrl}/api/Fincas/mis-fincas?idPropietario={idPropietario}"
@@ -102,7 +111,8 @@ namespace PSA.WebApp.Controllers
         {
             try
             {
-                var client = _httpClientFactory.CreateClient("AuthApi");
+                var client = _httpClientFactory?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var baseUrl = GetApiBaseUrl();
                 var detalle = await client.GetFromJsonAsync<FincaDetalleDTO>(
                     $"{baseUrl}/api/Fincas/{idFinca}/detalle?idPropietario={idPropietario}"

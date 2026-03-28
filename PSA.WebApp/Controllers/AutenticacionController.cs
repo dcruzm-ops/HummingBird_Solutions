@@ -8,7 +8,7 @@ namespace PSA.WebApp.Controllers
 {
     public class AutenticacionController : Controller
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory? _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly AutenticacionManager _autenticacionManager;
 
@@ -18,6 +18,14 @@ namespace PSA.WebApp.Controllers
             AutenticacionManager autenticacionManager)
         {
             _httpClientFactory = httpClientFactory;
+            _configuration = configuration;
+            _autenticacionManager = autenticacionManager;
+        }
+
+        public AutenticacionController(
+            IConfiguration configuration,
+            AutenticacionManager autenticacionManager)
+        {
             _configuration = configuration;
             _autenticacionManager = autenticacionManager;
         }
@@ -46,7 +54,8 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("AuthApi");
+                var client = _httpClientFactory?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var response = await PostToApiAsync(client, "/api/Autenticacion/iniciar-sesion", dto);
 
                 if (!response.IsSuccessStatusCode)
@@ -96,7 +105,8 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _httpClientFactory.CreateClient("AuthApi");
+                var client = _httpClientFactory?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var response = await PostToApiAsync(client, "/api/Autenticacion/registrar", dto);
 
                 if (!response.IsSuccessStatusCode)
