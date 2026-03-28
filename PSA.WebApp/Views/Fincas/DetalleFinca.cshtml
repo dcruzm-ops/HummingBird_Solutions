@@ -1,12 +1,16 @@
+@model PSA.EntidadesDTO.DTOs.FincaDetalleDTO
+
 @{
     ViewData["Title"] = "Detalle de finca";
+    var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
 }
+
 <section class="seccion-pagina propietario-detalle-finca">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Expediente #@ViewBag.FincaId</span>
-            <h2>Finca Los Laureles</h2>
-            <p>Vista tipo detalle para el módulo del dueño.</p>
+            <span class="eyebrow">Expediente #@expediente</span>
+            <h2>@Model.NombreFinca</h2>
+            <p>Detalle completo de la finca registrada.</p>
         </div>
         <div class="grupo-acciones">
             <a class="boton-secundario" href="#panelCuentaBancaria">Actualizar cuenta bancaria</a>
@@ -17,18 +21,18 @@
     <div class="grid-tarjetas-kpi">
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Estado de finca</span>
-            <strong>Pendiente</strong>
-            <small>En espera de asignación técnica</small>
+            <strong>@Model.EstadoFinca</strong>
+            <small>Última actualización: @Model.FechaActualizacion.ToString("dd/MM/yyyy")</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Estado de evaluación</span>
-            <strong>Sin iniciar</strong>
-            <small>No existe evaluación abierta</small>
+            <strong>@Model.EstadoEvaluacion</strong>
+            <small>Proceso técnico actual</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Plan anual</span>
-            <strong>No disponible</strong>
-            <small>Se genera tras aprobación</small>
+            <strong>@(Model.TienePlanPago ? "Disponible" : "No disponible")</strong>
+            <small>Se muestra cuando existe plan asociado</small>
         </article>
     </div>
 
@@ -38,10 +42,13 @@
                 <h3>Datos generales</h3>
             </div>
             <dl class="lista-detalle">
-                <div><dt>Expediente</dt><dd>PSA-2026-001</dd></div>
-                <div><dt>Propietario</dt><dd>Dennis Cruz</dd></div>
-                <div><dt>Ubicación</dt><dd>Cartago, Costa Rica</dd></div>
-                <div><dt>Hectáreas</dt><dd>24.5</dd></div>
+                <div><dt>Expediente</dt><dd>@expediente</dd></div>
+                <div><dt>Propietario</dt><dd>@Model.PropietarioNombre</dd></div>
+                <div><dt>Ubicación</dt><dd>@Model.Provincia, @Model.Canton, @Model.Distrito</dd></div>
+                <div><dt>Dirección exacta</dt><dd>@(string.IsNullOrWhiteSpace(Model.DireccionExacta) ? "No registrada" : Model.DireccionExacta)</dd></div>
+                <div><dt>Hectáreas</dt><dd>@Model.Hectareas</dd></div>
+                <div><dt>Latitud / Longitud</dt><dd>@Model.Latitud / @Model.Longitud</dd></div>
+                <div><dt>Fecha de registro</dt><dd>@Model.FechaRegistro.ToString("dd/MM/yyyy")</dd></div>
             </dl>
         </section>
 
@@ -50,9 +57,15 @@
                 <h3>Características</h3>
             </div>
             <ul class="lista-timeline">
-                <li>Cobertura principal: Bosque.</li>
-                <li><a asp-controller="Notificaciones" asp-action="Index">Cuenta bancaria: Pendiente de registro.</a></li>
-                <li>Última actualización: 26/03/2026.</li>
+                <li>Vegetación: @Model.Vegetacion.</li>
+                <li>Uso de suelo: @Model.UsoSuelo.</li>
+                <li>Pendiente: @Model.Pendiente.</li>
+                <li>Recursos hídricos: @(Model.TieneRecursosHidricos ? "Sí" : "No").</li>
+                <li>
+                    Cuenta bancaria:
+                    @(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente de registro")
+                    <a asp-controller="Notificaciones" asp-action="Index">Ver notificaciones</a>
+                </li>
             </ul>
         </section>
     </div>
@@ -63,7 +76,9 @@
                 <h3>Evidencias</h3>
             </div>
             <div class="estado-vacio-inline">
-                <p>No hay evidencias adjuntas todavía.</p>
+                <p>
+                    Evidencias cargadas: <strong>@Model.CantidadEvidencias</strong>.
+                </p>
                 <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
             </div>
         </section>
@@ -73,7 +88,14 @@
                 <h3>Historial de pagos</h3>
             </div>
             <div class="estado-vacio-inline">
-                <p>La finca aún no cuenta con plan de pago asociado.</p>
+                @if (Model.TienePlanPago)
+                {
+                    <p>La finca cuenta con plan de pago asociado.</p>
+                }
+                else
+                {
+                    <p>La finca aún no cuenta con plan de pago asociado.</p>
+                }
                 <a class="boton-link" asp-controller="Pagos" asp-action="HistorialPagos">Ver historial de pagos</a>
             </div>
         </section>

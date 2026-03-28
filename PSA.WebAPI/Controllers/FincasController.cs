@@ -1,45 +1,46 @@
 using Microsoft.AspNetCore.Mvc;
+using PSA.DataAccess.DAO;
 
-namespace PSA.WebApp.Controllers
+namespace PSA.WebAPI.Controllers
 {
-    public class FincasController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class FincasController : ControllerBase
     {
-        [HttpGet]
-        public IActionResult RegistrarFinca()
+        private readonly FincaDAO _fincaDAO;
+
+        public FincasController(FincaDAO fincaDAO)
         {
-            ViewBag.ModuloActivo = "fincas";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Registrar finca";
-            ViewBag.SubtituloPagina = "Complete la información principal de la propiedad para iniciar el proceso.";
-            ViewBag.BreadcrumbPadreTexto = "Mis fincas";
-            ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
-            ViewBag.BreadcrumbActual = "Registrar finca";
-            return View();
+            _fincaDAO = fincaDAO;
         }
 
-        [HttpGet]
-        public IActionResult MisFincas()
+        [HttpGet("mis-fincas")]
+        public async Task<IActionResult> ObtenerMisFincas([FromQuery] int idPropietario = 2)
         {
-            ViewBag.ModuloActivo = "fincas";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Mis fincas";
-            ViewBag.SubtituloPagina = "Consulte el estado de sus propiedades registradas y sus procesos asociados.";
-            ViewBag.BreadcrumbActual = "Mis fincas";
-            return View();
+            if (idPropietario <= 0)
+            {
+                return BadRequest(new { Mensaje = "El idPropietario debe ser mayor a 0." });
+            }
+
+            var fincas = await _fincaDAO.ObtenerPorPropietarioAsync(idPropietario);
+            return Ok(fincas);
         }
 
-        [HttpGet]
-        public IActionResult DetalleFinca(int? id = null)
+        [HttpGet("{idFinca:int}/detalle")]
+        public async Task<IActionResult> ObtenerDetalle([FromRoute] int idFinca, [FromQuery] int idPropietario = 2)
         {
-            ViewBag.ModuloActivo = "fincas";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.FincaId = id ?? 1;
-            ViewBag.TituloPagina = "Detalle de finca";
-            ViewBag.SubtituloPagina = "Visualice la información general, evaluación, evidencias y plan de pago.";
-            ViewBag.BreadcrumbPadreTexto = "Mis fincas";
-            ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
-            ViewBag.BreadcrumbActual = "Detalle de finca";
-            return View();
+            if (idFinca <= 0 || idPropietario <= 0)
+            {
+                return BadRequest(new { Mensaje = "Los parámetros idFinca e idPropietario deben ser mayores a 0." });
+            }
+
+            var detalle = await _fincaDAO.ObtenerDetalleAsync(idFinca, idPropietario);
+            if (detalle == null)
+            {
+                return NotFound(new { Mensaje = "No se encontró la finca solicitada." });
+            }
+
+            return Ok(detalle);
         }
     }
 }
