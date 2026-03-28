@@ -1,115 +1,41 @@
-﻿<!DOCTYPE html>
-@using Microsoft.AspNetCore.Http
+﻿@using Microsoft.AspNetCore.Http
 @{
-    var rol = Context.Session.GetString("rol");
+    var titulo = ViewBag.TituloPagina as string ?? ViewData["Title"]?.ToString() ?? "PSA Costa Rica";
+    var rolSesion = Context.Session.GetString("rol") ?? string.Empty;
+    var rolActivo = string.IsNullOrWhiteSpace(rolSesion)
+        ? (ViewBag.RolActivo as string ?? string.Empty)
+        : rolSesion;
 }
-
-<html lang="es" data-theme="light">
+<!DOCTYPE html>
+<html lang="es" data-tema="claro">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PSA.WebApp</title>
-
-    <script type="importmap"></script>
+    <title>@titulo - PSA Costa Rica</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/PSA.WebApp.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/global.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/componentes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/propietario.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ingeniero.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/administrador.css" asp-append-version="true" />
 </head>
-<body>
-    <div class="app-layout">
-        <header class="topbar border-bottom shadow-sm">
-            <nav class="navbar navbar-expand-lg">
-                <div class="container-fluid">
-                    <div class="d-flex align-items-center gap-2">
-                        <button id="sidebarToggle"
-                                class="btn btn-outline-secondary d-lg-none"
-                                type="button"
-                                aria-label="Abrir o cerrar navegación lateral"
-                                aria-controls="sidebar">
-                            ☰
-                        </button>
-
-                        <a class="navbar-brand fw-bold" asp-page="/Index">
-                            PSA
-                        </a>
-                    </div>
-
-                    <div class="d-flex align-items-center gap-2">
-                        <button id="themeToggle"
-                                class="btn btn-outline-dark"
-                                type="button"
-                                aria-label="Cambiar modo claro y oscuro">
-                            🌙
-                        </button>
-
-                        @if (!string.IsNullOrWhiteSpace(rol))
-                        {
-                            <span class="btn btn-outline-primary btn-sm disabled">@rol</span>
-                            <a class="btn btn-outline-danger btn-sm" asp-controller="Auth" asp-action="Logout">Cerrar sesión</a>
-                        }
-                        else
-                        {
-                            <a class="btn btn-outline-primary btn-sm" asp-controller="Auth" asp-action="Login">Iniciar sesión</a>
-                        }
-                    </div>
-                </div>
-            </nav>
-        </header>
-
-        <div class="app-body">
-            <aside id="sidebar" class="sidebar border-end" aria-label="Navegación principal">
-                <nav>
-                    <ul class="nav flex-column sidebar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-page="/Index">Inicio</a>
-                        </li>
-
-                        @if (rol == "ADMIN")
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-page="/Admin/Index">Panel Administrador</a>
-                            </li>
-                        }
-
-                        @if (rol == "DUENO")
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-page="/Dueno/Index">Panel Dueño</a>
-                            </li>
-                        }
-
-                        @if (rol == "INGENIERO")
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link" asp-page="/Ingeniero/Index">Panel Ingeniero</a>
-                            </li>
-                        }
-                    </ul>
-                </nav>
-            </aside>
-
-            <main class="main-content" role="main">
-                <section class="content-wrapper container-fluid py-4" aria-labelledby="page-title">
-                    <header class="mb-4">
-                        <h1 id="page-title" class="h3 mb-0">@ViewData["Title"]</h1>
-                    </header>
-
-                    @RenderBody()
-                </section>
-            </main>
-        </div>
-
-        <footer class="footer border-top text-muted py-3">
-            <div class="container-fluid">
-                &copy; 2026 - PSA.WebApp
-            </div>
-        </footer>
+<body class="aplicacion-shell">
+    @await Html.PartialAsync("_Encabezado")
+    <div class="contenedor-aplicacion">
+        @await Html.PartialAsync("_BarraLateral")
+        <main class="contenido-principal" role="main">
+            @await Html.PartialAsync("_MigasPan")
+            @await Html.PartialAsync("_MensajesSistema")
+            @RenderBody()
+        </main>
     </div>
+    @await Html.PartialAsync("_PiePagina")
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
+    <script src="~/js/utilidades.js" asp-append-version="true"></script>
+    <script src="~/js/navegacion.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DataAccess\PSA.DataAccess.csproj" />
+    <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+  </ItemGroup>
+
 </Project>

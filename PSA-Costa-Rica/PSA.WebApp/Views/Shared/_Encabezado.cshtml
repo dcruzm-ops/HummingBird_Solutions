@@ -1,0 +1,28 @@
+@{
+    var titulo = ViewBag.TituloPagina as string ?? "PSA Costa Rica";
+    var rolActivo = ViewBag.RolActivo as string ?? "Dueno";
+}
+<header class="encabezado-sistema">
+    <div class="encabezado-sistema__izquierda">
+        <button type="button" class="boton-icono d-lg-none" id="botonMenuLateral" aria-label="Abrir menú">
+            ☰
+        </button>
+        <div>
+            <p class="eyebrow">Sistema de Pago por Servicios Ambientales</p>
+            <h1 class="titulo-encabezado">@titulo</h1>
+        </div>
+    </div>
+
+    <div class="encabezado-sistema__derecha">
+        <button type="button" class="boton-secundario boton-sm" id="botonTema">
+            Cambiar tema
+        </button>
+        <div class="bloque-usuario">
+            <span class="avatar-usuario">DC</span>
+            <div>
+                <strong>Dennis Cruz</strong>
+                <small>@rolActivo</small>
+            </div>
+        </div>
+    </div>
+</header>

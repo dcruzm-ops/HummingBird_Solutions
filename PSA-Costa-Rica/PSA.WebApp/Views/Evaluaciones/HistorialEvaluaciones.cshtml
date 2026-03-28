@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Historial de evaluaciones";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Consulta histórica</span>
+            <h2>Historial de evaluaciones</h2>
+            <p>Base para reportar decisiones técnicas finalizadas.</p>
+        </div>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Expediente</th>
+                        <th>Finca</th>
+                        <th>Fecha visita</th>
+                        <th>Decisión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PSA-2025-011</td>
+                        <td>Los Cedros</td>
+                        <td>10/03/2026</td>
+                        <td><span class="badge-estado badge-exito">Califica</span></td>
+                    </tr>
+                    <tr>
+                        <td>PSA-2025-007</td>
+                        <td>Monte Claro</td>
+                        <td>28/02/2026</td>
+                        <td><span class="badge-estado badge-error">No califica</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

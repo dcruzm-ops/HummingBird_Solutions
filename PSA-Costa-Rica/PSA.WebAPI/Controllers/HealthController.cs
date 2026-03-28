@@ -1,27 +1,35 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PSA.WebAPI.Controllers.Models;
+using PSA.DataAccess;
 
 namespace PSA.WebAPI.Controllers
 {
+    [Route("api/[controller]")]
     public class HealthController : BaseApiController
     {
-        [HttpGet]
-        public ActionResult<ApiResponse<object>> Get()
+        public HealthController(DbContextHelper dbContextHelper) : base(dbContextHelper)
         {
-            var data = new
-            {
-                Status = "OK",
-                LocalTime = DateTime.Now,
-                Service = "PSA.WebAPI"
-            };
-
-            return Ok(ApiResponse<object>.Ok(data, "La API está funcionando correctamente."));
         }
 
-        [HttpGet("error-test")]
-        public IActionResult ErrorTest()
+        [HttpGet("test")]
+        public IActionResult Test()
         {
-            throw new Exception("Error de prueba para validar el middleware global.");
+            try
+            {
+                bool result = _dbContextHelper.TestConnection();
+
+                if (result)
+                    return Ok(new { message = "Conexión a SQL Server exitosa" });
+
+                return BadRequest(new { message = "No se pudo conectar a SQL Server" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    message = "Error al probar la conexión",
+                    error = ex.Message
+                });
+            }
         }
     }
 }

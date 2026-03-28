@@ -1,13 +1,18 @@
-﻿@page
-@model PSA.WebApp.Pages.AccessDeniedModel
-@{
+﻿@{
+    Layout = "~/Views/Shared/_LayoutAutenticacion.cshtml";
     ViewData["Title"] = "Acceso denegado";
 }
 
-<section aria-labelledby="access-denied-title">
-    <h2 id="access-denied-title">Acceso denegado</h2>
-    <p class="helper-text">
-        No tienes permisos para acceder a este módulo.
-    </p>
-    <a asp-page="/Index" class="button-secondary">Volver al inicio</a>
-</section>
+<div class="tarjeta-autenticacion">
+    <div class="cabecera-formulario">
+        <span class="eyebrow">Acceso restringido</span>
+        <h2>Acceso denegado</h2>
+        <p>No tiene permisos para acceder a este módulo.</p>
+    </div>
+
+    <div class="fila-acciones-formulario">
+        <a class="boton-primario boton-bloque" asp-controller="Autenticacion" asp-action="IniciarSesion">
+            Volver al inicio de sesión
+        </a>
+    </div>
+</div>
