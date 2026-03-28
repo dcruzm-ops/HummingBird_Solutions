@@ -66,6 +66,10 @@ namespace PSA.WebAPI.Controllers
                         respuesta.LinkRecuperacion
                     );
                 }
+                else if (respuesta.Exito && !smtpConfigurado)
+                {
+                    respuesta.Mensaje = "Solicitud procesada. SMTP no configurado, por lo que no se envió correo de recuperación.";
+                }
 
                 respuesta.LinkRecuperacion = null;
                 respuesta.CorreoDestino = null;

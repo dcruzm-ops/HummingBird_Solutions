@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
+using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
+using PSA.WebApp.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -15,14 +17,17 @@ namespace PSA.WebApp.Controllers
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
         private readonly AutenticacionManager _autenticacionManager;
+        private readonly RecuperacionContrasenaManager _recuperacionContrasenaManager;
 
         public AutenticacionController(
             IConfiguration configuration,
             AutenticacionManager autenticacionManager,
+            RecuperacionContrasenaManager recuperacionContrasenaManager,
             IServiceProvider serviceProvider)
         {
             _configuration = configuration;
             _autenticacionManager = autenticacionManager;
+            _recuperacionContrasenaManager = recuperacionContrasenaManager;
             _serviceProvider = serviceProvider;
         }
 
@@ -64,7 +69,7 @@ namespace PSA.WebApp.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorBody = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError(string.Empty, $"No fue posible iniciar sesión. {errorBody}");
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
                     return View(dto);
                 }
 
@@ -116,8 +121,7 @@ namespace PSA.WebApp.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorBody = await response.Content.ReadAsStringAsync();
-                    var errorMensaje = TryReadErrorMessage(errorBody);
-                    ModelState.AddModelError(string.Empty, errorMensaje);
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
                     return View(dto);
                 }
 
@@ -136,17 +140,102 @@ namespace PSA.WebApp.Controllers
             ViewBag.EsAutenticacion = true;
             ViewBag.TituloPagina = "Recuperar contraseña";
             ViewBag.SubtituloPagina = "Ingrese su correo electrónico para iniciar el proceso de recuperación.";
-            return View();
+            return View(new RecuperarContrasenaViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecuperarContrasena(RecuperarContrasenaViewModel model)
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Recuperar contraseña";
+            ViewBag.SubtituloPagina = "Ingrese su correo electrónico para iniciar el proceso de recuperación.";
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+
+                var payload = new RecuperarContrasenaDTO { Correo = model.Correo.Trim() };
+                var response = await PostToApiAsync(client, "/api/RecuperacionContrasena/solicitar", payload);
+                var body = await response.Content.ReadFromJsonAsync<RespuestaRecuperacionDTO>();
+
+                if (!response.IsSuccessStatusCode || body == null || !body.Exito)
+                {
+                    ModelState.AddModelError(string.Empty, body?.Mensaje ?? "No fue posible procesar la solicitud de recuperación.");
+                    return View(model);
+                }
+
+                TempData["MensajeExito"] = body.Mensaje;
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch
+            {
+                return RecuperarContrasenaConFallbackLocal(model);
+            }
         }
 
         [HttpGet]
         public IActionResult RestablecerContrasena(string? token = null)
         {
             ViewBag.EsAutenticacion = true;
-            ViewBag.TokenRecuperacion = token ?? "TOKEN-DE-EJEMPLO";
             ViewBag.TituloPagina = "Restablecer contraseña";
             ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
-            return View();
+
+            var model = new RestablecerContrasenaViewModel
+            {
+                Token = token ?? string.Empty
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestablecerContrasena(RestablecerContrasenaViewModel model)
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Restablecer contraseña";
+            ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+
+                var payload = new RestablecerContrasenaDTO
+                {
+                    Token = model.Token.Trim(),
+                    NuevaContrasena = model.NuevaContrasena,
+                    ConfirmarContrasena = model.ConfirmarContrasena
+                };
+
+                var response = await PostToApiAsync(client, "/api/RecuperacionContrasena/restablecer", payload);
+                var body = await response.Content.ReadFromJsonAsync<RespuestaRecuperacionDTO>();
+
+                if (!response.IsSuccessStatusCode || body == null || !body.Exito)
+                {
+                    ModelState.AddModelError(string.Empty, body?.Mensaje ?? "No fue posible restablecer la contraseña.");
+                    return View(model);
+                }
+
+                TempData["MensajeExito"] = body.Mensaje;
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch
+            {
+                return RestablecerContrasenaConFallbackLocal(model);
+            }
         }
 
         [HttpPost]
@@ -179,9 +268,15 @@ namespace PSA.WebApp.Controllers
             try
             {
                 using var doc = JsonDocument.Parse(errorBody);
+
                 if (doc.RootElement.TryGetProperty("mensaje", out var mensaje))
                 {
                     return mensaje.GetString() ?? "No fue posible completar la operación.";
+                }
+
+                if (doc.RootElement.TryGetProperty("Mensaje", out var mensajeMayuscula))
+                {
+                    return mensajeMayuscula.GetString() ?? "No fue posible completar la operación.";
                 }
             }
             catch
@@ -203,8 +298,7 @@ namespace PSA.WebApp.Controllers
             {
                 try
                 {
-                    var response = await client.PostAsJsonAsync($"{baseUrl}{path}", payload);
-                    return response;
+                    return await client.PostAsJsonAsync($"{baseUrl}{path}", payload);
                 }
                 catch (Exception ex)
                 {
@@ -213,7 +307,7 @@ namespace PSA.WebApp.Controllers
             }
 
             throw new InvalidOperationException(
-                "No fue posible conectar con el API de autenticación en ninguna URL configurada.",
+                "No fue posible conectar con el API en ninguna URL configurada.",
                 ultimaExcepcion
             );
         }
@@ -283,6 +377,52 @@ namespace PSA.WebApp.Controllers
                     IsPersistent = true,
                     ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                 });
+        }
+
+        private IActionResult RecuperarContrasenaConFallbackLocal(RecuperarContrasenaViewModel model)
+        {
+            try
+            {
+                var payload = new RecuperarContrasenaDTO { Correo = model.Correo.Trim() };
+                var baseUrlWebApp = $"{Request.Scheme}://{Request.Host}";
+                var respuesta = _recuperacionContrasenaManager.GenerarToken(payload, baseUrlWebApp);
+
+                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local, sin envío SMTP automático)";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"No fue posible procesar la recuperación: {ex.Message}");
+                return View(nameof(RecuperarContrasena), model);
+            }
+        }
+
+        private IActionResult RestablecerContrasenaConFallbackLocal(RestablecerContrasenaViewModel model)
+        {
+            try
+            {
+                var payload = new RestablecerContrasenaDTO
+                {
+                    Token = model.Token.Trim(),
+                    NuevaContrasena = model.NuevaContrasena,
+                    ConfirmarContrasena = model.ConfirmarContrasena
+                };
+
+                var respuesta = _recuperacionContrasenaManager.RestablecerContrasena(payload);
+                if (!respuesta.Exito)
+                {
+                    ModelState.AddModelError(string.Empty, respuesta.Mensaje);
+                    return View(nameof(RestablecerContrasena), model);
+                }
+
+                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local)";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"No fue posible restablecer la contraseña: {ex.Message}");
+                return View(nameof(RestablecerContrasena), model);
+            }
         }
     }
 }
