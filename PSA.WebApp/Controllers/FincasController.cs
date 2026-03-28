@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using System.Net.Http.Json;
@@ -8,26 +9,18 @@ namespace PSA.WebApp.Controllers
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
-        private readonly IHttpClientFactory? _httpClientFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
         private const int IdPropietarioDemo = 2;
 
         public FincasController(
             FincaDAO fincaDAO,
-            IHttpClientFactory httpClientFactory,
-            IConfiguration configuration)
-        {
-            _fincaDAO = fincaDAO;
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
-        }
-
-        public FincasController(
-            FincaDAO fincaDAO,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IServiceProvider serviceProvider)
         {
             _fincaDAO = fincaDAO;
             _configuration = configuration;
+            _serviceProvider = serviceProvider;
         }
 
         [HttpGet]
@@ -87,7 +80,7 @@ namespace PSA.WebApp.Controllers
         {
             try
             {
-                var client = _httpClientFactory?.CreateClient("AuthApi")
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
                     ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var baseUrl = GetApiBaseUrl();
                 var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>(
@@ -111,7 +104,7 @@ namespace PSA.WebApp.Controllers
         {
             try
             {
-                var client = _httpClientFactory?.CreateClient("AuthApi")
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
                     ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var baseUrl = GetApiBaseUrl();
                 var detalle = await client.GetFromJsonAsync<FincaDetalleDTO>(

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
+using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -8,26 +9,18 @@ namespace PSA.WebApp.Controllers
 {
     public class AutenticacionController : Controller
     {
-        private readonly IHttpClientFactory? _httpClientFactory;
+        private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
         private readonly AutenticacionManager _autenticacionManager;
 
         public AutenticacionController(
-            IHttpClientFactory httpClientFactory,
             IConfiguration configuration,
-            AutenticacionManager autenticacionManager)
-        {
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
-            _autenticacionManager = autenticacionManager;
-        }
-
-        public AutenticacionController(
-            IConfiguration configuration,
-            AutenticacionManager autenticacionManager)
+            AutenticacionManager autenticacionManager,
+            IServiceProvider serviceProvider)
         {
             _configuration = configuration;
             _autenticacionManager = autenticacionManager;
+            _serviceProvider = serviceProvider;
         }
 
         [HttpGet]
@@ -54,7 +47,7 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _httpClientFactory?.CreateClient("AuthApi")
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
                     ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var response = await PostToApiAsync(client, "/api/Autenticacion/iniciar-sesion", dto);
 
@@ -105,7 +98,7 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _httpClientFactory?.CreateClient("AuthApi")
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
                     ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
                 var response = await PostToApiAsync(client, "/api/Autenticacion/registrar", dto);
 
