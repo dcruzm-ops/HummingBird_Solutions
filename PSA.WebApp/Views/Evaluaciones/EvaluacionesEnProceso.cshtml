@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Evaluaciones en proceso";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Seguimiento</span>
+            <h2>Evaluaciones en proceso</h2>
+            <p>Vista base de control para evaluaciones abiertas.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Ver historial</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <ul class="lista-timeline">
+            <li><a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="2">PSA-2026-002 - Río Verde - Evidencia pendiente.</a></li>
+            <li><a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="4">PSA-2026-004 - Las Palmas - Visita programada para mañana.</a></li>
+            <li><a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="6">PSA-2026-006 - El Cedral - Ajuste técnico en revisión.</a></li>
+        </ul>
+    </section>
+</section>

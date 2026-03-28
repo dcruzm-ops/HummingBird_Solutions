@@ -1,0 +1,37 @@
+﻿@{
+    var titulo = ViewBag.TituloPagina as string ?? ViewData["Title"]?.ToString() ?? "PSA Costa Rica";
+    var rolActivo = ViewBag.RolActivo as string ?? "Dueno";
+}
+<!DOCTYPE html>
+<html lang="es" data-tema="claro">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@titulo - PSA Costa Rica</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link rel="stylesheet" href="~/css/variables.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/global.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/componentes.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/propietario.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ingeniero.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/administrador.css" asp-append-version="true" />
+</head>
+<body class="aplicacion-shell">
+    @await Html.PartialAsync("_Encabezado")
+    <div class="contenedor-aplicacion">
+        @await Html.PartialAsync("_BarraLateral")
+        <main class="contenido-principal" role="main">
+            @await Html.PartialAsync("_MigasPan")
+            @await Html.PartialAsync("_MensajesSistema")
+            @RenderBody()
+        </main>
+    </div>
+    @await Html.PartialAsync("_PiePagina")
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="~/js/utilidades.js" asp-append-version="true"></script>
+    <script src="~/js/navegacion.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

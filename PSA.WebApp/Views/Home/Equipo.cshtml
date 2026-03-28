@@ -1,0 +1,37 @@
+﻿@{
+    ViewData["Title"] = "Equipo";
+}
+
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Hummingbird Solutions</span>
+            <h2>Equipo de desarrollo</h2>
+            <p>Este proyecto forma parte del curso de Proyecto II.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Home" asp-action="Index">Volver al inicio</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Integrantes</h3>
+        </div>
+        <ul class="lista-timeline">
+            <li><strong>Kimberly Cascante Mora</strong> - Coordinador de Calidad</li>
+            <li><strong>Yoel Rojas Arguedas</strong> - Scrum Master</li>
+            <li><strong>Dennis Cruz Montiel</strong> - Product Owner</li>
+            <li><strong>Jared Mendez Jimenez</strong> - Coordinador de Desarrollo</li>
+        </ul>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Sobre el proyecto</h3>
+        </div>
+        <p>PSA Costa Rica busca facilitar la gestión de incentivos ambientales mediante herramientas digitales modernas.</p>
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="IniciarSesion">Ir a inicio de sesión</a>
+            <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Dueno">Ver dashboard dueño</a>
+        </div>
+    </section>
+</section>

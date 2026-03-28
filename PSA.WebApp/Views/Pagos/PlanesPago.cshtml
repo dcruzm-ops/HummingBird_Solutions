@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Planes de pago";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Módulo de pagos</span>
+            <h2>Planes de pago</h2>
+            <p>Vista administrativa para consulta de planes y su progreso.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Reportes" asp-action="Index">Ver reportes</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Plan</th>
+                        <th>Finca</th>
+                        <th>Año</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>PLAN-2026-001</td>
+                        <td>Río Verde</td>
+                        <td>2026</td>
+                        <td><span class="badge-estado badge-exito">Activo</span></td>
+                        <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="1">Ver detalle</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>
