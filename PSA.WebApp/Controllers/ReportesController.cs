@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PSA.WebApp.Controllers
 {
+    [Authorize(Roles = "1,3")]
     public class ReportesController : Controller
     {
         [HttpGet]

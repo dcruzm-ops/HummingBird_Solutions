@@ -8,7 +8,7 @@ using System.Net.Http.Json;
 
 namespace PSA.WebApp.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "2")]
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
