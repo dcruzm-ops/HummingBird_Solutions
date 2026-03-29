@@ -41,6 +41,12 @@ namespace PSA.AppCore.Managers
             return registro != null;
         }
 
+        // Compatibilidad con llamadas existentes que usen versión sincrónica.
+        public bool TokenEsValido(string token)
+        {
+            return TokenEsValidoAsync(token).GetAwaiter().GetResult();
+        }
+
         public async Task RestablecerContrasenaAsync(string token, string nuevaContrasena)
         {
             var registro = await _tokenRecuperacionDAO.ObtenerTokenVigenteAsync(token);
