@@ -6,62 +6,89 @@
     <link rel="stylesheet" href="~/css/producto-landing.css" asp-append-version="true" />
 }
 
-<div class="psa-landing">
-    <section class="psa-hero container py-5 text-center">
-        <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png" alt="PSA Costa Rica" width="96" class="mb-3" />
-        <h1 class="display-5 fw-bold">PSA Costa Rica</h1>
-        <p class="lead">
-            Sistema para la gestión de <strong>Pagos por Servicios Ambientales</strong> en Costa Rica.
-            Digitaliza el flujo operativo desde fincas hasta pagos.
-        </p>
-        <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
-            <a asp-controller="Autenticacion" asp-action="IniciarSesion" class="btn btn-success btn-lg">🚀 Iniciar sesión</a>
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light btn-lg">← Volver a HummingBird</a>
+<div class="psa-producto">
+    <section class="psa-hero">
+        <div class="psa-hero__overlay">
+            <div class="container py-5">
+                <span class="psa-pill">Solución oficial del proyecto</span>
+                <h1>PSA Costa Rica</h1>
+                <p>
+                    Plataforma para gestionar procesos de Pago por Servicios Ambientales con enfoque en trazabilidad,
+                    eficiencia operativa y conservación de recursos naturales.
+                </p>
+                <div class="psa-hero__actions">
+                    <a asp-controller="Autenticacion" asp-action="IniciarSesion" class="btn btn-success btn-lg">Iniciar sesión</a>
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light btn-lg">Volver a HummingBird</a>
+                </div>
+            </div>
         </div>
     </section>
 
-    <section class="container pb-5">
-        <h2 class="text-center mb-4">⚙️ ¿Qué permite este sistema?</h2>
+    <section class="container py-5">
+        <div class="text-center mb-5">
+            <h2>¿Qué permite este sistema?</h2>
+            <p>Operación digital de punta a punta para actores del programa PSA.</p>
+        </div>
+
         <div class="row g-4">
             <div class="col-md-4">
-                <article class="psa-card h-100 text-center p-4">
-                    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" width="70" class="mx-auto mb-3" alt="Gestión de fincas" />
-                    <h5>Gestión de fincas</h5>
-                    <p>Registro y administración de fincas de forma eficiente.</p>
+                <article class="psa-card h-100">
+                    <img class="psa-card__image" src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=900&q=80" alt="Bosque en Costa Rica" />
+                    <div class="p-4">
+                        <h4>Gestión de fincas</h4>
+                        <p>Registro y administración de fincas con datos consolidados y fácilmente consultables.</p>
+                    </div>
                 </article>
             </div>
             <div class="col-md-4">
-                <article class="psa-card h-100 text-center p-4">
-                    <img src="https://cdn-icons-png.flaticon.com/512/2910/2910791.png" width="70" class="mx-auto mb-3" alt="Evaluaciones técnicas" />
-                    <h5>Evaluaciones técnicas</h5>
-                    <p>Control y seguimiento de evaluaciones realizadas.</p>
+                <article class="psa-card h-100">
+                    <img class="psa-card__image" src="https://images.unsplash.com/photo-1473445361085-b9a07f55608b?auto=format&fit=crop&w=900&q=80" alt="Río en bosque tropical" />
+                    <div class="p-4">
+                        <h4>Evaluaciones técnicas</h4>
+                        <p>Seguimiento técnico de estado de fincas y documentación por etapa del proceso.</p>
+                    </div>
                 </article>
             </div>
             <div class="col-md-4">
-                <article class="psa-card h-100 text-center p-4">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135706.png" width="70" class="mx-auto mb-3" alt="Control de pagos" />
-                    <h5>Control de pagos</h5>
-                    <p>Administración clara de pagos y estados financieros.</p>
+                <article class="psa-card h-100">
+                    <img class="psa-card__image" src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80" alt="Montañas y cobertura forestal" />
+                    <div class="p-4">
+                        <h4>Control de pagos</h4>
+                        <p>Visualización clara del estado de pagos, historial y control administrativo por rol.</p>
+                    </div>
                 </article>
             </div>
         </div>
     </section>
 
-    <section class="container pb-5">
-        <div class="psa-beneficios p-4 p-md-5 rounded-4">
-            <h2 class="text-center mb-4">🌱 Beneficios</h2>
-            <div class="row text-center g-4">
+    <section class="psa-beneficios py-5">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2>Beneficios para la operación</h2>
+                <p>Diseñado para fortalecer la gestión ambiental y administrativa.</p>
+            </div>
+
+            <div class="row g-4 text-center">
                 <div class="col-md-4">
-                    <h5>🔍 Transparencia</h5>
-                    <p>Procesos claros, visibles y auditables para todos los roles.</p>
+                    <div class="beneficio-item h-100">
+                        <img src="https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=600&q=80" alt="Vida silvestre" />
+                        <h5>Transparencia</h5>
+                        <p>Procesos claros, auditables y visibles para los distintos perfiles del sistema.</p>
+                    </div>
                 </div>
                 <div class="col-md-4">
-                    <h5>📈 Seguimiento</h5>
-                    <p>Control completo del ciclo de evaluación y estado de pagos.</p>
+                    <div class="beneficio-item h-100">
+                        <img src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=600&q=80" alt="Recurso hídrico" />
+                        <h5>Seguimiento continuo</h5>
+                        <p>Control del avance de evaluaciones y de los pagos asociados en tiempo real.</p>
+                    </div>
                 </div>
                 <div class="col-md-4">
-                    <h5>🗂️ Centralización</h5>
-                    <p>Información integrada en una sola plataforma con historial trazable.</p>
+                    <div class="beneficio-item h-100">
+                        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" alt="Paisaje natural de montaña" />
+                        <h5>Centralización</h5>
+                        <p>Información integrada en una sola plataforma para decisiones más rápidas.</p>
+                    </div>
                 </div>
             </div>
         </div>

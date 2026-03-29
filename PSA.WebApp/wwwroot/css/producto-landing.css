@@ -1,34 +1,98 @@
-.psa-landing {
+.psa-producto {
+    background: #f4f8f5;
+    color: #1f2f1f;
     min-height: 100vh;
-    background: linear-gradient(180deg, #0b1e2a 0%, #12354a 100%);
-    color: #f5fbff;
 }
 
-.psa-hero .lead {
-    max-width: 860px;
-    margin-inline: auto;
-    color: rgba(245, 251, 255, 0.9);
+.psa-hero {
+    background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
 }
 
-.psa-card {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 18px;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-}
-
-.psa-card h5,
-.psa-beneficios h5 {
+.psa-hero__overlay {
+    background: linear-gradient(120deg, rgba(8, 52, 28, 0.82), rgba(14, 94, 49, 0.68));
     color: #ffffff;
 }
 
-.psa-card p,
-.psa-beneficios p {
-    color: rgba(245, 251, 255, 0.85);
-    margin-bottom: 0;
+.psa-hero h1 {
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.psa-hero p {
+    max-width: 760px;
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+.psa-pill {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
+
+.psa-hero__actions {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.psa-card {
+    border: 1px solid #dce8de;
+    border-radius: 16px;
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(20, 65, 38, 0.1);
+}
+
+.psa-card__image {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+
+.psa-card h4 {
+    color: #0b5f2e;
+    margin-bottom: 0.8rem;
+}
+
+.psa-card p {
+    color: #4f6356;
+    margin: 0;
 }
 
 .psa-beneficios {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(180deg, #e8f3ea 0%, #dcefe0 100%);
+    border-top: 1px solid #cfe3d4;
+}
+
+.beneficio-item {
+    background: #fff;
+    border: 1px solid #d7e7db;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 6px 16px rgba(20, 65, 38, 0.08);
+}
+
+.beneficio-item img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 0.9rem;
+}
+
+.beneficio-item h5 {
+    color: #0b5f2e;
+}
+
+.beneficio-item p {
+    color: #4f6356;
+    margin-bottom: 0;
 }
