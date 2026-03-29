@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PSA.WebApp.Controllers
 {
+    [Authorize]
     public class PagosController : Controller
     {
         [HttpGet]
+        [Authorize(Roles = "1")]
         public IActionResult PlanesPago()
         {
             ViewBag.ModuloActivo = "pagos";
@@ -16,6 +19,7 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "1")]
         public IActionResult DetallePlanPago(int? id = null)
         {
             ViewBag.ModuloActivo = "pagos";
@@ -30,6 +34,7 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "2")]
         public IActionResult HistorialPagos()
         {
             ViewBag.ModuloActivo = "pagos";
