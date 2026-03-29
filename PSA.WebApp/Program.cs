@@ -54,6 +54,7 @@ builder.Services.AddScoped<FincaDAO>(sp =>
 });
 
 builder.Services.AddScoped<AutenticacionManager>();
+builder.Services.AddScoped<RecuperacionContrasenaManager>();
 
 var app = builder.Build();
 
@@ -73,6 +74,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Autenticacion}/{action=IniciarSesion}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

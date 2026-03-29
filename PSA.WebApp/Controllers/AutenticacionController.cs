@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,14 +16,17 @@ namespace PSA.WebApp.Controllers
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
         private readonly AutenticacionManager _autenticacionManager;
+        private readonly RecuperacionContrasenaManager _recuperacionContrasenaManager;
 
         public AutenticacionController(
             IConfiguration configuration,
             AutenticacionManager autenticacionManager,
+            RecuperacionContrasenaManager recuperacionContrasenaManager,
             IServiceProvider serviceProvider)
         {
             _configuration = configuration;
             _autenticacionManager = autenticacionManager;
+            _recuperacionContrasenaManager = recuperacionContrasenaManager;
             _serviceProvider = serviceProvider;
         }
 
@@ -136,26 +140,94 @@ namespace PSA.WebApp.Controllers
             ViewBag.EsAutenticacion = true;
             ViewBag.TituloPagina = "Recuperar contraseña";
             ViewBag.SubtituloPagina = "Ingrese su correo electrónico para iniciar el proceso de recuperación.";
-            return View();
+            return View(new RecuperarContrasenaDTO());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecuperarContrasena(RecuperarContrasenaDTO dto)
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Recuperar contraseña";
+            ViewBag.SubtituloPagina = "Ingrese su correo electrónico para iniciar el proceso de recuperación.";
+
+            if (!ModelState.IsValid)
+            {
+                return View(dto);
+            }
+
+            try
+            {
+                var token = await _recuperacionContrasenaManager.GenerarTokenAsync(dto.Email);
+                TempData["MensajeExito"] = "Se generó un token de recuperación temporal.";
+                return RedirectToAction(nameof(RestablecerContrasena), new { token });
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
         }
 
         [HttpGet]
         public IActionResult RestablecerContrasena(string? token = null)
         {
             ViewBag.EsAutenticacion = true;
-            ViewBag.TokenRecuperacion = token ?? "TOKEN-DE-EJEMPLO";
             ViewBag.TituloPagina = "Restablecer contraseña";
             ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
-            return View();
+
+            var model = new RestablecerContrasenaDTO
+            {
+                Token = token ?? string.Empty
+            };
+
+            if (string.IsNullOrWhiteSpace(token) || !_recuperacionContrasenaManager.TokenEsValido(token))
+            {
+                ViewBag.TokenRecuperacion = "Token inválido o expirado";
+            }
+            else
+            {
+                ViewBag.TokenRecuperacion = token;
+            }
+
+            return View(model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestablecerContrasena(RestablecerContrasenaDTO dto)
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Restablecer contraseña";
+            ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
+            ViewBag.TokenRecuperacion = dto.Token;
+
+            if (!ModelState.IsValid)
+            {
+                return View(dto);
+            }
+
+            try
+            {
+                await _recuperacionContrasenaManager.RestablecerContrasenaAsync(dto.Token, dto.NuevaContrasena);
+                TempData["MensajeExito"] = "Contraseña restablecida correctamente. Ya puede iniciar sesión.";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(dto);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CerrarSesion()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             TempData["MensajeExito"] = "Sesión cerrada correctamente.";
-            return RedirectToAction(nameof(IniciarSesion));
+            return RedirectToAction("Index", "Home");
         }
 
         private static string GetDashboardActionByRole(int idRol)
