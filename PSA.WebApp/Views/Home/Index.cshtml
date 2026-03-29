@@ -1,119 +1,135 @@
 @{
-    ViewData["Title"] = "PSA Costa Rica";
+    ViewData["Title"] = "HummingBird Solutions";
 }
 
-<section class="seccion-pagina landing-principal">
-    <div class="cabecera-pagina landing-hero">
+@section Styles {
+    <link rel="stylesheet" href="~/css/landing.css" asp-append-version="true" />
+}
+
+<div class="hb-landing">
+    <header class="hb-navbar">
         <div>
-            <span class="eyebrow">HummingBird Solutions</span>
-            <h2>Soluciones digitales con enfoque técnico y humano</h2>
-            <p>
-                Diseñamos y construimos soluciones web con estructura, criterio y visión de producto.
-                Desde este portal puede conocer el proyecto y acceder al inicio de sesión de PSA Costa Rica.
-            </p>
+            <span class="badge badge-green">HummingBird Solutions</span>
         </div>
-        <div class="grupo-acciones">
-            <a class="boton-primario" asp-controller="Autenticacion" asp-action="IniciarSesion">Ir a login PSA Costa Rica</a>
-            <a class="boton-secundario" href="#equipo">Conocer al equipo</a>
-        </div>
-    </div>
+        <nav>
+            <a href="#nosotros">Nosotros</a>
+            <a href="#servicios">Servicios</a>
+            <a href="#equipo">Equipo</a>
+            <a href="#producto">Producto</a>
+            <a href="#contacto">Contacto</a>
+        </nav>
+    </header>
 
-    <section class="grid-tarjetas-kpi">
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Equipo</span>
-            <strong>4 integrantes</strong>
-            <small>Roles definidos y trabajo colaborativo.</small>
-        </article>
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Metodología</span>
-            <strong>Scrum</strong>
-            <small>Seguimiento iterativo por sprint.</small>
-        </article>
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Arquitectura</span>
-            <strong>Web + API + SQL</strong>
-            <small>Separación por capas para escalabilidad.</small>
-        </article>
-    </section>
-
-    <section class="tarjeta-panel" id="nosotros">
-        <div class="cabecera-bloque">
-            <h3>Quiénes somos</h3>
-        </div>
-        <p>
-            HummingBird Solutions nace como iniciativa académica con ejecución profesional.
-            Combinamos gestión ágil, análisis de negocio, calidad y desarrollo técnico para entregar
-            soluciones web ordenadas, trazables y enfocadas en valor.
+    <section class="hero">
+        <span class="badge badge-blue">Equipo universitario con presentación de empresa real</span>
+        <h1 class="hero-title">Diseñamos y construimos soluciones web con estructura, criterio y visión de producto.</h1>
+        <p class="hero-subtitle">
+            Somos un equipo enfocado en análisis, diseño y desarrollo de software. Convertimos requerimientos en soluciones
+            funcionales mediante arquitectura clara, documentación sólida y ejecución organizada.
         </p>
-        <div class="landing-pilares">
-            <span>Enfoque profesional</span>
-            <span>Comunicación clara</span>
-            <span>Arquitectura ordenada</span>
-            <span>Calidad en entregables</span>
+        <div class="hb-actions">
+            <a class="btn btn-primary" asp-controller="Autenticacion" asp-action="IniciarSesion">Ir a login PSA Costa Rica</a>
+            <a class="btn btn-outline" href="#equipo">Conocer al equipo</a>
         </div>
     </section>
 
-    <section class="tarjeta-panel" id="servicios">
-        <div class="cabecera-bloque">
-            <h3>Nuestras capacidades principales</h3>
+    <section class="section">
+        <div class="hb-grid-4">
+            <article class="card card-hover">
+                <p class="small-text">Equipo</p>
+                <h3>4 integrantes</h3>
+                <p class="small-text">Roles definidos y trabajo colaborativo.</p>
+            </article>
+            <article class="card card-hover">
+                <p class="small-text">Metodología</p>
+                <h3>Scrum</h3>
+                <p class="small-text">Seguimiento iterativo por sprint.</p>
+            </article>
+            <article class="card card-hover">
+                <p class="small-text">Proyecto actual</p>
+                <h3>PSA Costa Rica</h3>
+                <p class="small-text">Gestión de procesos asociados a servicios ambientales.</p>
+            </article>
+            <article class="card card-hover">
+                <p class="small-text">Enfoque</p>
+                <h3>Web + API + SQL</h3>
+                <p class="small-text">Arquitectura por capas y trazabilidad técnica.</p>
+            </article>
         </div>
-        <div class="grid-dos-paneles">
-            <article>
+    </section>
+
+    <section class="section" id="nosotros">
+        <article class="card card--soft">
+            <h2 class="section-title">Quiénes somos</h2>
+            <p class="section-subtitle">
+                HummingBird Solutions nace como una iniciativa académica con ejecución profesional.
+                Combinamos gestión ágil, análisis de negocio, calidad y desarrollo técnico para entregar soluciones web bien estructuradas.
+            </p>
+            <div class="hb-grid-2">
+                <div class="card">Enfoque profesional</div>
+                <div class="card">Comunicación clara</div>
+                <div class="card">Arquitectura ordenada</div>
+                <div class="card">Calidad en entregables</div>
+            </div>
+        </article>
+    </section>
+
+    <section class="section" id="servicios">
+        <h2 class="section-title">Nuestras capacidades principales</h2>
+        <p class="section-subtitle">Bloques orientados a valor real y ejecución técnica ordenada.</p>
+        <div class="hb-grid-4">
+            <article class="card card-hover card--soft">
                 <h4>Análisis de requerimientos</h4>
                 <p>Transformamos necesidades del cliente en funcionalidades claras, medibles y viables.</p>
             </article>
-            <article>
+            <article class="card card-hover card--soft">
                 <h4>Diseño de solución</h4>
-                <p>Definimos arquitectura, estructura del sistema y experiencia base para implementar con orden.</p>
+                <p>Definimos arquitectura, estructura del sistema y experiencia base para una implementación ordenada.</p>
             </article>
-            <article>
+            <article class="card card-hover card--soft">
                 <h4>Desarrollo web por capas</h4>
-                <p>Construimos con separación entre interfaz, lógica de negocio, datos y persistencia.</p>
+                <p>Construimos soluciones con separación clara entre interfaz, lógica de negocio y persistencia.</p>
             </article>
-            <article>
+            <article class="card card-hover card--soft">
                 <h4>Documentación técnica</h4>
-                <p>Preparamos ERS, IAS, diagramas, backlog y evidencias con enfoque profesional.</p>
+                <p>Preparamos ERS, IAS, diagramas, backlog y evidencias con enfoque profesional y trazable.</p>
             </article>
         </div>
     </section>
 
-    <section class="tarjeta-panel" id="equipo">
-        <div class="cabecera-bloque fila-entre-extremos">
-            <h3>Equipo del proyecto</h3>
-            <a class="boton-link" asp-controller="Home" asp-action="Equipo">Ver ficha completa</a>
-        </div>
-        <div class="grid-dos-paneles">
-            <article class="landing-miembro">
-                <h4>Dennis Cruz Montiel</h4>
-                <p><strong>Product Owner.</strong> Define la visión del producto y prioriza el alcance.</p>
-            </article>
-            <article class="landing-miembro">
-                <h4>Yoel Rojas Arguedas</h4>
-                <p><strong>Scrum Master.</strong> Da seguimiento al avance y facilita la ejecución del equipo.</p>
-            </article>
-            <article class="landing-miembro">
-                <h4>Kimberly Cascante Mora</h4>
-                <p><strong>Coordinación de Calidad.</strong> Asegura consistencia y calidad funcional.</p>
-            </article>
-            <article class="landing-miembro">
-                <h4>Jared Mendez Jimenez</h4>
-                <p><strong>Miembro del equipo.</strong> Apoya la construcción técnica y los entregables clave.</p>
-            </article>
+    <section class="section" id="equipo">
+        <h2 class="section-title">Nuestro equipo</h2>
+        <p class="section-subtitle">Personas, roles y enfoque de trabajo en el proyecto.</p>
+        <div class="hb-grid-4">
+            <article class="card card-hover"><h4>Dennis Cruz Montiel</h4><p><span class="badge badge-green">Product Owner</span></p><p>Define la visión del producto y prioriza el alcance.</p></article>
+            <article class="card card-hover"><h4>Yoel Rojas Arguedas</h4><p><span class="badge badge-blue">Scrum Master</span></p><p>Facilita la ejecución del equipo y da seguimiento al avance.</p></article>
+            <article class="card card-hover"><h4>Kimberly Cascante Mora</h4><p><span class="badge badge-blue">Calidad</span></p><p>Asegura consistencia funcional y calidad de entregables.</p></article>
+            <article class="card card-hover"><h4>Jared Mendez Jimenez</h4><p><span class="badge badge-red">Equipo</span></p><p>Apoya la construcción técnica y la implementación de componentes clave.</p></article>
         </div>
     </section>
 
-    <section class="tarjeta-panel landing-destacado" id="producto">
-        <div class="cabecera-bloque">
-            <h3>Proyecto destacado: PSA Costa Rica</h3>
-        </div>
-        <p>
-            Plataforma para gestión de fincas, evaluación técnica y administración de procesos de pago
-            por servicios ambientales. El sistema mantiene separación por capas para promover orden,
-            mantenibilidad y trazabilidad.
-        </p>
-        <div class="lista-accesos">
-            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="IniciarSesion">Entrar al login</a>
-            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="RegistroUsuario">Registrar usuario</a>
-        </div>
+    <section class="section" id="producto">
+        <article class="card">
+            <h2 class="section-title">Proyecto destacado: PSA Costa Rica</h2>
+            <p class="section-subtitle">
+                Plataforma web orientada a la gestión de fincas, evaluación técnica y administración de procesos asociados
+                a pagos por servicios ambientales.
+            </p>
+            <div class="hb-actions">
+                <a class="btn btn-primary" asp-controller="Autenticacion" asp-action="IniciarSesion">Entrar al login</a>
+                <a class="btn btn-secondary" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear cuenta</a>
+            </div>
+        </article>
     </section>
-</section>
+
+    <section class="section" id="contacto">
+        <article class="card card--soft">
+            <h2 class="section-title">Contacto</h2>
+            <p class="section-subtitle">Listo para convertir esta base en la landing final institucional del equipo.</p>
+            <div class="hb-actions">
+                <a class="btn btn-outline" href="https://github.com/dcruzm-ops/HummingBird_Solutions" target="_blank" rel="noopener noreferrer">Ver repositorio</a>
+                <a class="btn btn-accent" asp-controller="Autenticacion" asp-action="IniciarSesion">Ir al sistema</a>
+            </div>
+        </article>
+    </section>
+</div>
