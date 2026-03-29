@@ -215,6 +215,10 @@
     border-left-color: var(--color-info);
 }
 
+.alerta-error {
+    border-left-color: var(--color-error);
+}
+
 .migas-pan {
     display: flex;
     align-items: center;

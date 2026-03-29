@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess.DAO;
 
@@ -24,8 +25,14 @@ namespace PSA.AppCore.Managers
                 throw new InvalidOperationException("No existe una cuenta asociada al correo indicado.");
             }
 
-            var token = Guid.NewGuid().ToString("N");
-            TokensActivos[token] = (email, DateTime.UtcNow.AddMinutes(30));
+            // Invalida tokens previos del mismo correo para dejar uno vigente.
+            foreach (var item in TokensActivos.Where(t => t.Value.Email.Equals(email, StringComparison.OrdinalIgnoreCase)).ToList())
+            {
+                TokensActivos.TryRemove(item.Key, out _);
+            }
+
+            var token = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+            TokensActivos[token] = (email, DateTime.UtcNow.AddMinutes(3));
             return token;
         }
 
@@ -45,14 +52,19 @@ namespace PSA.AppCore.Managers
             return true;
         }
 
-        public async Task RestablecerContrasenaAsync(string token, string nuevaContrasena)
+        public string ObtenerEmailPorToken(string token)
         {
             if (!TokenEsValido(token))
             {
                 throw new InvalidOperationException("El token es inválido o expiró.");
             }
 
-            var (email, _) = TokensActivos[token];
+            return TokensActivos[token].Email;
+        }
+
+        public async Task RestablecerContrasenaAsync(string token, string nuevaContrasena)
+        {
+            var email = ObtenerEmailPorToken(token);
             var hash = _servicioHash.GenerarHash(nuevaContrasena);
             await _usuarioDAO.ActualizarPasswordHashPorEmailAsync(email, hash);
             TokensActivos.TryRemove(token, out _);

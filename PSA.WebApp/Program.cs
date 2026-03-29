@@ -2,6 +2,7 @@ using PSA.AppCore.Managers;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess.DAO;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using PSA.WebApp.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,7 @@ builder.Services.AddScoped<FincaDAO>(sp =>
 
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
+builder.Services.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
 
 var app = builder.Build();
 
