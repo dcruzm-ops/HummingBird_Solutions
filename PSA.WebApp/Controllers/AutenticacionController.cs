@@ -194,6 +194,7 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RestablecerContrasena(RestablecerContrasenaDTO dto)
         {
