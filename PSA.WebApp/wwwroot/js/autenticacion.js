@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("formularioIniciarSesion"),
         document.getElementById("formularioRegistroUsuario"),
         document.getElementById("formularioRecuperarContrasena"),
+        document.getElementById("formularioValidarToken"),
         document.getElementById("formularioRestablecerContrasena")
     ].filter(Boolean);
 
