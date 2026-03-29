@@ -1,0 +1,34 @@
+.psa-landing {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0b1e2a 0%, #12354a 100%);
+    color: #f5fbff;
+}
+
+.psa-hero .lead {
+    max-width: 860px;
+    margin-inline: auto;
+    color: rgba(245, 251, 255, 0.9);
+}
+
+.psa-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 18px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.psa-card h5,
+.psa-beneficios h5 {
+    color: #ffffff;
+}
+
+.psa-card p,
+.psa-beneficios p {
+    color: rgba(245, 251, 255, 0.85);
+    margin-bottom: 0;
+}
+
+.psa-beneficios {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
