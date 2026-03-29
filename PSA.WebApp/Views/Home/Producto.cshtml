@@ -1,0 +1,69 @@
+@{
+    ViewData["Title"] = "PSA Costa Rica";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/producto-landing.css" asp-append-version="true" />
+}
+
+<div class="psa-landing">
+    <section class="psa-hero container py-5 text-center">
+        <img src="https://cdn-icons-png.flaticon.com/512/427/427735.png" alt="PSA Costa Rica" width="96" class="mb-3" />
+        <h1 class="display-5 fw-bold">PSA Costa Rica</h1>
+        <p class="lead">
+            Sistema para la gestión de <strong>Pagos por Servicios Ambientales</strong> en Costa Rica.
+            Digitaliza el flujo operativo desde fincas hasta pagos.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap mt-4">
+            <a asp-controller="Autenticacion" asp-action="IniciarSesion" class="btn btn-success btn-lg">🚀 Iniciar sesión</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light btn-lg">← Volver a HummingBird</a>
+        </div>
+    </section>
+
+    <section class="container pb-5">
+        <h2 class="text-center mb-4">⚙️ ¿Qué permite este sistema?</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <article class="psa-card h-100 text-center p-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" width="70" class="mx-auto mb-3" alt="Gestión de fincas" />
+                    <h5>Gestión de fincas</h5>
+                    <p>Registro y administración de fincas de forma eficiente.</p>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="psa-card h-100 text-center p-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2910/2910791.png" width="70" class="mx-auto mb-3" alt="Evaluaciones técnicas" />
+                    <h5>Evaluaciones técnicas</h5>
+                    <p>Control y seguimiento de evaluaciones realizadas.</p>
+                </article>
+            </div>
+            <div class="col-md-4">
+                <article class="psa-card h-100 text-center p-4">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135706.png" width="70" class="mx-auto mb-3" alt="Control de pagos" />
+                    <h5>Control de pagos</h5>
+                    <p>Administración clara de pagos y estados financieros.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="container pb-5">
+        <div class="psa-beneficios p-4 p-md-5 rounded-4">
+            <h2 class="text-center mb-4">🌱 Beneficios</h2>
+            <div class="row text-center g-4">
+                <div class="col-md-4">
+                    <h5>🔍 Transparencia</h5>
+                    <p>Procesos claros, visibles y auditables para todos los roles.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>📈 Seguimiento</h5>
+                    <p>Control completo del ciclo de evaluación y estado de pagos.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>🗂️ Centralización</h5>
+                    <p>Información integrada en una sola plataforma con historial trazable.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
