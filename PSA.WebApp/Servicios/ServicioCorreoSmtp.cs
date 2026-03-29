@@ -14,26 +14,31 @@ namespace PSA.WebApp.Servicios
 
         public async Task EnviarAsync(string destinatario, string asunto, string cuerpoTextoPlano)
         {
-            var host = _configuration["EmailSettings:SmtpHost"];
-            var puerto = int.TryParse(_configuration["EmailSettings:SmtpPort"], out var p) ? p : 587;
-            var usuario = _configuration["EmailSettings:Username"];
-            var password = _configuration["EmailSettings:Password"];
-            if (string.IsNullOrWhiteSpace(password))
+            var host = GetSetting("EmailSettings:SmtpHost", "PSA_EMAIL_SMTP_HOST");
+            var puertoRaw = GetSetting("EmailSettings:SmtpPort", "PSA_EMAIL_SMTP_PORT");
+            var puerto = int.TryParse(puertoRaw, out var p) ? p : 587;
+            var usuario = GetSetting("EmailSettings:Username", "PSA_EMAIL_SMTP_USERNAME");
+            var password = GetSetting("EmailSettings:Password", "PSA_EMAIL_SMTP_PASSWORD");
+
+            if (string.IsNullOrWhiteSpace(password) || password.StartsWith("__USE_ENV_", StringComparison.Ordinal))
             {
-                password = _configuration["EmailSettings:ApiKey"];
+                password = GetSetting("EmailSettings:ApiKey", "PSA_EMAIL_API_KEY");
             }
-            var fromEmail = _configuration["EmailSettings:FromEmail"];
+
+            var fromEmail = GetSetting("EmailSettings:FromEmail", "PSA_EMAIL_FROM");
             if (string.IsNullOrWhiteSpace(fromEmail))
             {
-                var domain = _configuration["EmailSettings:SenderDomain"];
+                var domain = GetSetting("EmailSettings:SenderDomain", "PSA_EMAIL_SENDER_DOMAIN");
                 fromEmail = !string.IsNullOrWhiteSpace(domain) ? $"do-not-reply@{domain}" : usuario;
             }
-            var fromName = _configuration["EmailSettings:FromName"] ?? "PSA Costa Rica";
-            var ssl = bool.TryParse(_configuration["EmailSettings:EnableSsl"], out var useSsl) ? useSsl : true;
 
-            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(fromEmail))
+            var fromName = GetSetting("EmailSettings:FromName", "PSA_EMAIL_FROM_NAME") ?? "PSA Costa Rica";
+            var sslRaw = GetSetting("EmailSettings:EnableSsl", "PSA_EMAIL_ENABLE_SSL");
+            var ssl = bool.TryParse(sslRaw, out var useSsl) ? useSsl : true;
+
+            if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(fromEmail) || string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(password))
             {
-                throw new InvalidOperationException("La configuración SMTP no está completa.");
+                throw new InvalidOperationException("La configuración SMTP no está completa. Configure variables de entorno seguras para credenciales.");
             }
 
             using var mensaje = new MailMessage
@@ -49,15 +54,23 @@ namespace PSA.WebApp.Servicios
             {
                 EnableSsl = ssl,
                 DeliveryMethod = SmtpDeliveryMethod.Network,
-                UseDefaultCredentials = false
+                UseDefaultCredentials = false,
+                Credentials = new NetworkCredential(usuario, password)
             };
 
-            if (!string.IsNullOrWhiteSpace(usuario))
+            await smtp.SendMailAsync(mensaje);
+        }
+
+        private string? GetSetting(string configKey, string envKey)
+        {
+            var fromEnv = Environment.GetEnvironmentVariable(envKey);
+            if (!string.IsNullOrWhiteSpace(fromEnv))
             {
-                smtp.Credentials = new NetworkCredential(usuario, password);
+                return fromEnv;
             }
 
-            await smtp.SendMailAsync(mensaje);
+            var fromConfig = _configuration[configKey];
+            return string.IsNullOrWhiteSpace(fromConfig) ? null : fromConfig;
         }
     }
 }
