@@ -1,49 +1,119 @@
-﻿@{
+@{
     ViewData["Title"] = "PSA Costa Rica";
 }
 
-<section class="seccion-pagina">
-    <div class="cabecera-pagina">
+<section class="seccion-pagina landing-principal">
+    <div class="cabecera-pagina landing-hero">
         <div>
-            <span class="eyebrow">Portal principal</span>
-            <h2>PSA Costa Rica</h2>
-            <p>Sistema para la gestión de pagos por servicios ambientales en Costa Rica.</p>
+            <span class="eyebrow">HummingBird Solutions</span>
+            <h2>Soluciones digitales con enfoque técnico y humano</h2>
+            <p>
+                Diseñamos y construimos soluciones web con estructura, criterio y visión de producto.
+                Desde este portal puede conocer el proyecto y acceder al inicio de sesión de PSA Costa Rica.
+            </p>
         </div>
-        <a class="boton-primario" asp-controller="Autenticacion" asp-action="IniciarSesion">Iniciar sesión</a>
+        <div class="grupo-acciones">
+            <a class="boton-primario" asp-controller="Autenticacion" asp-action="IniciarSesion">Ir a login PSA Costa Rica</a>
+            <a class="boton-secundario" href="#equipo">Conocer al equipo</a>
+        </div>
     </div>
 
-    <div class="grid-dos-paneles">
-        <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>¿Qué permite este sistema?</h3>
-            </div>
-            <ul class="lista-timeline">
-                <li><a asp-controller="Fincas" asp-action="MisFincas">Gestión de fincas</a></li>
-                <li><a asp-controller="Evaluaciones" asp-action="FincasPendientes">Evaluaciones técnicas</a></li>
-                <li><a asp-controller="Pagos" asp-action="PlanesPago">Control de pagos</a></li>
-            </ul>
-        </section>
+    <section class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Equipo</span>
+            <strong>4 integrantes</strong>
+            <small>Roles definidos y trabajo colaborativo.</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Metodología</span>
+            <strong>Scrum</strong>
+            <small>Seguimiento iterativo por sprint.</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Arquitectura</span>
+            <strong>Web + API + SQL</strong>
+            <small>Separación por capas para escalabilidad.</small>
+        </article>
+    </section>
 
-        <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Beneficios</h3>
-            </div>
-            <ul class="lista-timeline">
-                <li><a asp-controller="Reportes" asp-action="Index">Transparencia en procesos</a></li>
-                <li><a asp-controller="Pagos" asp-action="HistorialPagos">Seguimiento de pagos</a></li>
-                <li><a asp-controller="Administracion" asp-action="AuditoriaLogs">Centralización de información</a></li>
-            </ul>
-        </section>
-    </div>
-
-    <section class="tarjeta-panel">
+    <section class="tarjeta-panel" id="nosotros">
         <div class="cabecera-bloque">
-            <h3>Accesos rápidos</h3>
+            <h3>Quiénes somos</h3>
         </div>
+        <p>
+            HummingBird Solutions nace como iniciativa académica con ejecución profesional.
+            Combinamos gestión ágil, análisis de negocio, calidad y desarrollo técnico para entregar
+            soluciones web ordenadas, trazables y enfocadas en valor.
+        </p>
+        <div class="landing-pilares">
+            <span>Enfoque profesional</span>
+            <span>Comunicación clara</span>
+            <span>Arquitectura ordenada</span>
+            <span>Calidad en entregables</span>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel" id="servicios">
+        <div class="cabecera-bloque">
+            <h3>Nuestras capacidades principales</h3>
+        </div>
+        <div class="grid-dos-paneles">
+            <article>
+                <h4>Análisis de requerimientos</h4>
+                <p>Transformamos necesidades del cliente en funcionalidades claras, medibles y viables.</p>
+            </article>
+            <article>
+                <h4>Diseño de solución</h4>
+                <p>Definimos arquitectura, estructura del sistema y experiencia base para implementar con orden.</p>
+            </article>
+            <article>
+                <h4>Desarrollo web por capas</h4>
+                <p>Construimos con separación entre interfaz, lógica de negocio, datos y persistencia.</p>
+            </article>
+            <article>
+                <h4>Documentación técnica</h4>
+                <p>Preparamos ERS, IAS, diagramas, backlog y evidencias con enfoque profesional.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel" id="equipo">
+        <div class="cabecera-bloque fila-entre-extremos">
+            <h3>Equipo del proyecto</h3>
+            <a class="boton-link" asp-controller="Home" asp-action="Equipo">Ver ficha completa</a>
+        </div>
+        <div class="grid-dos-paneles">
+            <article class="landing-miembro">
+                <h4>Dennis Cruz Montiel</h4>
+                <p><strong>Product Owner.</strong> Define la visión del producto y prioriza el alcance.</p>
+            </article>
+            <article class="landing-miembro">
+                <h4>Yoel Rojas Arguedas</h4>
+                <p><strong>Scrum Master.</strong> Da seguimiento al avance y facilita la ejecución del equipo.</p>
+            </article>
+            <article class="landing-miembro">
+                <h4>Kimberly Cascante Mora</h4>
+                <p><strong>Coordinación de Calidad.</strong> Asegura consistencia y calidad funcional.</p>
+            </article>
+            <article class="landing-miembro">
+                <h4>Jared Mendez Jimenez</h4>
+                <p><strong>Miembro del equipo.</strong> Apoya la construcción técnica y los entregables clave.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel landing-destacado" id="producto">
+        <div class="cabecera-bloque">
+            <h3>Proyecto destacado: PSA Costa Rica</h3>
+        </div>
+        <p>
+            Plataforma para gestión de fincas, evaluación técnica y administración de procesos de pago
+            por servicios ambientales. El sistema mantiene separación por capas para promover orden,
+            mantenibilidad y trazabilidad.
+        </p>
         <div class="lista-accesos">
-            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="IniciarSesion">Acceder al sistema</a>
-            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear cuenta</a>
-            <a class="acceso-rapido" asp-controller="Home" asp-action="Equipo">Conocer el equipo</a>
+            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="IniciarSesion">Entrar al login</a>
+            <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="RegistroUsuario">Registrar usuario</a>
         </div>
     </section>
 </section>
