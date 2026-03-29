@@ -20,7 +20,7 @@ namespace PSA.AppCore.Managers
             _servicioHash = servicioHash;
         }
 
-        public async Task<string> GenerarTokenAsync(string email)
+        public async Task<(string Token, string NombreUsuario)> GenerarTokenConNombreAsync(string email)
         {
             var usuario = await _usuarioDAO.ObtenerPorEmailAsync(email);
             if (usuario == null)
@@ -32,13 +32,19 @@ namespace PSA.AppCore.Managers
 
             var token = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
             await _tokenRecuperacionDAO.CrearTokenAsync(usuario.IdUsuario, token, DateTime.UtcNow.AddMinutes(3));
-            return token;
+            return (token, usuario.NombreCompleto);
         }
 
         public async Task<bool> TokenEsValidoAsync(string token)
         {
             var registro = await _tokenRecuperacionDAO.ObtenerTokenVigenteAsync(token);
             return registro != null;
+        }
+
+        public async Task<string> GenerarTokenAsync(string email)
+        {
+            var resultado = await GenerarTokenConNombreAsync(email);
+            return resultado.Token;
         }
 
         // Compatibilidad con llamadas existentes que usen versión sincrónica.

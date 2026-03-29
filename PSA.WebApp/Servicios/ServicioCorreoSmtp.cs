@@ -19,6 +19,10 @@ namespace PSA.WebApp.Servicios
             var usuario = _configuration["EmailSettings:Username"];
             var password = _configuration["EmailSettings:Password"];
             var fromEmail = _configuration["EmailSettings:FromEmail"];
+            if (string.IsNullOrWhiteSpace(fromEmail))
+            {
+                fromEmail = usuario;
+            }
             var fromName = _configuration["EmailSettings:FromName"] ?? "PSA Costa Rica";
             var ssl = bool.TryParse(_configuration["EmailSettings:EnableSsl"], out var useSsl) ? useSsl : true;
 

@@ -162,13 +162,31 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var token = await _recuperacionContrasenaManager.GenerarTokenAsync(dto.Email);
+                var (token, nombreUsuario) = await _recuperacionContrasenaManager.GenerarTokenConNombreAsync(dto.Email);
                 try
                 {
+                    var cuerpoCorreo = $@"Estimado(a) {nombreUsuario},
+
+Hemos recibido una solicitud para restablecer la contraseña de su cuenta en el sistema PSA Costa Rica.
+
+Para continuar con el proceso de recuperación, utilice el siguiente token de verificación:
+
+{token}
+
+Este token tiene una vigencia de 3 minutos a partir del momento en que fue generado. Una vez transcurrido ese tiempo, expirará automáticamente y deberá solicitar uno nuevo.
+
+Si usted no realizó esta solicitud, puede ignorar este correo. No se realizará ningún cambio en su cuenta sin una validación correcta del token.
+
+Importante: este es un correo automático enviado desde una cuenta Do-Not-Reply. Por favor, no responda a este mensaje.
+
+Atentamente,
+Sistema PSA Costa Rica
+Cuenta automática Do-Not-Reply";
+
                     await _servicioCorreo.EnviarAsync(
                         dto.Email,
-                        "Token de recuperación - PSA Costa Rica",
-                        $"Su token de recuperación es: {token}. Este token vence en 3 minutos."
+                        "PSA Costa Rica - Token de recuperación de contraseña",
+                        cuerpoCorreo
                     );
                     TempData["MensajeExito"] = "Se envió el token de recuperación al correo indicado.";
                 }
