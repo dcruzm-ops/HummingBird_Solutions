@@ -54,6 +54,19 @@ builder.Services.AddScoped<FincaDAO>(sp =>
     return new FincaDAO(connectionString);
 });
 
+builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
+    }
+
+    return new TokenRecuperacionDAO(connectionString);
+});
+
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
 builder.Services.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
