@@ -113,6 +113,28 @@ WHERE IdRol = @IdRol;";
             return resultado != null;
         }
 
+
+        public async Task ActualizarPasswordHashPorEmailAsync(string email, string passwordHash)
+        {
+            const string sql = @"
+UPDATE Usuarios
+SET PasswordHash = @PasswordHash
+WHERE Email = @Email;";
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@PasswordHash", passwordHash);
+            command.Parameters.AddWithValue("@Email", email);
+
+            await connection.OpenAsync();
+            var filas = await command.ExecuteNonQueryAsync();
+
+            if (filas <= 0)
+            {
+                throw new InvalidOperationException("No fue posible actualizar la contraseña para el correo indicado.");
+            }
+        }
+
         public async Task ActualizarUltimoAccesoAsync(int idUsuario, DateTime fechaUltimoAcceso)
         {
             const string sql = @"

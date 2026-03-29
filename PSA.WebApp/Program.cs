@@ -54,6 +54,7 @@ builder.Services.AddScoped<FincaDAO>(sp =>
 });
 
 builder.Services.AddScoped<AutenticacionManager>();
+builder.Services.AddScoped<RecuperacionContrasenaManager>();
 
 var app = builder.Build();
 
