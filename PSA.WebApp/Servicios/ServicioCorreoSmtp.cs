@@ -18,10 +18,15 @@ namespace PSA.WebApp.Servicios
             var puerto = int.TryParse(_configuration["EmailSettings:SmtpPort"], out var p) ? p : 587;
             var usuario = _configuration["EmailSettings:Username"];
             var password = _configuration["EmailSettings:Password"];
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                password = _configuration["EmailSettings:ApiKey"];
+            }
             var fromEmail = _configuration["EmailSettings:FromEmail"];
             if (string.IsNullOrWhiteSpace(fromEmail))
             {
-                fromEmail = usuario;
+                var domain = _configuration["EmailSettings:SenderDomain"];
+                fromEmail = !string.IsNullOrWhiteSpace(domain) ? $"do-not-reply@{domain}" : usuario;
             }
             var fromName = _configuration["EmailSettings:FromName"] ?? "PSA Costa Rica";
             var ssl = bool.TryParse(_configuration["EmailSettings:EnableSsl"], out var useSsl) ? useSsl : true;
