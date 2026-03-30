@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PSA.WebApp.Controllers
 {
+    [Authorize]
     public class DashboardController : Controller
     {
         [HttpGet]
+        [Authorize(Roles = "2")]
         public IActionResult Dueno()
         {
             ViewBag.ModuloActivo = "dashboard";
@@ -16,6 +19,7 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "3")]
         public IActionResult Ingeniero()
         {
             ViewBag.ModuloActivo = "dashboard";
@@ -27,6 +31,7 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "1")]
         public IActionResult Administrador()
         {
             ViewBag.ModuloActivo = "dashboard";

@@ -5,6 +5,23 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<RootNamespace>PSA.EntidadesDTO</RootNamespace>
+		<EnableDefaultCompileItems>false</EnableDefaultCompileItems>
 	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+		<Compile Include="DTOs\FincaDetalleDTO.cs" />
+		<Compile Include="DTOs\FincaResumenDTO.cs" />
+		<Compile Include="DTOs\InicioSesionDTO.cs" />
+		<Compile Include="DTOs\RecuperarContrasenaDTO.cs" />
+		<Compile Include="DTOs\RegistrarFincaDTO.cs" />
+		<Compile Include="DTOs\RegistrarUsuarioDTO.cs" />
+		<Compile Include="DTOs\RespuestaInicioSesionDTO.cs" />
+		<Compile Include="DTOs\RestablecerContrasenaDTO.cs" />
+		<Compile Include="DTOs\ValidarTokenRecuperacionDTO.cs" />
+		<Compile Include="Entidades\Rol.cs" />
+		<Compile Include="Entidades\TokenRecuperacion.cs" />
+		<Compile Include="Entidades\Usuario.cs" />
+	</ItemGroup>
 
 </Project>
