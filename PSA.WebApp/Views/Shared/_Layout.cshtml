@@ -19,6 +19,12 @@
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body class="aplicacion-shell">
+    <div id="trobberGlobal" class="trobber-global d-none" aria-hidden="true">
+        <div class="trobber-global__panel" role="status" aria-live="polite" aria-label="Cargando">
+            <span class="spinner-border" aria-hidden="true"></span>
+            <span>Cargando, por favor espere...</span>
+        </div>
+    </div>
     @if (usuarioAutenticado)
     {
         @await Html.PartialAsync("_Encabezado")
