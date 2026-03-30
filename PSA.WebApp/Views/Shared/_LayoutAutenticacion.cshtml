@@ -14,6 +14,12 @@
     <link rel="stylesheet" href="~/css/autenticacion.css" asp-append-version="true" />
 </head>
 <body class="pagina-autenticacion">
+    <div id="trobberGlobal" class="trobber-global d-none" aria-hidden="true">
+        <div class="trobber-global__panel" role="status" aria-live="polite" aria-label="Cargando">
+            <span class="spinner-border" aria-hidden="true"></span>
+            <span>Cargando, por favor espere...</span>
+        </div>
+    </div>
     <main class="autenticacion-layout" role="main">
         <section class="autenticacion-panel-marca">
             <div class="marca-sistema">
@@ -27,11 +33,6 @@
                     <li>Seguimiento por rol</li>
                     <li>Control de pagos y auditoría</li>
                 </ul>
-                <div class="lista-accesos">
-                    <a class="acceso-rapido" asp-controller="Home" asp-action="Index">Ir al inicio</a>
-                    <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="IniciarSesion">Iniciar sesión</a>
-                    <a class="acceso-rapido" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear cuenta</a>
-                </div>
             </div>
         </section>
         <section class="autenticacion-panel-formulario">

@@ -9,6 +9,10 @@ body {
     min-height: 100%;
 }
 
+body.trobber-activo {
+    overflow: hidden;
+}
+
 body {
     margin: 0;
     font-family: var(--tipografia-principal);
@@ -40,6 +44,30 @@ textarea {
 
 main {
     display: block;
+}
+
+.trobber-global {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.35);
+    backdrop-filter: blur(1px);
+    z-index: 1200;
+    display: grid;
+    place-items: center;
+    padding: var(--espacio-4);
+}
+
+.trobber-global__panel {
+    background: var(--color-superficie);
+    color: var(--color-texto-principal);
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-sm);
+    padding: var(--espacio-4) var(--espacio-5);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-3);
+    font-weight: 600;
 }
 
 .eyebrow {

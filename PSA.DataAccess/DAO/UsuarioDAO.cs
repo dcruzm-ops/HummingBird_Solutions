@@ -96,6 +96,45 @@ WHERE Email = @Email;";
             };
         }
 
+
+        public async Task<Usuario?> ObtenerPorIdAsync(int idUsuario)
+        {
+            const string sql = @"
+SELECT TOP 1
+    IdUsuario,
+    NombreCompleto,
+    Email,
+    PasswordHash,
+    IdRol,
+    Estado,
+    FechaCreacion,
+    UltimoAcceso
+FROM Usuarios
+WHERE IdUsuario = @IdUsuario;";
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+                return null;
+
+            return new Usuario
+            {
+                IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                NombreCompleto = reader["NombreCompleto"]?.ToString() ?? string.Empty,
+                Email = reader["Email"]?.ToString() ?? string.Empty,
+                PasswordHash = reader["PasswordHash"] == DBNull.Value ? null : reader["PasswordHash"]?.ToString(),
+                IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
+                Estado = reader["Estado"]?.ToString() ?? string.Empty,
+                FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
+                UltimoAcceso = reader["UltimoAcceso"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("UltimoAcceso"))
+            };
+        }
+
         public async Task<bool> ExisteRolAsync(int idRol)
         {
             const string sql = @"
@@ -111,6 +150,28 @@ WHERE IdRol = @IdRol;";
             var resultado = await command.ExecuteScalarAsync();
 
             return resultado != null;
+        }
+
+
+        public async Task ActualizarPasswordHashPorEmailAsync(string email, string passwordHash)
+        {
+            const string sql = @"
+UPDATE Usuarios
+SET PasswordHash = @PasswordHash
+WHERE Email = @Email;";
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@PasswordHash", passwordHash);
+            command.Parameters.AddWithValue("@Email", email);
+
+            await connection.OpenAsync();
+            var filas = await command.ExecuteNonQueryAsync();
+
+            if (filas <= 0)
+            {
+                throw new InvalidOperationException("No fue posible actualizar la contraseña para el correo indicado.");
+            }
         }
 
         public async Task ActualizarUltimoAccesoAsync(int idUsuario, DateTime fechaUltimoAcceso)
