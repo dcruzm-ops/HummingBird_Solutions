@@ -1,6 +1,16 @@
 @{
+    var mensajeExitoHtml = TempData["MensajeExitoHtml"]?.ToString();
     var mensajeExito = TempData["MensajeExito"]?.ToString();
     var mensajeError = TempData["MensajeError"]?.ToString();
+}
+
+@if (!string.IsNullOrWhiteSpace(mensajeExitoHtml))
+{
+    <section class="mensajes-sistema">
+        <article class="alerta alerta-info" role="status" data-auto-dismiss-ms="9000">
+            @Html.Raw(mensajeExitoHtml)
+        </article>
+    </section>
 }
 
 @if (!string.IsNullOrWhiteSpace(mensajeExito))

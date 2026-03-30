@@ -7,25 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var boton = formulario.querySelector("[data-loading-button]");
     var textoBoton = formulario.querySelector("[data-loading-texto]");
     var spinnerBoton = formulario.querySelector("[data-loading-spinner]");
-    var trobberFormulario = document.getElementById("trobberFormularioFinca");
-
-    function mostrarTrobberFormulario() {
-        if (!trobberFormulario) {
-            return;
-        }
-
-        trobberFormulario.classList.remove("d-none");
-        trobberFormulario.setAttribute("aria-hidden", "false");
-    }
-
-    function ocultarTrobberFormulario() {
-        if (!trobberFormulario) {
-            return;
-        }
-
-        trobberFormulario.classList.add("d-none");
-        trobberFormulario.setAttribute("aria-hidden", "true");
-    }
 
     var provinciaSelect = document.getElementById("provinciaSelect");
     var cantonSelect = document.getElementById("cantonSelect");
@@ -38,6 +19,46 @@ document.addEventListener("DOMContentLoaded", function () {
     var tieneNacientesCheck = document.getElementById("tieneNacientes");
     var cantidadNacientesInput = document.getElementById("cantidadNacientes");
     var tieneRecursosHidricosInput = document.getElementById("tieneRecursosHidricos");
+
+    function obtenerMensajeValidacion(campo) {
+        var nombreCampo = (campo.labels && campo.labels[0] && campo.labels[0].textContent)
+            ? campo.labels[0].textContent.trim()
+            : "Este campo";
+
+        if (campo.validity.valueMissing) {
+            return "El campo '" + nombreCampo + "' es obligatorio.";
+        }
+
+        if (campo.validity.typeMismatch) {
+            return "El valor de '" + nombreCampo + "' no es válido.";
+        }
+
+        if (campo.validity.rangeUnderflow || campo.validity.rangeOverflow) {
+            return "El valor de '" + nombreCampo + "' está fuera del rango permitido.";
+        }
+
+        if (campo.validity.stepMismatch) {
+            return "El formato numérico de '" + nombreCampo + "' no es válido.";
+        }
+
+        return "";
+    }
+
+    function configurarMensajesValidacionEspanol() {
+        formulario.querySelectorAll("input, select, textarea").forEach(function (campo) {
+            campo.addEventListener("invalid", function () {
+                campo.setCustomValidity(obtenerMensajeValidacion(campo));
+            });
+
+            campo.addEventListener("input", function () {
+                campo.setCustomValidity("");
+            });
+
+            campo.addEventListener("change", function () {
+                campo.setCustomValidity("");
+            });
+        });
+    }
 
     var catalogosBase = {
         vegetacion: ["Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto"],
@@ -276,7 +297,13 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        mapa = window.L.map("mapaUbicacionFinca").setView([9.7489, -83.7534], 8);
+        mapa = window.L.map("mapaUbicacionFinca", {
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            tap: false
+        }).setView([9.7489, -83.7534], 8);
 
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -424,6 +451,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tieneNacientesCheck.addEventListener("change", sincronizarRecursosHidricos);
     }
 
+    configurarMensajesValidacionEspanol();
     inicializarCatalogosConfigurables();
     inicializarUbicaciones();
     inicializarMapa();
@@ -436,8 +464,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
         colocarPin(Number(latitudInput.value), Number(longitudInput.value), true);
     }
-
-    window.addEventListener("pageshow", ocultarTrobberFormulario);
 
     formulario.addEventListener("submit", function (evento) {
         var latitud = latitudInput ? Number(latitudInput.value) : NaN;
@@ -465,7 +491,6 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        mostrarTrobberFormulario();
         boton.disabled = true;
         boton.setAttribute("aria-busy", "true");
 

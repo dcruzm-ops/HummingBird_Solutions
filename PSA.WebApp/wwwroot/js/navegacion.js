@@ -49,6 +49,17 @@ document.addEventListener("DOMContentLoaded", function () {
     window.psa.mostrarTrobberGlobal = mostrarTrobber;
     window.psa.ocultarTrobberGlobal = ocultarTrobber;
 
+    var alertasAutoDismiss = document.querySelectorAll("[data-auto-dismiss-ms]");
+    alertasAutoDismiss.forEach(function (alerta) {
+        var tiempo = Number(alerta.getAttribute("data-auto-dismiss-ms")) || 8000;
+        window.setTimeout(function () {
+            alerta.classList.add("alerta-desvanecer");
+            window.setTimeout(function () {
+                alerta.remove();
+            }, 550);
+        }, tiempo);
+    });
+
     document.querySelectorAll("a[href]").forEach(function (enlace) {
         enlace.addEventListener("click", function (evento) {
             if (evento.defaultPrevented || !enlace.href) {
@@ -70,6 +81,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll("form").forEach(function (formulario) {
         formulario.addEventListener("submit", function () {
+            if (formulario.hasAttribute("data-omitir-trobber-global")) {
+                return;
+            }
+
             if (formulario.checkValidity()) {
                 mostrarTrobber();
             }

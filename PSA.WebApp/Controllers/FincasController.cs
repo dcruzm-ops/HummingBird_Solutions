@@ -5,6 +5,7 @@ using System.Security.Claims;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace PSA.WebApp.Controllers
 {
@@ -77,15 +78,49 @@ namespace PSA.WebApp.Controllers
                     return View(dto);
                 }
 
-                TempData["MensajeExito"] = "Finca registrada correctamente.";
+                var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
+                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
                 return RedirectToAction(nameof(MisFincas));
             }
             catch
             {
-                await _fincaDAO.CrearFincaAsync(dto);
-                TempData["MensajeExito"] = "Finca registrada correctamente (modo local).";
+                var idFincaRegistrada = await _fincaDAO.CrearFincaAsync(dto);
+                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada, true);
                 return RedirectToAction(nameof(MisFincas));
             }
+        }
+
+        private async Task<int> ObtenerIdFincaDesdeRespuestaAsync(HttpResponseMessage response)
+        {
+            try
+            {
+                using var stream = await response.Content.ReadAsStreamAsync();
+                using var documento = await JsonDocument.ParseAsync(stream);
+                if (documento.RootElement.TryGetProperty("IdFinca", out var idFincaElemento)
+                    && idFincaElemento.TryGetInt32(out var idFinca))
+                {
+                    return idFinca;
+                }
+            }
+            catch
+            {
+                // Si no se puede leer el cuerpo, se mantiene el fallback en 0.
+            }
+
+            return 0;
+        }
+
+        private string ConstruirMensajeExitoRegistroFinca(int idFinca, bool modoLocal = false)
+        {
+            var sufijoModo = modoLocal ? " (modo local)" : string.Empty;
+            var mensajeBase = $"Finca registrada correctamente{sufijoModo}.";
+            if (idFinca <= 0)
+            {
+                return mensajeBase;
+            }
+
+            var urlDetalle = Url.Action("DetalleFinca", "Fincas", new { id = idFinca }) ?? "#";
+            return $"{mensajeBase} <a href=\"{urlDetalle}\">Ver detalle de la finca</a>.";
         }
 
         [HttpGet]
