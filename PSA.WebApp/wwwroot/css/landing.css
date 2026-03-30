@@ -170,3 +170,161 @@
   .hb-navbar nav a { margin-left: 0; margin-right: 14px; }
   .hb-grid-4 { grid-template-columns: 1fr; }
 }
+
+/* Ajustes visuales de contraste y profesionalismo */
+.hb-landing {
+  position: relative;
+  overflow: hidden;
+}
+
+.hb-landing .hero,
+.hb-landing .section {
+  position: relative;
+}
+
+.hb-landing .hero--with-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(7, 19, 26, 0.9) 0%, rgba(7, 19, 26, 0.82) 45%, rgba(7, 19, 26, 0.65) 100%);
+  pointer-events: none;
+}
+
+.hb-landing .hero > * {
+  position: relative;
+  z-index: 2;
+}
+
+.hb-landing .section--soft {
+  background: linear-gradient(180deg, rgba(19, 42, 54, 0.55), rgba(24, 56, 71, 0.4));
+}
+
+.hb-landing .section--with-image::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(7, 19, 26, 0.88), rgba(7, 19, 26, 0.72));
+  pointer-events: none;
+  z-index: 1;
+}
+
+.hb-landing .section--with-image > *:not(.section-watermark) {
+  position: relative;
+  z-index: 2;
+}
+
+.hb-landing .section-watermark {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: min(44vw, 620px);
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.2;
+  filter: saturate(0.7) contrast(1.05);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hb-landing .hero .section-watermark {
+  width: min(56vw, 900px);
+  opacity: 0.22;
+}
+
+.hb-landing .hero-subtitle,
+.hb-landing .section-subtitle,
+.hb-landing .card p,
+.hb-landing .small-text,
+.hb-navbar nav a {
+  color: #d2e3ed;
+}
+
+.hb-navbar nav a:hover {
+  color: #6eb6ff;
+}
+
+.hb-landing .card h3,
+.hb-landing .card h4 {
+  color: #f3f9ff;
+}
+
+@media (max-width: 768px) {
+  .hb-landing .section-watermark {
+    width: 100%;
+    opacity: 0.14;
+  }
+}
+
+/* Ajuste adicional solicitado: paleta más clara y mejor legibilidad */
+.hb-landing {
+  --color-bg-primary: #0f2b3a;
+  --color-bg-secondary: #1a3d51;
+  --color-surface: #1f4a5e;
+  --color-surface-soft: #25566d;
+  --color-text-primary: #f8fcff;
+  --color-text-secondary: #e1edf4;
+  --color-text-muted: #c6d9e6;
+}
+
+.hb-landing .card {
+  color: #eef6fb;
+  background-color: rgba(34, 82, 103, 0.78);
+  border-color: rgba(188, 223, 242, 0.2);
+}
+
+.hb-landing .card--soft {
+  background-color: rgba(39, 92, 116, 0.74);
+}
+
+.hb-landing .hero--with-image::after {
+  background: linear-gradient(90deg, rgba(13, 35, 47, 0.58) 0%, rgba(13, 35, 47, 0.42) 45%, rgba(13, 35, 47, 0.22) 100%);
+}
+
+.hb-landing .section--with-image::before {
+  background: linear-gradient(180deg, rgba(15, 43, 58, 0.62), rgba(15, 43, 58, 0.38));
+}
+
+.hb-landing .section-watermark {
+  opacity: 0.5;
+  filter: saturate(1) contrast(1.12) brightness(1.12);
+}
+
+.hb-landing .hero .section-watermark {
+  opacity: 0.56;
+  filter: saturate(1.05) contrast(1.15) brightness(1.16);
+}
+
+.hb-landing .hero-subtitle,
+.hb-landing .section-subtitle,
+.hb-landing .card p,
+.hb-landing .card,
+.hb-landing .small-text,
+.hb-navbar nav a {
+  color: #e9f3fa;
+}
+
+.hb-landing .badge-blue {
+  background-color: rgba(81, 171, 245, 0.22);
+  color: #a9d6ff;
+}
+
+@media (max-width: 768px) {
+  .hb-landing .section-watermark {
+    opacity: 0.32;
+  }
+}
+
+/* Cobertura total de imágenes en cada contenedor */
+.hb-landing .section-watermark {
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.hb-landing .hero .section-watermark {
+  width: 100%;
+  object-position: center center;
+}
