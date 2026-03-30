@@ -70,6 +70,22 @@
         </section>
     </div>
 
+    <section class="tarjeta-panel mapa-detalle-finca-contenedor mapa-detalle-finca-contenedor--independiente">
+        <div class="cabecera-bloque">
+            <h3>Ubicación registrada</h3>
+        </div>
+        <p class="texto-ayuda">
+            Punto geográfico definido para la finca según su latitud y longitud.
+        </p>
+        <div id="mapaDetalleFinca"
+             class="mapa-detalle-finca"
+             data-latitud="@Model.Latitud"
+             data-longitud="@Model.Longitud"
+             data-nombre-finca="@Model.NombreFinca"
+             aria-label="Mapa de ubicación de la finca">
+        </div>
+    </section>
+
     <div class="grid-dos-paneles">
         <section class="tarjeta-panel" id="panelEvidencias">
             <div class="cabecera-bloque">
@@ -101,3 +117,64 @@
         </section>
     </div>
 </section>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var mapaElemento = document.getElementById("mapaDetalleFinca");
+            if (!mapaElemento || typeof window.L === "undefined") {
+                return;
+            }
+
+            var latitud = parseFloat(mapaElemento.dataset.latitud);
+            var longitud = parseFloat(mapaElemento.dataset.longitud);
+
+            if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) {
+                mapaElemento.innerHTML = "<p class='texto-ayuda p-3'>No hay coordenadas válidas para mostrar el mapa.</p>";
+                return;
+            }
+
+            var nombreFinca = mapaElemento.dataset.nombreFinca || "Finca";
+            var mapa = window.L.map("mapaDetalleFinca", {
+                center: [latitud, longitud],
+                zoom: 14,
+                scrollWheelZoom: false
+            });
+
+            window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(mapa);
+
+            window.L.marker([latitud, longitud])
+                .addTo(mapa)
+                .bindPopup(nombreFinca + "<br/>Lat: " + latitud.toFixed(6) + " / Lon: " + longitud.toFixed(6))
+                .openPopup();
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .mapa-detalle-finca-contenedor {
+            display: grid;
+            gap: var(--espacio-2);
+        }
+
+        .mapa-detalle-finca-contenedor--independiente {
+            margin-top: var(--espacio-4);
+            margin-bottom: var(--espacio-4);
+        }
+
+        .mapa-detalle-finca {
+            width: 100%;
+            min-height: 320px;
+            border: 1px solid var(--color-borde-suave);
+            border-radius: var(--radio-md);
+            overflow: hidden;
+            box-shadow: var(--sombra-sm);
+        }
+    </style>
+}
