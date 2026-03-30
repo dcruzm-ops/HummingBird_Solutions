@@ -12,6 +12,12 @@
     </div>
 
     <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="post" asp-controller="Fincas" asp-action="RegistrarFinca">
+        <div id="trobberFormularioFinca" class="trobber-formulario d-none" aria-hidden="true">
+            <div class="trobber-formulario__panel" role="status" aria-live="polite">
+                <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                <span>Guardando finca, por favor espere...</span>
+            </div>
+        </div>
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -159,6 +165,34 @@
             border: 1px solid var(--color-borde-suave);
             border-radius: var(--radio-md);
             overflow: hidden;
+            box-shadow: var(--sombra-sm);
+        }
+
+        #formularioRegistrarFinca {
+            position: relative;
+        }
+
+        .trobber-formulario {
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radio-lg);
+            background: rgba(17, 24, 39, 0.35);
+            backdrop-filter: blur(1px);
+            z-index: 15;
+            display: grid;
+            place-items: center;
+            padding: var(--espacio-4);
+        }
+
+        .trobber-formulario__panel {
+            background: var(--color-superficie);
+            border: 1px solid var(--color-borde-suave);
+            border-radius: var(--radio-md);
+            padding: var(--espacio-3) var(--espacio-4);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--espacio-3);
+            font-weight: 600;
             box-shadow: var(--sombra-sm);
         }
     </style>

@@ -7,6 +7,25 @@ document.addEventListener("DOMContentLoaded", function () {
     var boton = formulario.querySelector("[data-loading-button]");
     var textoBoton = formulario.querySelector("[data-loading-texto]");
     var spinnerBoton = formulario.querySelector("[data-loading-spinner]");
+    var trobberFormulario = document.getElementById("trobberFormularioFinca");
+
+    function mostrarTrobberFormulario() {
+        if (!trobberFormulario) {
+            return;
+        }
+
+        trobberFormulario.classList.remove("d-none");
+        trobberFormulario.setAttribute("aria-hidden", "false");
+    }
+
+    function ocultarTrobberFormulario() {
+        if (!trobberFormulario) {
+            return;
+        }
+
+        trobberFormulario.classList.add("d-none");
+        trobberFormulario.setAttribute("aria-hidden", "true");
+    }
 
     var provinciaSelect = document.getElementById("provinciaSelect");
     var cantonSelect = document.getElementById("cantonSelect");
@@ -418,6 +437,8 @@ document.addEventListener("DOMContentLoaded", function () {
         colocarPin(Number(latitudInput.value), Number(longitudInput.value), true);
     }
 
+    window.addEventListener("pageshow", ocultarTrobberFormulario);
+
     formulario.addEventListener("submit", function (evento) {
         var latitud = latitudInput ? Number(latitudInput.value) : NaN;
         var longitud = longitudInput ? Number(longitudInput.value) : NaN;
@@ -444,6 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        mostrarTrobberFormulario();
         boton.disabled = true;
         boton.setAttribute("aria-busy", "true");
 
