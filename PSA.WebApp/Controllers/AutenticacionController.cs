@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
-using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
-using PSA.WebApp.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -429,50 +427,5 @@ Cuenta automática Do-Not-Reply";
                 });
         }
 
-        private IActionResult RecuperarContrasenaConFallbackLocal(RecuperarContrasenaViewModel model)
-        {
-            try
-            {
-                var payload = new RecuperarContrasenaDTO { Correo = model.Correo.Trim() };
-                var baseUrlWebApp = $"{Request.Scheme}://{Request.Host}";
-                var respuesta = _recuperacionContrasenaManager.GenerarToken(payload, baseUrlWebApp);
-
-                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local, sin envío SMTP automático)";
-                return RedirectToAction(nameof(IniciarSesion));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, $"No fue posible procesar la recuperación: {ex.Message}");
-                return View(nameof(RecuperarContrasena), model);
-            }
-        }
-
-        private IActionResult RestablecerContrasenaConFallbackLocal(RestablecerContrasenaViewModel model)
-        {
-            try
-            {
-                var payload = new RestablecerContrasenaDTO
-                {
-                    Token = model.Token.Trim(),
-                    NuevaContrasena = model.NuevaContrasena,
-                    ConfirmarContrasena = model.ConfirmarContrasena
-                };
-
-                var respuesta = _recuperacionContrasenaManager.RestablecerContrasena(payload);
-                if (!respuesta.Exito)
-                {
-                    ModelState.AddModelError(string.Empty, respuesta.Mensaje);
-                    return View(nameof(RestablecerContrasena), model);
-                }
-
-                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local)";
-                return RedirectToAction(nameof(IniciarSesion));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, $"No fue posible restablecer la contraseña: {ex.Message}");
-                return View(nameof(RestablecerContrasena), model);
-            }
-        }
     }
 }
