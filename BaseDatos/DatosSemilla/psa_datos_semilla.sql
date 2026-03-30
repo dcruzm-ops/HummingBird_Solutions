@@ -229,6 +229,57 @@ BEGIN TRY
         VALUES (@IdConfiguracionPago, 'UsoSuelo', 'Conservación', 7.00);
 
     /* =========================================
+       6.1 Catálogos configurables para finca
+       ========================================= */
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Plana')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Plana', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Inclinada')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Inclinada', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Muy inclinada')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Muy inclinada', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Bosque primario')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Bosque primario', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Bosque secundario')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Bosque secundario', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Plantación forestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Plantación forestal', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Pasto')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Pasto', 1, 4);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Conservación')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Conservación', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Producción forestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Producción forestal', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Agroforestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Agroforestal', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Ganadería')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Ganadería', 1, 4);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Uso mixto')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Uso mixto', 1, 5);
+
+    /* =========================================
        7. Fincas de ejemplo
        ========================================= */
     IF NOT EXISTS (

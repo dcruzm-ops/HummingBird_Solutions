@@ -277,23 +277,23 @@ WHERE IdFinca = @IdFinca
         public async Task<List<string>> ObtenerCatalogoFactorAsync(string tipoFactor)
         {
             const string sql = @"
-SELECT ValorFactor
-FROM ConfiguracionPagoDetalle
-WHERE TipoFactor = @TipoFactor
-GROUP BY ValorFactor
-ORDER BY ValorFactor;";
+SELECT Valor
+FROM CatalogoFincaValores
+WHERE TipoCatalogo = @TipoCatalogo
+  AND Activo = 1
+ORDER BY OrdenVisual, Valor;";
 
             var resultados = new List<string>();
 
             using var connection = new SqlConnection(_connectionString);
             using var command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@TipoFactor", tipoFactor);
+            command.Parameters.AddWithValue("@TipoCatalogo", tipoFactor);
 
             await connection.OpenAsync();
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                var valor = reader["ValorFactor"]?.ToString();
+                var valor = reader["Valor"]?.ToString();
                 if (!string.IsNullOrWhiteSpace(valor))
                 {
                     resultados.Add(valor);
