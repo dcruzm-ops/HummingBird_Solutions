@@ -214,19 +214,70 @@ BEGIN TRY
         SELECT 1 FROM dbo.ConfiguracionPagoDetalle
         WHERE IdConfiguracionPago = @IdConfiguracionPago
           AND TipoFactor = 'Pendiente'
-          AND ValorFactor = 'Alta'
+          AND ValorFactor = 'Muy inclinada'
     )
         INSERT INTO dbo.ConfiguracionPagoDetalle (IdConfiguracionPago, TipoFactor, ValorFactor, PorcentajeAjuste)
-        VALUES (@IdConfiguracionPago, 'Pendiente', 'Alta', 3.00);
+        VALUES (@IdConfiguracionPago, 'Pendiente', 'Muy inclinada', 3.00);
 
     IF NOT EXISTS (
         SELECT 1 FROM dbo.ConfiguracionPagoDetalle
         WHERE IdConfiguracionPago = @IdConfiguracionPago
           AND TipoFactor = 'UsoSuelo'
-          AND ValorFactor = 'Conservacion'
+          AND ValorFactor = 'Conservación'
     )
         INSERT INTO dbo.ConfiguracionPagoDetalle (IdConfiguracionPago, TipoFactor, ValorFactor, PorcentajeAjuste)
-        VALUES (@IdConfiguracionPago, 'UsoSuelo', 'Conservacion', 7.00);
+        VALUES (@IdConfiguracionPago, 'UsoSuelo', 'Conservación', 7.00);
+
+    /* =========================================
+       6.1 Catálogos configurables para finca
+       ========================================= */
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Plana')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Plana', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Inclinada')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Inclinada', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Muy inclinada')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Muy inclinada', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Bosque primario')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Bosque primario', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Bosque secundario')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Bosque secundario', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Plantación forestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Plantación forestal', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Pasto')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Pasto', 1, 4);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Conservación')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Conservación', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Producción forestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Producción forestal', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Agroforestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Agroforestal', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Ganadería')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Ganadería', 1, 4);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Uso mixto')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Uso mixto', 1, 5);
 
     /* =========================================
        7. Fincas de ejemplo
@@ -250,6 +301,9 @@ BEGIN TRY
             Hectareas,
             Vegetacion,
             TieneRecursosHidricos,
+            TieneRiosOQuebradas,
+            TieneNacientes,
+            CantidadNacientes,
             UsoSuelo,
             Pendiente,
             EstadoFinca
@@ -265,10 +319,13 @@ BEGIN TRY
             9.3731200,
             -83.7045100,
             18.50,
-            'Bosque Primario',
+            'Bosque primario',
             1,
-            'Conservacion',
-            'Alta',
+            1,
+            1,
+            2,
+            'Conservación',
+            'Muy inclinada',
             'Aprobada'
         );
 
@@ -291,6 +348,9 @@ BEGIN TRY
             Hectareas,
             Vegetacion,
             TieneRecursosHidricos,
+            TieneRiosOQuebradas,
+            TieneNacientes,
+            CantidadNacientes,
             UsoSuelo,
             Pendiente,
             EstadoFinca
@@ -306,10 +366,13 @@ BEGIN TRY
             9.8965400,
             -83.6082300,
             12.75,
-            'Bosque Secundario',
+            'Bosque secundario',
             0,
-            'Conservacion',
-            'Media',
+            0,
+            0,
+            0,
+            'Conservación',
+            'Inclinada',
             'Registrada'
         );
 
@@ -356,10 +419,10 @@ BEGIN TRY
             N'La finca presenta cobertura boscosa continua y condiciones favorables para PSA.',
             'Califica',
             18.50,
-            'Bosque Primario',
+            'Bosque primario',
             1,
-            'Conservacion',
-            'Alta',
+            'Conservación',
+            'Muy inclinada',
             SYSDATETIME()
         );
 

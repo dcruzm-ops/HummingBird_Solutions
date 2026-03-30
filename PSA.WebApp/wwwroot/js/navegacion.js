@@ -23,5 +23,74 @@ document.addEventListener("DOMContentLoaded", function () {
             barraLateral.classList.toggle("abierta");
         });
     }
+
+    var overlay = document.getElementById("trobberGlobal");
+    var mostrarTrobber = function () {
+        if (!overlay) {
+            return;
+        }
+
+        overlay.classList.remove("d-none");
+        overlay.setAttribute("aria-hidden", "false");
+        document.body.classList.add("trobber-activo");
+    };
+
+    var ocultarTrobber = function () {
+        if (!overlay) {
+            return;
+        }
+
+        overlay.classList.add("d-none");
+        overlay.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("trobber-activo");
+    };
+
+    window.psa = window.psa || {};
+    window.psa.mostrarTrobberGlobal = mostrarTrobber;
+    window.psa.ocultarTrobberGlobal = ocultarTrobber;
+
+    var alertasAutoDismiss = document.querySelectorAll("[data-auto-dismiss-ms]");
+    alertasAutoDismiss.forEach(function (alerta) {
+        var tiempo = Number(alerta.getAttribute("data-auto-dismiss-ms")) || 8000;
+        window.setTimeout(function () {
+            alerta.classList.add("alerta-desvanecer");
+            window.setTimeout(function () {
+                alerta.remove();
+            }, 550);
+        }, tiempo);
+    });
+
+    document.querySelectorAll("a[href]").forEach(function (enlace) {
+        enlace.addEventListener("click", function (evento) {
+            if (evento.defaultPrevented || !enlace.href) {
+                return;
+            }
+
+            var href = enlace.getAttribute("href") || "";
+            if (href.startsWith("#") || enlace.target === "_blank" || enlace.hasAttribute("download")) {
+                return;
+            }
+
+            if (enlace.origin !== window.location.origin) {
+                return;
+            }
+
+            mostrarTrobber();
+        });
+    });
+
+    document.querySelectorAll("form").forEach(function (formulario) {
+        formulario.addEventListener("submit", function () {
+            if (formulario.hasAttribute("data-omitir-trobber-global")) {
+                return;
+            }
+
+            if (formulario.checkValidity()) {
+                mostrarTrobber();
+            }
+        });
+    });
+
+    window.addEventListener("pageshow", ocultarTrobber);
 });
 // usar para menu de navegacion  lateral
