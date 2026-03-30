@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
+using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
+using PSA.WebApp.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -72,7 +74,7 @@ namespace PSA.WebApp.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorBody = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError(string.Empty, $"No fue posible iniciar sesión. {errorBody}");
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
                     return View(dto);
                 }
 
@@ -124,8 +126,7 @@ namespace PSA.WebApp.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorBody = await response.Content.ReadAsStringAsync();
-                    var errorMensaje = TryReadErrorMessage(errorBody);
-                    ModelState.AddModelError(string.Empty, errorMensaje);
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
                     return View(dto);
                 }
 
@@ -317,9 +318,15 @@ Cuenta automática Do-Not-Reply";
             try
             {
                 using var doc = JsonDocument.Parse(errorBody);
+
                 if (doc.RootElement.TryGetProperty("mensaje", out var mensaje))
                 {
                     return mensaje.GetString() ?? "No fue posible completar la operación.";
+                }
+
+                if (doc.RootElement.TryGetProperty("Mensaje", out var mensajeMayuscula))
+                {
+                    return mensajeMayuscula.GetString() ?? "No fue posible completar la operación.";
                 }
             }
             catch
@@ -341,8 +348,7 @@ Cuenta automática Do-Not-Reply";
             {
                 try
                 {
-                    var response = await client.PostAsJsonAsync($"{baseUrl}{path}", payload);
-                    return response;
+                    return await client.PostAsJsonAsync($"{baseUrl}{path}", payload);
                 }
                 catch (Exception ex)
                 {
@@ -351,7 +357,7 @@ Cuenta automática Do-Not-Reply";
             }
 
             throw new InvalidOperationException(
-                "No fue posible conectar con el API de autenticación en ninguna URL configurada.",
+                "No fue posible conectar con el API en ninguna URL configurada.",
                 ultimaExcepcion
             );
         }
@@ -421,6 +427,52 @@ Cuenta automática Do-Not-Reply";
                     IsPersistent = true,
                     ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                 });
+        }
+
+        private IActionResult RecuperarContrasenaConFallbackLocal(RecuperarContrasenaViewModel model)
+        {
+            try
+            {
+                var payload = new RecuperarContrasenaDTO { Correo = model.Correo.Trim() };
+                var baseUrlWebApp = $"{Request.Scheme}://{Request.Host}";
+                var respuesta = _recuperacionContrasenaManager.GenerarToken(payload, baseUrlWebApp);
+
+                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local, sin envío SMTP automático)";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"No fue posible procesar la recuperación: {ex.Message}");
+                return View(nameof(RecuperarContrasena), model);
+            }
+        }
+
+        private IActionResult RestablecerContrasenaConFallbackLocal(RestablecerContrasenaViewModel model)
+        {
+            try
+            {
+                var payload = new RestablecerContrasenaDTO
+                {
+                    Token = model.Token.Trim(),
+                    NuevaContrasena = model.NuevaContrasena,
+                    ConfirmarContrasena = model.ConfirmarContrasena
+                };
+
+                var respuesta = _recuperacionContrasenaManager.RestablecerContrasena(payload);
+                if (!respuesta.Exito)
+                {
+                    ModelState.AddModelError(string.Empty, respuesta.Mensaje);
+                    return View(nameof(RestablecerContrasena), model);
+                }
+
+                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local)";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"No fue posible restablecer la contraseña: {ex.Message}");
+                return View(nameof(RestablecerContrasena), model);
+            }
         }
     }
 }
