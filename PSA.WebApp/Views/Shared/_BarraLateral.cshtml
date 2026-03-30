@@ -1,10 +1,16 @@
 @{
     var moduloActivo = (ViewBag.ModuloActivo as string ?? string.Empty).ToLowerInvariant();
     var rolActivo = (ViewBag.RolActivo as string ?? "Dueno").ToLowerInvariant();
+    var accionDashboard = rolActivo switch
+    {
+        "administrador" => "Administrador",
+        "ingeniero" => "Ingeniero",
+        _ => "Dueno"
+    };
 }
 <aside class="barra-lateral" id="barraLateral">
     <div class="barra-lateral__marca">
-        <a asp-controller="Dashboard" asp-action="Dueno">PSA Costa Rica</a>
+        <a asp-controller="Dashboard" asp-action="@accionDashboard">PSA Costa Rica</a>
         <small>Hummingbird Solutions</small>
     </div>
 
