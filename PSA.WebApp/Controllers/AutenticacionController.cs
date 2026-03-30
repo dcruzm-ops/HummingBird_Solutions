@@ -292,7 +292,7 @@ Cuenta automática Do-Not-Reply";
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             TempData["MensajeExito"] = "Sesión cerrada correctamente.";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Producto", "Home");
         }
 
         private static string GetDashboardActionByRole(int idRol)
