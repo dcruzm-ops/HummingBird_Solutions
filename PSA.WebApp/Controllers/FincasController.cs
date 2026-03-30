@@ -6,10 +6,11 @@ using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.Fincas;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace PSA.WebApp.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "2")]
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
@@ -36,12 +37,14 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbPadreTexto = "Mis fincas";
             ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
             ViewBag.BreadcrumbActual = "Registrar finca";
-            return View(new FincaDTO());
+
+            CargarCatalogosFormularioFinca();
+            return View(new RegistrarFincaDTO());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RegistrarFinca(FincaDTO model)
+        public async Task<IActionResult> RegistrarFinca(RegistrarFincaDTO dto)
         {
             ViewBag.ModuloActivo = "fincas";
             ViewBag.RolActivo = "Dueno";
@@ -51,51 +54,77 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
             ViewBag.BreadcrumbActual = "Registrar finca";
 
-            model.IdPropietario = ObtenerIdUsuarioSesion();
-            model.EstadoFinca = NormalizarEstadoFinca(model.EstadoFinca);
-
-            if (model.IdPropietario <= 0)
+            dto.IdPropietario = ObtenerIdUsuarioSesion();
+            if (dto.IdPropietario <= 0)
             {
+                TempData["MensajeError"] = "Debe iniciar sesión para registrar una finca.";
                 return RedirectToAction("IniciarSesion", "Autenticacion");
             }
 
-            if (string.IsNullOrWhiteSpace(model.Distrito))
-            {
-                model.Distrito = model.Canton;
-            }
-
-            if (string.IsNullOrWhiteSpace(model.UsoSuelo))
-            {
-                model.UsoSuelo = "Conservación";
-            }
-
-            if (string.IsNullOrWhiteSpace(model.Pendiente))
-            {
-                model.Pendiente = "Media";
-            }
-
-            if (model.FechaRegistro == default)
-            {
-                model.FechaRegistro = DateTime.UtcNow;
-            }
-
-            model.FechaActualizacion = DateTime.UtcNow;
-
             if (!ModelState.IsValid)
             {
-                return View(model);
+                CargarCatalogosFormularioFinca();
+                return View(dto);
             }
 
-            var resultado = await CrearFincaEnApiConFallbackAsync(model);
-
-            if (!resultado.Exito)
+            try
             {
-                ModelState.AddModelError(string.Empty, resultado.Mensaje);
-                return View(model);
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+                var baseUrl = GetApiBaseUrl();
+                var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError(string.Empty, $"No fue posible registrar la finca. {errorBody}");
+                    CargarCatalogosFormularioFinca();
+                    return View(dto);
+                }
+
+                var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
+                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
+                return RedirectToAction(nameof(MisFincas));
+            }
+            catch
+            {
+                var idFincaRegistrada = await _fincaDAO.CrearFincaAsync(dto);
+                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada, true);
+                return RedirectToAction(nameof(MisFincas));
+            }
+        }
+
+        private async Task<int> ObtenerIdFincaDesdeRespuestaAsync(HttpResponseMessage response)
+        {
+            try
+            {
+                using var stream = await response.Content.ReadAsStreamAsync();
+                using var documento = await JsonDocument.ParseAsync(stream);
+                if (documento.RootElement.TryGetProperty("IdFinca", out var idFincaElemento)
+                    && idFincaElemento.TryGetInt32(out var idFinca))
+                {
+                    return idFinca;
+                }
+            }
+            catch
+            {
+                // Si no se puede leer el cuerpo, se mantiene el fallback en 0.
             }
 
-            TempData["MensajeExito"] = "Finca registrada correctamente.";
-            return RedirectToAction(nameof(MisFincas));
+            return 0;
+        }
+
+        private string ConstruirMensajeExitoRegistroFinca(int idFinca, bool modoLocal = false)
+        {
+            var sufijoModo = modoLocal ? " (modo local)" : string.Empty;
+            var mensajeBase = $"Finca registrada correctamente{sufijoModo}.";
+            if (idFinca <= 0)
+            {
+                return mensajeBase;
+            }
+
+            var urlDetalle = Url.Action("DetalleFinca", "Fincas", new { id = idFinca }) ?? "#";
+            return $"{mensajeBase} <a href=\"{urlDetalle}\">Ver detalle de la finca</a>.";
         }
 
         [HttpGet]
@@ -284,23 +313,45 @@ namespace PSA.WebApp.Controllers
             return int.TryParse(idClaim, out var idUsuario) ? idUsuario : 0;
         }
 
-        private static string NormalizarEstadoFinca(string? estado)
+        private void CargarCatalogosFormularioFinca()
         {
-            var valor = (estado ?? string.Empty).Trim().ToLowerInvariant();
-            return valor switch
+            var pendientes = _fincaDAO.ObtenerCatalogoFactorAsync("Pendiente").GetAwaiter().GetResult();
+            var vegetaciones = _fincaDAO.ObtenerCatalogoFactorAsync("Vegetacion").GetAwaiter().GetResult();
+            var usosSuelo = _fincaDAO.ObtenerCatalogoFactorAsync("UsoSuelo").GetAwaiter().GetResult();
+
+            ViewBag.CatalogoPendiente = MezclarCatalogoBaseYBd(
+                new List<string> { "Plana", "Inclinada", "Muy inclinada" },
+                pendientes
+            );
+
+            ViewBag.CatalogoVegetacion = MezclarCatalogoBaseYBd(
+                new List<string> { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" },
+                vegetaciones
+            );
+
+            ViewBag.CatalogoUsoSuelo = MezclarCatalogoBaseYBd(
+                new List<string> { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" },
+                usosSuelo
+            );
+        }
+
+        private static List<string> MezclarCatalogoBaseYBd(List<string> baseCatalogo, List<string> catalogoBd)
+        {
+            var resultado = new List<string>(baseCatalogo);
+            var set = new HashSet<string>(baseCatalogo, StringComparer.OrdinalIgnoreCase);
+            foreach (var valorBd in catalogoBd)
             {
-                "pendiente" => "Registrada",
-                "asignada para evaluación" => "EnRevision",
-                "asignada para evaluacion" => "EnRevision",
-                "en proceso" => "EnRevision",
-                "registrada" => "Registrada",
-                "enrevision" => "EnRevision",
-                "aprobada" => "Aprobada",
-                "rechazada" => "Rechazada",
-                "suspendida" => "Inactiva",
-                "inactiva" => "Inactiva",
-                _ => "Registrada"
-            };
+                if (!string.IsNullOrWhiteSpace(valorBd))
+                {
+                    var valorNormalizado = valorBd.Trim();
+                    if (set.Add(valorNormalizado))
+                    {
+                        resultado.Add(valorNormalizado);
+                    }
+                }
+            }
+
+            return resultado;
         }
     }
 }

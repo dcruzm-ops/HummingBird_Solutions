@@ -1,93 +1,75 @@
+using System.Security.Cryptography;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess.DAO;
-using PSA.EntidadesDTO.DTOs;
-using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
 
 namespace PSA.AppCore.Managers
 {
     public class RecuperacionContrasenaManager
     {
-        private readonly RecuperacionContrasenaDAO _dao;
-        private readonly IServicioHashContrasena _servicioHashContrasena;
+        private readonly UsuarioDAO _usuarioDAO;
+        private readonly TokenRecuperacionDAO _tokenRecuperacionDAO;
+        private readonly IServicioHashContrasena _servicioHash;
 
         public RecuperacionContrasenaManager(
-            RecuperacionContrasenaDAO dao,
-            IServicioHashContrasena servicioHashContrasena)
+            UsuarioDAO usuarioDAO,
+            TokenRecuperacionDAO tokenRecuperacionDAO,
+            IServicioHashContrasena servicioHash)
         {
-            _dao = dao;
-            _servicioHashContrasena = servicioHashContrasena;
+            _usuarioDAO = usuarioDAO;
+            _tokenRecuperacionDAO = tokenRecuperacionDAO;
+            _servicioHash = servicioHash;
         }
 
-        public RespuestaRecuperacionDTO GenerarToken(RecuperarContrasenaDTO dto, string? baseUrl)
+        public async Task<(string Token, string NombreUsuario)> GenerarTokenConNombreAsync(string email)
         {
-            var respuesta = new RespuestaRecuperacionDTO
-            {
-                Exito = true,
-                Mensaje = "Si el correo existe en el sistema, se envió un enlace de recuperación."
-            };
-
-            var usuario = _dao.ObtenerUsuarioActivoPorCorreo(dto.Correo);
+            var usuario = await _usuarioDAO.ObtenerPorEmailAsync(email);
             if (usuario == null)
-                return respuesta;
-
-            _dao.InvalidarTokensAnteriores(usuario.Value.IdUsuario);
-
-            var token = RecuperacionContrasenaDAO.GenerarTokenSeguro();
-            var expiracion = DateTime.Now.AddMinutes(30);
-            _dao.GuardarToken(usuario.Value.IdUsuario, token, expiracion);
-
-            if (!string.IsNullOrWhiteSpace(baseUrl))
             {
-                respuesta.LinkRecuperacion = $"{baseUrl.TrimEnd('/')}/Autenticacion/RestablecerContrasena?token={Uri.EscapeDataString(token)}";
+                throw new InvalidOperationException("No existe una cuenta asociada al correo indicado.");
             }
 
-            respuesta.CorreoDestino = usuario.Value.Email;
-            respuesta.NombreUsuario = usuario.Value.NombreCompleto;
+            await _tokenRecuperacionDAO.InvalidarTokensActivosPorUsuarioAsync(usuario.IdUsuario);
 
-            return respuesta;
+            var token = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+            await _tokenRecuperacionDAO.CrearTokenAsync(usuario.IdUsuario, token, DateTime.UtcNow.AddMinutes(3));
+            return (token, usuario.NombreCompleto);
         }
 
-        public RespuestaRecuperacionDTO ValidarToken(ValidarTokenDTO dto)
+        public async Task<bool> TokenEsValidoAsync(string token)
         {
-            var valido = _dao.TokenEsValido(dto.Token);
-
-            return new RespuestaRecuperacionDTO
-            {
-                Exito = valido,
-                Mensaje = valido ? "Token válido." : "El enlace no es válido o ya expiró."
-            };
+            var registro = await _tokenRecuperacionDAO.ObtenerTokenVigenteAsync(token);
+            return registro != null;
         }
 
-        public RespuestaRecuperacionDTO RestablecerContrasena(RestablecerContrasenaDTO dto)
+        public async Task<string> GenerarTokenAsync(string email)
         {
-            if (dto.NuevaContrasena != dto.ConfirmarContrasena)
+            var resultado = await GenerarTokenConNombreAsync(email);
+            return resultado.Token;
+        }
+
+        // Compatibilidad con llamadas existentes que usen versión sincrónica.
+        public bool TokenEsValido(string token)
+        {
+            return TokenEsValidoAsync(token).GetAwaiter().GetResult();
+        }
+
+        public async Task RestablecerContrasenaAsync(string token, string nuevaContrasena)
+        {
+            var registro = await _tokenRecuperacionDAO.ObtenerTokenVigenteAsync(token);
+            if (registro == null)
             {
-                return new RespuestaRecuperacionDTO
-                {
-                    Exito = false,
-                    Mensaje = "Las contraseñas no coinciden."
-                };
+                throw new InvalidOperationException("El token es inválido o expiró.");
             }
 
-            var idUsuario = _dao.ObtenerIdUsuarioPorToken(dto.Token);
-            if (idUsuario == null)
+            var usuario = await _usuarioDAO.ObtenerPorIdAsync(registro.IdUsuario);
+            if (usuario == null)
             {
-                return new RespuestaRecuperacionDTO
-                {
-                    Exito = false,
-                    Mensaje = "El token no es válido, ya fue usado o expiró."
-                };
+                throw new InvalidOperationException("No se encontró el usuario asociado al token.");
             }
 
-            var hash = _servicioHashContrasena.GenerarHash(dto.NuevaContrasena);
-            _dao.ActualizarPassword(idUsuario.Value, hash);
-            _dao.MarcarTokenComoUsado(dto.Token);
-
-            return new RespuestaRecuperacionDTO
-            {
-                Exito = true,
-                Mensaje = "La contraseña fue restablecida correctamente."
-            };
+            var hash = _servicioHash.GenerarHash(nuevaContrasena);
+            await _usuarioDAO.ActualizarPasswordHashPorEmailAsync(usuario.Email, hash);
+            await _tokenRecuperacionDAO.MarcarTokenComoUsadoAsync(registro.IdToken);
         }
     }
 }

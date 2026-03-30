@@ -2,6 +2,7 @@ using PSA.AppCore.Managers;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess.DAO;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using PSA.WebApp.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -53,7 +54,7 @@ builder.Services.AddScoped<FincaDAO>(sp =>
     return new FincaDAO(connectionString);
 });
 
-builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
+builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
     var connectionString = configuration.GetConnectionString("PSAConnection");
@@ -63,11 +64,12 @@ builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
         throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
     }
 
-    return new RecuperacionContrasenaDAO(connectionString);
+    return new TokenRecuperacionDAO(connectionString);
 });
 
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
+builder.Services.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
 
 var app = builder.Build();
 
@@ -87,6 +89,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Autenticacion}/{action=IniciarSesion}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
