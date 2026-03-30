@@ -5,10 +5,11 @@ using System.Security.Claims;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace PSA.WebApp.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "2")]
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
@@ -35,7 +36,91 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbPadreTexto = "Mis fincas";
             ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
             ViewBag.BreadcrumbActual = "Registrar finca";
-            return View();
+
+            return View(new RegistrarFincaDTO());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarFinca(RegistrarFincaDTO dto)
+        {
+            ViewBag.ModuloActivo = "fincas";
+            ViewBag.RolActivo = "Dueno";
+            ViewBag.TituloPagina = "Registrar finca";
+            ViewBag.SubtituloPagina = "Complete la información principal de la propiedad para iniciar el proceso.";
+            ViewBag.BreadcrumbPadreTexto = "Mis fincas";
+            ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
+            ViewBag.BreadcrumbActual = "Registrar finca";
+
+            dto.IdPropietario = ObtenerIdUsuarioSesion();
+            if (dto.IdPropietario <= 0)
+            {
+                TempData["MensajeError"] = "Debe iniciar sesión para registrar una finca.";
+                return RedirectToAction("IniciarSesion", "Autenticacion");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(dto);
+            }
+
+            try
+            {
+                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
+                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+                var baseUrl = GetApiBaseUrl();
+                var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError(string.Empty, $"No fue posible registrar la finca. {errorBody}");
+                    return View(dto);
+                }
+
+                var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
+                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
+                return RedirectToAction(nameof(MisFincas));
+            }
+            catch
+            {
+                var idFincaRegistrada = await _fincaDAO.CrearFincaAsync(dto);
+                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada, true);
+                return RedirectToAction(nameof(MisFincas));
+            }
+        }
+
+        private async Task<int> ObtenerIdFincaDesdeRespuestaAsync(HttpResponseMessage response)
+        {
+            try
+            {
+                using var stream = await response.Content.ReadAsStreamAsync();
+                using var documento = await JsonDocument.ParseAsync(stream);
+                if (documento.RootElement.TryGetProperty("IdFinca", out var idFincaElemento)
+                    && idFincaElemento.TryGetInt32(out var idFinca))
+                {
+                    return idFinca;
+                }
+            }
+            catch
+            {
+                // Si no se puede leer el cuerpo, se mantiene el fallback en 0.
+            }
+
+            return 0;
+        }
+
+        private string ConstruirMensajeExitoRegistroFinca(int idFinca, bool modoLocal = false)
+        {
+            var sufijoModo = modoLocal ? " (modo local)" : string.Empty;
+            var mensajeBase = $"Finca registrada correctamente{sufijoModo}.";
+            if (idFinca <= 0)
+            {
+                return mensajeBase;
+            }
+
+            var urlDetalle = Url.Action("DetalleFinca", "Fincas", new { id = idFinca }) ?? "#";
+            return $"{mensajeBase} <a href=\"{urlDetalle}\">Ver detalle de la finca</a>.";
         }
 
         [HttpGet]

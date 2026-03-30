@@ -214,19 +214,19 @@ BEGIN TRY
         SELECT 1 FROM dbo.ConfiguracionPagoDetalle
         WHERE IdConfiguracionPago = @IdConfiguracionPago
           AND TipoFactor = 'Pendiente'
-          AND ValorFactor = 'Alta'
+          AND ValorFactor = 'Muy inclinada'
     )
         INSERT INTO dbo.ConfiguracionPagoDetalle (IdConfiguracionPago, TipoFactor, ValorFactor, PorcentajeAjuste)
-        VALUES (@IdConfiguracionPago, 'Pendiente', 'Alta', 3.00);
+        VALUES (@IdConfiguracionPago, 'Pendiente', 'Muy inclinada', 3.00);
 
     IF NOT EXISTS (
         SELECT 1 FROM dbo.ConfiguracionPagoDetalle
         WHERE IdConfiguracionPago = @IdConfiguracionPago
           AND TipoFactor = 'UsoSuelo'
-          AND ValorFactor = 'Conservacion'
+          AND ValorFactor = 'Conservación'
     )
         INSERT INTO dbo.ConfiguracionPagoDetalle (IdConfiguracionPago, TipoFactor, ValorFactor, PorcentajeAjuste)
-        VALUES (@IdConfiguracionPago, 'UsoSuelo', 'Conservacion', 7.00);
+        VALUES (@IdConfiguracionPago, 'UsoSuelo', 'Conservación', 7.00);
 
     /* =========================================
        7. Fincas de ejemplo
@@ -250,6 +250,9 @@ BEGIN TRY
             Hectareas,
             Vegetacion,
             TieneRecursosHidricos,
+            TieneRiosOQuebradas,
+            TieneNacientes,
+            CantidadNacientes,
             UsoSuelo,
             Pendiente,
             EstadoFinca
@@ -265,10 +268,13 @@ BEGIN TRY
             9.3731200,
             -83.7045100,
             18.50,
-            'Bosque Primario',
+            'Bosque primario',
             1,
-            'Conservacion',
-            'Alta',
+            1,
+            1,
+            2,
+            'Conservación',
+            'Muy inclinada',
             'Aprobada'
         );
 
@@ -291,6 +297,9 @@ BEGIN TRY
             Hectareas,
             Vegetacion,
             TieneRecursosHidricos,
+            TieneRiosOQuebradas,
+            TieneNacientes,
+            CantidadNacientes,
             UsoSuelo,
             Pendiente,
             EstadoFinca
@@ -306,10 +315,13 @@ BEGIN TRY
             9.8965400,
             -83.6082300,
             12.75,
-            'Bosque Secundario',
+            'Bosque secundario',
             0,
-            'Conservacion',
-            'Media',
+            0,
+            0,
+            0,
+            'Conservación',
+            'Inclinada',
             'Registrada'
         );
 
@@ -356,10 +368,10 @@ BEGIN TRY
             N'La finca presenta cobertura boscosa continua y condiciones favorables para PSA.',
             'Califica',
             18.50,
-            'Bosque Primario',
+            'Bosque primario',
             1,
-            'Conservacion',
-            'Alta',
+            'Conservación',
+            'Muy inclinada',
             SYSDATETIME()
         );
 
