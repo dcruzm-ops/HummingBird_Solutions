@@ -13,6 +13,65 @@ document.addEventListener("DOMContentLoaded", function () {
     var distritoSelect = document.getElementById("distritoSelect");
     var latitudInput = document.getElementById("Latitud");
     var longitudInput = document.getElementById("Longitud");
+    var vegetacionSelect = document.getElementById("vegetacionSelect");
+    var usoSueloSelect = document.getElementById("usoSueloSelect");
+    var tieneRiosOQuebradasCheck = document.getElementById("tieneRiosOQuebradas");
+    var tieneNacientesCheck = document.getElementById("tieneNacientes");
+    var cantidadNacientesInput = document.getElementById("cantidadNacientes");
+    var tieneRecursosHidricosInput = document.getElementById("tieneRecursosHidricos");
+
+    var catalogosBase = {
+        vegetacion: ["Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto"],
+        usoSuelo: ["Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto"]
+    };
+
+    function poblarCatalogo(select, opciones, valorActual) {
+        if (!select) {
+            return;
+        }
+
+        select.innerHTML = "";
+        opciones.forEach(function (opcion) {
+            var item = document.createElement("option");
+            item.value = opcion;
+            item.textContent = opcion;
+            select.appendChild(item);
+        });
+
+        if (valorActual && opciones.indexOf(valorActual) >= 0) {
+            select.value = valorActual;
+        }
+    }
+
+    function inicializarCatalogosConfigurables() {
+        var configuracionExterna = window.psaCatalogosFinca || {};
+        var vegetacionOpciones = configuracionExterna.vegetacion || catalogosBase.vegetacion;
+        var usoSueloOpciones = configuracionExterna.usoSuelo || catalogosBase.usoSuelo;
+
+        poblarCatalogo(vegetacionSelect, vegetacionOpciones, vegetacionSelect ? vegetacionSelect.value : "");
+        poblarCatalogo(usoSueloSelect, usoSueloOpciones, usoSueloSelect ? usoSueloSelect.value : "");
+    }
+
+    function sincronizarRecursosHidricos() {
+        if (!tieneRecursosHidricosInput) {
+            return;
+        }
+
+        var tieneRios = !!(tieneRiosOQuebradasCheck && tieneRiosOQuebradasCheck.checked);
+        var tieneNacientes = !!(tieneNacientesCheck && tieneNacientesCheck.checked);
+        var hayRecursos = tieneRios || tieneNacientes;
+
+        tieneRecursosHidricosInput.value = hayRecursos ? "true" : "false";
+
+        if (cantidadNacientesInput) {
+            cantidadNacientesInput.disabled = !tieneNacientes;
+            if (!tieneNacientes) {
+                cantidadNacientesInput.value = "0";
+            } else if (!cantidadNacientesInput.value) {
+                cantidadNacientesInput.value = "1";
+            }
+        }
+    }
 
     var ubicacionesCR = {
         "San José": {
@@ -338,8 +397,18 @@ document.addEventListener("DOMContentLoaded", function () {
         enfocarZonaSeleccionada();
     });
 
+    if (tieneRiosOQuebradasCheck) {
+        tieneRiosOQuebradasCheck.addEventListener("change", sincronizarRecursosHidricos);
+    }
+
+    if (tieneNacientesCheck) {
+        tieneNacientesCheck.addEventListener("change", sincronizarRecursosHidricos);
+    }
+
+    inicializarCatalogosConfigurables();
     inicializarUbicaciones();
     inicializarMapa();
+    sincronizarRecursosHidricos();
 
     if (provinciaSelect.value && cantonSelect.value && distritoSelect.value) {
         enfocarZonaSeleccionada();
@@ -354,13 +423,17 @@ document.addEventListener("DOMContentLoaded", function () {
         var longitud = longitudInput ? Number(longitudInput.value) : NaN;
         var hectareasInput = formulario.querySelector("#Hectareas");
         var hectareas = hectareasInput ? Number(hectareasInput.value) : 0;
+        var cantidadNacientes = cantidadNacientesInput ? Number(cantidadNacientesInput.value) : 0;
+        var nacientesValidas = !tieneNacientesCheck || !tieneNacientesCheck.checked
+            ? true
+            : Number.isInteger(cantidadNacientes) && cantidadNacientes > 0;
 
         var coordenadasValidas = Number.isFinite(latitud)
             && Number.isFinite(longitud)
             && latitud >= -90 && latitud <= 90
             && longitud >= -180 && longitud <= 180;
 
-        if (!formulario.checkValidity() || !coordenadasValidas || !Number.isFinite(hectareas) || hectareas <= 0) {
+        if (!formulario.checkValidity() || !coordenadasValidas || !Number.isFinite(hectareas) || hectareas <= 0 || !nacientesValidas) {
             evento.preventDefault();
             evento.stopPropagation();
             formulario.classList.add("was-validated");

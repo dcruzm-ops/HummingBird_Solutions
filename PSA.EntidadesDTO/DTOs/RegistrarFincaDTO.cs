@@ -36,9 +36,16 @@ namespace PSA.EntidadesDTO.DTOs
 
         [Required]
         [StringLength(100)]
-        public string Vegetacion { get; set; } = "Bosque";
+        public string Vegetacion { get; set; } = "Bosque primario";
 
         public bool TieneRecursosHidricos { get; set; }
+
+        public bool TieneRiosOQuebradas { get; set; }
+
+        public bool TieneNacientes { get; set; }
+
+        [Range(0, 100, ErrorMessage = "La cantidad de nacientes debe estar entre 0 y 100.")]
+        public int CantidadNacientes { get; set; }
 
         [Required]
         [StringLength(100)]
@@ -46,6 +53,6 @@ namespace PSA.EntidadesDTO.DTOs
 
         [Required]
         [StringLength(50)]
-        public string Pendiente { get; set; } = "Media";
+        public string Pendiente { get; set; } = "Plana";
     }
 }

@@ -85,28 +85,52 @@
             <div class="grid-tres-columnas">
                 <div class="campo-formulario">
                     <label asp-for="Vegetacion"></label>
-                    <input asp-for="Vegetacion" placeholder="Vegetación principal" required />
+                    <select asp-for="Vegetacion" id="vegetacionSelect" required>
+                        <option value="Bosque primario">Bosque primario</option>
+                        <option value="Bosque secundario">Bosque secundario</option>
+                        <option value="Plantación forestal">Plantación forestal</option>
+                        <option value="Pasto">Pasto</option>
+                    </select>
                     <span asp-validation-for="Vegetacion" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="UsoSuelo"></label>
-                    <input asp-for="UsoSuelo" placeholder="Uso del suelo" required />
+                    <select asp-for="UsoSuelo" id="usoSueloSelect" required>
+                        <option value="Conservación">Conservación</option>
+                        <option value="Producción forestal">Producción forestal</option>
+                        <option value="Agroforestal">Agroforestal</option>
+                        <option value="Ganadería">Ganadería</option>
+                        <option value="Uso mixto">Uso mixto</option>
+                    </select>
                     <span asp-validation-for="UsoSuelo" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Pendiente"></label>
                     <select asp-for="Pendiente" required>
-                        <option value="Baja">Baja</option>
-                        <option value="Media">Media</option>
-                        <option value="Alta">Alta</option>
+                        <option value="Plana">Plana</option>
+                        <option value="Inclinada">Inclinada</option>
+                        <option value="Muy inclinada">Muy inclinada</option>
                     </select>
                     <span asp-validation-for="Pendiente" class="text-danger"></span>
                 </div>
             </div>
 
-            <div class="control-check">
-                <input asp-for="TieneRecursosHidricos" type="checkbox" />
-                <label asp-for="TieneRecursosHidricos">La finca posee recursos hídricos</label>
+            <input asp-for="TieneRecursosHidricos" type="hidden" id="tieneRecursosHidricos" />
+
+            <div class="grid-tres-columnas">
+                <div class="control-check">
+                    <input asp-for="TieneRiosOQuebradas" type="checkbox" id="tieneRiosOQuebradas" />
+                    <label asp-for="TieneRiosOQuebradas">Sí tiene ríos o quebradas</label>
+                </div>
+                <div class="control-check">
+                    <input asp-for="TieneNacientes" type="checkbox" id="tieneNacientes" />
+                    <label asp-for="TieneNacientes">Sí tiene nacientes</label>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="CantidadNacientes">Cuántas nacientes tiene</label>
+                    <input asp-for="CantidadNacientes" type="number" min="0" step="1" id="cantidadNacientes" />
+                    <span asp-validation-for="CantidadNacientes" class="text-danger"></span>
+                </div>
             </div>
         </div>
 
