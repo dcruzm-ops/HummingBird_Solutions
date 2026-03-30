@@ -17,7 +17,9 @@
 }
 
 .autenticacion-panel-marca {
-    background: linear-gradient(160deg, rgba(36, 116, 46, 0.96), rgba(46, 151, 57, 0.86));
+    background:
+        linear-gradient(160deg, rgba(24, 82, 38, 0.80), rgba(32, 122, 52, 0.74)),
+        url("https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1800&q=80") center/cover no-repeat;
     color: #fff;
 }
 
