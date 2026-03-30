@@ -13,5 +13,10 @@ namespace PSA.WebApp.Controllers
         {
             return View();
         }
+
+        public IActionResult Producto()
+        {
+            return View();
+        }
     }
 }
