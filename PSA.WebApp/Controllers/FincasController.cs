@@ -71,7 +71,7 @@ namespace PSA.WebApp.Controllers
             {
                 var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
                     ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-                var baseUrl = GetApiBaseUrl();
+                var baseUrl = GetApiBaseUrls().First();
                 var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
 
                 if (!response.IsSuccessStatusCode)
