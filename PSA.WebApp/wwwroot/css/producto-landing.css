@@ -4,6 +4,23 @@
     min-height: 100vh;
 }
 
+.psa-topbar {
+    background: #103d24;
+    color: #e6f6eb;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+    .psa-topbar .container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+        align-items: center;
+        justify-content: center;
+        padding: .75rem 0;
+        text-align: center;
+        font-size: .95rem;
+    }
+
 .psa-hero {
     background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1920&q=80');
     background-size: cover;
@@ -19,6 +36,7 @@
     font-size: clamp(2.2rem, 4vw, 3.4rem);
     font-weight: 800;
     margin-bottom: 1rem;
+    max-width: 1040px;
 }
 
 .psa-hero p {
@@ -51,6 +69,12 @@
     box-shadow: 0 8px 20px rgba(20, 65, 38, 0.1);
 }
 
+#vision-general p {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .psa-card__image {
     width: 100%;
     height: 190px;
@@ -70,6 +94,53 @@
 .psa-beneficios {
     background: linear-gradient(180deg, #e8f3ea 0%, #dcefe0 100%);
     border-top: 1px solid #cfe3d4;
+}
+
+.paso-operativo {
+    background: #fff;
+    border: 1px solid #d7e7db;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 6px 16px rgba(20, 65, 38, 0.08);
+}
+
+    .paso-operativo span {
+        display: inline-flex;
+        background: #dff2e5;
+        color: #0b5f2e;
+        border-radius: 999px;
+        padding: .2rem .7rem;
+        font-size: .82rem;
+        font-weight: 700;
+        margin-bottom: .8rem;
+    }
+
+.psa-roles {
+    background: #f0f7f2;
+    border-top: 1px solid #d7e7db;
+    border-bottom: 1px solid #d7e7db;
+}
+
+.rol-card {
+    background: #fff;
+    border: 1px solid #d7e7db;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 6px 16px rgba(20, 65, 38, 0.08);
+}
+
+    .rol-card h5 {
+        color: #0b5f2e;
+    }
+
+.psa-cierre-texto {
+    max-width: 920px;
+    color: #415748;
+}
+
+.psa-footer-institucional {
+    background: #153826;
+    color: #eaf6ef;
 }
 
 .beneficio-item {
