@@ -12,6 +12,7 @@
 		<Compile Remove="bin\**\*.cs;obj\**\*.cs" />
 		<Compile Include="DbContextHelper.cs" />
 		<Compile Include="DAO\FincaDAO.cs" />
+		<Compile Include="DAO\RecuperacionContrasenaDAO.cs" />
 		<Compile Include="DAO\TokenRecuperacionDAO.cs" />
 		<Compile Include="DAO\UsuarioDAO.cs" />
 		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />

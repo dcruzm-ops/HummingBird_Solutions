@@ -22,7 +22,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("solicitar")]
-        public IActionResult SolicitarRecuperacion([FromBody] RecuperarContrasenaDTO dto)
+        public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarContrasenaDTO dto)
         {
             try
             {
@@ -35,8 +35,20 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"];
-                var respuesta = _manager.GenerarToken(dto, webAppBaseUrl);
+                var (token, nombreUsuario) = await _manager.GenerarTokenConNombreAsync(dto.Correo);
+                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"]?.TrimEnd('/');
+                var linkRecuperacion = string.IsNullOrWhiteSpace(webAppBaseUrl)
+                    ? null
+                    : $"{webAppBaseUrl}/Autenticacion/RestablecerContrasena?tokenRecuperacion={Uri.EscapeDataString(token)}";
+
+                var respuesta = new RespuestaRecuperacionDTO
+                {
+                    Exito = true,
+                    Mensaje = "Solicitud procesada correctamente.",
+                    LinkRecuperacion = linkRecuperacion,
+                    CorreoDestino = dto.Correo,
+                    NombreUsuario = nombreUsuario
+                };
 
                 var smtp = new SmtpSettingsDTO
                 {
@@ -88,7 +100,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("validar-token")]
-        public IActionResult ValidarToken([FromBody] ValidarTokenDTO dto)
+        public async Task<IActionResult> ValidarToken([FromBody] ValidarTokenDTO dto)
         {
             try
             {
@@ -101,7 +113,14 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var respuesta = _manager.ValidarToken(dto);
+                var esValido = await _manager.TokenEsValidoAsync(dto.Token);
+                var respuesta = new RespuestaRecuperacionDTO
+                {
+                    Exito = esValido,
+                    Mensaje = esValido
+                        ? "Token válido."
+                        : "El token es inválido o expiró."
+                };
                 return Ok(respuesta);
             }
             catch (Exception ex)
@@ -115,7 +134,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("restablecer")]
-        public IActionResult Restablecer([FromBody] RestablecerContrasenaDTO dto)
+        public async Task<IActionResult> Restablecer([FromBody] RestablecerContrasenaDTO dto)
         {
             try
             {
@@ -131,13 +150,21 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var respuesta = _manager.RestablecerContrasena(dto);
-                if (!respuesta.Exito)
+                if (!string.Equals(dto.NuevaContrasena, dto.ConfirmarContrasena, StringComparison.Ordinal))
                 {
-                    return BadRequest(respuesta);
+                    return BadRequest(new RespuestaRecuperacionDTO
+                    {
+                        Exito = false,
+                        Mensaje = "Las contraseñas no coinciden."
+                    });
                 }
 
-                return Ok(respuesta);
+                await _manager.RestablecerContrasenaAsync(dto.Token, dto.NuevaContrasena);
+                return Ok(new RespuestaRecuperacionDTO
+                {
+                    Exito = true,
+                    Mensaje = "Contraseña restablecida correctamente."
+                });
             }
             catch (Exception ex)
             {
