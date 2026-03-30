@@ -39,7 +39,10 @@
         </div>
 
         <div class="fila-acciones-formulario">
-            <button type="submit" class="boton-primario boton-bloque">Iniciar sesión</button>
+            <button type="submit" class="boton-primario boton-bloque" data-loading-button>
+                <span class="spinner-border spinner-border-sm d-none me-2" aria-hidden="true" data-loading-spinner></span>
+                <span data-loading-texto>Iniciar sesión</span>
+            </button>
         </div>
     </form>
 
@@ -48,12 +51,6 @@
             ¿Aún no tiene cuenta?
             <a asp-controller="Autenticacion" asp-action="RegistroUsuario">Registrarse</a>
         </p>
-    </div>
-
-    <div class="lista-accesos">
-        <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Dueno">Entrar como dueño</a>
-        <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Ingeniero">Entrar como ingeniero</a>
-        <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Administrador">Entrar como administrador</a>
     </div>
 </div>
 
