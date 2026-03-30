@@ -254,3 +254,61 @@
     opacity: 0.14;
   }
 }
+
+/* Ajuste adicional solicitado: paleta más clara y mejor legibilidad */
+.hb-landing {
+  --color-bg-primary: #0f2b3a;
+  --color-bg-secondary: #1a3d51;
+  --color-surface: #1f4a5e;
+  --color-surface-soft: #25566d;
+  --color-text-primary: #f8fcff;
+  --color-text-secondary: #e1edf4;
+  --color-text-muted: #c6d9e6;
+}
+
+.hb-landing .card {
+  color: #eef6fb;
+  background-color: rgba(34, 82, 103, 0.78);
+  border-color: rgba(188, 223, 242, 0.2);
+}
+
+.hb-landing .card--soft {
+  background-color: rgba(39, 92, 116, 0.74);
+}
+
+.hb-landing .hero--with-image::after {
+  background: linear-gradient(90deg, rgba(13, 35, 47, 0.76) 0%, rgba(13, 35, 47, 0.62) 45%, rgba(13, 35, 47, 0.44) 100%);
+}
+
+.hb-landing .section--with-image::before {
+  background: linear-gradient(180deg, rgba(15, 43, 58, 0.78), rgba(15, 43, 58, 0.58));
+}
+
+.hb-landing .section-watermark {
+  opacity: 0.34;
+  filter: saturate(0.9) contrast(1.08) brightness(1.08);
+}
+
+.hb-landing .hero .section-watermark {
+  opacity: 0.36;
+}
+
+.hb-landing .hero-subtitle,
+.hb-landing .section-subtitle,
+.hb-landing .card p,
+.hb-landing .card,
+.hb-landing .small-text,
+.hb-navbar nav a {
+  color: #e9f3fa;
+}
+
+.hb-landing .badge-blue {
+  background-color: rgba(81, 171, 245, 0.22);
+  color: #a9d6ff;
+}
+
+@media (max-width: 768px) {
+  .hb-landing .section-watermark {
+    opacity: 0.24;
+  }
+}
