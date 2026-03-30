@@ -151,8 +151,8 @@
 }
 
     .capacidad-item--fincas::after {
-        width: 150px;
-        right: -150px;
+        width: 340px;
+        right: -340px;
     }
 
 .capacidad-item--evaluaciones {
@@ -161,8 +161,8 @@
 }
 
     .capacidad-item--evaluaciones::after {
-        width: 150px;
-        left: -150px;
+        width: 340px;
+        left: -340px;
     }
 
 .capacidad-item--pagos {
@@ -171,8 +171,8 @@
 }
 
     .capacidad-item--pagos::after {
-        width: 150px;
-        right: -150px;
+        width: 340px;
+        right: -340px;
     }
 
 .capacidad-item--trazabilidad {
@@ -181,8 +181,8 @@
 }
 
     .capacidad-item--trazabilidad::after {
-        width: 150px;
-        left: -150px;
+        width: 340px;
+        left: -340px;
     }
 
 .psa-card__image {
