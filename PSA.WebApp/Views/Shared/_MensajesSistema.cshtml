@@ -1,6 +1,22 @@
-<section class="mensajes-sistema">
-    <article class="alerta alerta-info" role="status">
-        <strong>Base inicial cargada.</strong>
-        Estas pantallas contienen estructura visual, datos simulados y componentes reutilizables para acelerar el desarrollo del Sprint 2.
-    </article>
-</section>
+@{
+    var mensajeExito = TempData["MensajeExito"]?.ToString();
+    var mensajeError = TempData["MensajeError"]?.ToString();
+}
+
+@if (!string.IsNullOrWhiteSpace(mensajeExito))
+{
+    <section class="mensajes-sistema">
+        <article class="alerta alerta-info" role="status" data-auto-dismiss-ms="8000">
+            @mensajeExito
+        </article>
+    </section>
+}
+
+@if (!string.IsNullOrWhiteSpace(mensajeError))
+{
+    <section class="mensajes-sistema">
+        <article class="alerta alerta-error" role="alert">
+            @mensajeError
+        </article>
+    </section>
+}
