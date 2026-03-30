@@ -128,6 +128,7 @@ namespace PSA.WebApp.Controllers
                     return View(dto);
                 }
 
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente. Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
@@ -378,6 +379,7 @@ Cuenta automática Do-Not-Reply";
             try
             {
                 await _autenticacionManager.RegistrarUsuarioAsync(dto);
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente (modo local). Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
