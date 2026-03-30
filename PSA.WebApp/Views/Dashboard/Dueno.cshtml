@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Dashboard del dueño";
+    var actividadReciente = ViewBag.ActividadReciente as List<string> ?? new List<string>();
 }
 <section class="seccion-pagina propietario-dashboard">
     <div class="cabecera-pagina">
@@ -14,18 +15,18 @@
     <div class="grid-tarjetas-kpi">
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Fincas registradas</span>
-            <strong>3</strong>
-            <small>2 activas y 1 en revisión</small>
+            <strong>@(ViewBag.TotalFincas ?? 0)</strong>
+            <small>@(ViewBag.FincasActivas ?? 0) activas y @(ViewBag.EnRevision ?? 0) en revisión</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Evaluaciones pendientes</span>
-            <strong>1</strong>
-            <small>Última actualización hace 2 días</small>
+            <strong>@(ViewBag.EvaluacionesPendientes ?? 0)</strong>
+            <small>Resumen calculado desde sus fincas registradas</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Cuotas por confirmar</span>
-            <strong>2</strong>
-            <small>Plan anual 2026</small>
+            <strong>@Math.Max(0, (int)(ViewBag.EvaluacionesPendientes ?? 0) - (int)(ViewBag.EnRevision ?? 0))</strong>
+            <small>Estimación operativa para próximos pagos</small>
         </article>
     </div>
 
@@ -46,9 +47,17 @@
                 <h3>Actividad reciente</h3>
             </div>
             <ul class="lista-timeline">
-                <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Finca “Los Laureles” actualizada con nueva evidencia.</a></li>
-                <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="2">Evaluación técnica de “Finca El Bosque” marcada como en proceso.</a></li>
-                <li><a asp-controller="Notificaciones" asp-action="Index">Cuenta bancaria pendiente de validación administrativa.</a></li>
+                @if (actividadReciente.Count == 0)
+                {
+                    <li>No hay actividad reciente para mostrar.</li>
+                }
+                else
+                {
+                    foreach (var item in actividadReciente)
+                    {
+                        <li>@item</li>
+                    }
+                }
             </ul>
         </section>
     </div>

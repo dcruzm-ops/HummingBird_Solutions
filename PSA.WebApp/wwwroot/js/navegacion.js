@@ -62,6 +62,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll("a[href]").forEach(function (enlace) {
         enlace.addEventListener("click", function (evento) {
+            if (enlace.getAttribute("aria-disabled") === "true") {
+                evento.preventDefault();
+                return;
+            }
+
             if (evento.defaultPrevented || !enlace.href) {
                 return;
             }

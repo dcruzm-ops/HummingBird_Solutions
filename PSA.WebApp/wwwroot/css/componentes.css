@@ -319,6 +319,16 @@
     gap: var(--espacio-2);
 }
 
+.menu-lateral__seccion {
+    margin: var(--espacio-3) 0 var(--espacio-1);
+    padding: 0 .65rem;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--color-texto-secundario);
+    font-weight: 700;
+}
+
 .item-menu {
     display: flex;
     align-items: center;
@@ -339,6 +349,23 @@
         color: var(--color-primario);
         font-weight: 700;
     }
+
+    .item-menu.item-menu--proximamente {
+        opacity: .6;
+        cursor: default;
+        border: 1px dashed var(--color-borde-suave);
+    }
+
+        .item-menu.item-menu--proximamente::after {
+            content: "Próx";
+            margin-left: auto;
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--color-texto-secundario);
+            background: var(--color-superficie-secundaria);
+            border-radius: 999px;
+            padding: .15rem .45rem;
+        }
 
 .bloque-usuario {
     display: flex;
