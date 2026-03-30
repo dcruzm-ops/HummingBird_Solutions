@@ -112,14 +112,15 @@ WHERE ISNULL(ev.EstadoEvaluacion, 'Sin iniciar') IN ('Sin iniciar', 'Pendiente')
             const string sqlEnProceso = @"
 SELECT COUNT(1)
 FROM EvaluacionesTecnicas
-WHERE EstadoEvaluacion = 'En proceso';";
+WHERE EstadoEvaluacion IN ('En Proceso', 'En proceso');";
 
             const string sqlDecisionesMes = @"
 SELECT COUNT(1)
 FROM EvaluacionesTecnicas
-WHERE EstadoEvaluacion IN ('Aprobada', 'Rechazada')
-  AND YEAR(FechaEvaluacion) = YEAR(GETDATE())
-  AND MONTH(FechaEvaluacion) = MONTH(GETDATE());";
+WHERE EstadoEvaluacion = 'Finalizada'
+  AND FechaDecision IS NOT NULL
+  AND YEAR(FechaDecision) = YEAR(GETDATE())
+  AND MONTH(FechaDecision) = MONTH(GETDATE());";
 
             const string sqlTopProvincias = @"
 SELECT TOP 3 Provincia, COUNT(1) AS Cantidad
@@ -127,26 +128,33 @@ FROM Fincas
 GROUP BY Provincia
 ORDER BY Cantidad DESC, Provincia ASC;";
 
-            using var connection = new SqlConnection(connectionString);
-            await connection.OpenAsync();
-
-            var pendientes = await EjecutarEscalarAsync(connection, sqlPendientes);
-            var enProceso = await EjecutarEscalarAsync(connection, sqlEnProceso);
-            var decisionesMes = await EjecutarEscalarAsync(connection, sqlDecisionesMes);
-
-            var topProvincias = new List<string>();
-            using (var cmdProvincias = new SqlCommand(sqlTopProvincias, connection))
-            using (var reader = await cmdProvincias.ExecuteReaderAsync())
+            try
             {
-                while (await reader.ReadAsync())
-                {
-                    var provincia = reader["Provincia"]?.ToString() ?? "Sin dato";
-                    var cantidad = Convert.ToInt32(reader["Cantidad"]);
-                    topProvincias.Add($"{provincia}: {cantidad} fincas");
-                }
-            }
+                using var connection = new SqlConnection(connectionString);
+                await connection.OpenAsync();
 
-            return (pendientes, enProceso, decisionesMes, topProvincias);
+                var pendientes = await EjecutarEscalarAsync(connection, sqlPendientes);
+                var enProceso = await EjecutarEscalarAsync(connection, sqlEnProceso);
+                var decisionesMes = await EjecutarEscalarAsync(connection, sqlDecisionesMes);
+
+                var topProvincias = new List<string>();
+                using (var cmdProvincias = new SqlCommand(sqlTopProvincias, connection))
+                using (var reader = await cmdProvincias.ExecuteReaderAsync())
+                {
+                    while (await reader.ReadAsync())
+                    {
+                        var provincia = reader["Provincia"]?.ToString() ?? "Sin dato";
+                        var cantidad = Convert.ToInt32(reader["Cantidad"]);
+                        topProvincias.Add($"{provincia}: {cantidad} fincas");
+                    }
+                }
+
+                return (pendientes, enProceso, decisionesMes, topProvincias);
+            }
+            catch
+            {
+                return (0, 0, 0, new List<string>());
+            }
         }
 
         private static async Task<int> EjecutarEscalarAsync(SqlConnection connection, string sql)
