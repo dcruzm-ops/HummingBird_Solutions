@@ -13,8 +13,6 @@ document.addEventListener("DOMContentLoaded", function () {
     var distritoSelect = document.getElementById("distritoSelect");
     var latitudInput = document.getElementById("Latitud");
     var longitudInput = document.getElementById("Longitud");
-    var vegetacionSelect = document.getElementById("vegetacionSelect");
-    var usoSueloSelect = document.getElementById("usoSueloSelect");
     var tieneRiosOQuebradasCheck = document.getElementById("tieneRiosOQuebradas");
     var tieneNacientesCheck = document.getElementById("tieneNacientes");
     var cantidadNacientesInput = document.getElementById("cantidadNacientes");
@@ -58,38 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 campo.setCustomValidity("");
             });
         });
-    }
-
-    var catalogosBase = {
-        vegetacion: ["Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto"],
-        usoSuelo: ["Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto"]
-    };
-
-    function poblarCatalogo(select, opciones, valorActual) {
-        if (!select) {
-            return;
-        }
-
-        select.innerHTML = "";
-        opciones.forEach(function (opcion) {
-            var item = document.createElement("option");
-            item.value = opcion;
-            item.textContent = opcion;
-            select.appendChild(item);
-        });
-
-        if (valorActual && opciones.indexOf(valorActual) >= 0) {
-            select.value = valorActual;
-        }
-    }
-
-    function inicializarCatalogosConfigurables() {
-        var configuracionExterna = window.psaCatalogosFinca || {};
-        var vegetacionOpciones = configuracionExterna.vegetacion || catalogosBase.vegetacion;
-        var usoSueloOpciones = configuracionExterna.usoSuelo || catalogosBase.usoSuelo;
-
-        poblarCatalogo(vegetacionSelect, vegetacionOpciones, vegetacionSelect ? vegetacionSelect.value : "");
-        poblarCatalogo(usoSueloSelect, usoSueloOpciones, usoSueloSelect ? usoSueloSelect.value : "");
     }
 
     function sincronizarRecursosHidricos() {
@@ -452,7 +418,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     configurarMensajesValidacionEspanol();
-    inicializarCatalogosConfigurables();
     inicializarUbicaciones();
     inicializarMapa();
     sincronizarRecursosHidricos();
@@ -479,6 +444,13 @@ document.addEventListener("DOMContentLoaded", function () {
             && Number.isFinite(longitud)
             && latitud >= -90 && latitud <= 90
             && longitud >= -180 && longitud <= 180;
+
+        if (hectareasInput) {
+            hectareasInput.setCustomValidity("");
+            if (!Number.isFinite(hectareas) || hectareas <= 0) {
+                hectareasInput.setCustomValidity("El valor de hectáreas debe ser mayor a 0.");
+            }
+        }
 
         if (!formulario.checkValidity() || !coordenadasValidas || !Number.isFinite(hectareas) || hectareas <= 0 || !nacientesValidas) {
             evento.preventDefault();

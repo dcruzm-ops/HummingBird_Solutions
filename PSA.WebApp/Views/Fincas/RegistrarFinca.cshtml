@@ -1,6 +1,9 @@
 @model PSA.EntidadesDTO.DTOs.RegistrarFincaDTO
 @{
     ViewData["Title"] = "Registrar finca";
+    var catalogoPendiente = ViewBag.CatalogoPendiente as IEnumerable<string> ?? new[] { "Plana", "Inclinada", "Muy inclinada" };
+    var catalogoVegetacion = ViewBag.CatalogoVegetacion as IEnumerable<string> ?? new[] { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
+    var catalogoUsoSuelo = ViewBag.CatalogoUsoSuelo as IEnumerable<string> ?? new[] { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" };
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
@@ -11,7 +14,7 @@
         </div>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="post" asp-controller="Fincas" asp-action="RegistrarFinca">
+    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="post" asp-controller="Fincas" asp-action="RegistrarFinca" data-omitir-trobber-global>
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -71,7 +74,7 @@
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Hectareas"></label>
-                    <input asp-for="Hectareas" type="number" min="0.01" step="0.01" required />
+                    <input asp-for="Hectareas" type="number" step="0.01" required />
                     <span asp-validation-for="Hectareas" class="text-danger"></span>
                 </div>
             </div>
@@ -86,30 +89,30 @@
                 <div class="campo-formulario">
                     <label asp-for="Vegetacion"></label>
                     <select asp-for="Vegetacion" id="vegetacionSelect" required>
-                        <option value="Bosque primario">Bosque primario</option>
-                        <option value="Bosque secundario">Bosque secundario</option>
-                        <option value="Plantación forestal">Plantación forestal</option>
-                        <option value="Pasto">Pasto</option>
+                        @foreach (var opcion in catalogoVegetacion)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
                     </select>
                     <span asp-validation-for="Vegetacion" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="UsoSuelo"></label>
                     <select asp-for="UsoSuelo" id="usoSueloSelect" required>
-                        <option value="Conservación">Conservación</option>
-                        <option value="Producción forestal">Producción forestal</option>
-                        <option value="Agroforestal">Agroforestal</option>
-                        <option value="Ganadería">Ganadería</option>
-                        <option value="Uso mixto">Uso mixto</option>
+                        @foreach (var opcion in catalogoUsoSuelo)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
                     </select>
                     <span asp-validation-for="UsoSuelo" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Pendiente"></label>
                     <select asp-for="Pendiente" required>
-                        <option value="Plana">Plana</option>
-                        <option value="Inclinada">Inclinada</option>
-                        <option value="Muy inclinada">Muy inclinada</option>
+                        @foreach (var opcion in catalogoPendiente)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
                     </select>
                     <span asp-validation-for="Pendiente" class="text-danger"></span>
                 </div>

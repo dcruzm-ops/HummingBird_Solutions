@@ -274,5 +274,34 @@ WHERE IdFinca = @IdFinca
             return await command.ExecuteNonQueryAsync() > 0;
         }
 
+        public async Task<List<string>> ObtenerCatalogoFactorAsync(string tipoFactor)
+        {
+            const string sql = @"
+SELECT ValorFactor
+FROM ConfiguracionPagoDetalle
+WHERE TipoFactor = @TipoFactor
+GROUP BY ValorFactor
+ORDER BY ValorFactor;";
+
+            var resultados = new List<string>();
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@TipoFactor", tipoFactor);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var valor = reader["ValorFactor"]?.ToString();
+                if (!string.IsNullOrWhiteSpace(valor))
+                {
+                    resultados.Add(valor);
+                }
+            }
+
+            return resultados;
+        }
+
     }
 }

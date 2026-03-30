@@ -37,6 +37,7 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
             ViewBag.BreadcrumbActual = "Registrar finca";
 
+            CargarCatalogosFormularioFinca();
             return View(new RegistrarFincaDTO());
         }
 
@@ -61,6 +62,7 @@ namespace PSA.WebApp.Controllers
 
             if (!ModelState.IsValid)
             {
+                CargarCatalogosFormularioFinca();
                 return View(dto);
             }
 
@@ -75,6 +77,7 @@ namespace PSA.WebApp.Controllers
                 {
                     var errorBody = await response.Content.ReadAsStringAsync();
                     ModelState.AddModelError(string.Empty, $"No fue posible registrar la finca. {errorBody}");
+                    CargarCatalogosFormularioFinca();
                     return View(dto);
                 }
 
@@ -232,6 +235,25 @@ namespace PSA.WebApp.Controllers
         {
             var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             return int.TryParse(idClaim, out var idUsuario) ? idUsuario : 0;
+        }
+
+        private void CargarCatalogosFormularioFinca()
+        {
+            var pendientes = _fincaDAO.ObtenerCatalogoFactorAsync("Pendiente").GetAwaiter().GetResult();
+            var vegetaciones = _fincaDAO.ObtenerCatalogoFactorAsync("Vegetacion").GetAwaiter().GetResult();
+            var usosSuelo = _fincaDAO.ObtenerCatalogoFactorAsync("UsoSuelo").GetAwaiter().GetResult();
+
+            ViewBag.CatalogoPendiente = pendientes.Count > 0
+                ? pendientes
+                : new List<string> { "Plana", "Inclinada", "Muy inclinada" };
+
+            ViewBag.CatalogoVegetacion = vegetaciones.Count > 0
+                ? vegetaciones
+                : new List<string> { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
+
+            ViewBag.CatalogoUsoSuelo = usosSuelo.Count > 0
+                ? usosSuelo
+                : new List<string> { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" };
         }
     }
 }
