@@ -27,6 +27,7 @@ IF OBJECT_ID(N'dbo.Notificaciones', N'U') IS NOT NULL DROP TABLE dbo.Notificacio
 IF OBJECT_ID(N'dbo.EvaluacionEvidencias', N'U') IS NOT NULL DROP TABLE dbo.EvaluacionEvidencias;
 IF OBJECT_ID(N'dbo.FincaEvidencias', N'U') IS NOT NULL DROP TABLE dbo.FincaEvidencias;
 IF OBJECT_ID(N'dbo.AuditoriaLog', N'U') IS NOT NULL DROP TABLE dbo.AuditoriaLog;
+IF OBJECT_ID(N'dbo.CatalogoFincaValores', N'U') IS NOT NULL DROP TABLE dbo.CatalogoFincaValores;
 IF OBJECT_ID(N'dbo.TransaccionesPago', N'U') IS NOT NULL DROP TABLE dbo.TransaccionesPago;
 IF OBJECT_ID(N'dbo.CuotasPago', N'U') IS NOT NULL DROP TABLE dbo.CuotasPago;
 IF OBJECT_ID(N'dbo.PlanesPago', N'U') IS NOT NULL DROP TABLE dbo.PlanesPago;
@@ -38,6 +39,23 @@ IF OBJECT_ID(N'dbo.Fincas', N'U') IS NOT NULL DROP TABLE dbo.Fincas;
 IF OBJECT_ID(N'dbo.TokensRecuperacion', N'U') IS NOT NULL DROP TABLE dbo.TokensRecuperacion;
 IF OBJECT_ID(N'dbo.Usuarios', N'U') IS NOT NULL DROP TABLE dbo.Usuarios;
 IF OBJECT_ID(N'dbo.Roles', N'U') IS NOT NULL DROP TABLE dbo.Roles;
+GO
+
+/* =========================================
+   4.1 Catálogos configurables para Finca
+   ========================================= */
+CREATE TABLE dbo.CatalogoFincaValores
+(
+    IdCatalogoFincaValor     INT IDENTITY(1,1) NOT NULL,
+    TipoCatalogo             VARCHAR(50) NOT NULL,
+    Valor                    VARCHAR(100) NOT NULL,
+    Activo                   BIT NOT NULL CONSTRAINT DF_CatalogoFincaValores_Activo DEFAULT (1),
+    OrdenVisual              INT NOT NULL CONSTRAINT DF_CatalogoFincaValores_OrdenVisual DEFAULT (0),
+    FechaRegistro            DATETIME2 NOT NULL CONSTRAINT DF_CatalogoFincaValores_FechaRegistro DEFAULT (SYSDATETIME()),
+    CONSTRAINT PK_CatalogoFincaValores PRIMARY KEY (IdCatalogoFincaValor),
+    CONSTRAINT UQ_CatalogoFincaValores UNIQUE (TipoCatalogo, Valor),
+    CONSTRAINT CK_CatalogoFincaValores_TipoCatalogo CHECK (TipoCatalogo IN ('Pendiente', 'Vegetacion', 'UsoSuelo'))
+);
 GO
 
 /* =========================================
