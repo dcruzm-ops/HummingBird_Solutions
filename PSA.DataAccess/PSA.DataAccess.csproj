@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="bin\**\*.cs;obj\**\*.cs" />
 		<Compile Include="DAO\FincaDAO.cs" />
 		<Compile Include="DAO\TokenRecuperacionDAO.cs" />
 		<Compile Include="DAO\UsuarioDAO.cs" />

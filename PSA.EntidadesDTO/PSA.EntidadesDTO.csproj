@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="bin\**\*.cs;obj\**\*.cs" />
 		<Compile Include="DTOs\FincaDetalleDTO.cs" />
 		<Compile Include="DTOs\FincaResumenDTO.cs" />
 		<Compile Include="DTOs\InicioSesionDTO.cs" />
