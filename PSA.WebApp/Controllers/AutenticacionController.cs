@@ -429,10 +429,52 @@ Cuenta automática Do-Not-Reply";
                 });
         }
 
-        // Compatibilidad temporal: el envío de bienvenida ahora lo realiza el WebAPI.
-        // Este método evita errores de compilación en ramas que aún tengan llamadas residuales.
-        private static Task IntentarEnviarCorreoBienvenidaAsync(string nombreUsuario, string correoDestino)
-            => Task.CompletedTask;
+        private async Task IntentarEnviarCorreoBienvenidaAsync(string nombreUsuario, string correoDestino)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(correoDestino))
+                {
+                    return;
+                }
+
+                var fechaRegistro = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
+                var correoSoporte = _configuration["EmailSettings:SupportEmail"]
+                    ?? _configuration["SmtpSettings:SupportEmail"]
+                    ?? "soporte@psacostarica.cr";
+                var nombre = string.IsNullOrWhiteSpace(nombreUsuario) ? "usuario" : nombreUsuario.Trim();
+
+                var cuerpo = $@"Hola {nombre},
+
+Tu registro en PSA Costa Rica se completó de manera exitosa el {fechaRegistro}.
+
+Ya puedes ingresar al sistema mediante el siguiente enlace:
+{urlLogin}
+
+Te recomendamos conservar este correo como comprobante de tu registro.
+
+Si no reconoces esta acción o consideras que el registro fue realizado por error, por favor contacta al equipo de soporte:
+{correoSoporte}
+
+Gracias por formar parte de PSA Costa Rica.
+
+Saludos,
+Equipo PSA Costa Rica
+
+Este es un correo automático. Por favor, no respondas a este mensaje.";
+
+                await _servicioCorreo.EnviarAsync(
+                    correoDestino.Trim(),
+                    "Bienvenido(a) a PSA Costa Rica",
+                    cuerpo
+                );
+            }
+            catch
+            {
+                TempData["MensajeInfo"] = "El registro se completó, pero no fue posible enviar el correo de bienvenida.";
+            }
+        }
 
     }
 }
