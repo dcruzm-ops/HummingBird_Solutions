@@ -319,39 +319,17 @@ namespace PSA.WebApp.Controllers
             var vegetaciones = _fincaDAO.ObtenerCatalogoFactorAsync("Vegetacion").GetAwaiter().GetResult();
             var usosSuelo = _fincaDAO.ObtenerCatalogoFactorAsync("UsoSuelo").GetAwaiter().GetResult();
 
-            ViewBag.CatalogoPendiente = MezclarCatalogoBaseYBd(
-                new List<string> { "Plana", "Inclinada", "Muy inclinada" },
-                pendientes
-            );
+            ViewBag.CatalogoPendiente = pendientes.Count > 0
+                ? pendientes
+                : new List<string> { "Plana", "Inclinada", "Muy inclinada" };
 
-            ViewBag.CatalogoVegetacion = MezclarCatalogoBaseYBd(
-                new List<string> { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" },
-                vegetaciones
-            );
+            ViewBag.CatalogoVegetacion = vegetaciones.Count > 0
+                ? vegetaciones
+                : new List<string> { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
 
-            ViewBag.CatalogoUsoSuelo = MezclarCatalogoBaseYBd(
-                new List<string> { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" },
-                usosSuelo
-            );
-        }
-
-        private static List<string> MezclarCatalogoBaseYBd(List<string> baseCatalogo, List<string> catalogoBd)
-        {
-            var resultado = new List<string>(baseCatalogo);
-            var set = new HashSet<string>(baseCatalogo, StringComparer.OrdinalIgnoreCase);
-            foreach (var valorBd in catalogoBd)
-            {
-                if (!string.IsNullOrWhiteSpace(valorBd))
-                {
-                    var valorNormalizado = valorBd.Trim();
-                    if (set.Add(valorNormalizado))
-                    {
-                        resultado.Add(valorNormalizado);
-                    }
-                }
-            }
-
-            return resultado;
+            ViewBag.CatalogoUsoSuelo = usosSuelo.Count > 0
+                ? usosSuelo
+                : new List<string> { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" };
         }
     }
 }

@@ -2,12 +2,6 @@
 
 @{
     ViewData["Title"] = "Mis fincas";
-    var provincias = Model?
-        .Select(f => f.Provincia)
-        .Where(p => !string.IsNullOrWhiteSpace(p))
-        .Distinct(StringComparer.OrdinalIgnoreCase)
-        .OrderBy(p => p)
-        .ToList() ?? new List<string>();
 }
 <section class="seccion-pagina propietario-fincas">
     <div class="cabecera-pagina">
@@ -28,21 +22,11 @@
             <div class="campo-formulario campo-inline">
                 <label for="estadoFiltro">Estado</label>
                 <select id="estadoFiltro">
-                    <option value="">Todos</option>
-                    <option value="Registrada">Registrada</option>
-                    <option value="EnRevision">En revisión</option>
-                    <option value="Aprobada">Aprobada</option>
-                    <option value="Rechazada">Rechazada</option>
-                </select>
-            </div>
-            <div class="campo-formulario campo-inline">
-                <label for="provinciaFiltro">Provincia</label>
-                <select id="provinciaFiltro">
-                    <option value="">Todas</option>
-                    @foreach (var provincia in provincias)
-                    {
-                        <option value="@provincia">@provincia</option>
-                    }
+                    <option>Todos</option>
+                    <option>Pendiente</option>
+                    <option>Asignada para evaluación</option>
+                    <option>Aprobada</option>
+                    <option>Rechazada</option>
                 </select>
             </div>
         </div>
@@ -79,7 +63,7 @@
                                         ? "badge-error"
                                         : "badge-pendiente";
 
-                            <tr data-nombre="@finca.NombreFinca" data-expediente="@expediente" data-provincia="@finca.Provincia" data-canton="@finca.Canton" data-estado="@finca.EstadoFinca" data-evaluacion="@finca.EstadoEvaluacion">
+                            <tr>
                                 <td>@finca.NombreFinca</td>
                                 <td>@expediente</td>
                                 <td>@finca.Provincia, @finca.Canton</td>
@@ -94,7 +78,3 @@
         </div>
     </section>
 </section>
-
-@section Scripts {
-    <script src="~/js/mis-fincas.js" asp-append-version="true"></script>
-}
