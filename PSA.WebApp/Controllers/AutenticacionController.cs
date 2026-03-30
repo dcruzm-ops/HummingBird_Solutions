@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
-using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
-using PSA.WebApp.Models;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -130,6 +128,7 @@ namespace PSA.WebApp.Controllers
                     return View(dto);
                 }
 
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente. Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
@@ -294,7 +293,7 @@ Cuenta automática Do-Not-Reply";
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             TempData["MensajeExito"] = "Sesión cerrada correctamente.";
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Producto", "Home");
         }
 
         private static string GetDashboardActionByRole(int idRol)
@@ -380,6 +379,7 @@ Cuenta automática Do-Not-Reply";
             try
             {
                 await _autenticacionManager.RegistrarUsuarioAsync(dto);
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente (modo local). Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
@@ -429,50 +429,51 @@ Cuenta automática Do-Not-Reply";
                 });
         }
 
-        private IActionResult RecuperarContrasenaConFallbackLocal(RecuperarContrasenaViewModel model)
+        private async Task IntentarEnviarCorreoBienvenidaAsync(string nombreUsuario, string correoDestino)
         {
             try
             {
-                var payload = new RecuperarContrasenaDTO { Correo = model.Correo.Trim() };
-                var baseUrlWebApp = $"{Request.Scheme}://{Request.Host}";
-                var respuesta = _recuperacionContrasenaManager.GenerarToken(payload, baseUrlWebApp);
-
-                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local, sin envío SMTP automático)";
-                return RedirectToAction(nameof(IniciarSesion));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, $"No fue posible procesar la recuperación: {ex.Message}");
-                return View(nameof(RecuperarContrasena), model);
-            }
-        }
-
-        private IActionResult RestablecerContrasenaConFallbackLocal(RestablecerContrasenaViewModel model)
-        {
-            try
-            {
-                var payload = new RestablecerContrasenaDTO
+                if (string.IsNullOrWhiteSpace(correoDestino))
                 {
-                    Token = model.Token.Trim(),
-                    NuevaContrasena = model.NuevaContrasena,
-                    ConfirmarContrasena = model.ConfirmarContrasena
-                };
-
-                var respuesta = _recuperacionContrasenaManager.RestablecerContrasena(payload);
-                if (!respuesta.Exito)
-                {
-                    ModelState.AddModelError(string.Empty, respuesta.Mensaje);
-                    return View(nameof(RestablecerContrasena), model);
+                    return;
                 }
 
-                TempData["MensajeExito"] = $"{respuesta.Mensaje} (modo local)";
-                return RedirectToAction(nameof(IniciarSesion));
+                var fechaRegistro = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
+                var correoSoporte = _configuration["EmailSettings:SupportEmail"]
+                    ?? _configuration["SmtpSettings:SupportEmail"]
+                    ?? "soporte@psacostarica.cr";
+
+                var cuerpo = $@"Hola {nombreUsuario},
+
+Tu registro en PSA Costa Rica se completó de manera exitosa el {fechaRegistro}.
+
+Ya puedes ingresar al sistema mediante el siguiente enlace:
+{urlLogin}
+
+Te recomendamos conservar este correo como comprobante de tu registro.
+
+Si no reconoces esta acción o consideras que el registro fue realizado por error, por favor contacta al equipo de soporte:
+{correoSoporte}
+
+Gracias por formar parte de PSA Costa Rica.
+
+Saludos,
+Equipo PSA Costa Rica
+
+Este es un correo automático. Por favor, no respondas a este mensaje.";
+
+                await _servicioCorreo.EnviarAsync(
+                    correoDestino,
+                    "Bienvenido(a) a PSA Costa Rica",
+                    cuerpo
+                );
             }
-            catch (Exception ex)
+            catch
             {
-                ModelState.AddModelError(string.Empty, $"No fue posible restablecer la contraseña: {ex.Message}");
-                return View(nameof(RestablecerContrasena), model);
+                TempData["MensajeInfo"] = "El registro se completó, pero no fue posible enviar el correo de bienvenida.";
             }
         }
+
     }
 }
