@@ -128,6 +128,7 @@ namespace PSA.WebApp.Controllers
                     return View(dto);
                 }
 
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente. Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
@@ -378,6 +379,7 @@ Cuenta automática Do-Not-Reply";
             try
             {
                 await _autenticacionManager.RegistrarUsuarioAsync(dto);
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente (modo local). Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
@@ -425,6 +427,52 @@ Cuenta automática Do-Not-Reply";
                     IsPersistent = true,
                     ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                 });
+        }
+
+        private async Task IntentarEnviarCorreoBienvenidaAsync(string nombreUsuario, string correoDestino)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(correoDestino))
+                {
+                    return;
+                }
+
+                var fechaRegistro = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
+                var correoSoporte = _configuration["EmailSettings:SupportEmail"]
+                    ?? _configuration["SmtpSettings:SupportEmail"]
+                    ?? "soporte@psacostarica.cr";
+
+                var cuerpo = $@"Hola {nombreUsuario},
+
+Tu registro en PSA Costa Rica se completó de manera exitosa el {fechaRegistro}.
+
+Ya puedes ingresar al sistema mediante el siguiente enlace:
+{urlLogin}
+
+Te recomendamos conservar este correo como comprobante de tu registro.
+
+Si no reconoces esta acción o consideras que el registro fue realizado por error, por favor contacta al equipo de soporte:
+{correoSoporte}
+
+Gracias por formar parte de PSA Costa Rica.
+
+Saludos,
+Equipo PSA Costa Rica
+
+Este es un correo automático. Por favor, no respondas a este mensaje.";
+
+                await _servicioCorreo.EnviarAsync(
+                    correoDestino,
+                    "Bienvenido(a) a PSA Costa Rica",
+                    cuerpo
+                );
+            }
+            catch
+            {
+                TempData["MensajeInfo"] = "El registro se completó, pero no fue posible enviar el correo de bienvenida.";
+            }
         }
 
     }
