@@ -429,5 +429,10 @@ Cuenta automática Do-Not-Reply";
                 });
         }
 
+        // Compatibilidad temporal: el envío de bienvenida ahora lo realiza el WebAPI.
+        // Este método evita errores de compilación en ramas que aún tengan llamadas residuales.
+        private static Task IntentarEnviarCorreoBienvenidaAsync(string nombreUsuario, string correoDestino)
+            => Task.CompletedTask;
+
     }
 }
