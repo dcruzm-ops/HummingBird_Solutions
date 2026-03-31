@@ -44,19 +44,12 @@ SELECT COUNT(1)
 FROM dbo.CuentasBancarias
 WHERE UPPER(LTRIM(RTRIM(ISNULL(EstadoValidacion, '')))) = 'PENDIENTE';";
 
-            const string sqlAuditoria24h = @"
+            const string sqlEventosAuditoriaTotal = @"
 IF OBJECT_ID('dbo.AuditoriaLog', 'U') IS NULL
     SELECT 0;
-ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaAccion') IS NOT NULL
-    SELECT COUNT(1)
-    FROM dbo.AuditoriaLog
-    WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());
-ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaEvento') IS NOT NULL
-    SELECT COUNT(1)
-    FROM dbo.AuditoriaLog
-    WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());
 ELSE
-    SELECT COUNT(1) FROM dbo.AuditoriaLog;";
+    SELECT COUNT(1)
+    FROM dbo.AuditoriaLog;";
 
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
@@ -65,12 +58,11 @@ ELSE
             var usuariosPendientes = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosPendientes);
             var usuariosNuevosHoy = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosNuevosHoy);
             var cuentasPendientes = await EjecutarEscalarSeguroAsync(connection, sqlCuentasPendientes);
-            var eventosAuditoria = await EjecutarEscalarSeguroAsync(connection, sqlAuditoria24h);
+            var eventosAuditoria = await EjecutarEscalarSeguroAsync(connection, sqlEventosAuditoriaTotal);
             var actividadReciente = await ObtenerActividadAuditoriaAsync(connection);
             if (eventosAuditoria == 0 && actividadReciente.Count > 0)
             {
-                var umbral = DateTime.Now.AddHours(-24);
-                eventosAuditoria = actividadReciente.Count(a => a.FechaAccion >= umbral);
+                eventosAuditoria = actividadReciente.Count;
             }
 
             return Ok(new ResumenDashboardAdministradorDTO
@@ -83,7 +75,7 @@ ELSE
                 Alertas = new List<string>
                 {
                     $"Hay {cuentasPendientes} cuentas bancarias pendientes de validación administrativa.",
-                    $"Se registraron {eventosAuditoria} eventos de auditoría en las últimas 24 horas.",
+                    $"Se registran {eventosAuditoria} eventos de auditoría acumulados.",
                     $"Existen {usuariosPendientes} usuarios inactivos o bloqueados que requieren revisión de acceso."
                 },
                 ActividadAuditoria = actividadReciente
