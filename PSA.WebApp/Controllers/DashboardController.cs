@@ -4,6 +4,8 @@ using PSA.DataAccess.DAO;
 using System.Security.Claims;
 using Microsoft.Data.SqlClient;
 using System.Text.Json;
+using System.Net.Http.Json;
+using PSA.EntidadesDTO.DTOs.Dashboard;
 
 namespace PSA.WebApp.Controllers
 {
@@ -74,13 +76,23 @@ namespace PSA.WebApp.Controllers
 
         [HttpGet]
         [Authorize(Roles = "1")]
-        public IActionResult Administrador()
+        public async Task<IActionResult> Administrador()
         {
             ViewBag.ModuloActivo = "dashboard";
             ViewBag.RolActivo = "Administrador";
             ViewBag.TituloPagina = "Dashboard del administrador";
             ViewBag.SubtituloPagina = "Monitoreo operativo del sistema, usuarios, pagos y auditoría.";
             ViewBag.BreadcrumbActual = "Dashboard";
+
+            var resumen = await ObtenerResumenAdministradorDesdeApiOBaseDatosAsync();
+            ViewBag.UsuariosActivos = resumen.UsuariosActivos;
+            ViewBag.UsuariosNuevosHoy = resumen.UsuariosNuevosHoy;
+            ViewBag.UsuariosPendientesAprobacion = resumen.UsuariosPendientesAprobacion;
+            ViewBag.CuentasPorValidar = resumen.CuentasPorValidar;
+            ViewBag.EventosAuditoria24h = resumen.EventosAuditoria24h;
+            ViewBag.AlertasAdministrativas = resumen.Alertas;
+            ViewBag.ActividadAuditoria = resumen.ActividadAuditoria;
+
             return View();
         }
 
@@ -164,6 +176,162 @@ ORDER BY Cantidad DESC, Provincia ASC;";
             return result != null ? Convert.ToInt32(result) : 0;
         }
 
+        private async Task<ResumenDashboardAdministradorDTO> ObtenerResumenAdministradorDesdeApiOBaseDatosAsync()
+        {
+            var resumenApi = await ObtenerResumenAdministradorDesdeApiAsync();
+            if (resumenApi != null)
+            {
+                return resumenApi;
+            }
+
+            return await ObtenerResumenAdministradorDesdeDbAsync();
+        }
+
+        private async Task<ResumenDashboardAdministradorDTO?> ObtenerResumenAdministradorDesdeApiAsync()
+        {
+            var client = _httpClientFactory.CreateClient("AuthApi");
+
+            foreach (var baseUrl in GetApiBaseUrls())
+            {
+                try
+                {
+                    var response = await client.GetAsync($"{baseUrl}/api/Dashboard/administrador-resumen");
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        continue;
+                    }
+
+                    var resumen = await response.Content.ReadFromJsonAsync<ResumenDashboardAdministradorDTO>();
+                    if (resumen != null)
+                    {
+                        return resumen;
+                    }
+                }
+                catch
+                {
+                    // Intenta siguiente URL del API.
+                }
+            }
+
+            return null;
+        }
+
+        private IEnumerable<string> GetApiBaseUrls()
+        {
+            var configurada = _configuration["ApiSettings:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(configurada))
+            {
+                yield return configurada.TrimEnd('/');
+            }
+
+            yield return "https://localhost:59665";
+            yield return "http://localhost:59667";
+        }
+
+        private async Task<ResumenDashboardAdministradorDTO> ObtenerResumenAdministradorDesdeDbAsync()
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("PSAConnection");
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    return new ResumenDashboardAdministradorDTO();
+                }
+
+            const string sqlUsuariosActivos = @"
+SELECT COUNT(1)
+FROM dbo.Usuarios
+WHERE Estado = 'Activo';";
+
+            const string sqlUsuariosPendientesAprobacion = @"
+SELECT COUNT(1)
+FROM dbo.Usuarios
+WHERE Estado IN ('Inactivo', 'Bloqueado');";
+
+            const string sqlUsuariosNuevosHoy = @"
+SELECT COUNT(1)
+FROM dbo.Usuarios
+WHERE CONVERT(date, FechaCreacion) = CONVERT(date, GETDATE());";
+
+            const string sqlCuentasPorValidar = @"
+SELECT COUNT(1)
+FROM dbo.CuentasBancarias
+WHERE EstadoValidacion = 'Pendiente';";
+
+            const string sqlEventosAuditoria24h = @"
+IF OBJECT_ID('dbo.AuditoriaLog', 'U') IS NULL
+    SELECT 0;
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaAccion') IS NOT NULL
+    SELECT COUNT(1)
+    FROM dbo.AuditoriaLog
+    WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaEvento') IS NOT NULL
+    SELECT COUNT(1)
+    FROM dbo.AuditoriaLog
+    WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());
+ELSE
+    SELECT COUNT(1) FROM dbo.AuditoriaLog;";
+
+                using var connection = new SqlConnection(connectionString);
+                await connection.OpenAsync();
+
+                var usuariosActivos = await EjecutarEscalarAsync(connection, sqlUsuariosActivos);
+                var usuariosPendientes = await EjecutarEscalarAsync(connection, sqlUsuariosPendientesAprobacion);
+                var usuariosNuevosHoy = await EjecutarEscalarAsync(connection, sqlUsuariosNuevosHoy);
+                var cuentasPorValidar = await EjecutarEscalarAsync(connection, sqlCuentasPorValidar);
+                var eventosAuditoria24h = await EjecutarEscalarAsync(connection, sqlEventosAuditoria24h);
+                var actividadAuditoria = await ObtenerActividadAuditoriaAsync(connection);
+
+                return new ResumenDashboardAdministradorDTO
+                {
+                    UsuariosActivos = usuariosActivos,
+                    UsuariosNuevosHoy = usuariosNuevosHoy,
+                    UsuariosPendientesAprobacion = usuariosPendientes,
+                    CuentasPorValidar = cuentasPorValidar,
+                    EventosAuditoria24h = eventosAuditoria24h,
+                    Alertas = new List<string>
+                    {
+                        $"Hay {cuentasPorValidar} cuentas bancarias pendientes de validación administrativa.",
+                        $"Se registraron {eventosAuditoria24h} eventos de auditoría en las últimas 24 horas.",
+                        $"Existen {usuariosPendientes} usuarios inactivos o bloqueados que requieren revisión de acceso."
+                    },
+                    ActividadAuditoria = actividadAuditoria
+                };
+            }
+            catch
+            {
+                return new ResumenDashboardAdministradorDTO();
+            }
+        }
+
+        private static async Task<List<ActividadAuditoriaDTO>> ObtenerActividadAuditoriaAsync(SqlConnection connection)
+        {
+            const string sqlActividad = @"
+SELECT TOP 10
+    ISNULL(Modulo, 'General') AS Modulo,
+    ISNULL(Accion, 'Cambio') AS Accion,
+    ISNULL(Detalle, CONCAT(TablaAfectada, ' #', ISNULL(CONVERT(varchar(20), IdRegistroAfectado), 's/d'))) AS Detalle,
+    FechaAccion
+FROM dbo.AuditoriaLog
+ORDER BY FechaAccion DESC;";
+
+            var actividad = new List<ActividadAuditoriaDTO>();
+            using var cmd = new SqlCommand(sqlActividad, connection);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                actividad.Add(new ActividadAuditoriaDTO
+                {
+                    Modulo = reader["Modulo"]?.ToString() ?? "General",
+                    Accion = reader["Accion"]?.ToString() ?? "Cambio",
+                    Detalle = reader["Detalle"]?.ToString() ?? "Sin detalle",
+                    FechaAccion = reader.GetDateTime(reader.GetOrdinal("FechaAccion"))
+                });
+            }
+
+            return actividad;
+        }
+
         private async Task<Dictionary<string, string>> ObtenerPronosticoProvinciasAsync()
         {
             var provincias = new Dictionary<string, (double Lat, double Lon)>
@@ -184,22 +352,46 @@ ORDER BY Cantidad DESC, Provincia ASC;";
             {
                 try
                 {
-                    var url = $"https://api.open-meteo.com/v1/forecast?latitude={provincia.Value.Lat}&longitude={provincia.Value.Lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto&forecast_days=1";
+                    var url = $"https://api.open-meteo.com/v1/forecast?latitude={provincia.Value.Lat}&longitude={provincia.Value.Lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=auto&forecast_days=1";
                     var respuesta = await client.GetStringAsync(url);
                     using var doc = JsonDocument.Parse(respuesta);
                     var daily = doc.RootElement.GetProperty("daily");
                     var max = daily.GetProperty("temperature_2m_max")[0].GetDecimal();
                     var min = daily.GetProperty("temperature_2m_min")[0].GetDecimal();
                     var lluvia = daily.GetProperty("precipitation_sum")[0].GetDecimal();
-                    salida[provincia.Key] = $"Máx {max:0.#}°C / Mín {min:0.#}°C · Lluvia {lluvia:0.#} mm";
+                    var codigoTiempo = daily.TryGetProperty("weather_code", out var codigoTiempoPropiedad)
+                        ? codigoTiempoPropiedad[0].GetInt32()
+                        : -1;
+
+                    var icono = ObtenerIconoClima(codigoTiempo, lluvia);
+                    salida[provincia.Key] = $"{icono} Máx {max:0.#}°C / Mín {min:0.#}°C · Lluvia {lluvia:0.#} mm";
                 }
                 catch
                 {
-                    salida[provincia.Key] = "Pronóstico no disponible.";
+                    salida[provincia.Key] = "❔ Pronóstico no disponible.";
                 }
             }
 
             return salida;
         }
+
+        private static string ObtenerIconoClima(int codigoTiempo, decimal lluvia)
+        {
+            return codigoTiempo switch
+            {
+                0 => "☀️",
+                1 or 2 => "🌤️",
+                3 => "☁️",
+                45 or 48 => "🌫️",
+                51 or 53 or 55 or 56 or 57 => "🌦️",
+                61 or 63 or 65 or 66 or 67 => "🌧️",
+                71 or 73 or 75 or 77 => "❄️",
+                80 or 81 or 82 => "🌧️",
+                85 or 86 => "🌨️",
+                95 or 96 or 99 => "⛈️",
+                _ => lluvia > 0 ? "🌦️" : "🌤️"
+            };
+        }
+
     }
 }
