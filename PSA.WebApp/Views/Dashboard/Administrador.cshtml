@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Dashboard del administrador";
+    var alertas = ViewBag.AlertasAdministrativas as List<string> ?? new List<string>();
 }
 <section class="seccion-pagina administrador-dashboard">
     <div class="cabecera-pagina">
@@ -14,17 +15,17 @@
     <div class="grid-tarjetas-kpi">
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Usuarios activos</span>
-            <strong>28</strong>
-            <small>3 pendientes de aprobación</small>
+            <strong>@(ViewBag.UsuariosActivos ?? 0)</strong>
+            <small>@(ViewBag.UsuariosPendientesAprobacion ?? 0) inactivos o bloqueados</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Cuentas por validar</span>
-            <strong>5</strong>
+            <strong>@(ViewBag.CuentasPorValidar ?? 0)</strong>
             <small>Revisión administrativa requerida</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Eventos de auditoría</span>
-            <strong>148</strong>
+            <strong>@(ViewBag.EventosAuditoria24h ?? 0)</strong>
             <small>Últimas 24 horas</small>
         </article>
     </div>
@@ -34,9 +35,17 @@
             <h3>Alertas administrativas</h3>
         </div>
         <ul class="lista-timeline">
-            <li><a asp-controller="Administracion" asp-action="ParametrosPago">Se detectaron 2 cambios en parámetros de pago.</a></li>
-            <li><a asp-controller="Pagos" asp-action="PlanesPago">Existe 1 plan de pago sin cuenta bancaria asociada.</a></li>
-            <li><a asp-controller="Administracion" asp-action="GestionUsuarios">Hay 3 usuarios sin rol asignado definitivo.</a></li>
+            @if (alertas.Count == 0)
+            {
+                <li>No hay alertas administrativas registradas en este momento.</li>
+            }
+            else
+            {
+                foreach (var alerta in alertas)
+                {
+                    <li>@alerta</li>
+                }
+            }
         </ul>
     </section>
 </section>
