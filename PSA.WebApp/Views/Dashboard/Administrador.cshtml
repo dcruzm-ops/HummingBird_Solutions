@@ -1,6 +1,8 @@
 @{
     ViewData["Title"] = "Dashboard del administrador";
     var alertas = ViewBag.AlertasAdministrativas as List<string> ?? new List<string>();
+    var actividad = ViewBag.ActividadAuditoria as List<PSA.EntidadesDTO.DTOs.Dashboard.ActividadAuditoriaDTO>
+        ?? new List<PSA.EntidadesDTO.DTOs.Dashboard.ActividadAuditoriaDTO>();
 }
 <section class="seccion-pagina administrador-dashboard">
     <div class="cabecera-pagina">
@@ -17,6 +19,11 @@
             <span class="etiqueta-kpi">Usuarios activos</span>
             <strong>@(ViewBag.UsuariosActivos ?? 0)</strong>
             <small>@(ViewBag.UsuariosPendientesAprobacion ?? 0) inactivos o bloqueados</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Usuarios nuevos hoy</span>
+            <strong>@(ViewBag.UsuariosNuevosHoy ?? 0)</strong>
+            <small>Registros con fecha de creación de hoy</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Cuentas por validar</span>
@@ -44,6 +51,29 @@
                 foreach (var alerta in alertas)
                 {
                     <li>@alerta</li>
+                }
+            }
+        </ul>
+    </section>
+
+    <section class="tarjeta-panel mt-4">
+        <div class="cabecera-bloque">
+            <h3>Actividad de auditoría reciente</h3>
+        </div>
+        <ul class="lista-timeline">
+            @if (actividad.Count == 0)
+            {
+                <li>No hay actividad de auditoría registrada.</li>
+            }
+            else
+            {
+                foreach (var evento in actividad)
+                {
+                    <li>
+                        <strong>@evento.Modulo</strong> · @evento.Accion<br />
+                        <span>@evento.Detalle</span><br />
+                        <small>@evento.FechaAccion.ToString("dd/MM/yyyy HH:mm")</small>
+                    </li>
                 }
             }
         </ul>

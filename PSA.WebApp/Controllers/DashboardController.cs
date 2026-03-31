@@ -86,10 +86,12 @@ namespace PSA.WebApp.Controllers
 
             var resumen = await ObtenerResumenAdministradorDesdeApiOBaseDatosAsync();
             ViewBag.UsuariosActivos = resumen.UsuariosActivos;
+            ViewBag.UsuariosNuevosHoy = resumen.UsuariosNuevosHoy;
             ViewBag.UsuariosPendientesAprobacion = resumen.UsuariosPendientesAprobacion;
             ViewBag.CuentasPorValidar = resumen.CuentasPorValidar;
             ViewBag.EventosAuditoria24h = resumen.EventosAuditoria24h;
             ViewBag.AlertasAdministrativas = resumen.Alertas;
+            ViewBag.ActividadAuditoria = resumen.ActividadAuditoria;
 
             return View();
         }
@@ -246,6 +248,11 @@ SELECT COUNT(1)
 FROM dbo.Usuarios
 WHERE Estado IN ('Inactivo', 'Bloqueado');";
 
+            const string sqlUsuariosNuevosHoy = @"
+SELECT COUNT(1)
+FROM dbo.Usuarios
+WHERE CONVERT(date, FechaCreacion) = CONVERT(date, GETDATE());";
+
             const string sqlCuentasPorValidar = @"
 SELECT COUNT(1)
 FROM dbo.CuentasBancarias
@@ -270,12 +277,15 @@ ELSE
 
                 var usuariosActivos = await EjecutarEscalarAsync(connection, sqlUsuariosActivos);
                 var usuariosPendientes = await EjecutarEscalarAsync(connection, sqlUsuariosPendientesAprobacion);
+                var usuariosNuevosHoy = await EjecutarEscalarAsync(connection, sqlUsuariosNuevosHoy);
                 var cuentasPorValidar = await EjecutarEscalarAsync(connection, sqlCuentasPorValidar);
                 var eventosAuditoria24h = await EjecutarEscalarAsync(connection, sqlEventosAuditoria24h);
+                var actividadAuditoria = await ObtenerActividadAuditoriaAsync(connection);
 
                 return new ResumenDashboardAdministradorDTO
                 {
                     UsuariosActivos = usuariosActivos,
+                    UsuariosNuevosHoy = usuariosNuevosHoy,
                     UsuariosPendientesAprobacion = usuariosPendientes,
                     CuentasPorValidar = cuentasPorValidar,
                     EventosAuditoria24h = eventosAuditoria24h,
@@ -284,13 +294,42 @@ ELSE
                         $"Hay {cuentasPorValidar} cuentas bancarias pendientes de validación administrativa.",
                         $"Se registraron {eventosAuditoria24h} eventos de auditoría en las últimas 24 horas.",
                         $"Existen {usuariosPendientes} usuarios inactivos o bloqueados que requieren revisión de acceso."
-                    }
+                    },
+                    ActividadAuditoria = actividadAuditoria
                 };
             }
             catch
             {
                 return new ResumenDashboardAdministradorDTO();
             }
+        }
+
+        private static async Task<List<ActividadAuditoriaDTO>> ObtenerActividadAuditoriaAsync(SqlConnection connection)
+        {
+            const string sqlActividad = @"
+SELECT TOP 10
+    ISNULL(Modulo, 'General') AS Modulo,
+    ISNULL(Accion, 'Cambio') AS Accion,
+    ISNULL(Detalle, CONCAT(TablaAfectada, ' #', ISNULL(CONVERT(varchar(20), IdRegistroAfectado), 's/d'))) AS Detalle,
+    FechaAccion
+FROM dbo.AuditoriaLog
+ORDER BY FechaAccion DESC;";
+
+            var actividad = new List<ActividadAuditoriaDTO>();
+            using var cmd = new SqlCommand(sqlActividad, connection);
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                actividad.Add(new ActividadAuditoriaDTO
+                {
+                    Modulo = reader["Modulo"]?.ToString() ?? "General",
+                    Accion = reader["Accion"]?.ToString() ?? "Cambio",
+                    Detalle = reader["Detalle"]?.ToString() ?? "Sin detalle",
+                    FechaAccion = reader.GetDateTime(reader.GetOrdinal("FechaAccion"))
+                });
+            }
+
+            return actividad;
         }
 
         private async Task<Dictionary<string, string>> ObtenerPronosticoProvinciasAsync()
