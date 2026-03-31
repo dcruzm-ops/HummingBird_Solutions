@@ -196,9 +196,16 @@ FROM CuentasBancarias
 WHERE EstadoValidacion = 'Pendiente';";
 
             const string sqlEventosAuditoria24h = @"
-SELECT COUNT(1)
-FROM AuditoriaLog
-WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());";
+IF COL_LENGTH('AuditoriaLog', 'FechaAccion') IS NOT NULL
+    SELECT COUNT(1)
+    FROM AuditoriaLog
+    WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());
+ELSE IF COL_LENGTH('AuditoriaLog', 'FechaEvento') IS NOT NULL
+    SELECT COUNT(1)
+    FROM AuditoriaLog
+    WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());
+ELSE
+    SELECT COUNT(1) FROM AuditoriaLog;";
 
             try
             {
@@ -245,22 +252,46 @@ WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());";
             {
                 try
                 {
-                    var url = $"https://api.open-meteo.com/v1/forecast?latitude={provincia.Value.Lat}&longitude={provincia.Value.Lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto&forecast_days=1";
+                    var url = $"https://api.open-meteo.com/v1/forecast?latitude={provincia.Value.Lat}&longitude={provincia.Value.Lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&timezone=auto&forecast_days=1";
                     var respuesta = await client.GetStringAsync(url);
                     using var doc = JsonDocument.Parse(respuesta);
                     var daily = doc.RootElement.GetProperty("daily");
                     var max = daily.GetProperty("temperature_2m_max")[0].GetDecimal();
                     var min = daily.GetProperty("temperature_2m_min")[0].GetDecimal();
                     var lluvia = daily.GetProperty("precipitation_sum")[0].GetDecimal();
-                    salida[provincia.Key] = $"Máx {max:0.#}°C / Mín {min:0.#}°C · Lluvia {lluvia:0.#} mm";
+                    var codigoTiempo = daily.TryGetProperty("weather_code", out var codigoTiempoPropiedad)
+                        ? codigoTiempoPropiedad[0].GetInt32()
+                        : -1;
+
+                    var icono = ObtenerIconoClima(codigoTiempo, lluvia);
+                    salida[provincia.Key] = $"{icono} Máx {max:0.#}°C / Mín {min:0.#}°C · Lluvia {lluvia:0.#} mm";
                 }
                 catch
                 {
-                    salida[provincia.Key] = "Pronóstico no disponible.";
+                    salida[provincia.Key] = "❔ Pronóstico no disponible.";
                 }
             }
 
             return salida;
         }
+
+        private static string ObtenerIconoClima(int codigoTiempo, decimal lluvia)
+        {
+            return codigoTiempo switch
+            {
+                0 => "☀️",
+                1 or 2 => "🌤️",
+                3 => "☁️",
+                45 or 48 => "🌫️",
+                51 or 53 or 55 or 56 or 57 => "🌦️",
+                61 or 63 or 65 or 66 or 67 => "🌧️",
+                71 or 73 or 75 or 77 => "❄️",
+                80 or 81 or 82 => "🌧️",
+                85 or 86 => "🌨️",
+                95 or 96 or 99 => "⛈️",
+                _ => lluvia > 0 ? "🌦️" : "🌤️"
+            };
+        }
+
     }
 }
