@@ -1,0 +1,39 @@
+@{
+    var titulo = ViewBag.TituloPagina as string ?? "PSA Costa Rica";
+    var rolActivo = ViewBag.RolActivo as string ?? "Dueno";
+    var nombreUsuario = User?.Identity?.Name ?? "Usuario";
+    var partesNombre = nombreUsuario.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var iniciales = string.Empty;
+    if (partesNombre.Length >= 2)
+    {
+        iniciales = $"{char.ToUpperInvariant(partesNombre[0][0])}{char.ToUpperInvariant(partesNombre[1][0])}";
+    }
+    else if (partesNombre.Length == 1 && partesNombre[0].Length > 0)
+    {
+        iniciales = char.ToUpperInvariant(partesNombre[0][0]).ToString();
+    }
+}
+<header class="encabezado-sistema">
+    <div class="encabezado-sistema__izquierda">
+        <button type="button" class="boton-icono d-lg-none" id="botonMenuLateral" aria-label="Abrir menú">
+            ☰
+        </button>
+        <div>
+            <p class="eyebrow">Sistema de Pago por Servicios Ambientales</p>
+            <h1 class="titulo-encabezado">@titulo</h1>
+        </div>
+    </div>
+
+    <div class="encabezado-sistema__derecha">
+        <button type="button" class="boton-secundario boton-sm" id="botonTema">
+            Cambiar tema
+        </button>
+        <div class="bloque-usuario">
+            <span class="avatar-usuario">@(string.IsNullOrWhiteSpace(iniciales) ? "U" : iniciales)</span>
+            <div>
+                <strong>@nombreUsuario</strong>
+                <small>@rolActivo</small>
+            </div>
+        </div>
+    </div>
+</header>

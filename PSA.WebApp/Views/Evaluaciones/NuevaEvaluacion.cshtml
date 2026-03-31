@@ -1,0 +1,52 @@
+@{
+    ViewData["Title"] = "Nueva evaluación técnica";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Expediente técnico</span>
+            <h2>Nueva evaluación técnica</h2>
+            <p>Esqueleto base del formulario técnico para la finca #@ViewBag.FincaId.</p>
+        </div>
+    </div>
+
+    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion" method="get" asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">
+        <div class="seccion-formulario">
+            <h3>Información de visita</h3>
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label for="fechaVisita">Fecha de visita</label>
+                    <input id="fechaVisita" name="fechaVisita" type="date" />
+                </div>
+                <div class="campo-formulario">
+                    <label for="estadoEvaluacion">Estado de evaluación</label>
+                    <select id="estadoEvaluacion" name="estadoEvaluacion">
+                        <option>Pendiente</option>
+                        <option>En proceso</option>
+                        <option>Finalizada</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="seccion-formulario">
+            <h3>Resultado técnico</h3>
+            <div class="campo-formulario">
+                <label for="observacionesTecnicas">Observaciones</label>
+                <textarea id="observacionesTecnicas" rows="5" placeholder="Observaciones técnicas"></textarea>
+            </div>
+            <div class="campo-formulario">
+                <label for="decisionTecnica">Decisión técnica</label>
+                <select id="decisionTecnica" name="decisionTecnica">
+                    <option>Califica</option>
+                    <option>No califica</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="fila-acciones-formulario">
+            <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="FincasPendientes">Cancelar</a>
+            <button type="submit" class="boton-primario">Guardar evaluación</button>
+        </div>
+    </form>
+</section>

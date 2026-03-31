@@ -1,0 +1,59 @@
+@{
+    var moduloActivo = (ViewBag.ModuloActivo as string ?? string.Empty).ToLowerInvariant();
+    var rolActivo = (ViewBag.RolActivo as string ?? "Dueno").ToLowerInvariant();
+    var accionDashboard = rolActivo switch
+    {
+        "administrador" => "Administrador",
+        "ingeniero" => "Ingeniero",
+        _ => "Dueno"
+    };
+}
+<aside class="barra-lateral" id="barraLateral">
+    <div class="barra-lateral__marca">
+        <a asp-controller="Dashboard" asp-action="@accionDashboard">PSA Costa Rica</a>
+        <small>Hummingbird Solutions</small>
+    </div>
+
+    <nav class="menu-lateral" aria-label="Navegación principal">
+        @if (rolActivo == "ingeniero")
+        {
+            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Dashboard</a>
+            <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Evaluaciones</a>
+            <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
+
+            <p class="menu-lateral__seccion">Próximamente</p>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Visitas técnicas</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Fincas en proceso</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Renovaciones anuales</a>
+        }
+        else if (rolActivo == "administrador")
+        {
+            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Dashboard</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Administración</a>
+            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Pagos</a>
+            <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
+
+            <p class="menu-lateral__seccion">Próximamente</p>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Roles y permisos</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Catálogos</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Auditoría</a>
+        }
+        else
+        {
+            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Dueno">Dashboard</a>
+            <a class="item-menu @(moduloActivo == "fincas" ? "activo" : string.Empty)" asp-controller="Fincas" asp-action="MisFincas">Mis fincas</a>
+            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="HistorialPagos">Pagos</a>
+            <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
+
+            <p class="menu-lateral__seccion">Próximamente</p>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Registrar finca</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Cuenta bancaria</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Planes de pago</a>
+        }
+
+        <form asp-controller="Autenticacion" asp-action="CerrarSesion" method="post" class="w-100">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="item-menu w-100 text-start border-0 bg-transparent p-0">Cerrar sesión</button>
+        </form>
+    </nav>
+</aside>
