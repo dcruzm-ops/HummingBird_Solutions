@@ -1,0 +1,59 @@
+@{
+    ViewData["Title"] = "Detalle del plan de pago";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Plan #@ViewBag.PlanPagoId</span>
+            <h2>Detalle del plan de pago</h2>
+            <p>Consulta de cuotas mensuales y estado de confirmación.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesPago">Volver a planes</a>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Monto anual</span>
+            <strong>₡1 250 000</strong>
+            <small>Configuración vigente 2026</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Cuotas pendientes</span>
+            <strong>2</strong>
+            <small>Últimas cuotas del año</small>
+        </article>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th>Monto</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Enero</td>
+                        <td>₡104 166</td>
+                        <td><span class="badge-estado badge-exito">Confirmado</span></td>
+                    </tr>
+                    <tr>
+                        <td>Febrero</td>
+                        <td>₡104 166</td>
+                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validar cuenta bancaria</a>
+            <a class="acceso-rapido" asp-controller="Reportes" asp-action="Index">Ir a reportes</a>
+        </div>
+    </section>
+</section>

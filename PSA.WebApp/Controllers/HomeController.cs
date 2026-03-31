@@ -1,6 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using PSA.WebApp.Models;
-using System.Diagnostics;
 
 namespace PSA.WebApp.Controllers
 {
@@ -12,6 +10,11 @@ namespace PSA.WebApp.Controllers
         }
 
         public IActionResult Equipo()
+        {
+            return View();
+        }
+
+        public IActionResult Producto()
         {
             return View();
         }

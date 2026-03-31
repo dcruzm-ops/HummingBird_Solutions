@@ -1,0 +1,174 @@
+@{
+    ViewData["Title"] = "PSA Costa Rica";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/producto-landing.css" asp-append-version="true" />
+}
+
+<div class="psa-producto">
+    <section class="psa-topbar">
+        <div class="container">
+            <span>PSA Costa Rica</span>
+            <strong>Solución digital para la gestión integral del Pago por Servicios Ambientales</strong>
+        </div>
+    </section>
+
+    <section class="psa-hero" id="inicio">
+        <div class="psa-hero__overlay">
+            <div class="container py-5">
+                <span class="psa-pill">Plataforma institucional</span>
+                <h1>Gestión confiable, trazable y eficiente para procesos de Pago por Servicios Ambientales</h1>
+                <p>
+                    PSA Costa Rica centraliza la operación del programa, facilita el control por etapas
+                    y fortalece la trazabilidad de los procesos vinculados al registro de fincas,
+                    evaluación técnica y gestión administrativa de pagos.
+                </p>
+                <p>
+                    La solución articula en un solo entorno digital la interacción entre propietarios,
+                    ingenieros forestales y administradores, con visibilidad clara del estado de cada caso
+                    y acceso oportuno a información para la toma de decisiones.
+                </p>
+                <div class="psa-hero__actions">
+                    <a href="#vision-general" class="btn btn-success btn-lg">Conocer la solución</a>
+                    <a href="#modulos" class="btn btn-outline-light btn-lg">Ver módulos del sistema</a>
+                    <a asp-controller="Autenticacion" asp-action="IniciarSesion" class="btn btn-light btn-lg">Iniciar sesión</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container py-5" id="vision-general">
+        <div class="text-center mb-5">
+            <h2>Una plataforma orientada a la formalidad operativa y al control institucional</h2>
+            <p>
+                PSA Costa Rica responde a la necesidad de modernizar y ordenar la gestión de los procesos
+                asociados al Pago por Servicios Ambientales mediante una solución digital que prioriza
+                transparencia, eficiencia administrativa y trazabilidad de la información.
+            </p>
+            <p>
+                Más que una herramienta de registro, funciona como un punto central de operación para dar
+                seguimiento estructurado a cada finca y facilitar la administración de pagos.
+            </p>
+        </div>
+    </section>
+
+    <section class="container pb-5" id="modulos">
+        <div class="text-center mb-4">
+            <h2>Capacidades clave de la solución</h2>
+        </div>
+        <div class="capacidades-core">
+            <svg class="capacidades-conectores" viewBox="0 0 1200 680" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M300,120 C470,120 470,220 540,300" />
+                <path d="M900,120 C730,120 730,220 660,300" />
+                <path d="M300,560 C470,560 470,460 540,380" />
+                <path d="M900,560 C730,560 730,460 660,380" />
+            </svg>
+
+            <div class="nucleo-psa">
+                <strong>PSA Costa Rica</strong>
+            </div>
+
+            <article class="capacidad-item capacidad-item--fincas">
+                <div class="capacidad-icono" aria-hidden="true">🌿</div>
+                <h4>Gestión de fincas</h4>
+                <p>Registro y administración de fincas con información consolidada y visibilidad del estado de cada expediente.</p>
+            </article>
+
+            <article class="capacidad-item capacidad-item--evaluaciones">
+                <div class="capacidad-icono" aria-hidden="true">🧾</div>
+                <h4>Evaluaciones técnicas</h4>
+                <p>Seguimiento de evaluaciones por etapa, documentación asociada y soporte para validación técnica.</p>
+            </article>
+
+            <article class="capacidad-item capacidad-item--pagos">
+                <div class="capacidad-icono" aria-hidden="true">💳</div>
+                <h4>Control administrativo de pagos</h4>
+                <p>Visualización del estado de pagos e historial del proceso conforme a reglas de validación definidas.</p>
+            </article>
+
+            <article class="capacidad-item capacidad-item--trazabilidad">
+                <div class="capacidad-icono" aria-hidden="true">📍</div>
+                <h4>Trazabilidad por perfil y etapa</h4>
+                <p>Acceso por rol con claridad sobre acciones, estados y continuidad del proceso en cada fase operativa.</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="psa-beneficios py-5">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2>Beneficios para la operación</h2>
+                <p>Diseñado para fortalecer gestión ambiental, administrativa y soporte a decisiones.</p>
+            </div>
+
+            <div class="row g-4 text-center">
+                <div class="col-md-4">
+                    <div class="beneficio-item h-100">
+                        <img src="https://images.unsplash.com/photo-1472396961693-142e6e269027?auto=format&fit=crop&w=600&q=80" alt="Vida silvestre" />
+                        <h5>Transparencia</h5>
+                        <p>Visibilidad clara sobre el avance de cada caso y su estado operativo.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="beneficio-item h-100">
+                        <img src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=600&q=80" alt="Recurso hídrico" />
+                        <h5>Centralización</h5>
+                        <p>Información integrada en una sola plataforma para consultas más ágiles y consistentes.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="beneficio-item h-100">
+                        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80" alt="Paisaje natural de montaña" />
+                        <h5>Seguimiento continuo</h5>
+                        <p>Monitoreo de cada expediente durante todo su ciclo de vida operativo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container py-5" id="flujo-operativo">
+        <div class="text-center mb-4">
+            <h2>Un proceso estructurado de principio a fin</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3"><article class="paso-operativo h-100"><span>Paso 1</span><h5>Registro de la finca</h5><p>El propietario incorpora información inicial con trazabilidad desde el inicio.</p></article></div>
+            <div class="col-md-3"><article class="paso-operativo h-100"><span>Paso 2</span><h5>Revisión técnica</h5><p>El Ingeniero Forestal documenta avances y seguimiento técnico del caso.</p></article></div>
+            <div class="col-md-3"><article class="paso-operativo h-100"><span>Paso 3</span><h5>Validación administrativa</h5><p>Administración revisa estado del expediente y mantiene control operativo.</p></article></div>
+            <div class="col-md-3"><article class="paso-operativo h-100"><span>Paso 4</span><h5>Gestión de pagos</h5><p>Consulta del estado de pagos e historial una vez finalizadas validaciones.</p></article></div>
+        </div>
+    </section>
+
+    <section class="psa-roles py-5">
+        <div class="container">
+            <div class="text-center mb-4">
+                <h2>Diseñado para una operación multirol</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4"><article class="rol-card h-100"><h5>Propietario</h5><p>Consulta fincas y estado general de sus procesos dentro del sistema.</p></article></div>
+                <div class="col-md-4"><article class="rol-card h-100"><h5>Ingeniero Forestal</h5><p>Gestiona evaluación técnica y actualiza el seguimiento de fincas asignadas.</p></article></div>
+                <div class="col-md-4"><article class="rol-card h-100"><h5>Administrador</h5><p>Supervisa estados y continuidad del proceso con visibilidad administrativa integral.</p></article></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container py-5 text-center">
+        <h2>Transformando la gestión del PSA en una operación más visible, conectada y eficiente</h2>
+        <p class="mx-auto psa-cierre-texto">
+            PSA Costa Rica integra registro, evaluación, seguimiento y control administrativo en un solo entorno.
+            Su valor está en aportar estructura, trazabilidad y claridad operativa para todos los actores del proceso.
+        </p>
+        <div class="psa-hero__actions justify-content-center">
+            <a asp-controller="Autenticacion" asp-action="IniciarSesion" class="btn btn-success btn-lg">Explorar la solución</a>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-success btn-lg">Conocer el alcance funcional</a>
+        </div>
+    </section>
+
+    <section class="psa-footer-institucional py-4">
+        <div class="container text-center">
+            <h5>Desarrollado por HummingBird Solutions</h5>
+            <p class="mb-0">Propuesta conceptual y técnica orientada a la digitalización del proceso PSA en Costa Rica.</p>
+        </div>
+    </section>
+</div>
