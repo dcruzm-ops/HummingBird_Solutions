@@ -74,13 +74,21 @@ namespace PSA.WebApp.Controllers
 
         [HttpGet]
         [Authorize(Roles = "1")]
-        public IActionResult Administrador()
+        public async Task<IActionResult> Administrador()
         {
             ViewBag.ModuloActivo = "dashboard";
             ViewBag.RolActivo = "Administrador";
             ViewBag.TituloPagina = "Dashboard del administrador";
             ViewBag.SubtituloPagina = "Monitoreo operativo del sistema, usuarios, pagos y auditoría.";
             ViewBag.BreadcrumbActual = "Dashboard";
+
+            var resumen = await ObtenerResumenAdministradorDesdeDbAsync();
+            ViewBag.UsuariosActivos = resumen.UsuariosActivos;
+            ViewBag.UsuariosPendientesAprobacion = resumen.UsuariosPendientesAprobacion;
+            ViewBag.CuentasPorValidar = resumen.CuentasPorValidar;
+            ViewBag.EventosAuditoria24h = resumen.EventosAuditoria24h;
+            ViewBag.AlertasAdministrativas = resumen.Alertas;
+
             return View();
         }
 
@@ -162,6 +170,59 @@ ORDER BY Cantidad DESC, Provincia ASC;";
             using var cmd = new SqlCommand(sql, connection);
             var result = await cmd.ExecuteScalarAsync();
             return result != null ? Convert.ToInt32(result) : 0;
+        }
+
+        private async Task<(int UsuariosActivos, int UsuariosPendientesAprobacion, int CuentasPorValidar, int EventosAuditoria24h, List<string> Alertas)> ObtenerResumenAdministradorDesdeDbAsync()
+        {
+            var connectionString = _configuration.GetConnectionString("PSAConnection");
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                return (0, 0, 0, 0, new List<string>());
+            }
+
+            const string sqlUsuariosActivos = @"
+SELECT COUNT(1)
+FROM Usuarios
+WHERE Estado = 'Activo';";
+
+            const string sqlUsuariosPendientesAprobacion = @"
+SELECT COUNT(1)
+FROM Usuarios
+WHERE Estado IN ('Inactivo', 'Bloqueado');";
+
+            const string sqlCuentasPorValidar = @"
+SELECT COUNT(1)
+FROM CuentasBancarias
+WHERE EstadoValidacion = 'Pendiente';";
+
+            const string sqlEventosAuditoria24h = @"
+SELECT COUNT(1)
+FROM AuditoriaLog
+WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());";
+
+            try
+            {
+                using var connection = new SqlConnection(connectionString);
+                await connection.OpenAsync();
+
+                var usuariosActivos = await EjecutarEscalarAsync(connection, sqlUsuariosActivos);
+                var usuariosPendientes = await EjecutarEscalarAsync(connection, sqlUsuariosPendientesAprobacion);
+                var cuentasPorValidar = await EjecutarEscalarAsync(connection, sqlCuentasPorValidar);
+                var eventosAuditoria24h = await EjecutarEscalarAsync(connection, sqlEventosAuditoria24h);
+
+                var alertas = new List<string>
+                {
+                    $"Hay {cuentasPorValidar} cuentas bancarias pendientes de validación administrativa.",
+                    $"Se registraron {eventosAuditoria24h} eventos de auditoría en las últimas 24 horas.",
+                    $"Existen {usuariosPendientes} usuarios inactivos o bloqueados que requieren revisión de acceso."
+                };
+
+                return (usuariosActivos, usuariosPendientes, cuentasPorValidar, eventosAuditoria24h, alertas);
+            }
+            catch
+            {
+                return (0, 0, 0, 0, new List<string>());
+            }
         }
 
         private async Task<Dictionary<string, string>> ObtenerPronosticoProvinciasAsync()
