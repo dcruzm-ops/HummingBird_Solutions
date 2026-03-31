@@ -181,41 +181,52 @@ ORDER BY Cantidad DESC, Provincia ASC;";
             }
 
             const string sqlUsuariosActivos = @"
-SELECT COUNT(1)
-FROM Usuarios
-WHERE Estado = 'Activo';";
+IF OBJECT_ID('dbo.Usuarios', 'U') IS NULL
+    SELECT 0;
+ELSE
+    SELECT COUNT(1)
+    FROM dbo.Usuarios
+    WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) = 'ACTIVO';";
 
             const string sqlUsuariosPendientesAprobacion = @"
-SELECT COUNT(1)
-FROM Usuarios
-WHERE Estado IN ('Inactivo', 'Bloqueado');";
+IF OBJECT_ID('dbo.Usuarios', 'U') IS NULL
+    SELECT 0;
+ELSE
+    SELECT COUNT(1)
+    FROM dbo.Usuarios
+    WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) IN ('INACTIVO', 'BLOQUEADO', 'PENDIENTE');";
 
             const string sqlCuentasPorValidar = @"
-SELECT COUNT(1)
-FROM CuentasBancarias
-WHERE EstadoValidacion = 'Pendiente';";
+IF OBJECT_ID('dbo.CuentasBancarias', 'U') IS NULL
+    SELECT 0;
+ELSE
+    SELECT COUNT(1)
+    FROM dbo.CuentasBancarias
+    WHERE UPPER(LTRIM(RTRIM(ISNULL(EstadoValidacion, '')))) = 'PENDIENTE';";
 
             const string sqlEventosAuditoria24h = @"
-IF COL_LENGTH('AuditoriaLog', 'FechaAccion') IS NOT NULL
+IF OBJECT_ID('dbo.AuditoriaLog', 'U') IS NULL
+    SELECT 0;
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaAccion') IS NOT NULL
     SELECT COUNT(1)
-    FROM AuditoriaLog
+    FROM dbo.AuditoriaLog
     WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());
-ELSE IF COL_LENGTH('AuditoriaLog', 'FechaEvento') IS NOT NULL
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaEvento') IS NOT NULL
     SELECT COUNT(1)
-    FROM AuditoriaLog
+    FROM dbo.AuditoriaLog
     WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());
 ELSE
-    SELECT COUNT(1) FROM AuditoriaLog;";
+    SELECT COUNT(1) FROM dbo.AuditoriaLog;";
 
             try
             {
                 using var connection = new SqlConnection(connectionString);
                 await connection.OpenAsync();
 
-                var usuariosActivos = await EjecutarEscalarAsync(connection, sqlUsuariosActivos);
-                var usuariosPendientes = await EjecutarEscalarAsync(connection, sqlUsuariosPendientesAprobacion);
-                var cuentasPorValidar = await EjecutarEscalarAsync(connection, sqlCuentasPorValidar);
-                var eventosAuditoria24h = await EjecutarEscalarAsync(connection, sqlEventosAuditoria24h);
+                var usuariosActivos = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosActivos);
+                var usuariosPendientes = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosPendientesAprobacion);
+                var cuentasPorValidar = await EjecutarEscalarSeguroAsync(connection, sqlCuentasPorValidar);
+                var eventosAuditoria24h = await EjecutarEscalarSeguroAsync(connection, sqlEventosAuditoria24h);
 
                 var alertas = new List<string>
                 {
@@ -229,6 +240,18 @@ ELSE
             catch
             {
                 return (0, 0, 0, 0, new List<string>());
+            }
+        }
+
+        private static async Task<int> EjecutarEscalarSeguroAsync(SqlConnection connection, string sql)
+        {
+            try
+            {
+                return await EjecutarEscalarAsync(connection, sql);
+            }
+            catch
+            {
+                return 0;
             }
         }
 
