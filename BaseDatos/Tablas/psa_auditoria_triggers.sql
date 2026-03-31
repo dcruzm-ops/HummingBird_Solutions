@@ -2,8 +2,10 @@ USE PSA_CostaRica;
 GO
 
 /*
-    Triggers base de auditoría para registrar cambios de INSERT/UPDATE/DELETE
-    en entidades críticas visibles para el dashboard administrativo.
+  Triggers base de auditoría:
+  - INSERT: ValorAnterior = NULL, ValorNuevo = fila insertada (JSON)
+  - UPDATE: ValorAnterior = fila anterior (JSON), ValorNuevo = fila nueva (JSON)
+  - DELETE: ValorAnterior = fila eliminada (JSON), ValorNuevo = NULL
 */
 
 CREATE OR ALTER TRIGGER dbo.TR_Usuarios_Auditoria
@@ -13,21 +15,29 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, FechaAccion, Detalle)
-    SELECT
-        COALESCE(i.IdUsuario, d.IdUsuario),
-        'Usuarios',
-        'Usuarios',
-        COALESCE(i.IdUsuario, d.IdUsuario),
-        CASE
-            WHEN i.IdUsuario IS NOT NULL AND d.IdUsuario IS NULL THEN 'INSERT'
-            WHEN i.IdUsuario IS NOT NULL AND d.IdUsuario IS NOT NULL THEN 'UPDATE'
-            ELSE 'DELETE'
-        END,
-        SYSDATETIME(),
-        CONCAT('Cambio en usuario: ', COALESCE(i.Email, d.Email, 'sin email'))
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT i.IdUsuario, 'Usuarios', 'Usuarios', i.IdUsuario, 'INSERT', NULL,
+           (SELECT i.IdUsuario, i.NombreCompleto, i.Email, i.IdRol, i.Estado, i.FechaCreacion, i.UltimoAcceso FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Usuario creado: ', i.Email)
     FROM inserted i
-    FULL OUTER JOIN deleted d ON i.IdUsuario = d.IdUsuario;
+    LEFT JOIN deleted d ON d.IdUsuario = i.IdUsuario
+    WHERE d.IdUsuario IS NULL;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT i.IdUsuario, 'Usuarios', 'Usuarios', i.IdUsuario, 'UPDATE',
+           (SELECT d.IdUsuario, d.NombreCompleto, d.Email, d.IdRol, d.Estado, d.FechaCreacion, d.UltimoAcceso FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           (SELECT i.IdUsuario, i.NombreCompleto, i.Email, i.IdRol, i.Estado, i.FechaCreacion, i.UltimoAcceso FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Usuario actualizado: ', i.Email)
+    FROM inserted i
+    INNER JOIN deleted d ON d.IdUsuario = i.IdUsuario;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT d.IdUsuario, 'Usuarios', 'Usuarios', d.IdUsuario, 'DELETE',
+           (SELECT d.IdUsuario, d.NombreCompleto, d.Email, d.IdRol, d.Estado, d.FechaCreacion, d.UltimoAcceso FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           NULL, SYSDATETIME(), CONCAT('Usuario eliminado: ', d.Email)
+    FROM deleted d
+    LEFT JOIN inserted i ON i.IdUsuario = d.IdUsuario
+    WHERE i.IdUsuario IS NULL;
 END;
 GO
 
@@ -38,21 +48,29 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, FechaAccion, Detalle)
-    SELECT
-        COALESCE(i.IdPropietario, d.IdPropietario),
-        'Fincas',
-        'Fincas',
-        COALESCE(i.IdFinca, d.IdFinca),
-        CASE
-            WHEN i.IdFinca IS NOT NULL AND d.IdFinca IS NULL THEN 'INSERT'
-            WHEN i.IdFinca IS NOT NULL AND d.IdFinca IS NOT NULL THEN 'UPDATE'
-            ELSE 'DELETE'
-        END,
-        SYSDATETIME(),
-        CONCAT('Cambio en finca: ', COALESCE(i.NombreFinca, d.NombreFinca, 'sin nombre'))
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT i.IdPropietario, 'Fincas', 'Fincas', i.IdFinca, 'INSERT', NULL,
+           (SELECT i.IdFinca, i.IdPropietario, i.NombreFinca, i.Provincia, i.Canton, i.Distrito, i.Hectareas, i.EstadoFinca FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Finca creada: ', i.NombreFinca)
     FROM inserted i
-    FULL OUTER JOIN deleted d ON i.IdFinca = d.IdFinca;
+    LEFT JOIN deleted d ON d.IdFinca = i.IdFinca
+    WHERE d.IdFinca IS NULL;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT COALESCE(i.IdPropietario, d.IdPropietario), 'Fincas', 'Fincas', i.IdFinca, 'UPDATE',
+           (SELECT d.IdFinca, d.IdPropietario, d.NombreFinca, d.Provincia, d.Canton, d.Distrito, d.Hectareas, d.EstadoFinca FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           (SELECT i.IdFinca, i.IdPropietario, i.NombreFinca, i.Provincia, i.Canton, i.Distrito, i.Hectareas, i.EstadoFinca FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Finca actualizada: ', i.NombreFinca)
+    FROM inserted i
+    INNER JOIN deleted d ON d.IdFinca = i.IdFinca;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT d.IdPropietario, 'Fincas', 'Fincas', d.IdFinca, 'DELETE',
+           (SELECT d.IdFinca, d.IdPropietario, d.NombreFinca, d.Provincia, d.Canton, d.Distrito, d.Hectareas, d.EstadoFinca FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           NULL, SYSDATETIME(), CONCAT('Finca eliminada: ', d.NombreFinca)
+    FROM deleted d
+    LEFT JOIN inserted i ON i.IdFinca = d.IdFinca
+    WHERE i.IdFinca IS NULL;
 END;
 GO
 
@@ -63,21 +81,29 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, FechaAccion, Detalle)
-    SELECT
-        COALESCE(i.IdIngeniero, d.IdIngeniero),
-        'Evaluaciones',
-        'EvaluacionesTecnicas',
-        COALESCE(i.IdEvaluacion, d.IdEvaluacion),
-        CASE
-            WHEN i.IdEvaluacion IS NOT NULL AND d.IdEvaluacion IS NULL THEN 'INSERT'
-            WHEN i.IdEvaluacion IS NOT NULL AND d.IdEvaluacion IS NOT NULL THEN 'UPDATE'
-            ELSE 'DELETE'
-        END,
-        SYSDATETIME(),
-        CONCAT('Evaluación técnica estado: ', COALESCE(i.EstadoEvaluacion, d.EstadoEvaluacion, 's/d'))
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT i.IdIngeniero, 'Evaluaciones', 'EvaluacionesTecnicas', i.IdEvaluacion, 'INSERT', NULL,
+           (SELECT i.IdEvaluacion, i.IdFinca, i.IdIngeniero, i.EstadoEvaluacion, i.DecisionTecnica, i.FechaDecision FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Evaluación creada #', i.IdEvaluacion)
     FROM inserted i
-    FULL OUTER JOIN deleted d ON i.IdEvaluacion = d.IdEvaluacion;
+    LEFT JOIN deleted d ON d.IdEvaluacion = i.IdEvaluacion
+    WHERE d.IdEvaluacion IS NULL;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT COALESCE(i.IdIngeniero, d.IdIngeniero), 'Evaluaciones', 'EvaluacionesTecnicas', i.IdEvaluacion, 'UPDATE',
+           (SELECT d.IdEvaluacion, d.IdFinca, d.IdIngeniero, d.EstadoEvaluacion, d.DecisionTecnica, d.FechaDecision FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           (SELECT i.IdEvaluacion, i.IdFinca, i.IdIngeniero, i.EstadoEvaluacion, i.DecisionTecnica, i.FechaDecision FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Evaluación actualizada #', i.IdEvaluacion)
+    FROM inserted i
+    INNER JOIN deleted d ON d.IdEvaluacion = i.IdEvaluacion;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT d.IdIngeniero, 'Evaluaciones', 'EvaluacionesTecnicas', d.IdEvaluacion, 'DELETE',
+           (SELECT d.IdEvaluacion, d.IdFinca, d.IdIngeniero, d.EstadoEvaluacion, d.DecisionTecnica, d.FechaDecision FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           NULL, SYSDATETIME(), CONCAT('Evaluación eliminada #', d.IdEvaluacion)
+    FROM deleted d
+    LEFT JOIN inserted i ON i.IdEvaluacion = d.IdEvaluacion
+    WHERE i.IdEvaluacion IS NULL;
 END;
 GO
 
@@ -88,21 +114,29 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, FechaAccion, Detalle)
-    SELECT
-        NULL,
-        'Pagos',
-        'PlanesPago',
-        COALESCE(i.IdPlanPago, d.IdPlanPago),
-        CASE
-            WHEN i.IdPlanPago IS NOT NULL AND d.IdPlanPago IS NULL THEN 'INSERT'
-            WHEN i.IdPlanPago IS NOT NULL AND d.IdPlanPago IS NOT NULL THEN 'UPDATE'
-            ELSE 'DELETE'
-        END,
-        SYSDATETIME(),
-        CONCAT('Plan de pago año: ', COALESCE(CONVERT(varchar(10), i.Anio), CONVERT(varchar(10), d.Anio), 's/d'))
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT NULL, 'Pagos', 'PlanesPago', i.IdPlanPago, 'INSERT', NULL,
+           (SELECT i.IdPlanPago, i.IdFinca, i.IdEvaluacion, i.Anio, i.MontoMensualCalculado, i.EstadoPlan FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Plan de pago creado #', i.IdPlanPago)
     FROM inserted i
-    FULL OUTER JOIN deleted d ON i.IdPlanPago = d.IdPlanPago;
+    LEFT JOIN deleted d ON d.IdPlanPago = i.IdPlanPago
+    WHERE d.IdPlanPago IS NULL;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT NULL, 'Pagos', 'PlanesPago', i.IdPlanPago, 'UPDATE',
+           (SELECT d.IdPlanPago, d.IdFinca, d.IdEvaluacion, d.Anio, d.MontoMensualCalculado, d.EstadoPlan FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           (SELECT i.IdPlanPago, i.IdFinca, i.IdEvaluacion, i.Anio, i.MontoMensualCalculado, i.EstadoPlan FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Plan de pago actualizado #', i.IdPlanPago)
+    FROM inserted i
+    INNER JOIN deleted d ON d.IdPlanPago = i.IdPlanPago;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT NULL, 'Pagos', 'PlanesPago', d.IdPlanPago, 'DELETE',
+           (SELECT d.IdPlanPago, d.IdFinca, d.IdEvaluacion, d.Anio, d.MontoMensualCalculado, d.EstadoPlan FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           NULL, SYSDATETIME(), CONCAT('Plan de pago eliminado #', d.IdPlanPago)
+    FROM deleted d
+    LEFT JOIN inserted i ON i.IdPlanPago = d.IdPlanPago
+    WHERE i.IdPlanPago IS NULL;
 END;
 GO
 
@@ -113,20 +147,28 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, FechaAccion, Detalle)
-    SELECT
-        COALESCE(i.IdUsuario, d.IdUsuario),
-        'CuentasBancarias',
-        'CuentasBancarias',
-        COALESCE(i.IdCuentaBancaria, d.IdCuentaBancaria),
-        CASE
-            WHEN i.IdCuentaBancaria IS NOT NULL AND d.IdCuentaBancaria IS NULL THEN 'INSERT'
-            WHEN i.IdCuentaBancaria IS NOT NULL AND d.IdCuentaBancaria IS NOT NULL THEN 'UPDATE'
-            ELSE 'DELETE'
-        END,
-        SYSDATETIME(),
-        CONCAT('Estado validación: ', COALESCE(i.EstadoValidacion, d.EstadoValidacion, 's/d'))
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT i.IdUsuario, 'CuentasBancarias', 'CuentasBancarias', i.IdCuentaBancaria, 'INSERT', NULL,
+           (SELECT i.IdCuentaBancaria, i.IdUsuario, i.Banco, i.NumeroCuenta, i.EstadoValidacion, i.Activa FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Cuenta bancaria creada #', i.IdCuentaBancaria)
     FROM inserted i
-    FULL OUTER JOIN deleted d ON i.IdCuentaBancaria = d.IdCuentaBancaria;
+    LEFT JOIN deleted d ON d.IdCuentaBancaria = i.IdCuentaBancaria
+    WHERE d.IdCuentaBancaria IS NULL;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT COALESCE(i.IdUsuario, d.IdUsuario), 'CuentasBancarias', 'CuentasBancarias', i.IdCuentaBancaria, 'UPDATE',
+           (SELECT d.IdCuentaBancaria, d.IdUsuario, d.Banco, d.NumeroCuenta, d.EstadoValidacion, d.Activa FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           (SELECT i.IdCuentaBancaria, i.IdUsuario, i.Banco, i.NumeroCuenta, i.EstadoValidacion, i.Activa FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           SYSDATETIME(), CONCAT('Cuenta bancaria actualizada #', i.IdCuentaBancaria)
+    FROM inserted i
+    INNER JOIN deleted d ON d.IdCuentaBancaria = i.IdCuentaBancaria;
+
+    INSERT INTO dbo.AuditoriaLog (IdUsuario, Modulo, TablaAfectada, IdRegistroAfectado, Accion, ValorAnterior, ValorNuevo, FechaAccion, Detalle)
+    SELECT d.IdUsuario, 'CuentasBancarias', 'CuentasBancarias', d.IdCuentaBancaria, 'DELETE',
+           (SELECT d.IdCuentaBancaria, d.IdUsuario, d.Banco, d.NumeroCuenta, d.EstadoValidacion, d.Activa FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+           NULL, SYSDATETIME(), CONCAT('Cuenta bancaria eliminada #', d.IdCuentaBancaria)
+    FROM deleted d
+    LEFT JOIN inserted i ON i.IdCuentaBancaria = d.IdCuentaBancaria
+    WHERE i.IdCuentaBancaria IS NULL;
 END;
 GO

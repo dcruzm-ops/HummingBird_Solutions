@@ -27,12 +27,12 @@ namespace PSA.WebAPI.Controllers
             const string sqlUsuariosActivos = @"
 SELECT COUNT(1)
 FROM dbo.Usuarios
-WHERE Estado = 'Activo';";
+WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) = 'ACTIVO';";
 
             const string sqlUsuariosPendientes = @"
 SELECT COUNT(1)
 FROM dbo.Usuarios
-WHERE Estado IN ('Inactivo', 'Bloqueado');";
+WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) IN ('INACTIVO', 'BLOQUEADO');";
 
             const string sqlUsuariosNuevosHoy = @"
 SELECT COUNT(1)
@@ -42,7 +42,7 @@ WHERE CONVERT(date, FechaCreacion) = CONVERT(date, GETDATE());";
             const string sqlCuentasPendientes = @"
 SELECT COUNT(1)
 FROM dbo.CuentasBancarias
-WHERE EstadoValidacion = 'Pendiente';";
+WHERE UPPER(LTRIM(RTRIM(ISNULL(EstadoValidacion, '')))) = 'PENDIENTE';";
 
             const string sqlAuditoria24h = @"
 SELECT COUNT(1)

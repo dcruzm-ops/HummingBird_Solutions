@@ -241,12 +241,12 @@ ORDER BY Cantidad DESC, Provincia ASC;";
             const string sqlUsuariosActivos = @"
 SELECT COUNT(1)
 FROM dbo.Usuarios
-WHERE Estado = 'Activo';";
+WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) = 'ACTIVO';";
 
             const string sqlUsuariosPendientesAprobacion = @"
 SELECT COUNT(1)
 FROM dbo.Usuarios
-WHERE Estado IN ('Inactivo', 'Bloqueado');";
+WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) IN ('INACTIVO', 'BLOQUEADO');";
 
             const string sqlUsuariosNuevosHoy = @"
 SELECT COUNT(1)
@@ -256,7 +256,7 @@ WHERE CONVERT(date, FechaCreacion) = CONVERT(date, GETDATE());";
             const string sqlCuentasPorValidar = @"
 SELECT COUNT(1)
 FROM dbo.CuentasBancarias
-WHERE EstadoValidacion = 'Pendiente';";
+WHERE UPPER(LTRIM(RTRIM(ISNULL(EstadoValidacion, '')))) = 'PENDIENTE';";
 
             const string sqlEventosAuditoria24h = @"
 IF OBJECT_ID('dbo.AuditoriaLog', 'U') IS NULL
