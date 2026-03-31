@@ -45,9 +45,18 @@ FROM dbo.CuentasBancarias
 WHERE UPPER(LTRIM(RTRIM(ISNULL(EstadoValidacion, '')))) = 'PENDIENTE';";
 
             const string sqlAuditoria24h = @"
-SELECT COUNT(1)
-FROM dbo.AuditoriaLog
-WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());";
+IF OBJECT_ID('dbo.AuditoriaLog', 'U') IS NULL
+    SELECT 0;
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaAccion') IS NOT NULL
+    SELECT COUNT(1)
+    FROM dbo.AuditoriaLog
+    WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaEvento') IS NOT NULL
+    SELECT COUNT(1)
+    FROM dbo.AuditoriaLog
+    WHERE FechaEvento >= DATEADD(HOUR, -24, GETDATE());
+ELSE
+    SELECT COUNT(1) FROM dbo.AuditoriaLog;";
 
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
