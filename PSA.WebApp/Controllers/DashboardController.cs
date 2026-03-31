@@ -281,6 +281,11 @@ ELSE
                 var cuentasPorValidar = await EjecutarEscalarSeguroAsync(connection, sqlCuentasPorValidar);
                 var eventosAuditoria24h = await EjecutarEscalarSeguroAsync(connection, sqlEventosAuditoria24h);
                 var actividadAuditoria = await ObtenerActividadAuditoriaAsync(connection);
+                if (eventosAuditoria24h == 0 && actividadAuditoria.Count > 0)
+                {
+                    var umbral = DateTime.Now.AddHours(-24);
+                    eventosAuditoria24h = actividadAuditoria.Count(a => a.FechaAccion >= umbral);
+                }
 
                 return new ResumenDashboardAdministradorDTO
                 {

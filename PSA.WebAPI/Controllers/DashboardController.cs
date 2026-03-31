@@ -58,6 +58,11 @@ WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());";
             var cuentasPendientes = await EjecutarEscalarSeguroAsync(connection, sqlCuentasPendientes);
             var eventosAuditoria = await EjecutarEscalarSeguroAsync(connection, sqlAuditoria24h);
             var actividadReciente = await ObtenerActividadAuditoriaAsync(connection);
+            if (eventosAuditoria == 0 && actividadReciente.Count > 0)
+            {
+                var umbral = DateTime.Now.AddHours(-24);
+                eventosAuditoria = actividadReciente.Count(a => a.FechaAccion >= umbral);
+            }
 
             return Ok(new ResumenDashboardAdministradorDTO
             {
