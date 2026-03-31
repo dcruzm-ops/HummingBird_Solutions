@@ -94,6 +94,28 @@ BEGIN TRY
             NULL
         );
 
+    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'nuevo.hoy@psa.local')
+        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
+        VALUES (
+            'Usuario Nuevo del Día',
+            'nuevo.hoy@psa.local',
+            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'NuevoHoy123!'), 2),
+            @IdRolPropietario,
+            'Activo',
+            NULL
+        );
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'pendiente.validacion@psa.local')
+        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
+        VALUES (
+            'Usuario Pendiente Validación',
+            'pendiente.validacion@psa.local',
+            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'Pendiente123!'), 2),
+            @IdRolPropietario,
+            'Inactivo',
+            NULL
+        );
+
     SELECT @IdAdmin = IdUsuario FROM dbo.Usuarios WHERE Email = 'admin@psa.local';
     SELECT @IdPropietario = IdUsuario FROM dbo.Usuarios WHERE Email = 'propietario1@psa.local';
     SELECT @IdIngeniero = IdUsuario FROM dbo.Usuarios WHERE Email = 'ingeniero1@psa.local';
@@ -145,6 +167,33 @@ BEGIN TRY
             SYSDATETIME(),
             'Cuenta validada para ambiente de desarrollo',
             1
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.CuentasBancarias
+        WHERE IdUsuario = @IdPropietario
+          AND NumeroCuenta = 'CR15000000000000000001'
+    )
+        INSERT INTO dbo.CuentasBancarias
+        (
+            IdUsuario,
+            Banco,
+            NumeroCuenta,
+            TipoCuenta,
+            Titular,
+            EstadoValidacion,
+            Activa
+        )
+        VALUES
+        (
+            @IdPropietario,
+            'Banco de Costa Rica',
+            'CR15000000000000000001',
+            'IBAN',
+            'María Fernanda Rojas',
+            'Pendiente',
+            0
         );
 
     SELECT @IdCuentaBancaria = IdCuentaBancaria
@@ -570,6 +619,104 @@ BEGIN TRY
             N'{"Email":"admin@psa.local","Rol":"Administrador"}',
             '127.0.0.1',
             'Carga semilla de usuario administrador'
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.AuditoriaLog
+        WHERE Modulo = 'Usuarios'
+          AND TablaAfectada = 'Usuarios'
+          AND Accion = 'UPDATE'
+          AND IdRegistroAfectado = @IdPropietario
+    )
+        INSERT INTO dbo.AuditoriaLog
+        (
+            IdUsuario,
+            Modulo,
+            TablaAfectada,
+            IdRegistroAfectado,
+            Accion,
+            ValorAnterior,
+            ValorNuevo,
+            IpOrigen,
+            Detalle
+        )
+        VALUES
+        (
+            @IdAdmin,
+            'Usuarios',
+            'Usuarios',
+            @IdPropietario,
+            'UPDATE',
+            N'{"Estado":"Inactivo"}',
+            N'{"Estado":"Activo"}',
+            '127.0.0.1',
+            'Activación de usuario propietario'
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.AuditoriaLog
+        WHERE Modulo = 'CuentasBancarias'
+          AND TablaAfectada = 'CuentasBancarias'
+          AND Accion = 'UPDATE'
+    )
+        INSERT INTO dbo.AuditoriaLog
+        (
+            IdUsuario,
+            Modulo,
+            TablaAfectada,
+            IdRegistroAfectado,
+            Accion,
+            ValorAnterior,
+            ValorNuevo,
+            IpOrigen,
+            Detalle
+        )
+        VALUES
+        (
+            @IdAdmin,
+            'CuentasBancarias',
+            'CuentasBancarias',
+            @IdCuentaBancaria,
+            'UPDATE',
+            N'{"EstadoValidacion":"Pendiente"}',
+            N'{"EstadoValidacion":"Validada"}',
+            '127.0.0.1',
+            'Aprobación de cuenta bancaria semilla'
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.AuditoriaLog
+        WHERE Modulo = 'Fincas'
+          AND TablaAfectada = 'Fincas'
+          AND Accion = 'INSERT'
+          AND IdRegistroAfectado = @IdFincaPendiente
+    )
+        INSERT INTO dbo.AuditoriaLog
+        (
+            IdUsuario,
+            Modulo,
+            TablaAfectada,
+            IdRegistroAfectado,
+            Accion,
+            ValorAnterior,
+            ValorNuevo,
+            IpOrigen,
+            Detalle
+        )
+        VALUES
+        (
+            @IdPropietario,
+            'Fincas',
+            'Fincas',
+            @IdFincaPendiente,
+            'INSERT',
+            NULL,
+            N'{"EstadoFinca":"Registrada","NombreFinca":"Finca Bosque Azul"}',
+            '127.0.0.1',
+            'Registro de finca pendiente en semilla'
         );
 
     /* =========================================
