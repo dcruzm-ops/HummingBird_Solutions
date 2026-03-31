@@ -52,12 +52,17 @@ WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());";
             using var connection = new SqlConnection(connectionString);
             await connection.OpenAsync();
 
-            var usuariosActivos = await EjecutarEscalarAsync(connection, sqlUsuariosActivos);
-            var usuariosPendientes = await EjecutarEscalarAsync(connection, sqlUsuariosPendientes);
-            var usuariosNuevosHoy = await EjecutarEscalarAsync(connection, sqlUsuariosNuevosHoy);
-            var cuentasPendientes = await EjecutarEscalarAsync(connection, sqlCuentasPendientes);
-            var eventosAuditoria = await EjecutarEscalarAsync(connection, sqlAuditoria24h);
+            var usuariosActivos = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosActivos);
+            var usuariosPendientes = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosPendientes);
+            var usuariosNuevosHoy = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosNuevosHoy);
+            var cuentasPendientes = await EjecutarEscalarSeguroAsync(connection, sqlCuentasPendientes);
+            var eventosAuditoria = await EjecutarEscalarSeguroAsync(connection, sqlAuditoria24h);
             var actividadReciente = await ObtenerActividadAuditoriaAsync(connection);
+            if (eventosAuditoria == 0 && actividadReciente.Count > 0)
+            {
+                var umbral = DateTime.Now.AddHours(-24);
+                eventosAuditoria = actividadReciente.Count(a => a.FechaAccion >= umbral);
+            }
 
             return Ok(new ResumenDashboardAdministradorDTO
             {
@@ -85,30 +90,80 @@ WHERE FechaAccion >= DATEADD(HOUR, -24, GETDATE());";
 
         private static async Task<List<ActividadAuditoriaDTO>> ObtenerActividadAuditoriaAsync(SqlConnection connection)
         {
-            const string sqlActividad = @"
-SELECT TOP 10
-    ISNULL(Modulo, 'General') AS Modulo,
-    ISNULL(Accion, 'Cambio') AS Accion,
-    ISNULL(Detalle, CONCAT(TablaAfectada, ' #', ISNULL(CONVERT(varchar(20), IdRegistroAfectado), 's/d'))) AS Detalle,
-    FechaAccion
-FROM dbo.AuditoriaLog
-ORDER BY FechaAccion DESC;";
-
             var actividad = new List<ActividadAuditoriaDTO>();
-            using var cmd = new SqlCommand(sqlActividad, connection);
-            using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            const string sqlActividad = @"
+IF OBJECT_ID('dbo.AuditoriaLog', 'U') IS NULL
+BEGIN
+    SELECT TOP 0
+        CAST('General' AS varchar(50)) AS Modulo,
+        CAST('Cambio' AS varchar(50)) AS Accion,
+        CAST('Sin detalle' AS varchar(250)) AS Detalle,
+        CAST(GETDATE() AS datetime2) AS FechaAccion;
+END
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaAccion') IS NOT NULL
+BEGIN
+    SELECT TOP 10
+        ISNULL(Modulo, 'General') AS Modulo,
+        ISNULL(Accion, 'Cambio') AS Accion,
+        ISNULL(Detalle, CONCAT(ISNULL(TablaAfectada, 'General'), ' #', ISNULL(CONVERT(varchar(20), IdRegistroAfectado), 's/d'))) AS Detalle,
+        FechaAccion
+    FROM dbo.AuditoriaLog
+    ORDER BY FechaAccion DESC;
+END
+ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaEvento') IS NOT NULL
+BEGIN
+    SELECT TOP 10
+        ISNULL(Modulo, 'General') AS Modulo,
+        ISNULL(Accion, 'Cambio') AS Accion,
+        ISNULL(Detalle, CONCAT(ISNULL(TablaAfectada, 'General'), ' #', ISNULL(CONVERT(varchar(20), IdRegistroAfectado), 's/d'))) AS Detalle,
+        FechaEvento AS FechaAccion
+    FROM dbo.AuditoriaLog
+    ORDER BY FechaEvento DESC;
+END
+ELSE
+BEGIN
+    SELECT TOP 10
+        ISNULL(Modulo, 'General') AS Modulo,
+        ISNULL(Accion, 'Cambio') AS Accion,
+        ISNULL(Detalle, CONCAT(ISNULL(TablaAfectada, 'General'), ' #', ISNULL(CONVERT(varchar(20), IdRegistroAfectado), 's/d'))) AS Detalle,
+        CAST(GETDATE() AS datetime2) AS FechaAccion
+    FROM dbo.AuditoriaLog
+    ORDER BY IdLog DESC;
+END;";
+
+            try
             {
-                actividad.Add(new ActividadAuditoriaDTO
+                using var cmd = new SqlCommand(sqlActividad, connection);
+                using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
                 {
-                    Modulo = reader["Modulo"]?.ToString() ?? "General",
-                    Accion = reader["Accion"]?.ToString() ?? "Cambio",
-                    Detalle = reader["Detalle"]?.ToString() ?? "Sin detalle",
-                    FechaAccion = reader.GetDateTime(reader.GetOrdinal("FechaAccion"))
-                });
+                    actividad.Add(new ActividadAuditoriaDTO
+                    {
+                        Modulo = reader["Modulo"]?.ToString() ?? "General",
+                        Accion = reader["Accion"]?.ToString() ?? "Cambio",
+                        Detalle = reader["Detalle"]?.ToString() ?? "Sin detalle",
+                        FechaAccion = reader.GetDateTime(reader.GetOrdinal("FechaAccion"))
+                    });
+                }
+            }
+            catch
+            {
+                return actividad;
             }
 
             return actividad;
+        }
+
+        private static async Task<int> EjecutarEscalarSeguroAsync(SqlConnection connection, string sql)
+        {
+            try
+            {
+                return await EjecutarEscalarAsync(connection, sql);
+            }
+            catch
+            {
+                return 0;
+            }
         }
     }
 }
