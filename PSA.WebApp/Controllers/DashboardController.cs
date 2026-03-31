@@ -4,6 +4,8 @@ using PSA.DataAccess.DAO;
 using System.Security.Claims;
 using Microsoft.Data.SqlClient;
 using System.Text.Json;
+using System.Net.Http.Json;
+using PSA.EntidadesDTO.DTOs.Dashboard;
 
 namespace PSA.WebApp.Controllers
 {
@@ -82,7 +84,7 @@ namespace PSA.WebApp.Controllers
             ViewBag.SubtituloPagina = "Monitoreo operativo del sistema, usuarios, pagos y auditoría.";
             ViewBag.BreadcrumbActual = "Dashboard";
 
-            var resumen = await ObtenerResumenAdministradorDesdeDbAsync();
+            var resumen = await ObtenerResumenAdministradorDesdeApiOBaseDatosAsync();
             ViewBag.UsuariosActivos = resumen.UsuariosActivos;
             ViewBag.UsuariosPendientesAprobacion = resumen.UsuariosPendientesAprobacion;
             ViewBag.CuentasPorValidar = resumen.CuentasPorValidar;
@@ -172,37 +174,82 @@ ORDER BY Cantidad DESC, Provincia ASC;";
             return result != null ? Convert.ToInt32(result) : 0;
         }
 
-        private async Task<(int UsuariosActivos, int UsuariosPendientesAprobacion, int CuentasPorValidar, int EventosAuditoria24h, List<string> Alertas)> ObtenerResumenAdministradorDesdeDbAsync()
+        private async Task<ResumenDashboardAdministradorDTO> ObtenerResumenAdministradorDesdeApiOBaseDatosAsync()
         {
-            var connectionString = _configuration.GetConnectionString("PSAConnection");
-            if (string.IsNullOrWhiteSpace(connectionString))
+            var resumenApi = await ObtenerResumenAdministradorDesdeApiAsync();
+            if (resumenApi != null)
             {
-                return (0, 0, 0, 0, new List<string>());
+                return resumenApi;
             }
 
+            return await ObtenerResumenAdministradorDesdeDbAsync();
+        }
+
+        private async Task<ResumenDashboardAdministradorDTO?> ObtenerResumenAdministradorDesdeApiAsync()
+        {
+            var client = _httpClientFactory.CreateClient("AuthApi");
+
+            foreach (var baseUrl in GetApiBaseUrls())
+            {
+                try
+                {
+                    var response = await client.GetAsync($"{baseUrl}/api/Dashboard/administrador-resumen");
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        continue;
+                    }
+
+                    var resumen = await response.Content.ReadFromJsonAsync<ResumenDashboardAdministradorDTO>();
+                    if (resumen != null)
+                    {
+                        return resumen;
+                    }
+                }
+                catch
+                {
+                    // Intenta siguiente URL del API.
+                }
+            }
+
+            return null;
+        }
+
+        private IEnumerable<string> GetApiBaseUrls()
+        {
+            var configurada = _configuration["ApiSettings:BaseUrl"];
+            if (!string.IsNullOrWhiteSpace(configurada))
+            {
+                yield return configurada.TrimEnd('/');
+            }
+
+            yield return "https://localhost:59665";
+            yield return "http://localhost:59667";
+        }
+
+        private async Task<ResumenDashboardAdministradorDTO> ObtenerResumenAdministradorDesdeDbAsync()
+        {
+            try
+            {
+                var connectionString = _configuration.GetConnectionString("PSAConnection");
+                if (string.IsNullOrWhiteSpace(connectionString))
+                {
+                    return new ResumenDashboardAdministradorDTO();
+                }
+
             const string sqlUsuariosActivos = @"
-IF OBJECT_ID('dbo.Usuarios', 'U') IS NULL
-    SELECT 0;
-ELSE
-    SELECT COUNT(1)
-    FROM dbo.Usuarios
-    WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) = 'ACTIVO';";
+SELECT COUNT(1)
+FROM dbo.Usuarios
+WHERE Estado = 'Activo';";
 
             const string sqlUsuariosPendientesAprobacion = @"
-IF OBJECT_ID('dbo.Usuarios', 'U') IS NULL
-    SELECT 0;
-ELSE
-    SELECT COUNT(1)
-    FROM dbo.Usuarios
-    WHERE UPPER(LTRIM(RTRIM(ISNULL(Estado, '')))) IN ('INACTIVO', 'BLOQUEADO', 'PENDIENTE');";
+SELECT COUNT(1)
+FROM dbo.Usuarios
+WHERE Estado IN ('Inactivo', 'Bloqueado');";
 
             const string sqlCuentasPorValidar = @"
-IF OBJECT_ID('dbo.CuentasBancarias', 'U') IS NULL
-    SELECT 0;
-ELSE
-    SELECT COUNT(1)
-    FROM dbo.CuentasBancarias
-    WHERE UPPER(LTRIM(RTRIM(ISNULL(EstadoValidacion, '')))) = 'PENDIENTE';";
+SELECT COUNT(1)
+FROM dbo.CuentasBancarias
+WHERE EstadoValidacion = 'Pendiente';";
 
             const string sqlEventosAuditoria24h = @"
 IF OBJECT_ID('dbo.AuditoriaLog', 'U') IS NULL
@@ -218,40 +265,31 @@ ELSE IF COL_LENGTH('dbo.AuditoriaLog', 'FechaEvento') IS NOT NULL
 ELSE
     SELECT COUNT(1) FROM dbo.AuditoriaLog;";
 
-            try
-            {
                 using var connection = new SqlConnection(connectionString);
                 await connection.OpenAsync();
 
-                var usuariosActivos = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosActivos);
-                var usuariosPendientes = await EjecutarEscalarSeguroAsync(connection, sqlUsuariosPendientesAprobacion);
-                var cuentasPorValidar = await EjecutarEscalarSeguroAsync(connection, sqlCuentasPorValidar);
-                var eventosAuditoria24h = await EjecutarEscalarSeguroAsync(connection, sqlEventosAuditoria24h);
+                var usuariosActivos = await EjecutarEscalarAsync(connection, sqlUsuariosActivos);
+                var usuariosPendientes = await EjecutarEscalarAsync(connection, sqlUsuariosPendientesAprobacion);
+                var cuentasPorValidar = await EjecutarEscalarAsync(connection, sqlCuentasPorValidar);
+                var eventosAuditoria24h = await EjecutarEscalarAsync(connection, sqlEventosAuditoria24h);
 
-                var alertas = new List<string>
+                return new ResumenDashboardAdministradorDTO
                 {
-                    $"Hay {cuentasPorValidar} cuentas bancarias pendientes de validación administrativa.",
-                    $"Se registraron {eventosAuditoria24h} eventos de auditoría en las últimas 24 horas.",
-                    $"Existen {usuariosPendientes} usuarios inactivos o bloqueados que requieren revisión de acceso."
+                    UsuariosActivos = usuariosActivos,
+                    UsuariosPendientesAprobacion = usuariosPendientes,
+                    CuentasPorValidar = cuentasPorValidar,
+                    EventosAuditoria24h = eventosAuditoria24h,
+                    Alertas = new List<string>
+                    {
+                        $"Hay {cuentasPorValidar} cuentas bancarias pendientes de validación administrativa.",
+                        $"Se registraron {eventosAuditoria24h} eventos de auditoría en las últimas 24 horas.",
+                        $"Existen {usuariosPendientes} usuarios inactivos o bloqueados que requieren revisión de acceso."
+                    }
                 };
-
-                return (usuariosActivos, usuariosPendientes, cuentasPorValidar, eventosAuditoria24h, alertas);
             }
             catch
             {
-                return (0, 0, 0, 0, new List<string>());
-            }
-        }
-
-        private static async Task<int> EjecutarEscalarSeguroAsync(SqlConnection connection, string sql)
-        {
-            try
-            {
-                return await EjecutarEscalarAsync(connection, sql);
-            }
-            catch
-            {
-                return 0;
+                return new ResumenDashboardAdministradorDTO();
             }
         }
 
