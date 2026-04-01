@@ -1,10 +1,62 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<RootNamespace>PSA.EntidadesDTO</RootNamespace>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PSA.EntidadesDTO</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="Base\BaseEntity.cs" />
+    <Compile Include="Base\IAuditable.cs" />
+    <Compile Include="Base\IBaseEntity.cs" />
+    <Compile Include="DTOs\Auditoria\AuditoriaLogDTO.cs" />
+    <Compile Include="DTOs\Dashboard\ResumenDashboardAdministradorDTO.cs" />
+    <Compile Include="DTOs\Evaluaciones\EvaluacionEvidenciaDTO.cs" />
+    <Compile Include="DTOs\Evaluaciones\EvaluacionTecnicaDTO.cs" />
+    <Compile Include="DTOs\FincaDetalleDTO.cs" />
+    <Compile Include="DTOs\FincaResumenDTO.cs" />
+    <Compile Include="DTOs\Fincas\FincaDTO.cs" />
+    <Compile Include="DTOs\Fincas\FincaEvidenciaDTO.cs" />
+    <Compile Include="DTOs\InicioSesionDTO.cs" />
+    <Compile Include="DTOs\Notificaciones\NotificacionDTO.cs" />
+    <Compile Include="DTOs\Pagos\ConfiguracionPagoDTO.cs" />
+    <Compile Include="DTOs\Pagos\CuentaBancariaDTO.cs" />
+    <Compile Include="DTOs\Pagos\CuotaPagoDTO.cs" />
+    <Compile Include="DTOs\Pagos\DetalleConfiguracionPagoDTO.cs" />
+    <Compile Include="DTOs\Pagos\PlanPagoDTO.cs" />
+    <Compile Include="DTOs\RecuperacionContrasena\RespuestaRecuperacionDTO.cs" />
+    <Compile Include="DTOs\RecuperacionContrasena\SmtpSettingsDTO.cs" />
+    <Compile Include="DTOs\RecuperacionContrasena\ValidarTokenDTO.cs" />
+    <Compile Include="DTOs\RecuperarContrasenaDTO.cs" />
+    <Compile Include="DTOs\RegistrarFincaDTO.cs" />
+    <Compile Include="DTOs\RegistrarUsuarioDTO.cs" />
+    <Compile Include="DTOs\RespuestaInicioSesionDTO.cs" />
+    <Compile Include="DTOs\RestablecerContrasenaDTO.cs" />
+    <Compile Include="DTOs\Usuarios\RolDTO.cs" />
+    <Compile Include="DTOs\Usuarios\TokenRecuperacionDTO.cs" />
+    <Compile Include="DTOs\Usuarios\UsuarioDTO.cs" />
+    <Compile Include="DTOs\ValidarTokenRecuperacionDTO.cs" />
+    <Compile Include="Entidades\Auditoria\AuditoriaLog.cs" />
+    <Compile Include="Entidades\Evaluaciones\EvaluacionEvidencia.cs" />
+    <Compile Include="Entidades\Evaluaciones\EvaluacionTecnica.cs" />
+    <Compile Include="Entidades\Fincas\Finca.cs" />
+    <Compile Include="Entidades\Fincas\FincaEvidencia.cs" />
+    <Compile Include="Entidades\Notificaciones\Notificacion.cs" />
+    <Compile Include="Entidades\Pagos\ConfiguracionPago.cs" />
+    <Compile Include="Entidades\Pagos\CuentaBancaria.cs" />
+    <Compile Include="Entidades\Pagos\CuotaPago.cs" />
+    <Compile Include="Entidades\Pagos\DetalleConfiguracionPago.cs" />
+    <Compile Include="Entidades\Pagos\PlanPago.cs" />
+    <Compile Include="Entidades\Rol.cs" />
+    <Compile Include="Entidades\TokenRecuperacion.cs" />
+    <Compile Include="Entidades\Usuario.cs" />
+    <Compile Include="Entidades\Usuarios\Rol.cs" />
+    <Compile Include="Entidades\Usuarios\TokenRecuperacion.cs" />
+    <Compile Include="Entidades\Usuarios\Usuario.cs" />
+  </ItemGroup>
 
 </Project>
