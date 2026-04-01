@@ -5,12 +5,38 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PSA.WebApp</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="Controllers\AdministracionController.cs" />
+    <Compile Include="Controllers\AutenticacionController.cs" />
+    <Compile Include="Controllers\AuthController.cs" />
+    <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\EvaluacionesController.cs" />
+    <Compile Include="Controllers\FincasController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\NotificacionesController.cs" />
+    <Compile Include="Controllers\PagosController.cs" />
+    <Compile Include="Controllers\ReportesController.cs" />
+    <Compile Include="Models\RecuperarContrasenaViewModel.cs" />
+    <Compile Include="Models\RestablecerContrasenaViewModel.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Servicios\IServicioCorreo.cs" />
+    <Compile Include="Servicios\ServicioCorreoSmtp.cs" />
     <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
     <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Pages\**\*.cshtml" />
+    <Content Remove="Pages\**\*.cshtml.css" />
+    <None Remove="Pages\**\*.cshtml" />
+    <None Remove="Pages\**\*.cshtml.css" />
+    <RazorGenerate Remove="Pages\**\*.cshtml" />
+    <ScopedCssInput Remove="Pages\**\*.cshtml.css" />
   </ItemGroup>
 
 </Project>

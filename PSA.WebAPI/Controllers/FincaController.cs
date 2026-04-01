@@ -15,6 +15,7 @@ namespace PSA.WebAPI.Controllers
             _fincaService = fincaService;
         }
 
+        [HttpGet("ObtenerTodos")]
         [HttpGet("RetrieveAll")]
         public IActionResult RetrieveAll()
         {
@@ -33,6 +34,7 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [HttpGet("ObtenerPorId/{id}")]
         [HttpGet("RetrieveById/{id}")]
         public IActionResult RetrieveById(int id)
         {
@@ -68,6 +70,7 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [HttpPost("Crear")]
         [HttpPost("Create")]
         public IActionResult Create([FromBody] FincaDTO finca)
         {
@@ -114,6 +117,7 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [HttpPut("Actualizar")]
         [HttpPut("Update")]
         public IActionResult Update([FromBody] FincaDTO finca)
         {
@@ -168,6 +172,7 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [HttpDelete("Eliminar/{id}")]
         [HttpDelete("Delete/{id}")]
         public IActionResult Delete(int id)
         {
