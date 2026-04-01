@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore;
 using PSA.EntidadesDTO.DTOs.Fincas;
 

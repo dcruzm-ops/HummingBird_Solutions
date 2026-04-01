@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PSA.WebApp.Controllers
 {
+    [Authorize(Roles = "2")]
     public class NotificacionesController : Controller
     {
         [HttpGet]

@@ -1,4 +1,4 @@
-﻿namespace PSA.WebAPI.Controllers.Models
+namespace PSA.WebAPI.Controllers.Models
 {
     public class ApiResponse<T>
     {

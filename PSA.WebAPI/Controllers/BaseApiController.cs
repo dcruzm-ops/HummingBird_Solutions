@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using PSA.DataAccess;
 
 namespace PSA.WebAPI.Controllers

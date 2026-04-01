@@ -94,6 +94,28 @@ BEGIN TRY
             NULL
         );
 
+    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'nuevo.hoy@psa.local')
+        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
+        VALUES (
+            'Usuario Nuevo del Día',
+            'nuevo.hoy@psa.local',
+            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'NuevoHoy123!'), 2),
+            @IdRolPropietario,
+            'Activo',
+            NULL
+        );
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'pendiente.validacion@psa.local')
+        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
+        VALUES (
+            'Usuario Pendiente Validación',
+            'pendiente.validacion@psa.local',
+            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'Pendiente123!'), 2),
+            @IdRolPropietario,
+            'Inactivo',
+            NULL
+        );
+
     SELECT @IdAdmin = IdUsuario FROM dbo.Usuarios WHERE Email = 'admin@psa.local';
     SELECT @IdPropietario = IdUsuario FROM dbo.Usuarios WHERE Email = 'propietario1@psa.local';
     SELECT @IdIngeniero = IdUsuario FROM dbo.Usuarios WHERE Email = 'ingeniero1@psa.local';
@@ -145,6 +167,33 @@ BEGIN TRY
             SYSDATETIME(),
             'Cuenta validada para ambiente de desarrollo',
             1
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.CuentasBancarias
+        WHERE IdUsuario = @IdPropietario
+          AND NumeroCuenta = 'CR15000000000000000001'
+    )
+        INSERT INTO dbo.CuentasBancarias
+        (
+            IdUsuario,
+            Banco,
+            NumeroCuenta,
+            TipoCuenta,
+            Titular,
+            EstadoValidacion,
+            Activa
+        )
+        VALUES
+        (
+            @IdPropietario,
+            'Banco de Costa Rica',
+            'CR15000000000000000001',
+            'IBAN',
+            'María Fernanda Rojas',
+            'Pendiente',
+            0
         );
 
     SELECT @IdCuentaBancaria = IdCuentaBancaria
@@ -214,19 +263,70 @@ BEGIN TRY
         SELECT 1 FROM dbo.ConfiguracionPagoDetalle
         WHERE IdConfiguracionPago = @IdConfiguracionPago
           AND TipoFactor = 'Pendiente'
-          AND ValorFactor = 'Alta'
+          AND ValorFactor = 'Muy inclinada'
     )
         INSERT INTO dbo.ConfiguracionPagoDetalle (IdConfiguracionPago, TipoFactor, ValorFactor, PorcentajeAjuste)
-        VALUES (@IdConfiguracionPago, 'Pendiente', 'Alta', 3.00);
+        VALUES (@IdConfiguracionPago, 'Pendiente', 'Muy inclinada', 3.00);
 
     IF NOT EXISTS (
         SELECT 1 FROM dbo.ConfiguracionPagoDetalle
         WHERE IdConfiguracionPago = @IdConfiguracionPago
           AND TipoFactor = 'UsoSuelo'
-          AND ValorFactor = 'Conservacion'
+          AND ValorFactor = 'Conservación'
     )
         INSERT INTO dbo.ConfiguracionPagoDetalle (IdConfiguracionPago, TipoFactor, ValorFactor, PorcentajeAjuste)
-        VALUES (@IdConfiguracionPago, 'UsoSuelo', 'Conservacion', 7.00);
+        VALUES (@IdConfiguracionPago, 'UsoSuelo', 'Conservación', 7.00);
+
+    /* =========================================
+       6.1 Catálogos configurables para finca
+       ========================================= */
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Plana')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Plana', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Inclinada')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Inclinada', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Pendiente' AND Valor = 'Muy inclinada')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Pendiente', 'Muy inclinada', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Bosque primario')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Bosque primario', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Bosque secundario')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Bosque secundario', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Plantación forestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Plantación forestal', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'Vegetacion' AND Valor = 'Pasto')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('Vegetacion', 'Pasto', 1, 4);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Conservación')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Conservación', 1, 1);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Producción forestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Producción forestal', 1, 2);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Agroforestal')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Agroforestal', 1, 3);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Ganadería')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Ganadería', 1, 4);
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Uso mixto')
+        INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
+        VALUES ('UsoSuelo', 'Uso mixto', 1, 5);
 
     /* =========================================
        7. Fincas de ejemplo
@@ -250,6 +350,9 @@ BEGIN TRY
             Hectareas,
             Vegetacion,
             TieneRecursosHidricos,
+            TieneRiosOQuebradas,
+            TieneNacientes,
+            CantidadNacientes,
             UsoSuelo,
             Pendiente,
             EstadoFinca
@@ -265,10 +368,13 @@ BEGIN TRY
             9.3731200,
             -83.7045100,
             18.50,
-            'Bosque Primario',
+            'Bosque primario',
             1,
-            'Conservacion',
-            'Alta',
+            1,
+            1,
+            2,
+            'Conservación',
+            'Muy inclinada',
             'Aprobada'
         );
 
@@ -291,6 +397,9 @@ BEGIN TRY
             Hectareas,
             Vegetacion,
             TieneRecursosHidricos,
+            TieneRiosOQuebradas,
+            TieneNacientes,
+            CantidadNacientes,
             UsoSuelo,
             Pendiente,
             EstadoFinca
@@ -306,10 +415,13 @@ BEGIN TRY
             9.8965400,
             -83.6082300,
             12.75,
-            'Bosque Secundario',
+            'Bosque secundario',
             0,
-            'Conservacion',
-            'Media',
+            0,
+            0,
+            0,
+            'Conservación',
+            'Inclinada',
             'Registrada'
         );
 
@@ -356,10 +468,10 @@ BEGIN TRY
             N'La finca presenta cobertura boscosa continua y condiciones favorables para PSA.',
             'Califica',
             18.50,
-            'Bosque Primario',
+            'Bosque primario',
             1,
-            'Conservacion',
-            'Alta',
+            'Conservación',
+            'Muy inclinada',
             SYSDATETIME()
         );
 
@@ -507,6 +619,104 @@ BEGIN TRY
             N'{"Email":"admin@psa.local","Rol":"Administrador"}',
             '127.0.0.1',
             'Carga semilla de usuario administrador'
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.AuditoriaLog
+        WHERE Modulo = 'Usuarios'
+          AND TablaAfectada = 'Usuarios'
+          AND Accion = 'UPDATE'
+          AND IdRegistroAfectado = @IdPropietario
+    )
+        INSERT INTO dbo.AuditoriaLog
+        (
+            IdUsuario,
+            Modulo,
+            TablaAfectada,
+            IdRegistroAfectado,
+            Accion,
+            ValorAnterior,
+            ValorNuevo,
+            IpOrigen,
+            Detalle
+        )
+        VALUES
+        (
+            @IdAdmin,
+            'Usuarios',
+            'Usuarios',
+            @IdPropietario,
+            'UPDATE',
+            N'{"Estado":"Inactivo"}',
+            N'{"Estado":"Activo"}',
+            '127.0.0.1',
+            'Activación de usuario propietario'
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.AuditoriaLog
+        WHERE Modulo = 'CuentasBancarias'
+          AND TablaAfectada = 'CuentasBancarias'
+          AND Accion = 'UPDATE'
+    )
+        INSERT INTO dbo.AuditoriaLog
+        (
+            IdUsuario,
+            Modulo,
+            TablaAfectada,
+            IdRegistroAfectado,
+            Accion,
+            ValorAnterior,
+            ValorNuevo,
+            IpOrigen,
+            Detalle
+        )
+        VALUES
+        (
+            @IdAdmin,
+            'CuentasBancarias',
+            'CuentasBancarias',
+            @IdCuentaBancaria,
+            'UPDATE',
+            N'{"EstadoValidacion":"Pendiente"}',
+            N'{"EstadoValidacion":"Validada"}',
+            '127.0.0.1',
+            'Aprobación de cuenta bancaria semilla'
+        );
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.AuditoriaLog
+        WHERE Modulo = 'Fincas'
+          AND TablaAfectada = 'Fincas'
+          AND Accion = 'INSERT'
+          AND IdRegistroAfectado = @IdFincaPendiente
+    )
+        INSERT INTO dbo.AuditoriaLog
+        (
+            IdUsuario,
+            Modulo,
+            TablaAfectada,
+            IdRegistroAfectado,
+            Accion,
+            ValorAnterior,
+            ValorNuevo,
+            IpOrigen,
+            Detalle
+        )
+        VALUES
+        (
+            @IdPropietario,
+            'Fincas',
+            'Fincas',
+            @IdFincaPendiente,
+            'INSERT',
+            NULL,
+            N'{"EstadoFinca":"Registrada","NombreFinca":"Finca Bosque Azul"}',
+            '127.0.0.1',
+            'Registro de finca pendiente en semilla'
         );
 
     /* =========================================

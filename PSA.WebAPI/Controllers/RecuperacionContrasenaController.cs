@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
@@ -13,14 +13,16 @@ namespace PSA.WebAPI.Controllers
         private readonly RecuperacionContrasenaManager _manager;
         private readonly IConfiguration _configuration;
 
-        public RecuperacionContrasenaController(IConfiguration configuration)
+        public RecuperacionContrasenaController(
+            IConfiguration configuration,
+            RecuperacionContrasenaManager manager)
         {
             _configuration = configuration;
-            _manager = new RecuperacionContrasenaManager();
+            _manager = manager;
         }
 
         [HttpPost("solicitar")]
-        public IActionResult SolicitarRecuperacion([FromBody] RecuperarContrasenaDTO dto)
+        public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarContrasenaDTO dto)
         {
             try
             {
@@ -33,31 +35,52 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"] ?? "";
-                var respuesta = _manager.GenerarToken(dto, webAppBaseUrl);
+                var (token, nombreUsuario) = await _manager.GenerarTokenConNombreAsync(dto.Correo);
+                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"]?.TrimEnd('/');
+                var linkRecuperacion = string.IsNullOrWhiteSpace(webAppBaseUrl)
+                    ? null
+                    : $"{webAppBaseUrl}/Autenticacion/RestablecerContrasena?tokenRecuperacion={Uri.EscapeDataString(token)}";
 
-                if (respuesta.Exito &&
-                    !string.IsNullOrWhiteSpace(respuesta.LinkRecuperacion) &&
-                    !string.IsNullOrWhiteSpace(respuesta.CorreoDestino))
+                var respuesta = new RespuestaRecuperacionDTO
                 {
-                    var smtp = new SmtpSettingsDTO
-                    {
-                        Host = _configuration["SmtpSettings:Host"] ?? "",
-                        Port = int.Parse(_configuration["SmtpSettings:Port"] ?? "587"),
-                        EnableSsl = bool.Parse(_configuration["SmtpSettings:EnableSsl"] ?? "true"),
-                        FromName = _configuration["SmtpSettings:FromName"] ?? "",
-                        FromEmail = _configuration["SmtpSettings:FromEmail"] ?? "",
-                        Username = _configuration["SmtpSettings:Username"] ?? "",
-                        Password = _configuration["SmtpSettings:Password"] ?? ""
-                    };
+                    Exito = true,
+                    Mensaje = "Solicitud procesada correctamente.",
+                    LinkRecuperacion = linkRecuperacion,
+                    CorreoDestino = dto.Correo,
+                    NombreUsuario = nombreUsuario
+                };
 
+                var smtp = new SmtpSettingsDTO
+                {
+                    Host = _configuration["SmtpSettings:Host"] ?? string.Empty,
+                    Port = int.TryParse(_configuration["SmtpSettings:Port"], out var port) ? port : 587,
+                    EnableSsl = bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) ? ssl : true,
+                    FromName = _configuration["SmtpSettings:FromName"] ?? string.Empty,
+                    FromEmail = _configuration["SmtpSettings:FromEmail"] ?? string.Empty,
+                    Username = _configuration["SmtpSettings:Username"] ?? string.Empty,
+                    Password = _configuration["SmtpSettings:Password"] ?? string.Empty
+                };
+
+                var smtpConfigurado = !string.IsNullOrWhiteSpace(smtp.Host)
+                    && !string.IsNullOrWhiteSpace(smtp.FromEmail)
+                    && !string.IsNullOrWhiteSpace(smtp.Username)
+                    && !string.IsNullOrWhiteSpace(smtp.Password);
+
+                if (respuesta.Exito
+                    && smtpConfigurado
+                    && !string.IsNullOrWhiteSpace(respuesta.LinkRecuperacion)
+                    && !string.IsNullOrWhiteSpace(respuesta.CorreoDestino))
+                {
                     var correoService = new CorreoService(smtp);
-
                     correoService.EnviarCorreoRecuperacion(
                         respuesta.CorreoDestino,
                         respuesta.NombreUsuario ?? "usuario",
                         respuesta.LinkRecuperacion
                     );
+                }
+                else if (respuesta.Exito && !smtpConfigurado)
+                {
+                    respuesta.Mensaje = "Solicitud procesada. SMTP no configurado, por lo que no se envió correo de recuperación.";
                 }
 
                 respuesta.LinkRecuperacion = null;
@@ -77,7 +100,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("validar-token")]
-        public IActionResult ValidarToken([FromBody] ValidarTokenDTO dto)
+        public async Task<IActionResult> ValidarToken([FromBody] ValidarTokenDTO dto)
         {
             try
             {
@@ -90,7 +113,14 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var respuesta = _manager.ValidarToken(dto);
+                var esValido = await _manager.TokenEsValidoAsync(dto.Token);
+                var respuesta = new RespuestaRecuperacionDTO
+                {
+                    Exito = esValido,
+                    Mensaje = esValido
+                        ? "Token válido."
+                        : "El token es inválido o expiró."
+                };
                 return Ok(respuesta);
             }
             catch (Exception ex)
@@ -104,14 +134,14 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("restablecer")]
-        public IActionResult Restablecer([FromBody] RestablecerContrasenaDTO dto)
+        public async Task<IActionResult> Restablecer([FromBody] RestablecerContrasenaDTO dto)
         {
             try
             {
-                if (dto == null ||
-                    string.IsNullOrWhiteSpace(dto.Token) ||
-                    string.IsNullOrWhiteSpace(dto.NuevaContrasena) ||
-                    string.IsNullOrWhiteSpace(dto.ConfirmarContrasena))
+                if (dto == null
+                    || string.IsNullOrWhiteSpace(dto.Token)
+                    || string.IsNullOrWhiteSpace(dto.NuevaContrasena)
+                    || string.IsNullOrWhiteSpace(dto.ConfirmarContrasena))
                 {
                     return BadRequest(new RespuestaRecuperacionDTO
                     {
@@ -120,12 +150,21 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var respuesta = _manager.RestablecerContrasena(dto);
+                if (!string.Equals(dto.NuevaContrasena, dto.ConfirmarContrasena, StringComparison.Ordinal))
+                {
+                    return BadRequest(new RespuestaRecuperacionDTO
+                    {
+                        Exito = false,
+                        Mensaje = "Las contraseñas no coinciden."
+                    });
+                }
 
-                if (!respuesta.Exito)
-                    return BadRequest(respuesta);
-
-                return Ok(respuesta);
+                await _manager.RestablecerContrasenaAsync(dto.Token, dto.NuevaContrasena);
+                return Ok(new RespuestaRecuperacionDTO
+                {
+                    Exito = true,
+                    Mensaje = "Contraseña restablecida correctamente."
+                });
             }
             catch (Exception ex)
             {

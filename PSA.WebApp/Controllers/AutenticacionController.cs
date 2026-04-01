@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Security.Claims;
+using PSA.WebApp.Servicios;
 
 namespace PSA.WebApp.Controllers
 {
@@ -15,14 +17,20 @@ namespace PSA.WebApp.Controllers
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
         private readonly AutenticacionManager _autenticacionManager;
+        private readonly RecuperacionContrasenaManager _recuperacionContrasenaManager;
+        private readonly IServicioCorreo _servicioCorreo;
 
         public AutenticacionController(
             IConfiguration configuration,
             AutenticacionManager autenticacionManager,
+            RecuperacionContrasenaManager recuperacionContrasenaManager,
+            IServicioCorreo servicioCorreo,
             IServiceProvider serviceProvider)
         {
             _configuration = configuration;
             _autenticacionManager = autenticacionManager;
+            _recuperacionContrasenaManager = recuperacionContrasenaManager;
+            _servicioCorreo = servicioCorreo;
             _serviceProvider = serviceProvider;
         }
 
@@ -64,7 +72,7 @@ namespace PSA.WebApp.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorBody = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError(string.Empty, $"No fue posible iniciar sesión. {errorBody}");
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
                     return View(dto);
                 }
 
@@ -116,11 +124,11 @@ namespace PSA.WebApp.Controllers
                 if (!response.IsSuccessStatusCode)
                 {
                     var errorBody = await response.Content.ReadAsStringAsync();
-                    var errorMensaje = TryReadErrorMessage(errorBody);
-                    ModelState.AddModelError(string.Empty, errorMensaje);
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
                     return View(dto);
                 }
 
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente. Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
@@ -136,26 +144,156 @@ namespace PSA.WebApp.Controllers
             ViewBag.EsAutenticacion = true;
             ViewBag.TituloPagina = "Recuperar contraseña";
             ViewBag.SubtituloPagina = "Ingrese su correo electrónico para iniciar el proceso de recuperación.";
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult RestablecerContrasena(string? token = null)
-        {
-            ViewBag.EsAutenticacion = true;
-            ViewBag.TokenRecuperacion = token ?? "TOKEN-DE-EJEMPLO";
-            ViewBag.TituloPagina = "Restablecer contraseña";
-            ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
-            return View();
+            return View(new RecuperarContrasenaDTO());
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RecuperarContrasena(RecuperarContrasenaDTO dto)
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Recuperar contraseña";
+            ViewBag.SubtituloPagina = "Ingrese su correo electrónico para iniciar el proceso de recuperación.";
+
+            if (!ModelState.IsValid)
+            {
+                return View(dto);
+            }
+
+            try
+            {
+                var (token, nombreUsuario) = await _recuperacionContrasenaManager.GenerarTokenConNombreAsync(dto.Email);
+                try
+                {
+                    var cuerpoCorreo = $@"Estimado(a) {nombreUsuario},
+
+Hemos recibido una solicitud para restablecer la contraseña de su cuenta en el sistema PSA Costa Rica.
+
+Para continuar con el proceso de recuperación, utilice el siguiente token de verificación:
+
+{token}
+
+Este token tiene una vigencia de 3 minutos a partir del momento en que fue generado. Una vez transcurrido ese tiempo, expirará automáticamente y deberá solicitar uno nuevo.
+
+Si usted no realizó esta solicitud, puede ignorar este correo. No se realizará ningún cambio en su cuenta sin una validación correcta del token.
+
+Importante: este es un correo automático enviado desde una cuenta Do-Not-Reply. Por favor, no responda a este mensaje.
+
+Atentamente,
+Sistema PSA Costa Rica
+Cuenta automática Do-Not-Reply";
+
+                    await _servicioCorreo.EnviarAsync(
+                        dto.Email,
+                        "PSA Costa Rica - Token de recuperación de contraseña",
+                        cuerpoCorreo
+                    );
+                    TempData["MensajeExito"] = "Se envió el token de recuperación al correo indicado.";
+                }
+                catch
+                {
+                    TempData["MensajeError"] = "El token fue generado pero no se pudo enviar el correo. Revise configuración SMTP.";
+                }
+
+                return RedirectToAction(nameof(ValidarTokenRecuperacion));
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = ex.Message;
+                return RedirectToAction(nameof(RecuperarContrasena));
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ValidarTokenRecuperacion()
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Validar token";
+            ViewBag.SubtituloPagina = "Ingrese el token recibido por correo para continuar.";
+            return View(new ValidarTokenRecuperacionDTO());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ValidarTokenRecuperacion(ValidarTokenRecuperacionDTO dto)
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Validar token";
+            ViewBag.SubtituloPagina = "Ingrese el token recibido por correo para continuar.";
+
+            if (!ModelState.IsValid)
+            {
+                return View(dto);
+            }
+
+            if (!await _recuperacionContrasenaManager.TokenEsValidoAsync(dto.Token))
+            {
+                ModelState.AddModelError(string.Empty, "El token es inválido o expiró. Solicite uno nuevo.");
+                return View(dto);
+            }
+
+            return RedirectToAction(nameof(RestablecerContrasena), new { tokenRecuperacion = dto.Token });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> RestablecerContrasena(string? tokenRecuperacion = null)
+        {
+            if (string.IsNullOrWhiteSpace(tokenRecuperacion) || !await _recuperacionContrasenaManager.TokenEsValidoAsync(tokenRecuperacion))
+            {
+                TempData["MensajeError"] = "El token expiró o no es válido. Solicite uno nuevo.";
+                return RedirectToAction(nameof(RecuperarContrasena));
+            }
+
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Restablecer contraseña";
+            ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
+
+            return View(new RestablecerContrasenaDTO
+            {
+                Token = tokenRecuperacion
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RestablecerContrasena(RestablecerContrasenaDTO dto)
+        {
+            ViewBag.EsAutenticacion = true;
+            ViewBag.TituloPagina = "Restablecer contraseña";
+            ViewBag.SubtituloPagina = "Defina una nueva contraseña segura para su cuenta.";
+
+            if (!ModelState.IsValid)
+            {
+                return View(dto);
+            }
+
+            if (!await _recuperacionContrasenaManager.TokenEsValidoAsync(dto.Token))
+            {
+                TempData["MensajeError"] = "El token expiró o no es válido. Solicite uno nuevo.";
+                return RedirectToAction(nameof(RecuperarContrasena));
+            }
+
+            try
+            {
+                await _recuperacionContrasenaManager.RestablecerContrasenaAsync(dto.Token, dto.NuevaContrasena);
+                TempData["MensajeExito"] = "Contraseña restablecida correctamente. Ya puede iniciar sesión.";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (Exception ex)
+            {
+                TempData["MensajeError"] = ex.Message;
+                return RedirectToAction(nameof(RecuperarContrasena));
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CerrarSesion()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             TempData["MensajeExito"] = "Sesión cerrada correctamente.";
-            return RedirectToAction(nameof(IniciarSesion));
+            return RedirectToAction("Producto", "Home");
         }
 
         private static string GetDashboardActionByRole(int idRol)
@@ -179,9 +317,15 @@ namespace PSA.WebApp.Controllers
             try
             {
                 using var doc = JsonDocument.Parse(errorBody);
+
                 if (doc.RootElement.TryGetProperty("mensaje", out var mensaje))
                 {
                     return mensaje.GetString() ?? "No fue posible completar la operación.";
+                }
+
+                if (doc.RootElement.TryGetProperty("Mensaje", out var mensajeMayuscula))
+                {
+                    return mensajeMayuscula.GetString() ?? "No fue posible completar la operación.";
                 }
             }
             catch
@@ -203,8 +347,7 @@ namespace PSA.WebApp.Controllers
             {
                 try
                 {
-                    var response = await client.PostAsJsonAsync($"{baseUrl}{path}", payload);
-                    return response;
+                    return await client.PostAsJsonAsync($"{baseUrl}{path}", payload);
                 }
                 catch (Exception ex)
                 {
@@ -213,7 +356,7 @@ namespace PSA.WebApp.Controllers
             }
 
             throw new InvalidOperationException(
-                "No fue posible conectar con el API de autenticación en ninguna URL configurada.",
+                "No fue posible conectar con el API en ninguna URL configurada.",
                 ultimaExcepcion
             );
         }
@@ -236,6 +379,7 @@ namespace PSA.WebApp.Controllers
             try
             {
                 await _autenticacionManager.RegistrarUsuarioAsync(dto);
+                await IntentarEnviarCorreoBienvenidaAsync(dto.NombreCompleto, dto.Email);
                 TempData["MensajeExito"] = "Usuario registrado correctamente (modo local). Ya puede iniciar sesión.";
                 return RedirectToAction(nameof(IniciarSesion));
             }
@@ -284,5 +428,53 @@ namespace PSA.WebApp.Controllers
                     ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
                 });
         }
+
+        private async Task IntentarEnviarCorreoBienvenidaAsync(string nombreUsuario, string correoDestino)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(correoDestino))
+                {
+                    return;
+                }
+
+                var fechaRegistro = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
+                var correoSoporte = _configuration["EmailSettings:SupportEmail"]
+                    ?? _configuration["SmtpSettings:SupportEmail"]
+                    ?? "soporte@psacostarica.cr";
+                var nombre = string.IsNullOrWhiteSpace(nombreUsuario) ? "usuario" : nombreUsuario.Trim();
+
+                var cuerpo = $@"Hola {nombre},
+
+Tu registro en PSA Costa Rica se completó de manera exitosa el {fechaRegistro}.
+
+Ya puedes ingresar al sistema mediante el siguiente enlace:
+{urlLogin}
+
+Te recomendamos conservar este correo como comprobante de tu registro.
+
+Si no reconoces esta acción o consideras que el registro fue realizado por error, por favor contacta al equipo de soporte:
+{correoSoporte}
+
+Gracias por formar parte de PSA Costa Rica.
+
+Saludos,
+Equipo PSA Costa Rica
+
+Este es un correo automático. Por favor, no respondas a este mensaje.";
+
+                await _servicioCorreo.EnviarAsync(
+                    correoDestino.Trim(),
+                    "Bienvenido(a) a PSA Costa Rica",
+                    cuerpo
+                );
+            }
+            catch
+            {
+                TempData["MensajeInfo"] = "El registro se completó, pero no fue posible enviar el correo de bienvenida.";
+            }
+        }
+
     }
 }

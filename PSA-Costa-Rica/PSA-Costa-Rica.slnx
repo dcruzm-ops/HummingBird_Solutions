@@ -1,8 +1,0 @@
-<Solution>
-  <Project Path="AppCore/PSA.AppCore.csproj" />
-  <Project Path="BaseDatos/BaseDatos.csproj" />
-  <Project Path="DataAccess/PSA.DataAccess.csproj" />
-  <Project Path="PSA.EntidadesDTO/PSA.EntidadesDTO.csproj" />
-  <Project Path="PSA.WebAPI/PSA.WebAPI.csproj" />
-  <Project Path="PSA.WebApp/PSA.WebApp.csproj" />
-</Solution>
