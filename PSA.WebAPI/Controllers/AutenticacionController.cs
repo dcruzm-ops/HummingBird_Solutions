@@ -92,34 +92,13 @@ namespace PSA.WebAPI.Controllers
                 }
 
                 var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
-                var correoSoporte = _configuration["SmtpSettings:SupportEmail"] ?? "soporte@psacostarica.cr";
-                var fechaRegistro = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
                 var nombreUsuario = string.IsNullOrWhiteSpace(dto.NombreCompleto) ? "usuario" : dto.NombreCompleto.Trim();
 
-                var cuerpo = $@"Hola {nombreUsuario},
-
-Tu registro en PSA Costa Rica se completó de manera exitosa el {fechaRegistro}.
-
-Ya puedes ingresar al sistema mediante el siguiente enlace:
-{urlLogin}
-
-Te recomendamos conservar este correo como comprobante de tu registro.
-
-Si no reconoces esta acción o consideras que el registro fue realizado por error, por favor contacta al equipo de soporte:
-{correoSoporte}
-
-Gracias por formar parte de PSA Costa Rica.
-
-Saludos,
-Equipo PSA Costa Rica
-
-Este es un correo automático. Por favor, no respondas a este mensaje.";
-
                 var correoService = new CorreoService(smtp);
-                correoService.EnviarCorreoTextoPlano(
+                correoService.EnviarCorreoRecuperacion(
                     dto.Email.Trim(),
-                    "Bienvenido(a) a PSA Costa Rica",
-                    cuerpo
+                    nombreUsuario,
+                    urlLogin
                 );
             }
             catch
