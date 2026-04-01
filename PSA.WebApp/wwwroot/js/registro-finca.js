@@ -88,6 +88,77 @@ document.addEventListener("DOMContentLoaded", function () {
     var mapaContenedor = document.getElementById("mapaUbicacionFinca");
     var mapa = null;
     var marcador = null;
+    var limitesCostaRica = null;
+
+    function inicializarMapa() {
+        if (!mapaContenedor || typeof window.L === "undefined") {
+            return;
+        }
+
+        limitesCostaRica = window.L.latLngBounds(
+            window.L.latLng(8.0, -86.2),
+            window.L.latLng(11.4, -82.3)
+        );
+
+        mapa = window.L.map("mapaUbicacionFinca", {
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            tap: false,
+            maxBounds: limitesCostaRica,
+            maxBoundsViscosity: 1.0
+        }).setView([9.7489, -83.7534], 8);
+
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(mapa);
+
+        mapa.on("click", function (evento) {
+            if (limitesCostaRica && !limitesCostaRica.contains(evento.latlng)) {
+                if (latitudInput) {
+                    latitudInput.setCustomValidity("Seleccione un punto dentro de Costa Rica.");
+                }
+                return;
+            }
+
+            if (latitudInput) {
+                latitudInput.setCustomValidity("");
+            }
+            colocarPin(evento.latlng.lat, evento.latlng.lng, true);
+        });
+
+        setTimeout(function () {
+            mapa.invalidateSize();
+        }, 120);
+    }
+
+    function colocarPin(latitud, longitud, centrar) {
+        if (!mapa) {
+            return;
+        }
+
+        if (limitesCostaRica && !limitesCostaRica.contains(window.L.latLng(latitud, longitud))) {
+            return;
+        }
+
+        if (!marcador) {
+            marcador = window.L.marker([latitud, longitud], { draggable: true }).addTo(mapa);
+            marcador.on("dragend", function (evento) {
+                var pos = evento.target.getLatLng();
+                setCoordenadas(pos.lat, pos.lng);
+            });
+        } else {
+            marcador.setLatLng([latitud, longitud]);
+        }
+
+        if (centrar) {
+            mapa.setView([latitud, longitud], Math.max(mapa.getZoom(), 13));
+        }
+
+        setCoordenadas(latitud, longitud);
+    }
 
     function setCoordenadas(latitud, longitud) {
         var latitudNormalizada = Number(latitud).toFixed(7);
