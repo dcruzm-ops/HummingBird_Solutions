@@ -59,9 +59,4 @@
     <Compile Include="Entidades\Usuarios\Usuario.cs" />
   </ItemGroup>
 
-	<ItemGroup>
-		<!-- Evita compilación duplicada en entornos Windows con carpetas legacy acentuadas -->
-		<Compile Remove="bin\**\*.cs;obj\**\*.cs;DTOs\Auditoría\**\*.cs;DTOs\RecuperacionContraseña\**\*.cs;Entidades\Pagós\**\*.cs" />
-	</ItemGroup>
-
 </Project>
