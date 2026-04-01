@@ -6,7 +6,11 @@ using PSA.WebApp.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(_ => "Este campo es obligatorio.");
+    options.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(_ => "Este campo es obligatorio.");
+});
 builder.Services.AddHttpClient();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
