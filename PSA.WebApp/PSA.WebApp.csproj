@@ -32,8 +32,11 @@
 
   <ItemGroup>
     <Content Remove="Pages\**\*.cshtml" />
+    <Content Remove="Pages\**\*.cshtml.css" />
     <None Remove="Pages\**\*.cshtml" />
+    <None Remove="Pages\**\*.cshtml.css" />
     <RazorGenerate Remove="Pages\**\*.cshtml" />
+    <ScopedCssInput Remove="Pages\**\*.cshtml.css" />
   </ItemGroup>
 
 </Project>
