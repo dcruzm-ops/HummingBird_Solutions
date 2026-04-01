@@ -21,7 +21,8 @@ namespace PSA.DataAccess.DAO
                     IdIngeniero,
                     FechaVisita,
                     EstadoEvaluacion,
-                    Observaciones
+                    Observaciones,
+                    DecisionTecnica
                 )
                 VALUES
                 (
@@ -29,7 +30,8 @@ namespace PSA.DataAccess.DAO
                     @IdIngeniero,
                     @FechaVisita,
                     @EstadoEvaluacion,
-                    @Observaciones
+                    @Observaciones,
+                    @DecisionTecnica
                 );
                 SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
@@ -41,6 +43,7 @@ namespace PSA.DataAccess.DAO
             command.Parameters.AddWithValue("@FechaVisita", evaluacion.FechaEvaluacion);
             command.Parameters.AddWithValue("@EstadoEvaluacion", evaluacion.Estado);
             command.Parameters.AddWithValue("@Observaciones", (object?)evaluacion.Observaciones ?? DBNull.Value);
+            command.Parameters.AddWithValue("@DecisionTecnica", (object?)evaluacion.Decision ?? DBNull.Value);
 
             await connection.OpenAsync();
             var result = await command.ExecuteScalarAsync();
@@ -83,13 +86,14 @@ namespace PSA.DataAccess.DAO
 
             command.Parameters.AddWithValue("@IdEvaluacion", evaluacion.Id);
             command.Parameters.AddWithValue("@EstadoEvaluacion", evaluacion.Estado);
-            command.Parameters.AddWithValue("@DecisionTecnica", evaluacion.Decision);
+            command.Parameters.AddWithValue("@DecisionTecnica", (object?)evaluacion.Decision ?? DBNull.Value);
             command.Parameters.AddWithValue("@Observaciones", (object?)evaluacion.Observaciones ?? DBNull.Value);
             command.Parameters.AddWithValue("@FechaDecision", DateTime.Now);
 
             await connection.OpenAsync();
             return await command.ExecuteNonQueryAsync() > 0;
         }
+
         private static EvaluacionTecnica Map(SqlDataReader reader)
         {
             return new EvaluacionTecnica
@@ -99,7 +103,7 @@ namespace PSA.DataAccess.DAO
                 IngenieroForestalId = Convert.ToInt32(reader["IdIngeniero"]),
                 FechaEvaluacion = Convert.ToDateTime(reader["FechaVisita"]),
                 Estado = reader["EstadoEvaluacion"]?.ToString() ?? "",
-                Decision = reader["DecisionTecnica"]?.ToString() ?? "",
+                Decision = reader["DecisionTecnica"] == DBNull.Value ? null : reader["DecisionTecnica"]?.ToString(),
                 Observaciones = reader["Observaciones"] == DBNull.Value ? null : reader["Observaciones"]?.ToString()
             };
         }

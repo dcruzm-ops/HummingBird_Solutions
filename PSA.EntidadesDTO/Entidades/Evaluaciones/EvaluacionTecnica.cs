@@ -10,7 +10,7 @@ namespace PSA.EntidadesDTO.Entidades.Evaluaciones
 
         public string Estado { get; set; } = "Pendiente";
 
-        public string Decision { get; set; } = "Pendiente"; 
+        public string? Decision { get; set; }
 
         public string? Observaciones { get; set; }
         public decimal? Puntaje { get; set; }

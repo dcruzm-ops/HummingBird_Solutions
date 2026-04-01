@@ -28,6 +28,38 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
+                if (evaluacion.FincaId <= 0)
+                {
+                    return BadRequest(new
+                    {
+                        message = "La finca es requerida."
+                    });
+                }
+
+                if (evaluacion.IngenieroForestalId <= 0)
+                {
+                    return BadRequest(new
+                    {
+                        message = "El ingeniero forestal es requerido."
+                    });
+                }
+
+                if (evaluacion.FechaEvaluacion == default)
+                {
+                    return BadRequest(new
+                    {
+                        message = "La fecha de evaluación es requerida."
+                    });
+                }
+
+                if (string.IsNullOrWhiteSpace(evaluacion.Estado))
+                {
+                    return BadRequest(new
+                    {
+                        message = "El estado de la evaluación es requerido."
+                    });
+                }
+
                 var id = await _evaluacionService.CrearEvaluacionAsync(evaluacion);
 
                 return Ok(new

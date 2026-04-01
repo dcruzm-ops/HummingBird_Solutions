@@ -20,8 +20,29 @@ namespace PSA.AppCore
             if (evaluacion == null)
                 throw new Exception("La evaluación es requerida.");
 
-            evaluacion.Estado = "Pendiente";
-            evaluacion.Decision = "Pendiente";
+            if (evaluacion.FincaId <= 0)
+                throw new Exception("La finca es requerida.");
+
+            if (evaluacion.IngenieroForestalId <= 0)
+                throw new Exception("El ingeniero forestal es requerido.");
+
+            if (evaluacion.FechaEvaluacion == default)
+                throw new Exception("La fecha de evaluación es requerida.");
+
+            if (string.IsNullOrWhiteSpace(evaluacion.Estado))
+                throw new Exception("El estado de la evaluación es requerido.");
+
+            if (evaluacion.Estado == "Finalizada")
+            {
+                if (string.IsNullOrWhiteSpace(evaluacion.Decision))
+                    throw new Exception("La decisión es obligatoria cuando la evaluación está finalizada.");
+
+                evaluacion.Decision = NormalizarDecision(evaluacion.Decision);
+            }
+            else
+            {
+                evaluacion.Decision = null;
+            }
 
             var id = await _evaluacionDAO.CrearEvaluacionAsync(evaluacion);
 
@@ -29,7 +50,19 @@ namespace PSA.AppCore
 
             if (finca != null)
             {
-                finca.EstadoFinca = "EnRevision";
+                finca.EstadoFinca = evaluacion.Estado switch
+                {
+                    "Pendiente" => "Pendiente",
+                    "En proceso" => "EnRevision",
+                    "Finalizada" => evaluacion.Decision switch
+                    {
+                        "Califica" => "Aprobada",
+                        "No Califica" => "Rechazada",
+                        _ => finca.EstadoFinca
+                    },
+                    _ => finca.EstadoFinca
+                };
+
                 _fincaDAO.Update(finca);
             }
 
@@ -52,13 +85,7 @@ namespace PSA.AppCore
             if (evaluacion.Estado == "Finalizada")
                 throw new Exception("La evaluación ya fue finalizada.");
 
-            evaluacion.Decision = decision switch
-            {
-                "Aprobada" => "Califica",
-                "Rechazada" => "No Califica",
-                "Suspendida" => "No Califica",
-                _ => throw new Exception("Decisión inválida")
-            };
+            evaluacion.Decision = NormalizarDecision(decision);
             evaluacion.Estado = "Finalizada";
             evaluacion.Observaciones = observaciones;
 
@@ -72,12 +99,25 @@ namespace PSA.AppCore
                 {
                     "Aprobada" => "Aprobada",
                     "Rechazada" => "Rechazada",
-                    "Suspendida" => "Inactiva", 
+                    "Suspendida" => "Inactiva",
                     _ => "EnRevision"
                 };
 
                 _fincaDAO.Update(finca);
             }
+        }
+
+        private static string NormalizarDecision(string decision)
+        {
+            return decision.Trim() switch
+            {
+                "Aprobada" => "Califica",
+                "Rechazada" => "No Califica",
+                "Suspendida" => "No Califica",
+                "Califica" => "Califica",
+                "No Califica" => "No Califica",
+                _ => throw new Exception("La decisión técnica no es válida.")
+            };
         }
     }
 }
