@@ -14,8 +14,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<IAuthAuditService, AuthAuditService>();
-
 // 🔥 CORS (AQUÍ VA, antes de Build)
 builder.Services.AddCors(options =>
 {
