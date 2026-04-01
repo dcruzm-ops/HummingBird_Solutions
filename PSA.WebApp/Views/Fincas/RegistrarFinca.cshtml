@@ -35,9 +35,7 @@
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label asp-for="Provincia"></label>
-                    <select asp-for="Provincia" id="provinciaSelect" required data-valor-actual="@Model.Provincia">
-                        <option value="">Seleccione una provincia</option>
-                    </select>
+                    <input asp-for="Provincia" id="provinciaInput" required readonly placeholder="Se completa al elegir un punto en el mapa" />
                     <span asp-validation-for="Provincia" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario"></div>
@@ -46,16 +44,12 @@
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label asp-for="Canton"></label>
-                    <select asp-for="Canton" id="cantonSelect" required disabled data-valor-actual="@Model.Canton">
-                        <option value="">Seleccione primero una provincia</option>
-                    </select>
+                    <input asp-for="Canton" id="cantonInput" required readonly placeholder="Se completa al elegir un punto en el mapa" />
                     <span asp-validation-for="Canton" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Distrito"></label>
-                    <select asp-for="Distrito" id="distritoSelect" required disabled data-valor-actual="@Model.Distrito">
-                        <option value="">Seleccione primero un cantón</option>
-                    </select>
+                    <input asp-for="Distrito" id="distritoInput" required readonly placeholder="Se completa al elegir un punto en el mapa" />
                     <span asp-validation-for="Distrito" class="text-danger"></span>
                 </div>
             </div>
@@ -89,7 +83,7 @@
 
             <div class="campo-formulario">
                 <label for="mapaUbicacionFinca">Ubicación en mapa</label>
-                <p class="texto-ayuda">Seleccione provincia, cantón y distrito. Luego haga clic en el mapa para colocar el pin y completar latitud/longitud automáticamente.</p>
+                <p class="texto-ayuda">Haga clic en el mapa para colocar el pin. El sistema completará automáticamente provincia, cantón, distrito, latitud y longitud.</p>
                 <div id="mapaUbicacionFinca" class="mapa-ubicacion-finca" aria-label="Mapa de ubicación de finca"></div>
             </div>
 
