@@ -6,25 +6,18 @@
         <div>
             <span class="eyebrow">Expediente técnico</span>
             <h2>Nueva evaluación técnica</h2>
-            <p>Esqueleto base del formulario técnico para la finca #@ViewBag.FincaId.</p>
+            <p>Formulario para registrar y finalizar evaluación de la finca #@ViewBag.FincaId.</p>
         </div>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion" method="get" asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">
+    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion">
+
         <div class="seccion-formulario">
             <h3>Información de visita</h3>
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label for="fechaVisita">Fecha de visita</label>
-                    <input id="fechaVisita" name="fechaVisita" type="date" />
-                </div>
-                <div class="campo-formulario">
-                    <label for="estadoEvaluacion">Estado de evaluación</label>
-                    <select id="estadoEvaluacion" name="estadoEvaluacion">
-                        <option>Pendiente</option>
-                        <option>En proceso</option>
-                        <option>Finalizada</option>
-                    </select>
+                    <input id="fechaVisita" type="date" required />
                 </div>
             </div>
         </div>
@@ -37,9 +30,11 @@
             </div>
             <div class="campo-formulario">
                 <label for="decisionTecnica">Decisión técnica</label>
-                <select id="decisionTecnica" name="decisionTecnica">
-                    <option>Califica</option>
-                    <option>No califica</option>
+                <select id="decisionTecnica" required>
+                    <option value="">Seleccione una opción</option>
+                    <option value="Aprobada">Aprobada</option>
+                    <option value="Rechazada">Rechazada</option>
+                    <option value="Suspendida">Suspendida</option>
                 </select>
             </div>
         </div>
@@ -50,3 +45,71 @@
         </div>
     </form>
 </section>
+
+<script>
+    document.getElementById("formularioNuevaEvaluacion").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const fincaId = @ViewBag.FincaId;
+        const ingenieroId = 2; 
+        const fecha = document.getElementById("fechaVisita").value;
+        const observaciones = document.getElementById("observacionesTecnicas").value;
+        const decision = document.getElementById("decisionTecnica").value;
+
+        if (!fecha) {
+            alert("Debe seleccionar una fecha de visita.");
+            return;
+        }
+
+        if (!decision) {
+            alert("Debe seleccionar una decisión técnica.");
+            return;
+        }
+
+        try {
+            const crearResponse = await fetch("https://localhost:59665/api/Evaluacion/Crear", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fincaId: fincaId,
+                    ingenieroForestalId: ingenieroId,
+                    fechaEvaluacion: fecha,
+                    observaciones: observaciones
+                })
+            });
+
+            if (!crearResponse.ok) {
+                const errorText = await crearResponse.text();
+                console.error(errorText);
+                alert("Error al crear la evaluación.");
+                return;
+            }
+
+            const crearData = await crearResponse.json();
+            const evaluacionId = crearData.idEvaluacion;
+            const finalizarResponse = await fetch(`https://localhost:59665/api/Evaluacion/Finalizar/${evaluacionId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    decision: decision,
+                    observaciones: observaciones
+                })
+            });
+
+            if (!finalizarResponse.ok) {
+                const errorText = await finalizarResponse.text();
+                console.error(errorText);
+                alert("Error al finalizar la evaluación.");
+                return;
+            }
+
+            alert("Evaluación guardada correctamente ✅");
+
+            window.location.href = "/Evaluaciones/EvaluacionesEnProceso";
+
+        } catch (error) {
+            console.error(error);
+            alert("Error al conectar con el servidor.");
+        }
+    });
+</script>
