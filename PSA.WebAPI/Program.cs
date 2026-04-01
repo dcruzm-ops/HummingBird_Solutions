@@ -14,20 +14,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// 🔥 CORS (AQUÍ VA, antes de Build)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy =>
         {
             policy
-                .WithOrigins("https://localhost:59664") // 👈 tu frontend
+                .WithOrigins("https://localhost:59664")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
 });
 
-// 🔐 Servicios
 builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
 
 builder.Services.AddScoped<DbContextHelper>(sp =>
@@ -41,7 +39,6 @@ builder.Services.AddScoped<DbContextHelper>(sp =>
     return new DbContextHelper(connectionString);
 });
 
-// 📦 DAO
 builder.Services.AddScoped<UsuarioDAO>(sp =>
 {
     var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
@@ -72,9 +69,15 @@ builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
     return new TokenRecuperacionDAO(cs);
 });
 
-// 🧠 SERVICES
+builder.Services.AddScoped<FincaEvidenciaDAO>(sp =>
+{
+    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
+    return new FincaEvidenciaDAO(cs);
+});
+
 builder.Services.AddScoped<FincaService>();
 builder.Services.AddScoped<EvaluacionService>();
+builder.Services.AddScoped<FincaEvidenciaService>();
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
 
@@ -93,7 +96,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// 🔥 ACTIVAR CORS (ORDEN IMPORTA)
+app.UseStaticFiles();
+
 app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
