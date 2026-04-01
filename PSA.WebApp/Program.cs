@@ -6,7 +6,11 @@ using PSA.WebApp.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(_ => "Este campo es obligatorio.");
+    options.ModelBindingMessageProvider.SetMissingBindRequiredValueAccessor(_ => "Este campo es obligatorio.");
+});
 builder.Services.AddHttpClient();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -52,6 +56,19 @@ builder.Services.AddScoped<FincaDAO>(sp =>
     }
 
     return new FincaDAO(connectionString);
+});
+
+builder.Services.AddScoped<AuditoriaLogDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
+    }
+
+    return new AuditoriaLogDAO(connectionString);
 });
 
 builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
