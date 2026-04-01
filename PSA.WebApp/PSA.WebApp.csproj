@@ -30,4 +30,10 @@
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Remove="Pages\**\*.cshtml" />
+    <None Remove="Pages\**\*.cshtml" />
+    <RazorGenerate Remove="Pages\**\*.cshtml" />
+  </ItemGroup>
+
 </Project>
