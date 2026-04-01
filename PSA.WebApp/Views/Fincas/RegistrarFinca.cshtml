@@ -27,6 +27,9 @@
                     <span asp-validation-for="NombreFinca" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario">
+                    <label for="paisInput">País</label>
+                    <input id="paisInput" value="Costa Rica" readonly />
+                    <br />
                     <label asp-for="Provincia"></label>
                     <input asp-for="Provincia" id="provinciaInput" required readonly placeholder="Se completa al elegir un punto en el mapa" />
                     <span asp-validation-for="Provincia" class="text-danger"></span>

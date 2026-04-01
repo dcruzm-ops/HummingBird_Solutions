@@ -8,11 +8,17 @@ document.addEventListener("DOMContentLoaded", function () {
     var textoBoton = formulario.querySelector("[data-loading-texto]");
     var spinnerBoton = formulario.querySelector("[data-loading-spinner]");
 
-    var provinciaInput = document.getElementById("provinciaInput");
-    var cantonInput = document.getElementById("cantonInput");
-    var distritoInput = document.getElementById("distritoInput");
-    var latitudInput = document.getElementById("Latitud");
-    var longitudInput = document.getElementById("Longitud");
+    function obtenerCampo(principalId, alternoNombre) {
+        return document.getElementById(principalId)
+            || formulario.querySelector("[name='" + alternoNombre + "']");
+    }
+
+    var paisInput = document.getElementById("paisInput");
+    var provinciaInput = obtenerCampo("provinciaInput", "Provincia");
+    var cantonInput = obtenerCampo("cantonInput", "Canton");
+    var distritoInput = obtenerCampo("distritoInput", "Distrito");
+    var latitudInput = obtenerCampo("Latitud", "Latitud");
+    var longitudInput = obtenerCampo("Longitud", "Longitud");
     var tieneRiosOQuebradasCheck = document.getElementById("tieneRiosOQuebradas");
     var tieneNacientesCheck = document.getElementById("tieneNacientes");
     var cantidadNacientesInput = document.getElementById("cantidadNacientes");
@@ -84,23 +90,34 @@ document.addEventListener("DOMContentLoaded", function () {
     var marcador = null;
 
     function setCoordenadas(latitud, longitud) {
+        var latitudNormalizada = Number(latitud).toFixed(7);
+        var longitudNormalizada = Number(longitud).toFixed(7);
+
         if (latitudInput) {
-            latitudInput.value = Number(latitud).toFixed(7);
+            latitudInput.value = latitudNormalizada;
+            latitudInput.setAttribute("value", latitudNormalizada);
         }
         if (longitudInput) {
-            longitudInput.value = Number(longitud).toFixed(7);
+            longitudInput.value = longitudNormalizada;
+            longitudInput.setAttribute("value", longitudNormalizada);
         }
     }
 
     function setUbicacionAdministrativa(provincia, canton, distrito) {
+        if (paisInput) {
+            paisInput.value = "Costa Rica";
+        }
         if (provinciaInput) {
             provinciaInput.value = provincia || "";
+            provinciaInput.setCustomValidity("");
         }
         if (cantonInput) {
             cantonInput.value = canton || "";
+            cantonInput.setCustomValidity("");
         }
         if (distritoInput) {
             distritoInput.value = distrito || "";
+            distritoInput.setCustomValidity("");
         }
     }
 
@@ -133,14 +150,42 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(function (resultado) {
                 var address = resultado && resultado.address ? resultado.address : {};
 
-                var provincia = extraerPrimerValorValido(address.state, address.region, address.province);
-                var canton = extraerPrimerValorValido(address.county, address.city, address.town, address.municipality);
-                var distrito = extraerPrimerValorValido(address.city_district, address.suburb, address.village, address.hamlet, address.neighbourhood);
+                var paisCodigo = extraerPrimerValorValido(address.country_code).toLowerCase();
+                if (paisCodigo !== "cr") {
+                    throw new Error("La ubicación seleccionada está fuera de Costa Rica");
+                }
+
+                var provincia = extraerPrimerValorValido(
+                    address.state,
+                    address.region,
+                    address.province,
+                    address.state_district
+                ).replace(/^Provincia de\s+/i, "").trim();
+
+                var canton = extraerPrimerValorValido(
+                    address.county,
+                    address.city,
+                    address.town,
+                    address.municipality,
+                    address.state_district
+                ).replace(/^Cant[oó]n de\s+/i, "").trim();
+
+                var distrito = extraerPrimerValorValido(
+                    address.city_district,
+                    address.suburb,
+                    address.village,
+                    address.hamlet,
+                    address.neighbourhood,
+                    address.quarter
+                ).replace(/^Distrito de\s+/i, "").trim();
 
                 setUbicacionAdministrativa(provincia, canton, distrito);
             })
             .catch(function () {
                 setUbicacionAdministrativa("", "", "");
+                if (provinciaInput) {
+                    provinciaInput.setCustomValidity("Seleccione un punto dentro del territorio de Costa Rica.");
+                }
             });
     }
 
@@ -173,12 +218,19 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        var limitesCostaRica = window.L.latLngBounds(
+            window.L.latLng(8.0, -86.2),
+            window.L.latLng(11.4, -82.3)
+        );
+
         mapa = window.L.map("mapaUbicacionFinca", {
             scrollWheelZoom: false,
             doubleClickZoom: false,
             boxZoom: false,
             keyboard: false,
-            tap: false
+            tap: false,
+            maxBounds: limitesCostaRica,
+            maxBoundsViscosity: 1.0
         }).setView([9.7489, -83.7534], 8);
 
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -187,6 +239,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }).addTo(mapa);
 
         mapa.on("click", function (evento) {
+            if (!limitesCostaRica.contains(evento.latlng)) {
+                return;
+            }
             colocarPin(evento.latlng.lat, evento.latlng.lng, true);
         });
 
@@ -204,6 +259,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     configurarMensajesValidacionEspanol();
+    setUbicacionAdministrativa("", "", "");
     inicializarMapa();
     sincronizarRecursosHidricos();
 
