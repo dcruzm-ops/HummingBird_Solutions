@@ -218,9 +218,17 @@ document.addEventListener("DOMContentLoaded", function () {
         var cantonActual = cantonSelect.dataset.valorActual || cantonSelect.value;
         var distritoActual = distritoSelect.dataset.valorActual || distritoSelect.value;
 
+        if (!provinciaActual) {
+            provinciaActual = "San José";
+        }
+
         if (provinciaActual && ubicacionesCR[provinciaActual]) {
             provinciaSelect.value = provinciaActual;
             cargarCantones(provinciaActual, cantonActual, distritoActual);
+            var centroInicial = centrosProvincia[provinciaActual];
+            if (mapa && centroInicial) {
+                mapa.setView(centroInicial, 11);
+            }
         } else {
             cantonSelect.disabled = true;
             distritoSelect.disabled = true;
@@ -257,19 +265,27 @@ document.addEventListener("DOMContentLoaded", function () {
     var mapaContenedor = document.getElementById("mapaUbicacionFinca");
     var mapa = null;
     var marcador = null;
+    var limitesCostaRica = null;
 
     function inicializarMapa() {
         if (!mapaContenedor || typeof window.L === "undefined") {
             return;
         }
 
+        limitesCostaRica = window.L.latLngBounds(
+            window.L.latLng(8.0, -86.2),
+            window.L.latLng(11.4, -82.3)
+        );
+
         mapa = window.L.map("mapaUbicacionFinca", {
             scrollWheelZoom: false,
             doubleClickZoom: false,
             boxZoom: false,
             keyboard: false,
-            tap: false
-        }).setView([9.7489, -83.7534], 8);
+            tap: false,
+            maxBounds: limitesCostaRica,
+            maxBoundsViscosity: 1.0
+        }).setView([9.9281, -84.0907], 11);
 
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -277,6 +293,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }).addTo(mapa);
 
         mapa.on("click", function (evento) {
+            if (limitesCostaRica && !limitesCostaRica.contains(evento.latlng)) {
+                if (latitudInput) {
+                    latitudInput.setCustomValidity("Seleccione un punto dentro de Costa Rica.");
+                }
+                return;
+            }
+
+            if (latitudInput) {
+                latitudInput.setCustomValidity("");
+            }
             colocarPin(evento.latlng.lat, evento.latlng.lng, true);
         });
 
@@ -287,6 +313,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function colocarPin(latitud, longitud, centrar) {
         if (!mapa) {
+            return;
+        }
+
+        if (limitesCostaRica && !limitesCostaRica.contains(window.L.latLng(latitud, longitud))) {
             return;
         }
 
@@ -427,7 +457,11 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
-        colocarPin(Number(latitudInput.value), Number(longitudInput.value), true);
+        var latInicial = Number(latitudInput.value);
+        var lonInicial = Number(longitudInput.value);
+        if (Number.isFinite(latInicial) && Number.isFinite(lonInicial) && (Math.abs(latInicial) > 0.000001 || Math.abs(lonInicial) > 0.000001)) {
+            colocarPin(latInicial, lonInicial, true);
+        }
     }
 
     formulario.addEventListener("submit", function (evento) {
