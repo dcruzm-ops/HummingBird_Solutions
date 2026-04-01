@@ -1,0 +1,16 @@
+@{
+    var titulo = ViewBag.TituloEstadoVacio as string ?? "Sin información disponible";
+    var descripcion = ViewBag.DescripcionEstadoVacio as string ?? "Cuando existan registros, se mostrarán en esta sección.";
+    var textoBoton = ViewBag.TextoBotonEstadoVacio as string;
+    var urlBoton = ViewBag.UrlBotonEstadoVacio as string;
+}
+<section class="estado-vacio">
+    <div class="estado-vacio__icono">◎</div>
+    <h3>@titulo</h3>
+    <p>@descripcion</p>
+
+    @if (!string.IsNullOrWhiteSpace(textoBoton) && !string.IsNullOrWhiteSpace(urlBoton))
+    {
+        <a class="boton-primario" href="@urlBoton">@textoBoton</a>
+    }
+</section>

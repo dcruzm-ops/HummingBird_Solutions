@@ -1,0 +1,30 @@
+@{
+    ViewData["Title"] = "Reportes";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Consulta analítica</span>
+            <h2>Reportes del sistema</h2>
+            <p>Punto de entrada para reportes operativos, técnicos y administrativos.</p>
+        </div>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <a class="tarjeta-kpi" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">
+            <span class="etiqueta-kpi">Reporte técnico</span>
+            <strong>Disponible</strong>
+            <small>Evaluaciones por período</small>
+        </a>
+        <a class="tarjeta-kpi" asp-controller="Pagos" asp-action="PlanesPago">
+            <span class="etiqueta-kpi">Reporte financiero</span>
+            <strong>Disponible</strong>
+            <small>Cuotas por estado</small>
+        </a>
+        <a class="tarjeta-kpi" asp-controller="Administracion" asp-action="AuditoriaLogs">
+            <span class="etiqueta-kpi">Reporte auditoría</span>
+            <strong>Disponible</strong>
+            <small>Eventos críticos</small>
+        </a>
+    </div>
+</section>

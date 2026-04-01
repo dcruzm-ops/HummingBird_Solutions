@@ -1,0 +1,15 @@
+@{
+    var padreTexto = ViewBag.BreadcrumbPadreTexto as string;
+    var padreUrl = ViewBag.BreadcrumbPadreUrl as string;
+    var actual = ViewBag.BreadcrumbActual as string ?? ViewBag.TituloPagina as string ?? "Página";
+}
+<nav class="migas-pan" aria-label="Migas de pan">
+    <a asp-controller="Home" asp-action="Index">Inicio</a>
+    @if (!string.IsNullOrWhiteSpace(padreTexto) && !string.IsNullOrWhiteSpace(padreUrl))
+    {
+        <span>/</span>
+        <a href="@padreUrl">@padreTexto</a>
+    }
+    <span>/</span>
+    <span class="actual">@actual</span>
+</nav>

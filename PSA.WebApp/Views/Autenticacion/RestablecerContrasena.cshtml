@@ -1,0 +1,43 @@
+@model PSA.EntidadesDTO.DTOs.RestablecerContrasenaDTO
+@{
+    Layout = "~/Views/Shared/_LayoutAutenticacion.cshtml";
+    ViewData["Title"] = "Restablecer contraseña";
+}
+<div class="tarjeta-autenticacion">
+    <div class="cabecera-formulario">
+        <span class="eyebrow">Cambio seguro</span>
+        <h2>Restablecer contraseña</h2>
+        <p>Defina y confirme su nueva contraseña para completar la recuperación.</p>
+    </div>
+
+    <form class="formulario-base" id="formularioRestablecerContrasena" novalidate method="post" asp-controller="Autenticacion" asp-action="RestablecerContrasena">
+        @Html.AntiForgeryToken()
+        <input asp-for="Token" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="campo-formulario">
+            <label asp-for="NuevaContrasena"></label>
+            <input asp-for="NuevaContrasena" type="password" placeholder="Ingrese la nueva contraseña" />
+            <span asp-validation-for="NuevaContrasena" class="text-danger"></span>
+        </div>
+
+        <div class="campo-formulario">
+            <label asp-for="ConfirmarContrasena"></label>
+            <input asp-for="ConfirmarContrasena" type="password" placeholder="Repita la contraseña" />
+            <span asp-validation-for="ConfirmarContrasena" class="text-danger"></span>
+        </div>
+
+        <div class="fila-acciones-formulario">
+            <button type="submit" class="boton-primario boton-bloque">Guardar nueva contraseña</button>
+        </div>
+    </form>
+
+    <div class="pie-formulario">
+        <p>
+            <a asp-controller="Autenticacion" asp-action="IniciarSesion">Volver al inicio de sesión</a>
+        </p>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

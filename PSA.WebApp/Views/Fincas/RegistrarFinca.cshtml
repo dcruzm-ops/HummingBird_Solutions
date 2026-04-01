@@ -1,0 +1,169 @@
+@model PSA.EntidadesDTO.DTOs.RegistrarFincaDTO
+@{
+    ViewData["Title"] = "Registrar finca";
+    var catalogoPendiente = ViewBag.CatalogoPendiente as IEnumerable<string> ?? new[] { "Plana", "Inclinada", "Muy inclinada" };
+    var catalogoVegetacion = ViewBag.CatalogoVegetacion as IEnumerable<string> ?? new[] { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
+    var catalogoUsoSuelo = ViewBag.CatalogoUsoSuelo as IEnumerable<string> ?? new[] { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" };
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Nuevo registro</span>
+            <h2>Formulario de finca</h2>
+            <p>Complete los datos para registrar una finca en el sistema PSA Costa Rica.</p>
+        </div>
+    </div>
+
+    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="post" asp-controller="Fincas" asp-action="RegistrarFinca" data-omitir-trobber-global>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="seccion-formulario">
+            <h3>Datos generales</h3>
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="NombreFinca"></label>
+                    <input asp-for="NombreFinca" placeholder="Nombre de la finca" required />
+                    <span asp-validation-for="NombreFinca" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Provincia"></label>
+                    <select asp-for="Provincia" id="provinciaSelect" required data-valor-actual="@Model.Provincia">
+                        <option value="">Seleccione una provincia</option>
+                    </select>
+                    <span asp-validation-for="Provincia" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Canton"></label>
+                    <select asp-for="Canton" id="cantonSelect" required disabled data-valor-actual="@Model.Canton">
+                        <option value="">Seleccione primero una provincia</option>
+                    </select>
+                    <span asp-validation-for="Canton" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Distrito"></label>
+                    <select asp-for="Distrito" id="distritoSelect" required disabled data-valor-actual="@Model.Distrito">
+                        <option value="">Seleccione primero un cantón</option>
+                    </select>
+                    <span asp-validation-for="Distrito" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <label asp-for="DireccionExacta"></label>
+                <textarea asp-for="DireccionExacta" rows="3" placeholder="Dirección exacta (opcional)"></textarea>
+                <span asp-validation-for="DireccionExacta" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="seccion-formulario">
+            <h3>Ubicación y características</h3>
+            <div class="grid-tres-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Latitud"></label>
+                    <input asp-for="Latitud" type="number" step="any" required readonly />
+                    <span asp-validation-for="Latitud" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Longitud"></label>
+                    <input asp-for="Longitud" type="number" step="any" required readonly />
+                    <span asp-validation-for="Longitud" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Hectareas"></label>
+                    <input asp-for="Hectareas" type="number" step="0.01" required />
+                    <span asp-validation-for="Hectareas" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="campo-formulario">
+                <label for="mapaUbicacionFinca">Ubicación en mapa</label>
+                <p class="texto-ayuda">Seleccione provincia, cantón y distrito. Luego haga clic en el mapa para colocar el pin y completar latitud/longitud automáticamente.</p>
+                <div id="mapaUbicacionFinca" class="mapa-ubicacion-finca" aria-label="Mapa de ubicación de finca"></div>
+            </div>
+
+            <div class="grid-tres-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Vegetacion"></label>
+                    <select asp-for="Vegetacion" id="vegetacionSelect" required>
+                        @foreach (var opcion in catalogoVegetacion)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Vegetacion" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="UsoSuelo"></label>
+                    <select asp-for="UsoSuelo" id="usoSueloSelect" required>
+                        @foreach (var opcion in catalogoUsoSuelo)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
+                    </select>
+                    <span asp-validation-for="UsoSuelo" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Pendiente"></label>
+                    <select asp-for="Pendiente" required>
+                        @foreach (var opcion in catalogoPendiente)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Pendiente" class="text-danger"></span>
+                </div>
+            </div>
+
+            <input asp-for="TieneRecursosHidricos" type="hidden" id="tieneRecursosHidricos" />
+
+            <div class="grid-tres-columnas">
+                <div class="control-check">
+                    <input asp-for="TieneRiosOQuebradas" type="checkbox" id="tieneRiosOQuebradas" />
+                    <label asp-for="TieneRiosOQuebradas">Sí tiene ríos o quebradas</label>
+                </div>
+                <div class="control-check">
+                    <input asp-for="TieneNacientes" type="checkbox" id="tieneNacientes" />
+                    <label asp-for="TieneNacientes">Sí tiene nacientes</label>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="CantidadNacientes">Cuántas nacientes tiene</label>
+                    <input asp-for="CantidadNacientes" type="number" min="0" step="1" id="cantidadNacientes" />
+                    <span asp-validation-for="CantidadNacientes" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="fila-acciones-formulario">
+            <a class="boton-secundario" asp-controller="Fincas" asp-action="MisFincas">Cancelar</a>
+            <button type="submit" class="boton-primario" data-loading-button>
+                <span class="spinner-border spinner-border-sm d-none me-2" aria-hidden="true" data-loading-spinner></span>
+                <span data-loading-texto>Guardar finca</span>
+            </button>
+        </div>
+    </form>
+</section>
+
+@section Scripts{
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="~/js/registro-finca.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .mapa-ubicacion-finca {
+            width: 100%;
+            min-height: 360px;
+            border: 1px solid var(--color-borde-suave);
+            border-radius: var(--radio-md);
+            overflow: hidden;
+            box-shadow: var(--sombra-sm);
+        }
+
+    </style>
+}
