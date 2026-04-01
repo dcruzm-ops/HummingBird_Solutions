@@ -10,6 +10,7 @@
 
 	<ItemGroup>
 		<Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+		<Compile Include="DAO\AuditoriaLogDAO.cs" />
 		<Compile Include="DbContextHelper.cs" />
 		<Compile Include="DAO\FincaDAO.cs" />
 		<Compile Include="DAO\RecuperacionContrasenaDAO.cs" />

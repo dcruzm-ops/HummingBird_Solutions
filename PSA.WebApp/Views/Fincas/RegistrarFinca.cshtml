@@ -27,12 +27,20 @@
                     <span asp-validation-for="NombreFinca" class="text-danger"></span>
                 </div>
                 <div class="campo-formulario">
+                    <label for="paisSeleccionado">País</label>
+                    <input id="paisSeleccionado" value="Costa Rica" readonly />
+                </div>
+            </div>
+
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
                     <label asp-for="Provincia"></label>
                     <select asp-for="Provincia" id="provinciaSelect" required data-valor-actual="@Model.Provincia">
                         <option value="">Seleccione una provincia</option>
                     </select>
                     <span asp-validation-for="Provincia" class="text-danger"></span>
                 </div>
+                <div class="campo-formulario"></div>
             </div>
 
             <div class="grid-dos-columnas">

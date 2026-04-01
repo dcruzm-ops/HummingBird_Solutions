@@ -1,17 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<RootNamespace>PSA.WebAPI</RootNamespace>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PSA.WebAPI</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
-		<ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
-		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
-		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
-	</ItemGroup>
+  <ItemGroup>
+    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="Controllers\AutenticacionController.cs" />
+    <Compile Include="Controllers\BaseApiController.cs" />
+    <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\FincaController.cs" />
+    <Compile Include="Controllers\FincasController.cs" />
+    <Compile Include="Controllers\HealthController.cs" />
+    <Compile Include="Controllers\Middleware\ExceptionMiddleware.cs" />
+    <Compile Include="Controllers\Models\ApiResponse.cs" />
+    <Compile Include="Controllers\RecuperacionContrasenaController.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Services\CorreoService.cs" />
+    <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
+    <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
+    <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
+  </ItemGroup>
 
 </Project>
