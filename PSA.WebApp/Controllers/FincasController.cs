@@ -125,6 +125,22 @@ namespace PSA.WebApp.Controllers
             return RedirectToAction(nameof(MisFincas));
         }
 
+                        var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
+                        TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
+                        return RedirectToAction(nameof(MisFincas));
+                    }
+                    catch
+                    {
+                        // Se intenta siguiente URL y luego fallback local
+                    }
+                }
+            }
+
+            var idFincaLocal = await _fincaDAO.CrearFincaAsync(dto);
+            TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaLocal, true);
+            return RedirectToAction(nameof(MisFincas));
+        }
+
         // 🔥 NUEVO: subir archivos
         private async Task SubirEvidenciasAsync(
             HttpClient client,
@@ -153,21 +169,7 @@ namespace PSA.WebApp.Controllers
             await client.PostAsync($"{baseUrl}/api/FincaEvidencias/subir", form);
         }
 
-        private async Task<int> ObtenerIdFincaDesdeRespuestaAsync(HttpResponseMessage response)
-        {
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var doc = await JsonDocument.ParseAsync(stream);
-
-            if (doc.RootElement.TryGetProperty("IdFinca", out var id))
-            {
-                return id.GetInt32();
-            }
-
-            return 0;
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> MisFincas()
+        private async Task<List<FincaResumenDTO>> ObtenerFincasDesdeApiConFallbackAsync(int idPropietario)
         {
             var id = ObtenerIdUsuarioSesion();
 
