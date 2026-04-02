@@ -70,16 +70,16 @@
         <section class="tarjeta-panel">
             <div class="cabecera-bloque"><h3>Evidencias adjuntas</h3></div>
             @{
-                var evidenciasTabla = new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+                var evidencias = new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
                 if (ViewBag.EvidenciasFinca is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDto)
                 {
-                    evidenciasTabla.AddRange(listaDto);
+                    evidencias.AddRange(listaDto);
                 }
                 else if (ViewBag.EvidenciasFinca is IEnumerable<string> listaTexto)
                 {
                     foreach (var texto in listaTexto)
                     {
-                        evidenciasTabla.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
+                        evidencias.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
                         {
                             NombreArchivo = texto,
                             TipoArchivo = "No especificado",
@@ -90,14 +90,14 @@
                 }
             }
 
-            @if (evidenciasTabla.Count > 0)
+            @if (evidencias.Count > 0)
             {
                 <table class="tabla-base">
                     <thead>
                         <tr><th>Archivo</th><th>Tipo</th><th>Fecha</th><th>Acción</th></tr>
                     </thead>
                     <tbody>
-                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidenciasTabla)
+                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidencias)
                         {
                             <tr>
                                 <td>@evidencia.NombreArchivo</td>
