@@ -11,7 +11,6 @@ Console.WriteLine("PSAConnection: " + builder.Configuration["ConnectionStrings:P
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
 
