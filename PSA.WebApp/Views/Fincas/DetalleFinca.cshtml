@@ -44,79 +44,39 @@
             </div>
 
             <div class="grid-dos-columnas">
-                <div class="campo-detalle">
-                    <span class="etiqueta">Propietario</span>
-                    <strong>@Model.PropietarioNombre</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Estado de finca</span>
-                    <strong>@Model.EstadoFinca</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Provincia</span>
-                    <strong>@Model.Provincia</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Cantón</span>
-                    <strong>@Model.Canton</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Distrito</span>
-                    <strong>@Model.Distrito</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Hectáreas</span>
-                    <strong>@Model.Hectareas</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Vegetación</span>
-                    <strong>@Model.Vegetacion</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Uso de suelo</span>
-                    <strong>@Model.UsoSuelo</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Pendiente</span>
-                    <strong>@Model.Pendiente</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Estado de evaluación</span>
-                    <strong>@Model.EstadoEvaluacion</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Fecha de registro</span>
-                    <strong>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Última actualización</span>
-                    <strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong>
-                </div>
+                <div class="campo-detalle"><span class="etiqueta">Propietario</span><strong>@Model.PropietarioNombre</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Estado de finca</span><strong>@Model.EstadoFinca</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Provincia</span><strong>@Model.Provincia</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Cantón</span><strong>@Model.Canton</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Distrito</span><strong>@Model.Distrito</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Hectáreas</span><strong>@Model.Hectareas</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Vegetación</span><strong>@Model.Vegetacion</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Uso de suelo</span><strong>@Model.UsoSuelo</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Pendiente</span><strong>@Model.Pendiente</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Estado de evaluación</span><strong>@Model.EstadoEvaluacion</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Fecha de registro</span><strong>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Última actualización</span><strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong></div>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(Model.DireccionExacta))
-            {
-                <div class="campo-detalle campo-detalle-ancho">
-                    <span class="etiqueta">Dirección exacta</span>
-                    <strong>@Model.DireccionExacta</strong>
-                </div>
-            }
-        </section>
+    <section class="tarjeta-panel mapa-detalle-finca-contenedor mapa-detalle-finca-contenedor--independiente">
+        <div class="cabecera-bloque">
+            <h3>Ubicación registrada</h3>
+        </div>
+        <p class="texto-ayuda">
+            Punto geográfico definido para la finca según su latitud y longitud.
+        </p>
+        <div id="mapaDetalleFinca"
+             class="mapa-detalle-finca"
+             data-latitud="@latitudData"
+             data-longitud="@longitudData"
+             data-nombre-finca="@Model.NombreFinca"
+             aria-label="Mapa de ubicación de la finca">
+        </div>
+    </section>
 
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
-                <h3>Ubicación</h3>
+                <h3>Evidencias</h3>
             </div>
 
             <div class="grid-dos-columnas">
@@ -130,13 +90,19 @@
                     <strong>@longitudData</strong>
                 </div>
             </div>
+            @if (evidencias.Any())
+            {
+                <ul class="lista-timeline">
+                    @foreach (var evidencia in evidencias)
+                    {
+                        <li>@evidencia</li>
+                    }
+                </ul>
+            }
         </section>
 
         <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Estado del expediente</h3>
-            </div>
-
+            <div class="cabecera-bloque"><h3>Estado del expediente</h3></div>
             <div class="grid-dos-columnas">
                 <div class="campo-detalle">
                     <span class="etiqueta">Cuenta bancaria</span>
@@ -156,9 +122,7 @@
         </section>
 
         <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Evidencias adjuntas</h3>
-            </div>
+            <div class="cabecera-bloque"><h3>Evidencias adjuntas</h3></div>
 
             @if (evidencias.Count > 0)
             {
@@ -188,9 +152,15 @@
                     </tbody>
                 </table>
             }
-            else
-            {
-                <p>No hay evidencias registradas.</p>
+
+            var latitudTexto = (mapaElemento.dataset.latitud || "").replace(",", ".").trim();
+            var longitudTexto = (mapaElemento.dataset.longitud || "").replace(",", ".").trim();
+            var latitud = parseFloat(latitudTexto);
+            var longitud = parseFloat(longitudTexto);
+
+            if (!Number.isFinite(latitud) || !Number.isFinite(longitud) || (latitud === 0 && longitud === 0)) {
+                mapaElemento.innerHTML = "<p class='texto-ayuda p-3'>No hay coordenadas válidas para mostrar el mapa.</p>";
+                return;
             }
         </section>
 

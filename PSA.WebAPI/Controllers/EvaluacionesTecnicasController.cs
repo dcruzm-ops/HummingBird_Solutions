@@ -69,5 +69,25 @@ namespace PSA.WebAPI.Controllers
 
             return Ok(new { Mensaje = "Estado de evaluación actualizado correctamente." });
         }
+
+        [HttpGet("reportes")]
+        public async Task<IActionResult> ObtenerReporte(
+            [FromQuery] int? anio = null,
+            [FromQuery] int? mes = null,
+            [FromQuery] string? estadoEvaluacion = null,
+            [FromQuery] string? decisionTecnica = null,
+            [FromQuery] int? idIngeniero = null)
+        {
+            var reporte = await _evaluacionTecnicaManager.ObtenerReporteEvaluacionesAsync(new FiltroReporteEvaluacionesDTO
+            {
+                Anio = anio,
+                Mes = mes,
+                EstadoEvaluacion = estadoEvaluacion,
+                DecisionTecnica = decisionTecnica,
+                IdIngeniero = idIngeniero
+            });
+
+            return Ok(reporte);
+        }
     }
 }
