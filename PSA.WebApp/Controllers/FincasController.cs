@@ -109,6 +109,22 @@ namespace PSA.WebApp.Controllers
             return RedirectToAction(nameof(MisFincas));
         }
 
+                        var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
+                        TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
+                        return RedirectToAction(nameof(MisFincas));
+                    }
+                    catch
+                    {
+                        // Se intenta siguiente URL y luego fallback local
+                    }
+                }
+            }
+
+            var idFincaLocal = await _fincaDAO.CrearFincaAsync(dto);
+            TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaLocal, true);
+            return RedirectToAction(nameof(MisFincas));
+        }
+
         // 🔥 NUEVO: subir archivos
         private async Task SubirEvidenciasAsync(
             HttpClient client,

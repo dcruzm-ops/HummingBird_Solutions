@@ -45,24 +45,6 @@ builder.Services.AddScoped<DbContextHelper>(sp =>
 
 builder.Services.AddScoped<UsuarioDAO>(sp =>
 {
-    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
-    return new UsuarioDAO(cs);
-});
-
-builder.Services.AddScoped<FincaDAO>(sp =>
-{
-    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
-    return new FincaDAO(cs);
-});
-
-builder.Services.AddScoped<EvaluacionDAO>(sp =>
-{
-    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
-    return new EvaluacionDAO(cs);
-});
-
-builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
-{
     var configuration = sp.GetRequiredService<IConfiguration>();
     return new UsuarioDAO(ObtenerCadenaConexion(configuration));
 });
