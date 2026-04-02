@@ -104,5 +104,27 @@ namespace PSA.AppCore.Managers
 
             return _evaluacionTecnicaDAO.ActualizarEstadoEvaluacionAsync(idEvaluacion, nuevoEstado);
         }
+
+        public Task<ReporteEvaluacionesDTO> ObtenerReporteEvaluacionesAsync(FiltroReporteEvaluacionesDTO filtro)
+        {
+            filtro ??= new FiltroReporteEvaluacionesDTO();
+
+            if (filtro.Anio.HasValue && (filtro.Anio < 2000 || filtro.Anio > 2100))
+            {
+                throw new InvalidOperationException("El año del reporte no es válido.");
+            }
+
+            if (filtro.Mes.HasValue && (filtro.Mes < 1 || filtro.Mes > 12))
+            {
+                throw new InvalidOperationException("El mes del reporte no es válido.");
+            }
+
+            if (filtro.Anio == null && filtro.Mes.HasValue)
+            {
+                throw new InvalidOperationException("Para filtrar por mes debe indicar también el año.");
+            }
+
+            return _evaluacionTecnicaDAO.ObtenerReporteEvaluacionesAsync(filtro);
+        }
     }
 }
