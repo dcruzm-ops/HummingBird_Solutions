@@ -1,0 +1,49 @@
+@model PSA.EntidadesDTO.DTOs.Evaluaciones.DetalleFincaParaEvaluacionDTO
+@{
+    ViewData["Title"] = "Detalle de evaluación";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Evaluación #@Model.IdEvaluacion</span>
+            <h2>@Model.NombreFinca</h2>
+            <p>@Model.Provincia, @Model.Canton, @Model.Distrito</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="FincasIngeniero">Volver</a>
+    </div>
+
+    <div class="grid-dos-paneles">
+        <section class="tarjeta-panel">
+            <h3>Datos originales</h3>
+            <ul class="lista-timeline">
+                <li>Hectáreas: @Model.Hectareas</li>
+                <li>Vegetación: @Model.Vegetacion</li>
+                <li>Uso de suelo: @Model.UsoSuelo</li>
+                <li>Pendiente: @Model.Pendiente</li>
+                <li>Recursos hídricos: @(Model.TieneRecursosHidricos ? "Sí" : "No")</li>
+                <li>Estado evaluación: @Model.EstadoEvaluacion</li>
+            </ul>
+        </section>
+
+        <section class="tarjeta-panel">
+            <h3>Resultado técnico</h3>
+            <ul class="lista-timeline">
+                <li>Fecha visita: @(Model.FechaVisita?.ToString("dd/MM/yyyy") ?? "N/A")</li>
+                <li>Fecha decisión: @(Model.FechaDecision?.ToString("dd/MM/yyyy") ?? "N/A")</li>
+                <li>Decisión técnica: @(string.IsNullOrWhiteSpace(Model.DecisionTecnica) ? "N/A" : Model.DecisionTecnica)</li>
+                <li>Observaciones: @(string.IsNullOrWhiteSpace(Model.Observaciones) ? "N/A" : Model.Observaciones)</li>
+            </ul>
+        </section>
+    </div>
+
+    <section class="tarjeta-panel">
+        <h3>Ajustes registrados</h3>
+        <ul class="lista-timeline">
+            <li>Hectáreas ajustadas: @(Model.HectareasAjustadas?.ToString("N2") ?? "Sin ajuste")</li>
+            <li>Vegetación ajustada: @(string.IsNullOrWhiteSpace(Model.VegetacionAjustada) ? "Sin ajuste" : Model.VegetacionAjustada)</li>
+            <li>Uso de suelo ajustado: @(string.IsNullOrWhiteSpace(Model.UsoSueloAjustado) ? "Sin ajuste" : Model.UsoSueloAjustado)</li>
+            <li>Pendiente ajustada: @(string.IsNullOrWhiteSpace(Model.PendienteAjustada) ? "Sin ajuste" : Model.PendienteAjustada)</li>
+            <li>Recursos hídricos ajustados: @(Model.RecursosHidricosAjustado.HasValue ? (Model.RecursosHidricosAjustado.Value ? "Sí" : "No") : "Sin ajuste")</li>
+        </ul>
+    </section>
+</section>
