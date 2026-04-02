@@ -16,7 +16,7 @@ namespace PSA.DataAccess.DAO
         {
             const string sql = @"
 INSERT INTO EvaluacionesTecnicas (IdFinca, IdIngeniero, EstadoEvaluacion)
-SELECT @IdFinca, 0, @EstadoPendiente
+SELECT @IdFinca, NULL, @EstadoPendiente
 WHERE NOT EXISTS (
     SELECT 1
     FROM EvaluacionesTecnicas
@@ -65,7 +65,7 @@ ORDER BY e.IdEvaluacion ASC;";
                 {
                     IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
                     IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
-                    IdIngeniero = reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
+                    IdIngeniero = reader["IdIngeniero"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
                     EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
                     NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
                     Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
@@ -117,7 +117,7 @@ WHERE e.IdEvaluacion = @IdEvaluacion;";
             {
                 IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
                 IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
-                IdIngeniero = reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
+                IdIngeniero = reader["IdIngeniero"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
                 EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
                 IdPropietario = reader.GetInt32(reader.GetOrdinal("IdPropietario")),
                 NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
