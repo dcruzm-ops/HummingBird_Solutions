@@ -28,15 +28,19 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
 
-builder.Services.AddScoped<DbContextHelper>(sp =>
+static string ObtenerCadenaConexion(IConfiguration configuration)
 {
-    var configuration = sp.GetRequiredService<IConfiguration>();
     var connectionString = configuration.GetConnectionString("PSAConnection");
-
     if (string.IsNullOrWhiteSpace(connectionString))
         throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
 
-    return new DbContextHelper(connectionString);
+    return connectionString;
+}
+
+builder.Services.AddScoped<DbContextHelper>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    return new DbContextHelper(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<UsuarioDAO>(sp =>
@@ -60,45 +64,25 @@ builder.Services.AddScoped<EvaluacionDAO>(sp =>
 builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
-
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
-    }
-
-    return new EvaluacionTecnicaDAO(connectionString);
+    return new UsuarioDAO(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
+    return new FincaDAO(ObtenerCadenaConexion(configuration));
+});
 
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
-    }
-
-    return new EvaluacionTecnicaDAO(connectionString);
+builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    return new EvaluacionTecnicaDAO(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
 {
-    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
-    return new RecuperacionContrasenaDAO(cs);
-});
-
-builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
-{
-    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
-    return new TokenRecuperacionDAO(cs);
-});
-
-builder.Services.AddScoped<FincaEvidenciaDAO>(sp =>
-{
-    var cs = sp.GetRequiredService<IConfiguration>().GetConnectionString("PSAConnection");
-    return new FincaEvidenciaDAO(cs);
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    return new RecuperacionContrasenaDAO(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<FincaService>();
