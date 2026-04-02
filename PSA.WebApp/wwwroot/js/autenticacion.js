@@ -51,10 +51,25 @@ document.addEventListener("DOMContentLoaded", function () {
             window.psa.marcarCamposRequeridos(formulario);
         }
 
-        formulario.addEventListener("submit", function () {
-            if (!formulario.checkValidity()) {
+        formulario.addEventListener("submit", function (evento) {
+            var formularioEsValido = formulario.checkValidity();
+
+            if (window.jQuery && window.jQuery.validator && typeof window.jQuery(formulario).valid === "function") {
+                formularioEsValido = window.jQuery(formulario).valid();
+            }
+
+            if (!formularioEsValido) {
+                evento.preventDefault();
+                ocultarTrobber();
                 return;
             }
+
+            if (formulario.dataset.enviando === "true") {
+                evento.preventDefault();
+                return;
+            }
+
+            formulario.dataset.enviando = "true";
 
             var boton = formulario.querySelector("[data-loading-button]");
             var texto = formulario.querySelector("[data-loading-texto]");
