@@ -4,6 +4,9 @@
     ViewData["Title"] = "Detalle de finca";
     var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
     var cantidadEvidencias = Model.CantidadEvidencias < 0 ? 0 : Model.CantidadEvidencias;
+    var evidencias = System.Linq.Enumerable.Range(1, cantidadEvidencias)
+        .Select(numero => $"Evidencia {numero}")
+        .ToList();
     var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
     var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
@@ -114,6 +117,15 @@
                 </p>
                 <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
             </div>
+            @if (evidencias.Any())
+            {
+                <ul class="lista-timeline">
+                    @foreach (var evidencia in evidencias)
+                    {
+                        <li>@evidencia</li>
+                    }
+                </ul>
+            }
         </section>
 
         <!-- Estado -->
