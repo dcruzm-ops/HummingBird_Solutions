@@ -2,8 +2,11 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-    var evidencias = ViewBag.EvidenciasFinca as List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>
-        ?? new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+
+    var latitudData = Model.Latitud;
+    var longitudData = Model.Longitud;
+    var cantidadEvidencias = Model.CantidadEvidencias;
+
 }
 
 <section class="seccion-pagina">
@@ -16,8 +19,6 @@
     </div>
 
     <div class="grid-detalle-finca">
-
-        <!-- Información general -->
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
                 <h3>Información general</h3>
@@ -94,7 +95,6 @@
             }
         </section>
 
-        <!-- Ubicación -->
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
                 <h3>Ubicación</h3>
@@ -103,17 +103,16 @@
             <div class="grid-dos-columnas">
                 <div class="campo-detalle">
                     <span class="etiqueta">Latitud</span>
-                    <strong>@Model.Latitud</strong>
+                    <strong>@latitudData</strong>
                 </div>
 
                 <div class="campo-detalle">
                     <span class="etiqueta">Longitud</span>
-                    <strong>@Model.Longitud</strong>
+                    <strong>@longitudData</strong>
                 </div>
             </div>
         </section>
 
-        <!-- Estado -->
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
                 <h3>Estado del expediente</h3>
@@ -132,18 +131,39 @@
 
                 <div class="campo-detalle">
                     <span class="etiqueta">Cantidad de evidencias</span>
-                    <strong>@Model.CantidadEvidencias</strong>
+                    <strong>@cantidadEvidencias</strong>
                 </div>
             </div>
         </section>
 
-        <!-- Evidencias -->
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
                 <h3>Evidencias adjuntas</h3>
             </div>
 
-            @if (evidencias.Any())
+            @{
+                List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> evidenciasTabla = new();
+
+                if (ViewBag.EvidenciasFinca is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDtoTabla)
+                {
+                    evidenciasTabla.AddRange(listaDtoTabla);
+                }
+                else if (ViewBag.EvidenciasFinca is IEnumerable<string> listaTextoTabla)
+                {
+                    foreach (var textoTabla in listaTextoTabla)
+                    {
+                        evidenciasTabla.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
+                        {
+                            NombreArchivo = textoTabla,
+                            TipoArchivo = "No especificado",
+                            FechaCarga = DateTime.MinValue,
+                            UrlDescarga = "#"
+                        });
+                    }
+                }
+            }
+
+            @if (evidenciasTabla.Count > 0)
             {
                 <table class="tabla-base">
                     <thead>
@@ -155,14 +175,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var e in evidencias)
+                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidenciasTabla)
                         {
                             <tr>
-                                <td>@e.NombreArchivo</td>
-                                <td>@e.TipoArchivo</td>
-                                <td>@e.FechaCarga.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@evidencia.NombreArchivo</td>
+                                <td>@evidencia.TipoArchivo</td>
+                                <td>@(evidencia.FechaCarga == DateTime.MinValue ? "N/D" : evidencia.FechaCarga.ToString("dd/MM/yyyy HH:mm"))</td>
                                 <td>
-                                    <a href="@e.UrlDescarga" target="_blank" class="boton-secundario boton-sm">
+                                    <a href="@evidencia.UrlDescarga" target="_blank" class="boton-secundario boton-sm">
                                         Ver
                                     </a>
                                 </td>
@@ -180,6 +200,5 @@
         <div class="fila-acciones-formulario">
             <a class="boton-secundario" asp-action="MisFincas">Volver</a>
         </div>
-
     </div>
 </section>
