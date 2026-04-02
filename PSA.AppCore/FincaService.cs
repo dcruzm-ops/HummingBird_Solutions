@@ -9,7 +9,7 @@ namespace PSA.AppCore
 
         public FincaService(FincaDAO fincaDAO)
         {
-            _fincaDAO = fincaDAO;
+            _fincaDAO = fincaDAO ?? throw new ArgumentNullException(nameof(fincaDAO));
         }
 
         public List<FincaDTO> RetrieveAll()
@@ -28,8 +28,9 @@ namespace PSA.AppCore
         public void Create(FincaDTO finca)
         {
             ValidarFinca(finca);
-            finca.FechaRegistro = DateTime.Now;
-            finca.FechaActualizacion = DateTime.Now;
+            var now = DateTime.UtcNow;
+            finca.FechaRegistro = now;
+            finca.FechaActualizacion = now;
             _fincaDAO.Create(finca);
         }
 
@@ -39,7 +40,7 @@ namespace PSA.AppCore
                 throw new Exception("El id de la finca es obligatorio para actualizar.");
 
             ValidarFinca(finca);
-            finca.FechaActualizacion = DateTime.Now;
+            finca.FechaActualizacion = DateTime.UtcNow;
             _fincaDAO.Update(finca);
         }
 
@@ -55,6 +56,15 @@ namespace PSA.AppCore
         {
             if (finca == null)
                 throw new Exception("La finca es requerida.");
+
+            finca.NombreFinca = finca.NombreFinca?.Trim() ?? string.Empty;
+            finca.Provincia = finca.Provincia?.Trim() ?? string.Empty;
+            finca.Canton = finca.Canton?.Trim() ?? string.Empty;
+            finca.Distrito = finca.Distrito?.Trim() ?? string.Empty;
+            finca.Vegetacion = finca.Vegetacion?.Trim() ?? string.Empty;
+            finca.UsoSuelo = finca.UsoSuelo?.Trim() ?? string.Empty;
+            finca.Pendiente = finca.Pendiente?.Trim() ?? string.Empty;
+            finca.EstadoFinca = finca.EstadoFinca?.Trim() ?? string.Empty;
 
             if (finca.IdPropietario <= 0)
                 throw new Exception("El propietario es obligatorio.");
@@ -91,6 +101,12 @@ namespace PSA.AppCore
 
             if (finca.Longitud < -180 || finca.Longitud > 180)
                 throw new Exception("La longitud debe estar entre -180 y 180.");
+
+            if (finca.FechaActualizacion != default && finca.FechaRegistro != default &&
+                finca.FechaActualizacion < finca.FechaRegistro)
+            {
+                throw new Exception("La fecha de actualización no puede ser menor a la fecha de registro.");
+            }
         }
     }
 }
