@@ -2,10 +2,13 @@
 {
     public class FincaEvidenciaDTO
     {
-        public int Id { get; set; }
+        public int IdEvidencia { get; set; }
         public int FincaId { get; set; }
-        public string UrlArchivo { get; set; } = string.Empty;
+        public string NombreArchivo { get; set; } = string.Empty;
+        public string RutaArchivo { get; set; } = string.Empty;
         public string TipoArchivo { get; set; } = string.Empty;
-        public string? Descripcion { get; set; }
+        public DateTime FechaCarga { get; set; }
+        public int CargadoPor { get; set; }
+        public string UrlDescarga { get; set; } = string.Empty;
     }
 }
