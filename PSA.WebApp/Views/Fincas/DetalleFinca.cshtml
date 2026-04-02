@@ -8,7 +8,7 @@
     var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
-<section class="seccion-pagina propietario-detalle-finca">
+<section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
             <span class="eyebrow">Expediente de finca</span>
@@ -53,6 +53,15 @@
                 <div><strong>Latitud</strong><div>@Model.Latitud</div></div>
                 <div><strong>Longitud</strong><div>@Model.Longitud</div></div>
             </div>
+            @if (evidencias.Any())
+            {
+                <ul class="lista-timeline">
+                    @foreach (var evidencia in evidencias)
+                    {
+                        <li>@evidencia</li>
+                    }
+                </ul>
+            }
         </section>
 
         <section class="tarjeta-panel tarjeta-panel-interna">
