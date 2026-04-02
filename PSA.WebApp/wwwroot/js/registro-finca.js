@@ -463,6 +463,35 @@ document.addEventListener("DOMContentLoaded", function () {
         return null;
     }
 
+    function inferirCantonYDistrito(provincia, address) {
+        if (!provincia || !ubicacionesCR[provincia]) {
+            return { canton: null, distrito: null };
+        }
+
+        var canton = obtenerCantonDesdeAddress(address, provincia);
+        var distrito = obtenerDistritoDesdeAddress(address, provincia, canton);
+        if (canton && distrito) {
+            return { canton: canton, distrito: distrito };
+        }
+
+        var candidatosDistrito = [address.suburb, address.village, address.city_district, address.hamlet, address.neighbourhood];
+        var cantones = Object.keys(ubicacionesCR[provincia]);
+
+        for (var i = 0; i < cantones.length; i++) {
+            var cantonActual = cantones[i];
+            var distritos = ubicacionesCR[provincia][cantonActual] || [];
+
+            for (var j = 0; j < candidatosDistrito.length; j++) {
+                var distritoMatch = buscarCoincidencia(distritos, candidatosDistrito[j]);
+                if (distritoMatch) {
+                    return { canton: cantonActual, distrito: distritoMatch };
+                }
+            }
+        }
+
+        return { canton: canton, distrito: distrito };
+    }
+
     function autocompletarUbicacionDesdeCoordenadas(latitud, longitud) {
         var url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + encodeURIComponent(latitud) +
             "&lon=" + encodeURIComponent(longitud) + "&zoom=18&addressdetails=1&accept-language=es";
@@ -489,8 +518,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
-                var canton = obtenerCantonDesdeAddress(address, provincia);
-                var distrito = obtenerDistritoDesdeAddress(address, provincia, canton);
+                var ubicacionInferida = inferirCantonYDistrito(provincia, address);
+                var canton = ubicacionInferida.canton;
+                var distrito = ubicacionInferida.distrito;
 
                 actualizandoUbicacionDesdeMapa = true;
                 provinciaSelect.value = provincia;
@@ -579,7 +609,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
-        colocarPin(Number(latitudInput.value), Number(longitudInput.value), true);
+        var latitudInicial = Number(latitudInput.value);
+        var longitudInicial = Number(longitudInput.value);
+        var coordenadasInicialesValidas = Number.isFinite(latitudInicial)
+            && Number.isFinite(longitudInicial)
+            && latitudInicial >= -90 && latitudInicial <= 90
+            && longitudInicial >= -180 && longitudInicial <= 180
+            && !(latitudInicial === 0 && longitudInicial === 0);
+
+        if (coordenadasInicialesValidas) {
+            colocarPin(latitudInicial, longitudInicial, true);
+        }
     }
 
     formulario.addEventListener("submit", function (evento) {
