@@ -2,10 +2,11 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-    var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
-    var cantidadEvidencias = Model.CantidadEvidencias < 0 ? 0 : Model.CantidadEvidencias;
-    var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
-    var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    var latitudData = Model.Latitud;
+    var longitudData = Model.Longitud;
+    var cantidadEvidencias = Model.CantidadEvidencias;
+
 }
 
 <section class="seccion-pagina">
@@ -17,27 +18,8 @@
         </div>
     </div>
 
-    <section class="tarjeta-panel">
-        <div class="cabecera-bloque">
-            <h3>Información general</h3>
-        </div>
-
-        <div class="grid-dos-columnas detalle-resumen-grid">
-            <div><strong>Propietario</strong><div>@Model.PropietarioNombre</div></div>
-            <div><strong>Estado de finca</strong><div>@Model.EstadoFinca</div></div>
-            <div><strong>Provincia</strong><div>@Model.Provincia</div></div>
-            <div><strong>Cantón</strong><div>@Model.Canton</div></div>
-            <div><strong>Distrito</strong><div>@Model.Distrito</div></div>
-            <div><strong>Hectáreas</strong><div>@Model.Hectareas.ToString("N2")</div></div>
-            <div><strong>Vegetación</strong><div>@Model.Vegetacion</div></div>
-            <div><strong>Uso de suelo</strong><div>@Model.UsoSuelo</div></div>
-            <div><strong>Pendiente</strong><div>@Model.Pendiente</div></div>
-            <div><strong>Estado de evaluación</strong><div>@Model.EstadoEvaluacion</div></div>
-            <div><strong>Fecha de registro</strong><div>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</div></div>
-            <div><strong>Última actualización</strong><div>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</div></div>
-        </div>
-
-        <section class="tarjeta-panel tarjeta-panel-interna">
+    <div class="grid-detalle-finca">
+        <section class="tarjeta-panel">
             <div class="cabecera-bloque">
                 <h3>Ubicación registrada</h3>
             </div>
@@ -64,24 +46,101 @@
             }
         </section>
 
-        <section class="tarjeta-panel tarjeta-panel-interna">
+        <section class="tarjeta-panel">
             <div class="cabecera-bloque">
-                <h3>Estado del expediente</h3>
+                <h3>Ubicación</h3>
             </div>
-            <div class="grid-dos-columnas detalle-resumen-grid">
-                <div><strong>Cuenta bancaria</strong><div>@(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente")</div></div>
-                <div><strong>Plan de pago</strong><div>@(Model.TienePlanPago ? "Disponible" : "Pendiente")</div></div>
-                <div><strong>Cantidad de evidencias</strong><div>@cantidadEvidencias</div></div>
+
+            <div class="grid-dos-columnas">
+                <div class="campo-detalle">
+                    <span class="etiqueta">Latitud</span>
+                    <strong>@latitudData</strong>
+                </div>
+
+                <div class="campo-detalle">
+                    <span class="etiqueta">Longitud</span>
+                    <strong>@longitudData</strong>
+                </div>
             </div>
         </section>
 
-        <section class="tarjeta-panel tarjeta-panel-interna">
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Estado del expediente</h3>
+            </div>
+
+            <div class="grid-dos-columnas">
+                <div class="campo-detalle">
+                    <span class="etiqueta">Cuenta bancaria</span>
+                    <strong>@(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente")</strong>
+                </div>
+
+                <div class="campo-detalle">
+                    <span class="etiqueta">Plan de pago</span>
+                    <strong>@(Model.TienePlanPago ? "Registrado" : "Pendiente")</strong>
+                </div>
+
+                <div class="campo-detalle">
+                    <span class="etiqueta">Cantidad de evidencias</span>
+                    <strong>@cantidadEvidencias</strong>
+                </div>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel">
             <div class="cabecera-bloque">
                 <h3>Evidencias adjuntas</h3>
             </div>
-            @if (cantidadEvidencias > 0)
+
+            @{
+                List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> evidenciasTabla = new();
+
+                if (ViewBag.EvidenciasFinca is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDtoTabla)
+                {
+                    evidenciasTabla.AddRange(listaDtoTabla);
+                }
+                else if (ViewBag.EvidenciasFinca is IEnumerable<string> listaTextoTabla)
+                {
+                    foreach (var textoTabla in listaTextoTabla)
+                    {
+                        evidenciasTabla.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
+                        {
+                            NombreArchivo = textoTabla,
+                            TipoArchivo = "No especificado",
+                            FechaCarga = DateTime.MinValue,
+                            UrlDescarga = "#"
+                        });
+                    }
+                }
+            }
+
+            @if (evidenciasTabla.Count > 0)
             {
-                <p>Hay evidencias adjuntas para esta finca.</p>
+                <table class="tabla-base">
+                    <thead>
+                        <tr>
+                            <th>Archivo</th>
+                            <th>Tipo</th>
+                            <th>Fecha</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidenciasTabla)
+                        {
+                            <tr>
+                                <td>@evidencia.NombreArchivo</td>
+                                <td>@evidencia.TipoArchivo</td>
+                                <td>@(evidencia.FechaCarga == DateTime.MinValue ? "N/D" : evidencia.FechaCarga.ToString("dd/MM/yyyy HH:mm"))</td>
+                                <td>
+                                    <a href="@evidencia.UrlDescarga" target="_blank" class="boton-secundario boton-sm">
+                                        Ver
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             }
             else
             {
@@ -92,32 +151,5 @@
         <div class="fila-acciones-formulario">
             <a class="boton-secundario" asp-controller="Fincas" asp-action="MisFincas">Volver</a>
         </div>
-    </section>
+    </div>
 </section>
-
-@section Scripts {
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="~/js/detalle-finca.js" asp-append-version="true"></script>
-}
-
-@section Styles {
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <style>
-        .tarjeta-panel-interna {
-            margin-top: var(--espacio-3);
-        }
-
-        .detalle-resumen-grid {
-            gap: var(--espacio-2);
-        }
-
-        .mapa-detalle-finca {
-            width: 100%;
-            min-height: 320px;
-            border: 1px solid var(--color-borde-suave);
-            border-radius: var(--radio-md);
-            overflow: hidden;
-            box-shadow: var(--sombra-sm);
-        }
-    </style>
-}
