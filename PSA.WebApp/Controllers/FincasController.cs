@@ -14,15 +14,18 @@ namespace PSA.WebApp.Controllers
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
+        private readonly EvaluacionTecnicaDAO _evaluacionTecnicaDAO;
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
 
         public FincasController(
             FincaDAO fincaDAO,
+            EvaluacionTecnicaDAO evaluacionTecnicaDAO,
             IConfiguration configuration,
             IServiceProvider serviceProvider)
         {
             _fincaDAO = fincaDAO;
+            _evaluacionTecnicaDAO = evaluacionTecnicaDAO;
             _configuration = configuration;
             _serviceProvider = serviceProvider;
         }
@@ -92,6 +95,7 @@ namespace PSA.WebApp.Controllers
             }
 
             var idFincaLocal = await _fincaDAO.CrearFincaAsync(dto);
+            await _evaluacionTecnicaDAO.CrearEvaluacionPendienteAsync(idFincaLocal);
             TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaLocal, true);
             return RedirectToAction(nameof(MisFincas));
         }
