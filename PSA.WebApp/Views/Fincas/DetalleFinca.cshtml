@@ -2,8 +2,33 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-    var evidencias = ViewBag.EvidenciasFinca as List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>
-        ?? new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+
+    var latitudData = Model.Latitud;
+    var longitudData = Model.Longitud;
+    var cantidadEvidencias = Model.CantidadEvidencias;
+
+    IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> NormalizarEvidencias(object? raw)
+    {
+        if (raw is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDto)
+        {
+            return listaDto;
+        }
+
+        if (raw is IEnumerable<string> listaTexto)
+        {
+            return System.Linq.Enumerable.Select(listaTexto, texto => new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
+            {
+                NombreArchivo = texto,
+                TipoArchivo = "No especificado",
+                FechaCarga = DateTime.MinValue,
+                UrlDescarga = "#"
+            });
+        }
+
+        return System.Linq.Enumerable.Empty<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+    }
+
+    var evidencias = NormalizarEvidencias(ViewBag.EvidenciasFinca);
 }
 
 <section class="seccion-pagina">
@@ -16,73 +41,24 @@
     </div>
 
     <div class="grid-detalle-finca">
-
-        <!-- Información general -->
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
                 <h3>Información general</h3>
             </div>
 
             <div class="grid-dos-columnas">
-                <div class="campo-detalle">
-                    <span class="etiqueta">Propietario</span>
-                    <strong>@Model.PropietarioNombre</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Estado de finca</span>
-                    <strong>@Model.EstadoFinca</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Provincia</span>
-                    <strong>@Model.Provincia</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Cantón</span>
-                    <strong>@Model.Canton</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Distrito</span>
-                    <strong>@Model.Distrito</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Hectáreas</span>
-                    <strong>@Model.Hectareas</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Vegetación</span>
-                    <strong>@Model.Vegetacion</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Uso de suelo</span>
-                    <strong>@Model.UsoSuelo</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Pendiente</span>
-                    <strong>@Model.Pendiente</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Estado de evaluación</span>
-                    <strong>@Model.EstadoEvaluacion</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Fecha de registro</span>
-                    <strong>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Última actualización</span>
-                    <strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong>
-                </div>
+                <div class="campo-detalle"><span class="etiqueta">Propietario</span><strong>@Model.PropietarioNombre</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Estado de finca</span><strong>@Model.EstadoFinca</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Provincia</span><strong>@Model.Provincia</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Cantón</span><strong>@Model.Canton</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Distrito</span><strong>@Model.Distrito</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Hectáreas</span><strong>@Model.Hectareas</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Vegetación</span><strong>@Model.Vegetacion</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Uso de suelo</span><strong>@Model.UsoSuelo</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Pendiente</span><strong>@Model.Pendiente</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Estado de evaluación</span><strong>@Model.EstadoEvaluacion</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Fecha de registro</span><strong>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Última actualización</span><strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong></div>
             </div>
 
             @if (!string.IsNullOrWhiteSpace(Model.DireccionExacta))
@@ -94,56 +70,27 @@
             }
         </section>
 
-        <!-- Ubicación -->
         <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Ubicación</h3>
-            </div>
-
+            <div class="cabecera-bloque"><h3>Ubicación</h3></div>
             <div class="grid-dos-columnas">
-                <div class="campo-detalle">
-                    <span class="etiqueta">Latitud</span>
-                    <strong>@Model.Latitud</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Longitud</span>
-                    <strong>@Model.Longitud</strong>
-                </div>
+                <div class="campo-detalle"><span class="etiqueta">Latitud</span><strong>@latitudData</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Longitud</span><strong>@longitudData</strong></div>
             </div>
         </section>
 
-        <!-- Estado -->
         <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Estado del expediente</h3>
-            </div>
-
+            <div class="cabecera-bloque"><h3>Estado del expediente</h3></div>
             <div class="grid-dos-columnas">
-                <div class="campo-detalle">
-                    <span class="etiqueta">Cuenta bancaria</span>
-                    <strong>@(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente")</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Plan de pago</span>
-                    <strong>@(Model.TienePlanPago ? "Registrado" : "Pendiente")</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Cantidad de evidencias</span>
-                    <strong>@Model.CantidadEvidencias</strong>
-                </div>
+                <div class="campo-detalle"><span class="etiqueta">Cuenta bancaria</span><strong>@(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente")</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Plan de pago</span><strong>@(Model.TienePlanPago ? "Registrado" : "Pendiente")</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Cantidad de evidencias</span><strong>@cantidadEvidencias</strong></div>
             </div>
         </section>
 
-        <!-- Evidencias -->
         <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Evidencias adjuntas</h3>
-            </div>
+            <div class="cabecera-bloque"><h3>Evidencias adjuntas</h3></div>
 
-            @if (evidencias.Any())
+            @if (System.Linq.Enumerable.Any(evidencias))
             {
                 <table class="tabla-base">
                     <thead>
@@ -155,16 +102,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var e in evidencias)
+                        @foreach (var evidencia in evidencias)
                         {
                             <tr>
-                                <td>@e.NombreArchivo</td>
-                                <td>@e.TipoArchivo</td>
-                                <td>@e.FechaCarga.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@evidencia.NombreArchivo</td>
+                                <td>@evidencia.TipoArchivo</td>
+                                <td>@(evidencia.FechaCarga == DateTime.MinValue ? "N/D" : evidencia.FechaCarga.ToString("dd/MM/yyyy HH:mm"))</td>
                                 <td>
-                                    <a href="@e.UrlDescarga" target="_blank" class="boton-secundario boton-sm">
-                                        Ver
-                                    </a>
+                                    <a href="@evidencia.UrlDescarga" target="_blank" class="boton-secundario boton-sm">Ver</a>
                                 </td>
                             </tr>
                         }
@@ -180,6 +125,5 @@
         <div class="fila-acciones-formulario">
             <a class="boton-secundario" asp-action="MisFincas">Volver</a>
         </div>
-
     </div>
 </section>
