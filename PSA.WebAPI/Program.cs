@@ -49,7 +49,7 @@ builder.Services.AddScoped<UsuarioDAO>(sp =>
     return new UsuarioDAO(ObtenerCadenaConexion(configuration));
 });
 
-builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
+builder.Services.AddScoped<FincaDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
     return new FincaDAO(ObtenerCadenaConexion(configuration));
