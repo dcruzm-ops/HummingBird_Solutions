@@ -1,3 +1,4 @@
+@model PSA.WebApp.Models.NuevaEvaluacionViewModel
 @{
     ViewData["Title"] = "Nueva evaluación técnica";
 }
@@ -5,42 +6,83 @@
     <div class="cabecera-pagina">
         <div>
             <span class="eyebrow">Expediente técnico</span>
-            <h2>Nueva evaluación técnica</h2>
-            <p>Esqueleto base del formulario técnico para la finca #@ViewBag.FincaId.</p>
+            <h2>Evaluación técnica #@Model.Detalle.IdEvaluacion</h2>
+            <p>Finca: <strong>@Model.Detalle.NombreFinca</strong> (@Model.Detalle.Provincia, @Model.Detalle.Canton, @Model.Detalle.Distrito)</p>
         </div>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion" method="get" asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">
+    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion" method="post" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@Model.Detalle.IdEvaluacion" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
         <div class="seccion-formulario">
-            <h3>Información de visita</h3>
+            <h3>Datos capturados por el dueño (original)</h3>
             <div class="grid-dos-columnas">
-                <div class="campo-formulario">
-                    <label for="fechaVisita">Fecha de visita</label>
-                    <input id="fechaVisita" name="fechaVisita" type="date" />
-                </div>
-                <div class="campo-formulario">
-                    <label for="estadoEvaluacion">Estado de evaluación</label>
-                    <select id="estadoEvaluacion" name="estadoEvaluacion">
-                        <option>Pendiente</option>
-                        <option>En proceso</option>
-                        <option>Finalizada</option>
-                    </select>
-                </div>
+                <div class="campo-formulario"><label>Hectáreas</label><input value="@Model.Detalle.Hectareas.ToString("N2")" readonly /></div>
+                <div class="campo-formulario"><label>Pendiente</label><input value="@Model.Detalle.Pendiente" readonly /></div>
+                <div class="campo-formulario"><label>Vegetación</label><input value="@Model.Detalle.Vegetacion" readonly /></div>
+                <div class="campo-formulario"><label>Uso de suelo</label><input value="@Model.Detalle.UsoSuelo" readonly /></div>
+                <div class="campo-formulario"><label>Recursos hídricos</label><input value="@(Model.Detalle.TieneRecursosHidricos ? "Sí" : "No")" readonly /></div>
+                <div class="campo-formulario"><label>Estado evaluación</label><input value="@Model.Detalle.EstadoEvaluacion" readonly /></div>
             </div>
         </div>
 
         <div class="seccion-formulario">
-            <h3>Resultado técnico</h3>
-            <div class="campo-formulario">
-                <label for="observacionesTecnicas">Observaciones</label>
-                <textarea id="observacionesTecnicas" rows="5" placeholder="Observaciones técnicas"></textarea>
+            <h3>Registro de visita y decisión técnica</h3>
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Formulario.FechaVisita">Fecha de visita</label>
+                    <input asp-for="Formulario.FechaVisita" type="date" required />
+                    <span asp-validation-for="Formulario.FechaVisita" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Formulario.DecisionTecnica">Decisión técnica</label>
+                    <select asp-for="Formulario.DecisionTecnica" required>
+                        <option value="">Seleccione...</option>
+                        <option value="Califica">Califica</option>
+                        <option value="No califica">No califica</option>
+                    </select>
+                    <span asp-validation-for="Formulario.DecisionTecnica" class="text-danger"></span>
+                </div>
             </div>
             <div class="campo-formulario">
-                <label for="decisionTecnica">Decisión técnica</label>
-                <select id="decisionTecnica" name="decisionTecnica">
-                    <option>Califica</option>
-                    <option>No califica</option>
-                </select>
+                <label asp-for="Formulario.Observaciones">Observaciones</label>
+                <textarea asp-for="Formulario.Observaciones" rows="5" placeholder="Hallazgos de campo, validación de datos y criterio técnico"></textarea>
+            </div>
+            <div class="campo-formulario">
+                <label>Evidencias (opcional)</label>
+                <input type="file" name="evidencias" multiple accept="image/*,.pdf" />
+                <small>Nota: la persistencia de archivos físicos se gestiona en el flujo de evidencias.</small>
+            </div>
+        </div>
+
+        <div class="seccion-formulario">
+            <h3>Ajustes técnicos del ingeniero</h3>
+            <p>Estos campos permiten registrar el dato ajustado y mantener trazabilidad respecto al dato original.</p>
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Formulario.HectareasAjustadas">Hectáreas ajustadas</label>
+                    <input asp-for="Formulario.HectareasAjustadas" type="number" step="0.01" min="0.01" />
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Formulario.PendienteAjustada">Pendiente ajustada</label>
+                    <input asp-for="Formulario.PendienteAjustada" />
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Formulario.VegetacionAjustada">Vegetación ajustada</label>
+                    <input asp-for="Formulario.VegetacionAjustada" />
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Formulario.UsoSueloAjustado">Uso de suelo ajustado</label>
+                    <input asp-for="Formulario.UsoSueloAjustado" />
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Formulario.RecursosHidricosAjustado">Recursos hídricos ajustados</label>
+                    <select asp-for="Formulario.RecursosHidricosAjustado">
+                        <option value="">Sin ajuste</option>
+                        <option value="true">Sí</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -50,3 +92,7 @@
         </div>
     </form>
 </section>
+
+@section Scripts {
+    <script src="~/js/evaluaciones.js" asp-append-version="true"></script>
+}
