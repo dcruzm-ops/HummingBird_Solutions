@@ -7,7 +7,11 @@ namespace PSA.EntidadesDTO.Entidades.Evaluaciones
         public int FincaId { get; set; }
         public int IngenieroForestalId { get; set; }
         public DateTime FechaEvaluacion { get; set; }
-        public string Estado { get; set; } = string.Empty;
+
+        public string Estado { get; set; } = "Pendiente";
+
+        public string? Decision { get; set; }
+
         public string? Observaciones { get; set; }
         public decimal? Puntaje { get; set; }
 

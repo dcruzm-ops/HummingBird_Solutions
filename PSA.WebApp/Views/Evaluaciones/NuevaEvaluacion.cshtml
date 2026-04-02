@@ -6,24 +6,27 @@
         <div>
             <span class="eyebrow">Expediente técnico</span>
             <h2>Nueva evaluación técnica</h2>
-            <p>Esqueleto base del formulario técnico para la finca #@ViewBag.FincaId.</p>
+            <p>Formulario para registrar la evaluación de la finca #@ViewBag.FincaId.</p>
         </div>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion" method="get" asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">
+    <form class="formulario-base formulario-modulo" id="formularioNuevaEvaluacion">
+
         <div class="seccion-formulario">
             <h3>Información de visita</h3>
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label for="fechaVisita">Fecha de visita</label>
-                    <input id="fechaVisita" name="fechaVisita" type="date" />
+                    <input id="fechaVisita" type="date" required />
                 </div>
+
                 <div class="campo-formulario">
                     <label for="estadoEvaluacion">Estado de evaluación</label>
-                    <select id="estadoEvaluacion" name="estadoEvaluacion">
-                        <option>Pendiente</option>
-                        <option>En proceso</option>
-                        <option>Finalizada</option>
+                    <select id="estadoEvaluacion" required>
+                        <option value="">Seleccione una opción</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En proceso">En proceso</option>
+                        <option value="Finalizada">Finalizada</option>
                     </select>
                 </div>
             </div>
@@ -37,10 +40,15 @@
             </div>
             <div class="campo-formulario">
                 <label for="decisionTecnica">Decisión técnica</label>
-                <select id="decisionTecnica" name="decisionTecnica">
-                    <option>Califica</option>
-                    <option>No califica</option>
+                <select id="decisionTecnica">
+                    <option value="">Seleccione una opción</option>
+                    <option value="Aprobada">Aprobada</option>
+                    <option value="Rechazada">Rechazada</option>
+                    <option value="Suspendida">Suspendida</option>
                 </select>
+                <small id="ayudaDecision" class="texto-secundario">
+                    La decisión solo es obligatoria cuando el estado sea Finalizada.
+                </small>
             </div>
         </div>
 
@@ -50,3 +58,73 @@
         </div>
     </form>
 </section>
+
+<script>
+    const estadoEvaluacion = document.getElementById("estadoEvaluacion");
+    const decisionTecnica = document.getElementById("decisionTecnica");
+
+    estadoEvaluacion.addEventListener("change", function () {
+        const estado = estadoEvaluacion.value;
+
+        if (estado === "Finalizada") {
+            decisionTecnica.setAttribute("required", "required");
+        } else {
+            decisionTecnica.removeAttribute("required");
+            decisionTecnica.value = "";
+        }
+    });
+
+    document.getElementById("formularioNuevaEvaluacion").addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const fincaId = @ViewBag.FincaId;
+        const ingenieroId = 2;
+        const fecha = document.getElementById("fechaVisita").value;
+        const estado = estadoEvaluacion.value;
+        const observaciones = document.getElementById("observacionesTecnicas").value;
+        const decision = decisionTecnica.value;
+
+        if (!fecha) {
+            alert("Debe seleccionar una fecha de visita.");
+            return;
+        }
+
+        if (!estado) {
+            alert("Debe seleccionar un estado.");
+            return;
+        }
+
+        if (estado === "Finalizada" && !decision) {
+            alert("Debe seleccionar una decisión técnica cuando la evaluación esté finalizada.");
+            return;
+        }
+
+        try {
+            const crearResponse = await fetch("https://localhost:59665/api/Evaluacion/Crear", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    fincaId: fincaId,
+                    ingenieroForestalId: ingenieroId,
+                    fechaEvaluacion: fecha,
+                    observaciones: observaciones,
+                    decision: decision,
+                    estado: estado
+                })
+            });
+
+            if (!crearResponse.ok) {
+                const errorText = await crearResponse.text();
+                console.error(errorText);
+                alert("Error al crear la evaluación.");
+                return;
+            }
+
+            alert("Evaluación guardada correctamente ✅");
+            window.location.href = "/Evaluaciones/EvaluacionesEnProceso";
+        } catch (error) {
+            console.error(error);
+            alert("Error al conectar con el servidor.");
+        }
+    });
+</script>
