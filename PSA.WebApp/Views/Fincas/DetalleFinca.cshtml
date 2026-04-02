@@ -2,8 +2,11 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-    var latitudData = Model.Latitud;
-    var longitudData = Model.Longitud;
+    var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
+    var cantidadEvidencias = Model.CantidadEvidencias < 0 ? 0 : Model.CantidadEvidencias;
+    var evidencias = System.Linq.Enumerable.Range(1, cantidadEvidencias).ToList();
+    var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <section class="seccion-pagina">
@@ -49,6 +52,23 @@
                 </ul>
             }
         </section>
+    </div>
+
+    <section class="tarjeta-panel mapa-detalle-finca-contenedor mapa-detalle-finca-contenedor--independiente">
+        <div class="cabecera-bloque">
+            <h3>Ubicación registrada</h3>
+        </div>
+        <p class="texto-ayuda">
+            Punto geográfico definido para la finca según su latitud y longitud.
+        </p>
+        <div id="mapaDetalleFinca"
+             class="mapa-detalle-finca"
+             data-latitud="@latitudData"
+             data-longitud="@longitudData"
+             data-nombre-finca="@Model.NombreFinca"
+             aria-label="Mapa de ubicación de la finca">
+        </div>
+    </section>
 
         <section class="tarjeta-panel">
             <div class="cabecera-bloque"><h3>Ubicación</h3></div>
@@ -88,35 +108,37 @@
                         });
                     }
                 }
-            }
-
-            @if (evidencias.Count > 0)
-            {
-                <table class="tabla-base">
-                    <thead>
-                        <tr><th>Archivo</th><th>Tipo</th><th>Fecha</th><th>Acción</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidencias)
-                        {
-                            <tr>
-                                <td>@evidencia.NombreArchivo</td>
-                                <td>@evidencia.TipoArchivo</td>
-                                <td>@(evidencia.FechaCarga == DateTime.MinValue ? "N/D" : evidencia.FechaCarga.ToString("dd/MM/yyyy HH:mm"))</td>
-                                <td><a href="@evidencia.UrlDescarga" target="_blank" class="boton-secundario boton-sm">Ver</a></td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-                <p>No hay evidencias registradas.</p>
-            }
+                <a class="boton-link" asp-controller="Pagos" asp-action="HistorialPagos">Ver historial de pagos</a>
+            </div>
         </section>
-
-        <div class="fila-acciones-formulario">
-            <a class="boton-secundario" asp-action="MisFincas">Volver</a>
-        </div>
     </div>
 </section>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="~/js/detalle-finca.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .mapa-detalle-finca-contenedor {
+            display: grid;
+            gap: var(--espacio-2);
+        }
+
+        .mapa-detalle-finca-contenedor--independiente {
+            margin-top: var(--espacio-4);
+            margin-bottom: var(--espacio-4);
+        }
+
+        .mapa-detalle-finca {
+            width: 100%;
+            min-height: 320px;
+            border: 1px solid var(--color-borde-suave);
+            border-radius: var(--radio-md);
+            overflow: hidden;
+            box-shadow: var(--sombra-sm);
+        }
+    </style>
+}
