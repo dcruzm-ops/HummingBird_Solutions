@@ -69,5 +69,46 @@ namespace PSA.EntidadesDTO.DTOs.Evaluaciones
         public string EstadoFinca { get; set; } = string.Empty;
         public string EstadoEvaluacion { get; set; } = string.Empty;
         public int? IdIngeniero { get; set; }
+        public DateTime? FechaVisita { get; set; }
+        public string? Observaciones { get; set; }
+        public string? DecisionTecnica { get; set; }
+        public decimal? HectareasAjustadas { get; set; }
+        public string? VegetacionAjustada { get; set; }
+        public bool? RecursosHidricosAjustado { get; set; }
+        public string? UsoSueloAjustado { get; set; }
+        public string? PendienteAjustada { get; set; }
+        public DateTime? FechaDecision { get; set; }
+    }
+
+    public class FiltroReporteEvaluacionesDTO
+    {
+        public int? Anio { get; set; }
+        public int? Mes { get; set; }
+        public string? EstadoEvaluacion { get; set; }
+        public string? DecisionTecnica { get; set; }
+        public int? IdIngeniero { get; set; }
+    }
+
+    public class ItemReporteEvaluacionDTO
+    {
+        public int IdEvaluacion { get; set; }
+        public int IdFinca { get; set; }
+        public string NombreFinca { get; set; } = string.Empty;
+        public string EstadoEvaluacion { get; set; } = string.Empty;
+        public string? DecisionTecnica { get; set; }
+        public DateTime? FechaVisita { get; set; }
+        public DateTime? FechaDecision { get; set; }
+        public string Provincia { get; set; } = string.Empty;
+        public string Canton { get; set; } = string.Empty;
+        public string Distrito { get; set; } = string.Empty;
+    }
+
+    public class ReporteEvaluacionesDTO
+    {
+        public int TotalEvaluaciones { get; set; }
+        public int TotalCalifica { get; set; }
+        public int TotalNoCalifica { get; set; }
+        public int TotalPendientes { get; set; }
+        public List<ItemReporteEvaluacionDTO> Evaluaciones { get; set; } = new();
     }
 }

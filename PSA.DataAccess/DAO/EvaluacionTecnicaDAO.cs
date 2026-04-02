@@ -1,5 +1,7 @@
 using Microsoft.Data.SqlClient;
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
+using System.Linq;
+using System.Text;
 
 namespace PSA.DataAccess.DAO
 {
@@ -16,7 +18,7 @@ namespace PSA.DataAccess.DAO
         {
             const string sql = @"
 INSERT INTO EvaluacionesTecnicas (IdFinca, IdIngeniero, EstadoEvaluacion)
-SELECT @IdFinca, 0, @EstadoPendiente
+SELECT @IdFinca, NULL, @EstadoPendiente
 WHERE NOT EXISTS (
     SELECT 1
     FROM EvaluacionesTecnicas
@@ -65,7 +67,7 @@ ORDER BY e.IdEvaluacion ASC;";
                 {
                     IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
                     IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
-                    IdIngeniero = reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
+                    IdIngeniero = reader["IdIngeniero"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
                     EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
                     NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
                     Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
@@ -96,7 +98,16 @@ SELECT TOP 1
     f.TieneRecursosHidricos,
     f.UsoSuelo,
     f.Pendiente,
-    f.EstadoFinca
+    f.EstadoFinca,
+    e.FechaVisita,
+    e.Observaciones,
+    e.DecisionTecnica,
+    e.HectareasAjustadas,
+    e.VegetacionAjustada,
+    e.RecursosHidricosAjustado,
+    e.UsoSueloAjustado,
+    e.PendienteAjustada,
+    e.FechaDecision
 FROM EvaluacionesTecnicas e
 INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
 WHERE e.IdEvaluacion = @IdEvaluacion;";
@@ -117,7 +128,7 @@ WHERE e.IdEvaluacion = @IdEvaluacion;";
             {
                 IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
                 IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
-                IdIngeniero = reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
+                IdIngeniero = reader["IdIngeniero"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
                 EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
                 IdPropietario = reader.GetInt32(reader.GetOrdinal("IdPropietario")),
                 NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
@@ -129,22 +140,47 @@ WHERE e.IdEvaluacion = @IdEvaluacion;";
                 TieneRecursosHidricos = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricos")),
                 UsoSuelo = reader["UsoSuelo"]?.ToString() ?? string.Empty,
                 Pendiente = reader["Pendiente"]?.ToString() ?? string.Empty,
-                EstadoFinca = reader["EstadoFinca"]?.ToString() ?? string.Empty
+                EstadoFinca = reader["EstadoFinca"]?.ToString() ?? string.Empty,
+                FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
+                Observaciones = reader["Observaciones"] == DBNull.Value ? null : reader["Observaciones"]?.ToString(),
+                DecisionTecnica = reader["DecisionTecnica"] == DBNull.Value ? null : reader["DecisionTecnica"]?.ToString(),
+                HectareasAjustadas = reader["HectareasAjustadas"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("HectareasAjustadas")),
+                VegetacionAjustada = reader["VegetacionAjustada"] == DBNull.Value ? null : reader["VegetacionAjustada"]?.ToString(),
+                RecursosHidricosAjustado = reader["RecursosHidricosAjustado"] == DBNull.Value ? null : reader.GetBoolean(reader.GetOrdinal("RecursosHidricosAjustado")),
+                UsoSueloAjustado = reader["UsoSueloAjustado"] == DBNull.Value ? null : reader["UsoSueloAjustado"]?.ToString(),
+                PendienteAjustada = reader["PendienteAjustada"] == DBNull.Value ? null : reader["PendienteAjustada"]?.ToString(),
+                FechaDecision = reader["FechaDecision"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaDecision"))
             };
         }
 
         public async Task<bool> AsignarIngenieroAsync(int idEvaluacion, int idIngeniero)
         {
             const string sql = @"
+BEGIN TRAN;
+
 UPDATE e
 SET e.IdIngeniero = @IdIngeniero,
-    e.EstadoEvaluacion = @EstadoEnProceso,
-    f.EstadoFinca = @EstadoFincaEnProceso,
-    f.FechaActualizacion = SYSDATETIME()
+    e.EstadoEvaluacion = @EstadoEnProceso
 FROM EvaluacionesTecnicas e
-INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
 WHERE e.IdEvaluacion = @IdEvaluacion
-  AND e.EstadoEvaluacion = @EstadoPendiente;";
+  AND e.EstadoEvaluacion = @EstadoPendiente;
+
+IF @@ROWCOUNT = 0
+BEGIN
+    ROLLBACK TRAN;
+    SELECT CAST(0 AS bit);
+    RETURN;
+END
+
+UPDATE f
+SET f.EstadoFinca = @EstadoFincaEnProceso,
+    f.FechaActualizacion = SYSDATETIME()
+FROM Fincas f
+INNER JOIN EvaluacionesTecnicas e ON e.IdFinca = f.IdFinca
+WHERE e.IdEvaluacion = @IdEvaluacion;
+
+COMMIT TRAN;
+SELECT CAST(1 AS bit);";
 
             using var connection = new SqlConnection(_connectionString);
             using var command = new SqlCommand(sql, connection);
@@ -155,7 +191,8 @@ WHERE e.IdEvaluacion = @IdEvaluacion
             command.Parameters.AddWithValue("@EstadoFincaEnProceso", "En proceso");
 
             await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+            var result = await command.ExecuteScalarAsync();
+            return result is bool boolResult && boolResult;
         }
 
         public async Task<bool> RegistrarResultadoAsync(int idEvaluacion, RegistrarResultadoEvaluacionDTO dto)
@@ -169,6 +206,8 @@ WHERE e.IdEvaluacion = @IdEvaluacion
                 : "Rechazada";
 
             const string sql = @"
+BEGIN TRAN;
+
 UPDATE e
 SET e.FechaVisita = @FechaVisita,
     e.Observaciones = @Observaciones,
@@ -179,18 +218,32 @@ SET e.FechaVisita = @FechaVisita,
     e.UsoSueloAjustado = @UsoSueloAjustado,
     e.PendienteAjustada = @PendienteAjustada,
     e.FechaDecision = SYSDATETIME(),
-    e.EstadoEvaluacion = @EstadoEvaluacion,
-    f.Hectareas = COALESCE(@HectareasAjustadas, f.Hectareas),
+    e.EstadoEvaluacion = @EstadoEvaluacion
+FROM EvaluacionesTecnicas e
+WHERE e.IdEvaluacion = @IdEvaluacion
+  AND e.EstadoEvaluacion IN (@EstadoPendiente, @EstadoEnProceso);
+
+IF @@ROWCOUNT = 0
+BEGIN
+    ROLLBACK TRAN;
+    SELECT CAST(0 AS bit);
+    RETURN;
+END
+
+UPDATE f
+SET f.Hectareas = COALESCE(@HectareasAjustadas, f.Hectareas),
     f.Vegetacion = COALESCE(@VegetacionAjustada, f.Vegetacion),
     f.TieneRecursosHidricos = COALESCE(@RecursosHidricosAjustado, f.TieneRecursosHidricos),
     f.UsoSuelo = COALESCE(@UsoSueloAjustado, f.UsoSuelo),
     f.Pendiente = COALESCE(@PendienteAjustada, f.Pendiente),
     f.EstadoFinca = @EstadoFinca,
     f.FechaActualizacion = SYSDATETIME()
-FROM EvaluacionesTecnicas e
-INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
-WHERE e.IdEvaluacion = @IdEvaluacion
-  AND e.EstadoEvaluacion IN (@EstadoPendiente, @EstadoEnProceso);";
+FROM Fincas f
+INNER JOIN EvaluacionesTecnicas e ON e.IdFinca = f.IdFinca
+WHERE e.IdEvaluacion = @IdEvaluacion;
+
+COMMIT TRAN;
+SELECT CAST(1 AS bit);";
 
             using var connection = new SqlConnection(_connectionString);
             using var command = new SqlCommand(sql, connection);
@@ -209,7 +262,8 @@ WHERE e.IdEvaluacion = @IdEvaluacion
             command.Parameters.AddWithValue("@EstadoEnProceso", EstadosEvaluacionTecnica.EnProceso);
 
             await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+            var result = await command.ExecuteScalarAsync();
+            return result is bool boolResult && boolResult;
         }
 
         public async Task<bool> ActualizarEstadoEvaluacionAsync(int idEvaluacion, string nuevoEstado)
@@ -225,6 +279,91 @@ WHERE IdEvaluacion = @IdEvaluacion;";
             command.Parameters.AddWithValue("@EstadoEvaluacion", nuevoEstado);
             await connection.OpenAsync();
             return await command.ExecuteNonQueryAsync() > 0;
+        }
+
+        public async Task<ReporteEvaluacionesDTO> ObtenerReporteEvaluacionesAsync(FiltroReporteEvaluacionesDTO filtro)
+        {
+            var sql = new StringBuilder(@"
+SELECT
+    e.IdEvaluacion,
+    e.IdFinca,
+    f.NombreFinca,
+    e.EstadoEvaluacion,
+    e.DecisionTecnica,
+    e.FechaVisita,
+    e.FechaDecision,
+    f.Provincia,
+    f.Canton,
+    f.Distrito
+FROM EvaluacionesTecnicas e
+INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
+WHERE 1 = 1");
+
+            using var connection = new SqlConnection(_connectionString);
+            using var command = new SqlCommand();
+            command.Connection = connection;
+
+            if (filtro.Anio.HasValue)
+            {
+                sql.Append(" AND YEAR(COALESCE(e.FechaDecision, e.FechaVisita)) = @Anio");
+                command.Parameters.AddWithValue("@Anio", filtro.Anio.Value);
+            }
+
+            if (filtro.Mes.HasValue)
+            {
+                sql.Append(" AND MONTH(COALESCE(e.FechaDecision, e.FechaVisita)) = @Mes");
+                command.Parameters.AddWithValue("@Mes", filtro.Mes.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(filtro.EstadoEvaluacion))
+            {
+                sql.Append(" AND e.EstadoEvaluacion = @EstadoEvaluacion");
+                command.Parameters.AddWithValue("@EstadoEvaluacion", filtro.EstadoEvaluacion.Trim());
+            }
+
+            if (!string.IsNullOrWhiteSpace(filtro.DecisionTecnica))
+            {
+                sql.Append(" AND e.DecisionTecnica = @DecisionTecnica");
+                command.Parameters.AddWithValue("@DecisionTecnica", filtro.DecisionTecnica.Trim());
+            }
+
+            if (filtro.IdIngeniero.HasValue && filtro.IdIngeniero.Value > 0)
+            {
+                sql.Append(" AND e.IdIngeniero = @IdIngeniero");
+                command.Parameters.AddWithValue("@IdIngeniero", filtro.IdIngeniero.Value);
+            }
+
+            sql.Append(" ORDER BY COALESCE(e.FechaDecision, e.FechaVisita) DESC, e.IdEvaluacion DESC;");
+            command.CommandText = sql.ToString();
+
+            var resultado = new ReporteEvaluacionesDTO();
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                resultado.Evaluaciones.Add(new ItemReporteEvaluacionDTO
+                {
+                    IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
+                    IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                    NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                    EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
+                    DecisionTecnica = reader["DecisionTecnica"] == DBNull.Value ? null : reader["DecisionTecnica"]?.ToString(),
+                    FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
+                    FechaDecision = reader["FechaDecision"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaDecision")),
+                    Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
+                    Canton = reader["Canton"]?.ToString() ?? string.Empty,
+                    Distrito = reader["Distrito"]?.ToString() ?? string.Empty
+                });
+            }
+
+            resultado.TotalEvaluaciones = resultado.Evaluaciones.Count;
+            resultado.TotalCalifica = resultado.Evaluaciones.Count(x => string.Equals(x.DecisionTecnica, "Califica", StringComparison.OrdinalIgnoreCase));
+            resultado.TotalNoCalifica = resultado.Evaluaciones.Count(x => string.Equals(x.DecisionTecnica, "No califica", StringComparison.OrdinalIgnoreCase));
+            resultado.TotalPendientes = resultado.Evaluaciones.Count(x =>
+                string.Equals(x.EstadoEvaluacion, EstadosEvaluacionTecnica.Pendiente, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(x.EstadoEvaluacion, EstadosEvaluacionTecnica.EnProceso, StringComparison.OrdinalIgnoreCase));
+
+            return resultado;
         }
     }
 }

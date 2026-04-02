@@ -37,7 +37,7 @@
     <div class="grid-detalle-finca">
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
-                <h3>Información general</h3>
+                <h3>Ubicación registrada</h3>
             </div>
 
             <div class="grid-dos-columnas">
@@ -54,15 +54,21 @@
                 <div class="campo-detalle"><span class="etiqueta">Fecha de registro</span><strong>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong></div>
                 <div class="campo-detalle"><span class="etiqueta">Última actualización</span><strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong></div>
             </div>
-
-            @if (!string.IsNullOrWhiteSpace(Model.DireccionExacta))
+            <div class="grid-dos-columnas mt-3 detalle-resumen-grid">
+                <div><strong>Latitud</strong><div>@Model.Latitud</div></div>
+                <div><strong>Longitud</strong><div>@Model.Longitud</div></div>
+            </div>
+            @if (evidencias.Any())
             {
-                <div class="campo-detalle campo-detalle-ancho">
-                    <span class="etiqueta">Dirección exacta</span>
-                    <strong>@Model.DireccionExacta</strong>
-                </div>
+                <ul class="lista-timeline">
+                    @foreach (var evidencia in evidencias)
+                    {
+                        <li>@evidencia</li>
+                    }
+                </ul>
             }
         </section>
+    </div>
 
         <section class="tarjeta-panel">
             <div class="cabecera-bloque"><h3>Ubicación</h3></div>
@@ -108,6 +114,8 @@
                 <p>No hay evidencias registradas.</p>
             }
         </section>
+    </div>
+</section>
 
         <div class="fila-acciones-formulario">
             <a class="boton-secundario" asp-action="MisFincas">Volver</a>

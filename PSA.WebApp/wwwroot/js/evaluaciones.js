@@ -4,10 +4,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    formulario.addEventListener("submit", function (evento) {
-        evento.preventDefault();
-        var datos = window.psa ? window.psa.serializarFormulario(formulario) : {};
-        console.log("Formulario de evaluación listo para integrar con API:", datos);
-        alert("Base de evaluación creada. Integre este formulario con la WebAPI.");
+    formulario.addEventListener("submit", function () {
+        var boton = formulario.querySelector("button[type='submit']");
+        if (boton) {
+            boton.disabled = true;
+            boton.textContent = "Guardando...";
+        }
     });
 });
