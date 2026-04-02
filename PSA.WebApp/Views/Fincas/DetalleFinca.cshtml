@@ -2,30 +2,13 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-
-    var latitudData = Model.Latitud;
-    var longitudData = Model.Longitud;
-    var cantidadEvidencias = Model.CantidadEvidencias;
-
-    var evidencias = new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
-
-    if (ViewBag.EvidenciasFinca is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDto)
-    {
-        evidencias.AddRange(listaDto);
-    }
-    else if (ViewBag.EvidenciasFinca is IEnumerable<string> listaTexto)
-    {
-        foreach (var texto in listaTexto)
-        {
-            evidencias.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
-            {
-                NombreArchivo = texto,
-                TipoArchivo = "No especificado",
-                FechaCarga = DateTime.MinValue,
-                UrlDescarga = "#"
-            });
-        }
-    }
+    var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
+    var cantidadEvidencias = Model.CantidadEvidencias < 0 ? 0 : Model.CantidadEvidencias;
+    var evidencias = System.Linq.Enumerable.Range(1, cantidadEvidencias)
+        .Select(numero => $"Evidencia {numero}")
+        .ToList();
+    var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <section class="seccion-pagina">
@@ -78,17 +61,11 @@
             <div class="cabecera-bloque">
                 <h3>Evidencias</h3>
             </div>
-
-            <div class="grid-dos-columnas">
-                <div class="campo-detalle">
-                    <span class="etiqueta">Latitud</span>
-                    <strong>@latitudData</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Longitud</span>
-                    <strong>@longitudData</strong>
-                </div>
+            <div class="estado-vacio-inline">
+                <p>
+                    Evidencias cargadas: <strong>@cantidadEvidencias</strong>.
+                </p>
+                <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
             </div>
             @if (evidencias.Any())
             {
@@ -152,14 +129,62 @@
                     </tbody>
                 </table>
             }
-            else
-            {
-                <p>No hay evidencias registradas.</p>
+
+            var latitudTexto = (mapaElemento.dataset.latitud || "").replace(",", ".").trim();
+            var longitudTexto = (mapaElemento.dataset.longitud || "").replace(",", ".").trim();
+            var latitud = parseFloat(latitudTexto);
+            var longitud = parseFloat(longitudTexto);
+
+            if (!Number.isFinite(latitud) || !Number.isFinite(longitud) || (latitud === 0 && longitud === 0)) {
+                mapaElemento.innerHTML = "<p class='texto-ayuda p-3'>No hay coordenadas válidas para mostrar el mapa.</p>";
+                return;
             }
         </section>
 
-        <div class="fila-acciones-formulario">
-            <a class="boton-secundario" asp-action="MisFincas">Volver</a>
-        </div>
-    </div>
-</section>
+            var nombreFinca = mapaElemento.dataset.nombreFinca || "Finca";
+            var mapa = window.L.map("mapaDetalleFinca", {
+                center: [latitud, longitud],
+                zoom: 14,
+                scrollWheelZoom: false
+            });
+
+            window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(mapa);
+
+            window.L.marker([latitud, longitud])
+                .addTo(mapa)
+                .bindPopup(nombreFinca + "<br/>Lat: " + latitud.toFixed(6) + " / Lon: " + longitud.toFixed(6))
+                .openPopup();
+
+            setTimeout(function () {
+                mapa.invalidateSize();
+            }, 100);
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        .mapa-detalle-finca-contenedor {
+            display: grid;
+            gap: var(--espacio-2);
+        }
+
+        .mapa-detalle-finca-contenedor--independiente {
+            margin-top: var(--espacio-4);
+            margin-bottom: var(--espacio-4);
+        }
+
+        .mapa-detalle-finca {
+            width: 100%;
+            min-height: 320px;
+            border: 1px solid var(--color-borde-suave);
+            border-radius: var(--radio-md);
+            overflow: hidden;
+            box-shadow: var(--sombra-sm);
+        }
+    </style>
+}

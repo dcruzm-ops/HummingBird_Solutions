@@ -18,11 +18,87 @@
             <h3>Datos capturados por el dueño (original)</h3>
             <div class="grid-dos-columnas">
                 <div class="campo-formulario"><label>Hectáreas</label><input value="@Model.Detalle.Hectareas.ToString("N2")" readonly /></div>
-                <div class="campo-formulario"><label>Pendiente</label><input value="@Model.Detalle.Pendiente" readonly /></div>
-                <div class="campo-formulario"><label>Vegetación</label><input value="@Model.Detalle.Vegetacion" readonly /></div>
-                <div class="campo-formulario"><label>Uso de suelo</label><input value="@Model.Detalle.UsoSuelo" readonly /></div>
-                <div class="campo-formulario"><label>Recursos hídricos</label><input value="@(Model.Detalle.TieneRecursosHidricos ? "Sí" : "No")" readonly /></div>
-                <div class="campo-formulario"><label>Estado evaluación</label><input value="@Model.Detalle.EstadoEvaluacion" readonly /></div>
+                <div class="campo-formulario">
+                    <label>Pendiente</label>
+                    <select disabled>
+                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoPendiente)
+                        {
+                            if (string.Equals(opcion, Model.Detalle.Pendiente, System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                <option selected="selected">@opcion</option>
+                            }
+                            else
+                            {
+                                <option>@opcion</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="campo-formulario">
+                    <label>Vegetación</label>
+                    <select disabled>
+                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoVegetacion)
+                        {
+                            if (string.Equals(opcion, Model.Detalle.Vegetacion, System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                <option selected="selected">@opcion</option>
+                            }
+                            else
+                            {
+                                <option>@opcion</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="campo-formulario">
+                    <label>Uso de suelo</label>
+                    <select disabled>
+                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoUsoSuelo)
+                        {
+                            if (string.Equals(opcion, Model.Detalle.UsoSuelo, System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                <option selected="selected">@opcion</option>
+                            }
+                            else
+                            {
+                                <option>@opcion</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="campo-formulario">
+                    <label>Recursos hídricos</label>
+                    <select disabled>
+                        @if (Model.Detalle.TieneRecursosHidricos)
+                        {
+                            <option selected="selected">Sí</option>
+                            <option>No</option>
+                        }
+                        else
+                        {
+                            <option>Sí</option>
+                            <option selected="selected">No</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="campo-formulario">
+                    <label>Estado evaluación</label>
+                    <select disabled>
+                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoEstadoEvaluacion)
+                        {
+                            if (string.Equals(opcion, Model.Detalle.EstadoEvaluacion, System.StringComparison.OrdinalIgnoreCase))
+                            {
+                                <option selected="selected">@opcion</option>
+                            }
+                            else
+                            {
+                                <option>@opcion</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="Formulario.DecisionTecnica" class="text-danger"></span>
+                </div>
             </div>
         </div>
 
@@ -34,7 +110,6 @@
                     <input asp-for="Formulario.FechaVisita" type="date" required />
                     <span asp-validation-for="Formulario.FechaVisita" class="text-danger"></span>
                 </div>
-
                 <div class="campo-formulario">
                     <label asp-for="Formulario.DecisionTecnica">Decisión técnica</label>
                     <select asp-for="Formulario.DecisionTecnica" required>
@@ -66,15 +141,33 @@
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Formulario.PendienteAjustada">Pendiente ajustada</label>
-                    <input asp-for="Formulario.PendienteAjustada" />
+                    <select asp-for="Formulario.PendienteAjustada">
+                        <option value="">Sin ajuste</option>
+                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoPendiente)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
+                    </select>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Formulario.VegetacionAjustada">Vegetación ajustada</label>
-                    <input asp-for="Formulario.VegetacionAjustada" />
+                    <select asp-for="Formulario.VegetacionAjustada">
+                        <option value="">Sin ajuste</option>
+                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoVegetacion)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
+                    </select>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Formulario.UsoSueloAjustado">Uso de suelo ajustado</label>
-                    <input asp-for="Formulario.UsoSueloAjustado" />
+                    <select asp-for="Formulario.UsoSueloAjustado">
+                        <option value="">Sin ajuste</option>
+                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoUsoSuelo)
+                        {
+                            <option value="@opcion">@opcion</option>
+                        }
+                    </select>
                 </div>
                 <div class="campo-formulario">
                     <label asp-for="Formulario.RecursosHidricosAjustado">Recursos hídricos ajustados</label>

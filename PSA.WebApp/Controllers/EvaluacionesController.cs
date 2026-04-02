@@ -13,15 +13,18 @@ namespace PSA.WebApp.Controllers
     public class EvaluacionesController : Controller
     {
         private readonly EvaluacionTecnicaDAO _evaluacionTecnicaDAO;
+        private readonly FincaDAO _fincaDAO;
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
 
         public EvaluacionesController(
             EvaluacionTecnicaDAO evaluacionTecnicaDAO,
+            FincaDAO fincaDAO,
             IConfiguration configuration,
             IServiceProvider serviceProvider)
         {
             _evaluacionTecnicaDAO = evaluacionTecnicaDAO;
+            _fincaDAO = fincaDAO;
             _configuration = configuration;
             _serviceProvider = serviceProvider;
         }
@@ -50,6 +53,7 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbPadreTexto = "Fincas pendientes";
             ViewBag.BreadcrumbPadreUrl = Url.Action(nameof(FincasPendientes));
             ViewBag.BreadcrumbActual = "Nueva evaluación";
+            CargarCatalogosEvaluacionTecnica();
 
             var detalle = await ObtenerDetalleDesdeApiConFallbackAsync(idEvaluacion);
             if (detalle == null)
@@ -96,6 +100,7 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbPadreTexto = "Fincas pendientes";
             ViewBag.BreadcrumbPadreUrl = Url.Action(nameof(FincasPendientes));
             ViewBag.BreadcrumbActual = "Nueva evaluación";
+            CargarCatalogosEvaluacionTecnica();
 
             if (idEvaluacion <= 0)
             {
@@ -158,6 +163,33 @@ namespace PSA.WebApp.Controllers
             };
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> FincasIngeniero()
+        {
+            CargarContextoBase("Fincas del ingeniero", "Vista consolidada de evaluaciones asignadas y completadas.");
+            var reporte = await ObtenerReporteDesdeApiConFallbackAsync(null, null, null, null);
+            return View(reporte.Evaluaciones);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DetalleEvaluacion(int idEvaluacion)
+        {
+            if (idEvaluacion <= 0)
+            {
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            CargarContextoBase("Detalle de evaluación", "Detalle completo técnico de la evaluación seleccionada.");
+            var detalle = await ObtenerDetalleDesdeApiConFallbackAsync(idEvaluacion);
+            if (detalle == null)
+            {
+                TempData["MensajeError"] = "No se encontró la evaluación solicitada.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            return View(detalle);
         }
 
         private async Task<List<BandejaEvaluacionPendienteDTO>> ObtenerBandejaDesdeApiConFallbackAsync()
@@ -331,6 +363,67 @@ namespace PSA.WebApp.Controllers
             ViewBag.TituloPagina = titulo;
             ViewBag.SubtituloPagina = subtitulo;
             ViewBag.BreadcrumbActual = titulo;
+        }
+
+        private void CargarCatalogosEvaluacionTecnica()
+        {
+            var pendientes = _fincaDAO.ObtenerCatalogoFactorAsync("Pendiente").GetAwaiter().GetResult();
+            var vegetaciones = _fincaDAO.ObtenerCatalogoFactorAsync("Vegetacion").GetAwaiter().GetResult();
+            var usosSuelo = _fincaDAO.ObtenerCatalogoFactorAsync("UsoSuelo").GetAwaiter().GetResult();
+
+            ViewBag.CatalogoPendiente = MezclarCatalogoBaseYBd(
+                new List<string> { "Plana", "Suave", "Moderada", "Inclinada", "Muy inclinada", "Escarpada" },
+                pendientes
+            );
+
+            ViewBag.CatalogoVegetacion = MezclarCatalogoBaseYBd(
+                new List<string>
+                {
+                    "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto",
+                    "Matorral", "Humedal", "Manglar", "Tacotal", "Cultivo mixto", "Regeneración natural"
+                },
+                vegetaciones
+            );
+
+            ViewBag.CatalogoUsoSuelo = MezclarCatalogoBaseYBd(
+                new List<string>
+                {
+                    "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto",
+                    "Protección hídrica", "Recuperación ecológica", "Silvopastoril", "Reforestación", "Corredor biológico"
+                },
+                usosSuelo
+            );
+
+            ViewBag.CatalogoEstadoEvaluacion = new List<string>
+            {
+                "Pendiente",
+                "En proceso",
+                "Evaluada – No califica",
+                "Evaluada – Califica",
+                "Pendiente de cuenta bancaria",
+                "Pendiente de aprobación final de pago",
+                "Pagos activos",
+                "Finalizada"
+            };
+        }
+
+        private static List<string> MezclarCatalogoBaseYBd(List<string> baseCatalogo, List<string> catalogoBd)
+        {
+            var resultado = new List<string>(baseCatalogo);
+            var set = new HashSet<string>(baseCatalogo, StringComparer.OrdinalIgnoreCase);
+            foreach (var valorBd in catalogoBd)
+            {
+                if (!string.IsNullOrWhiteSpace(valorBd))
+                {
+                    var valorNormalizado = valorBd.Trim();
+                    if (set.Add(valorNormalizado))
+                    {
+                        resultado.Add(valorNormalizado);
+                    }
+                }
+            }
+
+            return resultado;
         }
     }
 }

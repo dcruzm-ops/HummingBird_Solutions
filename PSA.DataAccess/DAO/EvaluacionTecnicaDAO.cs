@@ -98,7 +98,16 @@ SELECT TOP 1
     f.TieneRecursosHidricos,
     f.UsoSuelo,
     f.Pendiente,
-    f.EstadoFinca
+    f.EstadoFinca,
+    e.FechaVisita,
+    e.Observaciones,
+    e.DecisionTecnica,
+    e.HectareasAjustadas,
+    e.VegetacionAjustada,
+    e.RecursosHidricosAjustado,
+    e.UsoSueloAjustado,
+    e.PendienteAjustada,
+    e.FechaDecision
 FROM EvaluacionesTecnicas e
 INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
 WHERE e.IdEvaluacion = @IdEvaluacion;";
@@ -131,7 +140,16 @@ WHERE e.IdEvaluacion = @IdEvaluacion;";
                 TieneRecursosHidricos = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricos")),
                 UsoSuelo = reader["UsoSuelo"]?.ToString() ?? string.Empty,
                 Pendiente = reader["Pendiente"]?.ToString() ?? string.Empty,
-                EstadoFinca = reader["EstadoFinca"]?.ToString() ?? string.Empty
+                EstadoFinca = reader["EstadoFinca"]?.ToString() ?? string.Empty,
+                FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
+                Observaciones = reader["Observaciones"] == DBNull.Value ? null : reader["Observaciones"]?.ToString(),
+                DecisionTecnica = reader["DecisionTecnica"] == DBNull.Value ? null : reader["DecisionTecnica"]?.ToString(),
+                HectareasAjustadas = reader["HectareasAjustadas"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("HectareasAjustadas")),
+                VegetacionAjustada = reader["VegetacionAjustada"] == DBNull.Value ? null : reader["VegetacionAjustada"]?.ToString(),
+                RecursosHidricosAjustado = reader["RecursosHidricosAjustado"] == DBNull.Value ? null : reader.GetBoolean(reader.GetOrdinal("RecursosHidricosAjustado")),
+                UsoSueloAjustado = reader["UsoSueloAjustado"] == DBNull.Value ? null : reader["UsoSueloAjustado"]?.ToString(),
+                PendienteAjustada = reader["PendienteAjustada"] == DBNull.Value ? null : reader["PendienteAjustada"]?.ToString(),
+                FechaDecision = reader["FechaDecision"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaDecision"))
             };
         }
 

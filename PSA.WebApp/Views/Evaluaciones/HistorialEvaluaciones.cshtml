@@ -100,6 +100,7 @@
                         <th>Decisión</th>
                         <th>Fecha visita</th>
                         <th>Fecha decisión</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -115,13 +116,14 @@
                                 <td>@(string.IsNullOrWhiteSpace(item.DecisionTecnica) ? "N/A" : item.DecisionTecnica)</td>
                                 <td>@(item.FechaVisita?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                 <td>@(item.FechaDecision?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="DetalleEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">Ver detalle</a></td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="7">No hay evaluaciones para los filtros seleccionados.</td>
+                            <td colspan="8">No hay evaluaciones para los filtros seleccionados.</td>
                         </tr>
                     }
                 </tbody>

@@ -69,6 +69,15 @@ namespace PSA.EntidadesDTO.DTOs.Evaluaciones
         public string EstadoFinca { get; set; } = string.Empty;
         public string EstadoEvaluacion { get; set; } = string.Empty;
         public int? IdIngeniero { get; set; }
+        public DateTime? FechaVisita { get; set; }
+        public string? Observaciones { get; set; }
+        public string? DecisionTecnica { get; set; }
+        public decimal? HectareasAjustadas { get; set; }
+        public string? VegetacionAjustada { get; set; }
+        public bool? RecursosHidricosAjustado { get; set; }
+        public string? UsoSueloAjustado { get; set; }
+        public string? PendienteAjustada { get; set; }
+        public DateTime? FechaDecision { get; set; }
     }
 
     public class FiltroReporteEvaluacionesDTO
