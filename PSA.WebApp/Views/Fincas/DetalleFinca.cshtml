@@ -61,14 +61,21 @@
                 <div class="campo-detalle"><span class="etiqueta">Última actualización</span><strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong></div>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(Model.DireccionExacta))
-            {
-                <div class="campo-detalle campo-detalle-ancho">
-                    <span class="etiqueta">Dirección exacta</span>
-                    <strong>@Model.DireccionExacta</strong>
-                </div>
-            }
-        </section>
+    <section class="tarjeta-panel mapa-detalle-finca-contenedor mapa-detalle-finca-contenedor--independiente">
+        <div class="cabecera-bloque">
+            <h3>Ubicación registrada</h3>
+        </div>
+        <p class="texto-ayuda">
+            Punto geográfico definido para la finca según su latitud y longitud.
+        </p>
+        <div id="mapaDetalleFinca"
+             class="mapa-detalle-finca"
+             data-latitud="@latitudData"
+             data-longitud="@longitudData"
+             data-nombre-finca="@Model.NombreFinca"
+             aria-label="Mapa de ubicación de la finca">
+        </div>
+    </section>
 
         <section class="tarjeta-panel">
             <div class="cabecera-bloque"><h3>Ubicación</h3></div>
@@ -76,6 +83,15 @@
                 <div class="campo-detalle"><span class="etiqueta">Latitud</span><strong>@latitudData</strong></div>
                 <div class="campo-detalle"><span class="etiqueta">Longitud</span><strong>@longitudData</strong></div>
             </div>
+            @if (evidencias.Any())
+            {
+                <ul class="lista-timeline">
+                    @foreach (var evidencia in evidencias)
+                    {
+                        <li>@evidencia</li>
+                    }
+                </ul>
+            }
         </section>
 
         <section class="tarjeta-panel">
