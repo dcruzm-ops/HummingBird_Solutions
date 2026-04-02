@@ -3,6 +3,10 @@
 @{
     ViewData["Title"] = "Detalle de finca";
     var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
+    var cantidadEvidencias = Model.CantidadEvidencias < 0 ? 0 : Model.CantidadEvidencias;
+    var evidencias = System.Linq.Enumerable.Range(1, cantidadEvidencias).ToList();
+    var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <section class="seccion-pagina propietario-detalle-finca">
@@ -79,8 +83,8 @@
         </p>
         <div id="mapaDetalleFinca"
              class="mapa-detalle-finca"
-             data-latitud="@Model.Latitud"
-             data-longitud="@Model.Longitud"
+             data-latitud="@latitudData"
+             data-longitud="@longitudData"
              data-nombre-finca="@Model.NombreFinca"
              aria-label="Mapa de ubicación de la finca">
         </div>
@@ -120,39 +124,7 @@
 
 @section Scripts {
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var mapaElemento = document.getElementById("mapaDetalleFinca");
-            if (!mapaElemento || typeof window.L === "undefined") {
-                return;
-            }
-
-            var latitud = parseFloat(mapaElemento.dataset.latitud);
-            var longitud = parseFloat(mapaElemento.dataset.longitud);
-
-            if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) {
-                mapaElemento.innerHTML = "<p class='texto-ayuda p-3'>No hay coordenadas válidas para mostrar el mapa.</p>";
-                return;
-            }
-
-            var nombreFinca = mapaElemento.dataset.nombreFinca || "Finca";
-            var mapa = window.L.map("mapaDetalleFinca", {
-                center: [latitud, longitud],
-                zoom: 14,
-                scrollWheelZoom: false
-            });
-
-            window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                maxZoom: 19,
-                attribution: "&copy; OpenStreetMap contributors"
-            }).addTo(mapa);
-
-            window.L.marker([latitud, longitud])
-                .addTo(mapa)
-                .bindPopup(nombreFinca + "<br/>Lat: " + latitud.toFixed(6) + " / Lon: " + longitud.toFixed(6))
-                .openPopup();
-        });
-    </script>
+    <script src="~/js/detalle-finca.js" asp-append-version="true"></script>
 }
 
 @section Styles {

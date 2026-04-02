@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using PSA.AppCore.Managers;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 
@@ -9,10 +10,12 @@ namespace PSA.WebAPI.Controllers
     public class FincasController : ControllerBase
     {
         private readonly FincaDAO _fincaDAO;
+        private readonly EvaluacionTecnicaManager _evaluacionTecnicaManager;
 
-        public FincasController(FincaDAO fincaDAO)
+        public FincasController(FincaDAO fincaDAO, EvaluacionTecnicaManager evaluacionTecnicaManager)
         {
             _fincaDAO = fincaDAO;
+            _evaluacionTecnicaManager = evaluacionTecnicaManager;
         }
 
         [HttpGet("mis-fincas")]
@@ -58,6 +61,7 @@ namespace PSA.WebAPI.Controllers
             }
 
             var idFinca = await _fincaDAO.CrearFincaAsync(dto);
+            await _evaluacionTecnicaManager.CrearPendientePorNuevaFincaAsync(idFinca);
             return CreatedAtAction(nameof(ObtenerDetalle), new { idFinca, idPropietario = dto.IdPropietario }, new { IdFinca = idFinca, Mensaje = "Finca registrada correctamente." });
         }
 
