@@ -14,15 +14,18 @@ namespace PSA.WebApp.Controllers
     public class FincasController : Controller
     {
         private readonly FincaDAO _fincaDAO;
+        private readonly EvaluacionTecnicaDAO _evaluacionTecnicaDAO;
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
 
         public FincasController(
             FincaDAO fincaDAO,
+            EvaluacionTecnicaDAO evaluacionTecnicaDAO,
             IConfiguration configuration,
             IServiceProvider serviceProvider)
         {
             _fincaDAO = fincaDAO;
+            _evaluacionTecnicaDAO = evaluacionTecnicaDAO;
             _configuration = configuration;
             _serviceProvider = serviceProvider;
         }
@@ -67,31 +70,34 @@ namespace PSA.WebApp.Controllers
                 return View(dto);
             }
 
-            try
+            var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi");
+            if (client != null)
             {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-                var baseUrl = GetApiBaseUrls().First();
-                var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
-
-                if (!response.IsSuccessStatusCode)
+                foreach (var baseUrl in GetApiBaseUrls())
                 {
-                    var errorBody = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError(string.Empty, $"No fue posible registrar la finca. {errorBody}");
-                    CargarCatalogosFormularioFinca();
-                    return View(dto);
-                }
+                    try
+                    {
+                        var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            continue;
+                        }
 
-                var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
-                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
-                return RedirectToAction(nameof(MisFincas));
+                        var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
+                        TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
+                        return RedirectToAction(nameof(MisFincas));
+                    }
+                    catch
+                    {
+                        // Se intenta siguiente URL y luego fallback local
+                    }
+                }
             }
-            catch
-            {
-                var idFincaRegistrada = await _fincaDAO.CrearFincaAsync(dto);
-                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada, true);
-                return RedirectToAction(nameof(MisFincas));
-            }
+
+            var idFincaLocal = await _fincaDAO.CrearFincaAsync(dto);
+            await _evaluacionTecnicaDAO.CrearEvaluacionPendienteAsync(idFincaLocal);
+            TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaLocal, true);
+            return RedirectToAction(nameof(MisFincas));
         }
 
         private async Task<int> ObtenerIdFincaDesdeRespuestaAsync(HttpResponseMessage response)
@@ -177,54 +183,6 @@ namespace PSA.WebApp.Controllers
             }
 
             return View(detalle);
-        }
-
-        private async Task<(bool Exito, string Mensaje)> CrearFincaEnApiConFallbackAsync(FincaDTO model)
-        {
-            try
-            {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-
-                Exception? ultimaExcepcion = null;
-                foreach (var baseUrl in GetApiBaseUrls())
-                {
-                    try
-                    {
-                        var response = await client.PostAsJsonAsync($"{baseUrl}/api/Finca/Create", model);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return (true, string.Empty);
-                        }
-
-                        var detalle = await response.Content.ReadAsStringAsync();
-                        return (false, $"El API rechazó el registro: {detalle}");
-                    }
-                    catch (Exception ex)
-                    {
-                        ultimaExcepcion = ex;
-                    }
-                }
-
-                if (ultimaExcepcion != null)
-                {
-                    throw ultimaExcepcion;
-                }
-            }
-            catch
-            {
-                try
-                {
-                    _fincaDAO.Create(model);
-                    return (true, string.Empty);
-                }
-                catch (Exception ex)
-                {
-                    return (false, $"No fue posible registrar la finca: {ex.Message}");
-                }
-            }
-
-            return (false, "No fue posible registrar la finca.");
         }
 
         private async Task<List<FincaResumenDTO>> ObtenerFincasDesdeApiConFallbackAsync(int idPropietario)
@@ -320,17 +278,25 @@ namespace PSA.WebApp.Controllers
             var usosSuelo = _fincaDAO.ObtenerCatalogoFactorAsync("UsoSuelo").GetAwaiter().GetResult();
 
             ViewBag.CatalogoPendiente = MezclarCatalogoBaseYBd(
-                new List<string> { "Plana", "Inclinada", "Muy inclinada" },
+                new List<string> { "Plana", "Suave", "Moderada", "Inclinada", "Muy inclinada", "Escarpada" },
                 pendientes
             );
 
             ViewBag.CatalogoVegetacion = MezclarCatalogoBaseYBd(
-                new List<string> { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" },
+                new List<string>
+                {
+                    "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto",
+                    "Matorral", "Humedal", "Manglar", "Tacotal", "Cultivo mixto", "Regeneración natural"
+                },
                 vegetaciones
             );
 
             ViewBag.CatalogoUsoSuelo = MezclarCatalogoBaseYBd(
-                new List<string> { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" },
+                new List<string>
+                {
+                    "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto",
+                    "Protección hídrica", "Recuperación ecológica", "Silvopastoril", "Reforestación", "Corredor biológico"
+                },
                 usosSuelo
             );
         }

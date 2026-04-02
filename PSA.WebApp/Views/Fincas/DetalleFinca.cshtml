@@ -3,169 +3,103 @@
 @{
     ViewData["Title"] = "Detalle de finca";
     var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
+    var cantidadEvidencias = Model.CantidadEvidencias < 0 ? 0 : Model.CantidadEvidencias;
+    var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <section class="seccion-pagina propietario-detalle-finca">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Expediente #@expediente</span>
+            <span class="eyebrow">Expediente de finca</span>
             <h2>@Model.NombreFinca</h2>
-            <p>Detalle completo de la finca registrada.</p>
-        </div>
-        <div class="grupo-acciones">
-            <a class="boton-secundario" href="#panelCuentaBancaria">Actualizar cuenta bancaria</a>
-            <a class="boton-primario" href="#panelEvidencias">Adjuntar evidencia</a>
+            <p>Detalle general de la finca registrada en PSA Costa Rica.</p>
         </div>
     </div>
 
-    <div class="grid-tarjetas-kpi">
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Estado de finca</span>
-            <strong>@Model.EstadoFinca</strong>
-            <small>Última actualización: @Model.FechaActualizacion.ToString("dd/MM/yyyy")</small>
-        </article>
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Estado de evaluación</span>
-            <strong>@Model.EstadoEvaluacion</strong>
-            <small>Proceso técnico actual</small>
-        </article>
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Plan anual</span>
-            <strong>@(Model.TienePlanPago ? "Disponible" : "No disponible")</strong>
-            <small>Se muestra cuando existe plan asociado</small>
-        </article>
-    </div>
-
-    <div class="grid-dos-paneles">
-        <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Datos generales</h3>
-            </div>
-            <dl class="lista-detalle">
-                <div><dt>Expediente</dt><dd>@expediente</dd></div>
-                <div><dt>Propietario</dt><dd>@Model.PropietarioNombre</dd></div>
-                <div><dt>Ubicación</dt><dd>@Model.Provincia, @Model.Canton, @Model.Distrito</dd></div>
-                <div><dt>Dirección exacta</dt><dd>@(string.IsNullOrWhiteSpace(Model.DireccionExacta) ? "No registrada" : Model.DireccionExacta)</dd></div>
-                <div><dt>Hectáreas</dt><dd>@Model.Hectareas</dd></div>
-                <div><dt>Latitud / Longitud</dt><dd>@Model.Latitud / @Model.Longitud</dd></div>
-                <div><dt>Fecha de registro</dt><dd>@Model.FechaRegistro.ToString("dd/MM/yyyy")</dd></div>
-            </dl>
-        </section>
-
-        <section class="tarjeta-panel" id="panelCuentaBancaria">
-            <div class="cabecera-bloque">
-                <h3>Características</h3>
-            </div>
-            <ul class="lista-timeline">
-                <li>Vegetación: @Model.Vegetacion.</li>
-                <li>Uso de suelo: @Model.UsoSuelo.</li>
-                <li>Pendiente: @Model.Pendiente.</li>
-                <li>Recursos hídricos: @(Model.TieneRecursosHidricos ? "Sí" : "No").</li>
-                <li>
-                    Cuenta bancaria:
-                    @(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente de registro")
-                    <a asp-controller="Notificaciones" asp-action="Index">Ver notificaciones</a>
-                </li>
-            </ul>
-        </section>
-    </div>
-
-    <section class="tarjeta-panel mapa-detalle-finca-contenedor mapa-detalle-finca-contenedor--independiente">
+    <section class="tarjeta-panel">
         <div class="cabecera-bloque">
-            <h3>Ubicación registrada</h3>
+            <h3>Información general</h3>
         </div>
-        <p class="texto-ayuda">
-            Punto geográfico definido para la finca según su latitud y longitud.
-        </p>
-        <div id="mapaDetalleFinca"
-             class="mapa-detalle-finca"
-             data-latitud="@Model.Latitud"
-             data-longitud="@Model.Longitud"
-             data-nombre-finca="@Model.NombreFinca"
-             aria-label="Mapa de ubicación de la finca">
+
+        <div class="grid-dos-columnas detalle-resumen-grid">
+            <div><strong>Propietario</strong><div>@Model.PropietarioNombre</div></div>
+            <div><strong>Estado de finca</strong><div>@Model.EstadoFinca</div></div>
+            <div><strong>Provincia</strong><div>@Model.Provincia</div></div>
+            <div><strong>Cantón</strong><div>@Model.Canton</div></div>
+            <div><strong>Distrito</strong><div>@Model.Distrito</div></div>
+            <div><strong>Hectáreas</strong><div>@Model.Hectareas.ToString("N2")</div></div>
+            <div><strong>Vegetación</strong><div>@Model.Vegetacion</div></div>
+            <div><strong>Uso de suelo</strong><div>@Model.UsoSuelo</div></div>
+            <div><strong>Pendiente</strong><div>@Model.Pendiente</div></div>
+            <div><strong>Estado de evaluación</strong><div>@Model.EstadoEvaluacion</div></div>
+            <div><strong>Fecha de registro</strong><div>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</div></div>
+            <div><strong>Última actualización</strong><div>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</div></div>
+        </div>
+
+        <section class="tarjeta-panel tarjeta-panel-interna">
+            <div class="cabecera-bloque">
+                <h3>Ubicación registrada</h3>
+            </div>
+            <p class="texto-ayuda">Punto geográfico definido para la finca según su latitud y longitud.</p>
+            <div id="mapaDetalleFinca"
+                 class="mapa-detalle-finca"
+                 data-latitud="@latitudData"
+                 data-longitud="@longitudData"
+                 data-nombre-finca="@Model.NombreFinca"
+                 aria-label="Mapa de ubicación de la finca">
+            </div>
+            <div class="grid-dos-columnas mt-3 detalle-resumen-grid">
+                <div><strong>Latitud</strong><div>@Model.Latitud</div></div>
+                <div><strong>Longitud</strong><div>@Model.Longitud</div></div>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel tarjeta-panel-interna">
+            <div class="cabecera-bloque">
+                <h3>Estado del expediente</h3>
+            </div>
+            <div class="grid-dos-columnas detalle-resumen-grid">
+                <div><strong>Cuenta bancaria</strong><div>@(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente")</div></div>
+                <div><strong>Plan de pago</strong><div>@(Model.TienePlanPago ? "Disponible" : "Pendiente")</div></div>
+                <div><strong>Cantidad de evidencias</strong><div>@cantidadEvidencias</div></div>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel tarjeta-panel-interna">
+            <div class="cabecera-bloque">
+                <h3>Evidencias adjuntas</h3>
+            </div>
+            @if (cantidadEvidencias > 0)
+            {
+                <p>Hay evidencias adjuntas para esta finca.</p>
+            }
+            else
+            {
+                <p>No hay evidencias adjuntas registradas para esta finca.</p>
+            }
+        </section>
+
+        <div class="fila-acciones-formulario">
+            <a class="boton-secundario" asp-controller="Fincas" asp-action="MisFincas">Volver</a>
         </div>
     </section>
-
-    <div class="grid-dos-paneles">
-        <section class="tarjeta-panel" id="panelEvidencias">
-            <div class="cabecera-bloque">
-                <h3>Evidencias</h3>
-            </div>
-            <div class="estado-vacio-inline">
-                <p>
-                    Evidencias cargadas: <strong>@Model.CantidadEvidencias</strong>.
-                </p>
-                <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
-            </div>
-        </section>
-
-        <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Historial de pagos</h3>
-            </div>
-            <div class="estado-vacio-inline">
-                @if (Model.TienePlanPago)
-                {
-                    <p>La finca cuenta con plan de pago asociado.</p>
-                }
-                else
-                {
-                    <p>La finca aún no cuenta con plan de pago asociado.</p>
-                }
-                <a class="boton-link" asp-controller="Pagos" asp-action="HistorialPagos">Ver historial de pagos</a>
-            </div>
-        </section>
-    </div>
 </section>
 
 @section Scripts {
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var mapaElemento = document.getElementById("mapaDetalleFinca");
-            if (!mapaElemento || typeof window.L === "undefined") {
-                return;
-            }
-
-            var latitud = parseFloat(mapaElemento.dataset.latitud);
-            var longitud = parseFloat(mapaElemento.dataset.longitud);
-
-            if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) {
-                mapaElemento.innerHTML = "<p class='texto-ayuda p-3'>No hay coordenadas válidas para mostrar el mapa.</p>";
-                return;
-            }
-
-            var nombreFinca = mapaElemento.dataset.nombreFinca || "Finca";
-            var mapa = window.L.map("mapaDetalleFinca", {
-                center: [latitud, longitud],
-                zoom: 14,
-                scrollWheelZoom: false
-            });
-
-            window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                maxZoom: 19,
-                attribution: "&copy; OpenStreetMap contributors"
-            }).addTo(mapa);
-
-            window.L.marker([latitud, longitud])
-                .addTo(mapa)
-                .bindPopup(nombreFinca + "<br/>Lat: " + latitud.toFixed(6) + " / Lon: " + longitud.toFixed(6))
-                .openPopup();
-        });
-    </script>
+    <script src="~/js/detalle-finca.js" asp-append-version="true"></script>
 }
 
 @section Styles {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
-        .mapa-detalle-finca-contenedor {
-            display: grid;
-            gap: var(--espacio-2);
+        .tarjeta-panel-interna {
+            margin-top: var(--espacio-3);
         }
 
-        .mapa-detalle-finca-contenedor--independiente {
-            margin-top: var(--espacio-4);
-            margin-bottom: var(--espacio-4);
+        .detalle-resumen-grid {
+            gap: var(--espacio-2);
         }
 
         .mapa-detalle-finca {
