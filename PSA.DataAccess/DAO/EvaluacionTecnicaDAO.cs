@@ -138,15 +138,31 @@ WHERE e.IdEvaluacion = @IdEvaluacion;";
         public async Task<bool> AsignarIngenieroAsync(int idEvaluacion, int idIngeniero)
         {
             const string sql = @"
+BEGIN TRAN;
+
 UPDATE e
 SET e.IdIngeniero = @IdIngeniero,
-    e.EstadoEvaluacion = @EstadoEnProceso,
-    f.EstadoFinca = @EstadoFincaEnProceso,
-    f.FechaActualizacion = SYSDATETIME()
+    e.EstadoEvaluacion = @EstadoEnProceso
 FROM EvaluacionesTecnicas e
-INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
 WHERE e.IdEvaluacion = @IdEvaluacion
-  AND e.EstadoEvaluacion = @EstadoPendiente;";
+  AND e.EstadoEvaluacion = @EstadoPendiente;
+
+IF @@ROWCOUNT = 0
+BEGIN
+    ROLLBACK TRAN;
+    SELECT CAST(0 AS bit);
+    RETURN;
+END
+
+UPDATE f
+SET f.EstadoFinca = @EstadoFincaEnProceso,
+    f.FechaActualizacion = SYSDATETIME()
+FROM Fincas f
+INNER JOIN EvaluacionesTecnicas e ON e.IdFinca = f.IdFinca
+WHERE e.IdEvaluacion = @IdEvaluacion;
+
+COMMIT TRAN;
+SELECT CAST(1 AS bit);";
 
             using var connection = new SqlConnection(_connectionString);
             using var command = new SqlCommand(sql, connection);
@@ -157,7 +173,8 @@ WHERE e.IdEvaluacion = @IdEvaluacion
             command.Parameters.AddWithValue("@EstadoFincaEnProceso", "En proceso");
 
             await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+            var result = await command.ExecuteScalarAsync();
+            return result is bool boolResult && boolResult;
         }
 
         public async Task<bool> RegistrarResultadoAsync(int idEvaluacion, RegistrarResultadoEvaluacionDTO dto)
@@ -171,6 +188,8 @@ WHERE e.IdEvaluacion = @IdEvaluacion
                 : "Rechazada";
 
             const string sql = @"
+BEGIN TRAN;
+
 UPDATE e
 SET e.FechaVisita = @FechaVisita,
     e.Observaciones = @Observaciones,
@@ -181,18 +200,32 @@ SET e.FechaVisita = @FechaVisita,
     e.UsoSueloAjustado = @UsoSueloAjustado,
     e.PendienteAjustada = @PendienteAjustada,
     e.FechaDecision = SYSDATETIME(),
-    e.EstadoEvaluacion = @EstadoEvaluacion,
-    f.Hectareas = COALESCE(@HectareasAjustadas, f.Hectareas),
+    e.EstadoEvaluacion = @EstadoEvaluacion
+FROM EvaluacionesTecnicas e
+WHERE e.IdEvaluacion = @IdEvaluacion
+  AND e.EstadoEvaluacion IN (@EstadoPendiente, @EstadoEnProceso);
+
+IF @@ROWCOUNT = 0
+BEGIN
+    ROLLBACK TRAN;
+    SELECT CAST(0 AS bit);
+    RETURN;
+END
+
+UPDATE f
+SET f.Hectareas = COALESCE(@HectareasAjustadas, f.Hectareas),
     f.Vegetacion = COALESCE(@VegetacionAjustada, f.Vegetacion),
     f.TieneRecursosHidricos = COALESCE(@RecursosHidricosAjustado, f.TieneRecursosHidricos),
     f.UsoSuelo = COALESCE(@UsoSueloAjustado, f.UsoSuelo),
     f.Pendiente = COALESCE(@PendienteAjustada, f.Pendiente),
     f.EstadoFinca = @EstadoFinca,
     f.FechaActualizacion = SYSDATETIME()
-FROM EvaluacionesTecnicas e
-INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
-WHERE e.IdEvaluacion = @IdEvaluacion
-  AND e.EstadoEvaluacion IN (@EstadoPendiente, @EstadoEnProceso);";
+FROM Fincas f
+INNER JOIN EvaluacionesTecnicas e ON e.IdFinca = f.IdFinca
+WHERE e.IdEvaluacion = @IdEvaluacion;
+
+COMMIT TRAN;
+SELECT CAST(1 AS bit);";
 
             using var connection = new SqlConnection(_connectionString);
             using var command = new SqlCommand(sql, connection);
@@ -211,7 +244,8 @@ WHERE e.IdEvaluacion = @IdEvaluacion
             command.Parameters.AddWithValue("@EstadoEnProceso", EstadosEvaluacionTecnica.EnProceso);
 
             await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+            var result = await command.ExecuteScalarAsync();
+            return result is bool boolResult && boolResult;
         }
 
         public async Task<bool> ActualizarEstadoEvaluacionAsync(int idEvaluacion, string nuevoEstado)
