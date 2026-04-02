@@ -39,6 +39,18 @@ document.addEventListener("DOMContentLoaded", function () {
             return "El formato numérico de '" + nombreCampo + "' no es válido.";
         }
 
+        if (campo.validity.tooLong) {
+            return "El valor de '" + nombreCampo + "' supera la longitud permitida.";
+        }
+
+        if (campo.validity.tooShort) {
+            return "El valor de '" + nombreCampo + "' es demasiado corto.";
+        }
+
+        if (campo.validity.badInput) {
+            return "El valor ingresado en '" + nombreCampo + "' no tiene un formato válido.";
+        }
+
         return "";
     }
 
@@ -418,6 +430,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     configurarMensajesValidacionEspanol();
+    formulario.setAttribute("lang", "es");
     inicializarUbicaciones();
     inicializarMapa();
     sincronizarRecursosHidricos();
