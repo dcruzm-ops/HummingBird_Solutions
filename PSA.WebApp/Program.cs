@@ -6,7 +6,16 @@ using PSA.WebApp.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    var provider = options.ModelBindingMessageProvider;
+    provider.SetValueMustNotBeNullAccessor(_ => "Este campo es obligatorio.");
+    provider.SetMissingBindRequiredValueAccessor(_ => "Este campo es obligatorio.");
+    provider.SetMissingRequestBodyRequiredValueAccessor(() => "La solicitud es obligatoria.");
+    provider.SetAttemptedValueIsInvalidAccessor((valor, campo) => $"El valor '{valor}' no es válido para {campo}.");
+    provider.SetUnknownValueIsInvalidAccessor(campo => $"El valor seleccionado no es válido para {campo}.");
+    provider.SetValueIsInvalidAccessor(valor => $"El valor '{valor}' no es válido.");
+});
 builder.Services.AddHttpClient();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -65,6 +74,19 @@ builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
     }
 
     return new TokenRecuperacionDAO(connectionString);
+});
+
+builder.Services.AddScoped<DashboardDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
+    }
+
+    return new DashboardDAO(connectionString);
 });
 
 builder.Services.AddScoped<AutenticacionManager>();
