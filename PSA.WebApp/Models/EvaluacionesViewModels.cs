@@ -5,6 +5,7 @@ namespace PSA.WebApp.Models
     public class BandejaEvaluacionesViewModel
     {
         public List<BandejaEvaluacionPendienteDTO> Pendientes { get; set; } = new();
+        public string EstadoFiltro { get; set; } = "Todos";
     }
 
     public class NuevaEvaluacionViewModel
