@@ -2,8 +2,9 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-    var evidencias = ViewBag.EvidenciasFinca as List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>
-        ?? new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+    var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
+    var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <section class="seccion-pagina">
@@ -85,14 +86,21 @@
                 </div>
             </div>
 
-            @if (!string.IsNullOrWhiteSpace(Model.DireccionExacta))
-            {
-                <div class="campo-detalle campo-detalle-ancho">
-                    <span class="etiqueta">Dirección exacta</span>
-                    <strong>@Model.DireccionExacta</strong>
-                </div>
-            }
-        </section>
+    <section class="tarjeta-panel mapa-detalle-finca-contenedor mapa-detalle-finca-contenedor--independiente">
+        <div class="cabecera-bloque">
+            <h3>Ubicación registrada</h3>
+        </div>
+        <p class="texto-ayuda">
+            Punto geográfico definido para la finca según su latitud y longitud.
+        </p>
+        <div id="mapaDetalleFinca"
+             class="mapa-detalle-finca"
+             data-latitud="@latitudData"
+             data-longitud="@longitudData"
+             data-nombre-finca="@Model.NombreFinca"
+             aria-label="Mapa de ubicación de la finca">
+        </div>
+    </section>
 
         <!-- Ubicación -->
         <section class="tarjeta-panel">
@@ -177,9 +185,29 @@
             }
         </section>
 
-        <div class="fila-acciones-formulario">
-            <a class="boton-secundario" asp-action="MisFincas">Volver</a>
-        </div>
+            var nombreFinca = mapaElemento.dataset.nombreFinca || "Finca";
+            var mapa = window.L.map("mapaDetalleFinca", {
+                center: [latitud, longitud],
+                zoom: 14,
+                scrollWheelZoom: false
+            });
+
+            window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19,
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(mapa);
+
+            window.L.marker([latitud, longitud])
+                .addTo(mapa)
+                .bindPopup(nombreFinca + "<br/>Lat: " + latitud.toFixed(6) + " / Lon: " + longitud.toFixed(6))
+                .openPopup();
+
+            setTimeout(function () {
+                mapa.invalidateSize();
+            }, 100);
+        });
+    </script>
+}
 
     </div>
 </section>
