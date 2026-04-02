@@ -102,10 +102,9 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("./v1/swagger.json", "PSA.WebAPI v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "PSA.WebAPI v1");
         options.RoutePrefix = "swagger";
     });
 }
