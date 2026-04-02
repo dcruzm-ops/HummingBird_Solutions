@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Detalle de finca";
     var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
+    var evidencias = Model.CantidadEvidencias;
     var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
     var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
@@ -107,17 +108,11 @@
             <div class="cabecera-bloque">
                 <h3>Ubicación</h3>
             </div>
-
-            <div class="grid-dos-columnas">
-                <div class="campo-detalle">
-                    <span class="etiqueta">Latitud</span>
-                    <strong>@Model.Latitud</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Longitud</span>
-                    <strong>@Model.Longitud</strong>
-                </div>
+            <div class="estado-vacio-inline">
+                <p>
+                    Evidencias cargadas: <strong>@evidencias</strong>.
+                </p>
+                <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
             </div>
         </section>
 
