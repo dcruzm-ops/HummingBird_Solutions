@@ -54,6 +54,19 @@ builder.Services.AddScoped<FincaDAO>(sp =>
     return new FincaDAO(connectionString);
 });
 
+builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+    }
+
+    return new EvaluacionTecnicaDAO(connectionString);
+});
+
 builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
@@ -70,6 +83,7 @@ builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
 builder.Services.AddScoped<FincaService>();
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
+builder.Services.AddScoped<EvaluacionTecnicaManager>();
 
 var app = builder.Build();
 
@@ -83,6 +97,8 @@ if (app.Environment.IsDevelopment())
         options.RoutePrefix = "swagger";
     });
 }
+
+app.MapGet("/openapi/v1.json", () => Results.Redirect("/swagger/v1/swagger.json"));
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
