@@ -30,12 +30,22 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> FincasPendientes()
+        public async Task<IActionResult> FincasPendientes(string estado = "Todos")
         {
             CargarContextoBase("Fincas pendientes", "Revise y tome evaluaciones técnicas pendientes o en proceso.");
+            var pendientes = await ObtenerBandejaDesdeApiConFallbackAsync();
+
+            if (!string.Equals(estado, "Todos", StringComparison.OrdinalIgnoreCase))
+            {
+                pendientes = pendientes
+                    .Where(x => string.Equals(x.EstadoEvaluacion, estado, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
             var model = new BandejaEvaluacionesViewModel
             {
-                Pendientes = await ObtenerBandejaDesdeApiConFallbackAsync()
+                Pendientes = pendientes,
+                EstadoFiltro = estado
             };
 
             return View(model);
