@@ -1,14 +1,91 @@
+@model PSA.WebApp.Models.ReporteEvaluacionesViewModel
 @{
     ViewData["Title"] = "Historial de evaluaciones";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Consulta histórica</span>
-            <h2>Historial de evaluaciones</h2>
-            <p>Base para reportar decisiones técnicas finalizadas.</p>
+            <span class="eyebrow">Reporte técnico</span>
+            <h2>Reportes mensuales y anuales</h2>
+            <p>Consulte evaluaciones por período, estado y decisión técnica.</p>
         </div>
         <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="FincasPendientes">Volver a pendientes</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <form method="get" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones" class="formulario-base formulario-modulo">
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label for="anio">Año</label>
+                    <input type="number" id="anio" name="anio" min="2000" max="2100" value="@Model.Anio" />
+                </div>
+                <div class="campo-formulario">
+                    <label for="mes">Mes</label>
+                    <select id="mes" name="mes">
+                        <option value="">Todos</option>
+                        @for (var i = 1; i <= 12; i++)
+                        {
+                            if (Model.Mes == i)
+                            {
+                                <option value="@i" selected="selected">@i</option>
+                            }
+                            else
+                            {
+                                <option value="@i">@i</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="campo-formulario">
+                    <label for="estadoEvaluacion">Estado evaluación</label>
+                    <input type="text" id="estadoEvaluacion" name="estadoEvaluacion" value="@Model.EstadoEvaluacion" placeholder="Ej: En proceso" />
+                </div>
+                <div class="campo-formulario">
+                    <label for="decisionTecnica">Decisión técnica</label>
+                    <select id="decisionTecnica" name="decisionTecnica">
+                        <option value="">Todas</option>
+                        @if (Model.DecisionTecnica == "Califica")
+                        {
+                            <option value="Califica" selected="selected">Califica</option>
+                        }
+                        else
+                        {
+                            <option value="Califica">Califica</option>
+                        }
+                        @if (Model.DecisionTecnica == "No califica")
+                        {
+                            <option value="No califica" selected="selected">No califica</option>
+                        }
+                        else
+                        {
+                            <option value="No califica">No califica</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="fila-acciones-formulario">
+                <button type="submit" class="boton-primario">Filtrar reporte</button>
+            </div>
+        </form>
+    </section>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Total evaluaciones</span>
+            <strong>@Model.Reporte.TotalEvaluaciones</strong>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Califica</span>
+            <strong>@Model.Reporte.TotalCalifica</strong>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">No califica</span>
+            <strong>@Model.Reporte.TotalNoCalifica</strong>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Pendientes / en proceso</span>
+            <strong>@Model.Reporte.TotalPendientes</strong>
+        </article>
     </div>
 
     <section class="tarjeta-panel">
@@ -16,28 +93,37 @@
             <table class="tabla-base">
                 <thead>
                     <tr>
-                        <th>Expediente</th>
+                        <th>Evaluación</th>
                         <th>Finca</th>
-                        <th>Fecha visita</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
                         <th>Decisión</th>
-                        <th>Acción</th>
+                        <th>Fecha visita</th>
+                        <th>Fecha decisión</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>PSA-2025-011</td>
-                        <td>Los Cedros</td>
-                        <td>10/03/2026</td>
-                        <td><span class="badge-estado badge-exito">Califica</span></td>
-                        <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="11">Ver registro</a></td>
-                    </tr>
-                    <tr>
-                        <td>PSA-2025-007</td>
-                        <td>Monte Claro</td>
-                        <td>28/02/2026</td>
-                        <td><span class="badge-estado badge-error">No califica</span></td>
-                        <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="7">Ver registro</a></td>
-                    </tr>
+                    @if (Model.Reporte.Evaluaciones.Any())
+                    {
+                        foreach (var item in Model.Reporte.Evaluaciones)
+                        {
+                            <tr>
+                                <td>#@item.IdEvaluacion</td>
+                                <td>@item.NombreFinca</td>
+                                <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                                <td>@item.EstadoEvaluacion</td>
+                                <td>@(string.IsNullOrWhiteSpace(item.DecisionTecnica) ? "N/A" : item.DecisionTecnica)</td>
+                                <td>@(item.FechaVisita?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                                <td>@(item.FechaDecision?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7">No hay evaluaciones para los filtros seleccionados.</td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>

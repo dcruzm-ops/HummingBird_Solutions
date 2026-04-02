@@ -2,12 +2,11 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-    var latitudData = Model.Latitud;
-    var longitudData = Model.Longitud;
-    var cantidadEvidencias = Model.CantidadEvidencias;
-    IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> evidencias =
-        (ViewBag.EvidenciasFinca as IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>)
-        ?? System.Linq.Enumerable.Empty<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+    var expediente = $"PSA-{Model.FechaRegistro.Year}-{Model.IdFinca:D3}";
+    var cantidadEvidencias = Model.CantidadEvidencias < 0 ? 0 : Model.CantidadEvidencias;
+    var evidencias = System.Linq.Enumerable.Range(1, cantidadEvidencias);
+    var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
 <section class="seccion-pagina">
@@ -110,17 +109,11 @@
             <div class="cabecera-bloque">
                 <h3>Ubicación</h3>
             </div>
-
-            <div class="grid-dos-columnas">
-                <div class="campo-detalle">
-                    <span class="etiqueta">Latitud</span>
-                    <strong>@latitudData</strong>
-                </div>
-
-                <div class="campo-detalle">
-                    <span class="etiqueta">Longitud</span>
-                    <strong>@longitudData</strong>
-                </div>
+            <div class="estado-vacio-inline">
+                <p>
+                    Evidencias cargadas: <strong>@cantidadEvidencias</strong>.
+                </p>
+                <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
             </div>
         </section>
 
