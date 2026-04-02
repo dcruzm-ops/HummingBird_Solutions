@@ -64,40 +64,33 @@ namespace PSA.WebApp.Controllers
                 return View(dto);
             }
 
-            try
+            var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi");
+            if (client != null)
             {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new Exception("HttpClient no disponible");
-
-                var baseUrl = GetApiBaseUrls().First();
-
-                // 🟢 1. Crear finca
-                var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
-
-                if (!response.IsSuccessStatusCode)
+                foreach (var baseUrl in GetApiBaseUrls())
                 {
-                    var error = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError("", error);
-                    CargarCatalogosFormularioFinca();
-                    return View(dto);
+                    try
+                    {
+                        var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            continue;
+                        }
+
+                        var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
+                        TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
+                        return RedirectToAction(nameof(MisFincas));
+                    }
+                    catch
+                    {
+                        // Se intenta siguiente URL y luego fallback local
+                    }
                 }
-
-                var idFinca = await ObtenerIdFincaDesdeRespuestaAsync(response);
-
-                // 🟢 2. Subir archivos (si hay)
-                if (idFinca > 0 && archivos != null && archivos.Count > 0)
-                {
-                    await SubirEvidenciasAsync(client, baseUrl, idFinca, dto.IdPropietario, archivos);
-                }
-
-                TempData["MensajeExito"] = "Finca registrada correctamente";
-                return RedirectToAction(nameof(MisFincas));
             }
-            catch (Exception ex)
-            {
-                TempData["MensajeError"] = ex.Message;
-                return RedirectToAction(nameof(MisFincas));
-            }
+
+            var idFincaLocal = await _fincaDAO.CrearFincaAsync(dto);
+            TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaLocal, true);
+            return RedirectToAction(nameof(MisFincas));
         }
 
         // 🔥 NUEVO: subir archivos
@@ -179,9 +172,51 @@ namespace PSA.WebApp.Controllers
 
         private void CargarCatalogosFormularioFinca()
         {
-            ViewBag.CatalogoPendiente = new List<string> { "Plana", "Inclinada" };
-            ViewBag.CatalogoVegetacion = new List<string> { "Bosque primario", "Pasto" };
-            ViewBag.CatalogoUsoSuelo = new List<string> { "Conservación", "Ganadería" };
+            var pendientes = _fincaDAO.ObtenerCatalogoFactorAsync("Pendiente").GetAwaiter().GetResult();
+            var vegetaciones = _fincaDAO.ObtenerCatalogoFactorAsync("Vegetacion").GetAwaiter().GetResult();
+            var usosSuelo = _fincaDAO.ObtenerCatalogoFactorAsync("UsoSuelo").GetAwaiter().GetResult();
+
+            ViewBag.CatalogoPendiente = MezclarCatalogoBaseYBd(
+                new List<string> { "Plana", "Suave", "Moderada", "Inclinada", "Muy inclinada", "Escarpada" },
+                pendientes
+            );
+
+            ViewBag.CatalogoVegetacion = MezclarCatalogoBaseYBd(
+                new List<string>
+                {
+                    "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto",
+                    "Matorral", "Humedal", "Manglar", "Tacotal", "Cultivo mixto", "Regeneración natural"
+                },
+                vegetaciones
+            );
+
+            ViewBag.CatalogoUsoSuelo = MezclarCatalogoBaseYBd(
+                new List<string>
+                {
+                    "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto",
+                    "Protección hídrica", "Recuperación ecológica", "Silvopastoril", "Reforestación", "Corredor biológico"
+                },
+                usosSuelo
+            );
+        }
+
+        private static List<string> MezclarCatalogoBaseYBd(List<string> baseCatalogo, List<string> catalogoBd)
+        {
+            var resultado = new List<string>(baseCatalogo);
+            var set = new HashSet<string>(baseCatalogo, StringComparer.OrdinalIgnoreCase);
+            foreach (var valorBd in catalogoBd)
+            {
+                if (!string.IsNullOrWhiteSpace(valorBd))
+                {
+                    var valorNormalizado = valorBd.Trim();
+                    if (set.Add(valorNormalizado))
+                    {
+                        resultado.Add(valorNormalizado);
+                    }
+                }
+            }
+
+            return resultado;
         }
     }
 }
