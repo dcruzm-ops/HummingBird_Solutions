@@ -7,6 +7,25 @@
     var longitudData = Model.Longitud;
     var cantidadEvidencias = Model.CantidadEvidencias;
 
+    List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> evidencias = new();
+
+    if (ViewBag.EvidenciasFinca is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDto)
+    {
+        evidencias.AddRange(listaDto);
+    }
+    else if (ViewBag.EvidenciasFinca is IEnumerable<string> listaTexto)
+    {
+        foreach (var texto in listaTexto)
+        {
+            evidencias.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
+            {
+                NombreArchivo = texto,
+                TipoArchivo = "No especificado",
+                FechaCarga = DateTime.MinValue,
+                UrlDescarga = "#"
+            });
+        }
+    }
 }
 
 <section class="seccion-pagina">
@@ -92,29 +111,7 @@
                 <h3>Evidencias adjuntas</h3>
             </div>
 
-            @{
-                List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> evidenciasTabla = new();
-
-                if (ViewBag.EvidenciasFinca is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDtoTabla)
-                {
-                    evidenciasTabla.AddRange(listaDtoTabla);
-                }
-                else if (ViewBag.EvidenciasFinca is IEnumerable<string> listaTextoTabla)
-                {
-                    foreach (var textoTabla in listaTextoTabla)
-                    {
-                        evidenciasTabla.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
-                        {
-                            NombreArchivo = textoTabla,
-                            TipoArchivo = "No especificado",
-                            FechaCarga = DateTime.MinValue,
-                            UrlDescarga = "#"
-                        });
-                    }
-                }
-            }
-
-            @if (evidenciasTabla.Count > 0)
+            @if (evidencias.Count > 0)
             {
                 <table class="tabla-base">
                     <thead>
@@ -126,7 +123,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidenciasTabla)
+                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidencias)
                         {
                             <tr>
                                 <td>@evidencia.NombreArchivo</td>
