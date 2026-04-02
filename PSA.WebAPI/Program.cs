@@ -11,7 +11,6 @@ Console.WriteLine("PSAConnection: " + builder.Configuration["ConnectionStrings:P
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
 
@@ -98,17 +97,6 @@ builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
 
 var app = builder.Build();
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("./v1/swagger.json", "PSA.WebAPI v1");
-        options.RoutePrefix = "swagger";
-    });
-}
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
