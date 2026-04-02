@@ -14,7 +14,14 @@
         </div>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioRegistrarFinca" novalidate method="post" asp-controller="Fincas" asp-action="RegistrarFinca" data-omitir-trobber-global>
+    <form class="formulario-base formulario-modulo"
+          id="formularioRegistrarFinca"
+          novalidate
+          method="post"
+          enctype="multipart/form-data"
+          asp-controller="Fincas"
+          asp-action="RegistrarFinca"
+          data-omitir-trobber-global>
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -137,6 +144,21 @@
             </div>
         </div>
 
+        <div class="seccion-formulario">
+            <h3>Documentos y fotografías</h3>
+            <div class="campo-formulario">
+                <label for="archivos">Adjuntar archivos</label>
+                <input id="archivos"
+                       name="archivos"
+                       type="file"
+                       multiple
+                       accept=".jpg,.jpeg,.png,.pdf" />
+                <small class="texto-ayuda">
+                    Puede adjuntar fotografías, planos o documentos PDF. Máximo 10 MB por archivo.
+                </small>
+            </div>
+        </div>
+
         <div class="fila-acciones-formulario">
             <a class="boton-secundario" asp-controller="Fincas" asp-action="MisFincas">Cancelar</a>
             <button type="submit" class="boton-primario" data-loading-button>
@@ -147,7 +169,7 @@
     </form>
 </section>
 
-@section Scripts{
+@section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="~/js/registro-finca.js" asp-append-version="true"></script>
@@ -157,13 +179,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         .mapa-ubicacion-finca {
-            width: 100%;
-            min-height: 360px;
-            border: 1px solid var(--color-borde-suave);
-            border-radius: var(--radio-md);
-            overflow: hidden;
-            box-shadow: var(--sombra-sm);
+        width: 100%;
+        min-height: 360px;
+        border: 1px solid var(--color-borde-suave);
+        border-radius: var(--radio-md);
+        overflow: hidden;
+        box-shadow: var(--sombra-sm);
         }
-
     </style>
 }
