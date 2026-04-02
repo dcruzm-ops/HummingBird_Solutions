@@ -9,68 +9,48 @@
     var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
 }
 
-<section class="seccion-pagina propietario-detalle-finca">
+<section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Expediente #@expediente</span>
+            <span class="eyebrow">Expediente de finca</span>
             <h2>@Model.NombreFinca</h2>
-            <p>Detalle completo de la finca registrada.</p>
-        </div>
-        <div class="grupo-acciones">
-            <a class="boton-secundario" href="#panelCuentaBancaria">Actualizar cuenta bancaria</a>
-            <a class="boton-primario" href="#panelEvidencias">Adjuntar evidencia</a>
+            <p>Detalle general de la finca registrada en PSA Costa Rica.</p>
         </div>
     </div>
 
-    <div class="grid-tarjetas-kpi">
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Estado de finca</span>
-            <strong>@Model.EstadoFinca</strong>
-            <small>Última actualización: @Model.FechaActualizacion.ToString("dd/MM/yyyy")</small>
-        </article>
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Estado de evaluación</span>
-            <strong>@Model.EstadoEvaluacion</strong>
-            <small>Proceso técnico actual</small>
-        </article>
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Plan anual</span>
-            <strong>@(Model.TienePlanPago ? "Disponible" : "No disponible")</strong>
-            <small>Se muestra cuando existe plan asociado</small>
-        </article>
-    </div>
-
-    <div class="grid-dos-paneles">
+    <div class="grid-detalle-finca">
         <section class="tarjeta-panel">
             <div class="cabecera-bloque">
-                <h3>Datos generales</h3>
+                <h3>Ubicación registrada</h3>
             </div>
-            <dl class="lista-detalle">
-                <div><dt>Expediente</dt><dd>@expediente</dd></div>
-                <div><dt>Propietario</dt><dd>@Model.PropietarioNombre</dd></div>
-                <div><dt>Ubicación</dt><dd>@Model.Provincia, @Model.Canton, @Model.Distrito</dd></div>
-                <div><dt>Dirección exacta</dt><dd>@(string.IsNullOrWhiteSpace(Model.DireccionExacta) ? "No registrada" : Model.DireccionExacta)</dd></div>
-                <div><dt>Hectáreas</dt><dd>@Model.Hectareas</dd></div>
-                <div><dt>Latitud / Longitud</dt><dd>@Model.Latitud / @Model.Longitud</dd></div>
-                <div><dt>Fecha de registro</dt><dd>@Model.FechaRegistro.ToString("dd/MM/yyyy")</dd></div>
-            </dl>
-        </section>
 
-        <section class="tarjeta-panel" id="panelCuentaBancaria">
-            <div class="cabecera-bloque">
-                <h3>Características</h3>
+            <div class="grid-dos-columnas">
+                <div class="campo-detalle"><span class="etiqueta">Propietario</span><strong>@Model.PropietarioNombre</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Estado de finca</span><strong>@Model.EstadoFinca</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Provincia</span><strong>@Model.Provincia</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Cantón</span><strong>@Model.Canton</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Distrito</span><strong>@Model.Distrito</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Hectáreas</span><strong>@Model.Hectareas</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Vegetación</span><strong>@Model.Vegetacion</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Uso de suelo</span><strong>@Model.UsoSuelo</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Pendiente</span><strong>@Model.Pendiente</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Estado de evaluación</span><strong>@Model.EstadoEvaluacion</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Fecha de registro</span><strong>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Última actualización</span><strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong></div>
             </div>
-            <ul class="lista-timeline">
-                <li>Vegetación: @Model.Vegetacion.</li>
-                <li>Uso de suelo: @Model.UsoSuelo.</li>
-                <li>Pendiente: @Model.Pendiente.</li>
-                <li>Recursos hídricos: @(Model.TieneRecursosHidricos ? "Sí" : "No").</li>
-                <li>
-                    Cuenta bancaria:
-                    @(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente de registro")
-                    <a asp-controller="Notificaciones" asp-action="Index">Ver notificaciones</a>
-                </li>
-            </ul>
+            <div class="grid-dos-columnas mt-3 detalle-resumen-grid">
+                <div><strong>Latitud</strong><div>@Model.Latitud</div></div>
+                <div><strong>Longitud</strong><div>@Model.Longitud</div></div>
+            </div>
+            @if (evidencias.Any())
+            {
+                <ul class="lista-timeline">
+                    @foreach (var evidencia in evidencias)
+                    {
+                        <li>@evidencia</li>
+                    }
+                </ul>
+            }
         </section>
     </div>
 
@@ -90,31 +70,43 @@
         </div>
     </section>
 
-    <div class="grid-dos-paneles">
-        <section class="tarjeta-panel" id="panelEvidencias">
-            <div class="cabecera-bloque">
-                <h3>Evidencias</h3>
-            </div>
-            <div class="estado-vacio-inline">
-                <p>
-                    Evidencias cargadas: <strong>@Model.CantidadEvidencias</strong>.
-                </p>
-                <a class="boton-link" asp-controller="Fincas" asp-action="RegistrarFinca">Editar datos de la finca</a>
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque"><h3>Ubicación</h3></div>
+            <div class="grid-dos-columnas">
+                <div class="campo-detalle"><span class="etiqueta">Latitud</span><strong>@latitudData</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Longitud</span><strong>@longitudData</strong></div>
             </div>
         </section>
 
         <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Historial de pagos</h3>
+            <div class="cabecera-bloque"><h3>Estado del expediente</h3></div>
+            <div class="grid-dos-columnas">
+                <div class="campo-detalle"><span class="etiqueta">Cuenta bancaria</span><strong>@(Model.TieneCuentaBancaria ? "Registrada" : "Pendiente")</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Plan de pago</span><strong>@(Model.TienePlanPago ? "Registrado" : "Pendiente")</strong></div>
+                <div class="campo-detalle"><span class="etiqueta">Cantidad de evidencias</span><strong>@Model.CantidadEvidencias</strong></div>
             </div>
-            <div class="estado-vacio-inline">
-                @if (Model.TienePlanPago)
+        </section>
+
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque"><h3>Evidencias adjuntas</h3></div>
+            @{
+                var evidencias = new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+                if (ViewBag.EvidenciasFinca is IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> listaDto)
                 {
-                    <p>La finca cuenta con plan de pago asociado.</p>
+                    evidencias.AddRange(listaDto);
                 }
-                else
+                else if (ViewBag.EvidenciasFinca is IEnumerable<string> listaTexto)
                 {
-                    <p>La finca aún no cuenta con plan de pago asociado.</p>
+                    foreach (var texto in listaTexto)
+                    {
+                        evidencias.Add(new PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO
+                        {
+                            NombreArchivo = texto,
+                            TipoArchivo = "No especificado",
+                            FechaCarga = DateTime.MinValue,
+                            UrlDescarga = "#"
+                        });
+                    }
                 }
                 <a class="boton-link" asp-controller="Pagos" asp-action="HistorialPagos">Ver historial de pagos</a>
             </div>
