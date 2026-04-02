@@ -2,8 +2,9 @@
 
 @{
     ViewData["Title"] = "Detalle de finca";
-    var evidencias = ViewBag.EvidenciasFinca as List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>
-        ?? new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+    IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> evidencias =
+        (ViewBag.EvidenciasFinca as IEnumerable<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>)
+        ?? System.Linq.Enumerable.Empty<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
 }
 
 <section class="seccion-pagina">
@@ -143,7 +144,7 @@
                 <h3>Evidencias adjuntas</h3>
             </div>
 
-            @if (evidencias.Any())
+            @if (System.Linq.Enumerable.Any(evidencias))
             {
                 <table class="tabla-base">
                     <thead>
@@ -155,14 +156,14 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var e in evidencias)
+                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidencias)
                         {
                             <tr>
-                                <td>@e.NombreArchivo</td>
-                                <td>@e.TipoArchivo</td>
-                                <td>@e.FechaCarga.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@evidencia.NombreArchivo</td>
+                                <td>@evidencia.TipoArchivo</td>
+                                <td>@evidencia.FechaCarga.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
-                                    <a href="@e.UrlDescarga" target="_blank" class="boton-secundario boton-sm">
+                                    <a href="@evidencia.UrlDescarga" target="_blank" class="boton-secundario boton-sm">
                                         Ver
                                     </a>
                                 </td>
