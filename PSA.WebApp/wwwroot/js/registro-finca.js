@@ -8,21 +8,26 @@ document.addEventListener("DOMContentLoaded", function () {
     var textoBoton = formulario.querySelector("[data-loading-texto]");
     var spinnerBoton = formulario.querySelector("[data-loading-spinner]");
 
-    function obtenerCampo(principalId, alternoNombre) {
-        return document.getElementById(principalId)
-            || formulario.querySelector("[name='" + alternoNombre + "']");
+    function obtenerCampo(id) {
+        return document.getElementById(id) || null;
     }
 
-    var paisInput = document.getElementById("paisInput");
-    var provinciaInput = obtenerCampo("provinciaInput", "Provincia");
-    var cantonInput = obtenerCampo("cantonInput", "Canton");
-    var distritoInput = obtenerCampo("distritoInput", "Distrito");
-    var latitudInput = obtenerCampo("Latitud", "Latitud");
-    var longitudInput = obtenerCampo("Longitud", "Longitud");
-    var tieneRiosOQuebradasCheck = document.getElementById("tieneRiosOQuebradas");
-    var tieneNacientesCheck = document.getElementById("tieneNacientes");
-    var cantidadNacientesInput = document.getElementById("cantidadNacientes");
-    var tieneRecursosHidricosInput = document.getElementById("tieneRecursosHidricos");
+    var paisInput = obtenerCampo("paisSeleccionado");
+    var provinciaInput = obtenerCampo("provinciaInput");
+    var cantonInput = obtenerCampo("cantonInput");
+    var distritoInput = obtenerCampo("distritoInput");
+    var latitudInput = obtenerCampo("Latitud");
+    var longitudInput = obtenerCampo("Longitud");
+
+    var tieneRiosOQuebradasCheck = obtenerCampo("tieneRiosOQuebradas");
+    var tieneNacientesCheck = obtenerCampo("tieneNacientes");
+    var cantidadNacientesInput = obtenerCampo("cantidadNacientes");
+    var tieneRecursosHidricosInput = obtenerCampo("tieneRecursosHidricos");
+
+    var mapaContenedor = obtenerCampo("mapaUbicacionFinca");
+    var mapa = null;
+    var marcador = null;
+    var limitesCostaRica = null;
 
     function obtenerMensajeValidacion(campo) {
         var nombreCampo = (campo.labels && campo.labels[0] && campo.labels[0].textContent)
@@ -53,21 +58,13 @@ document.addEventListener("DOMContentLoaded", function () {
             campo.addEventListener("invalid", function () {
                 campo.setCustomValidity(obtenerMensajeValidacion(campo));
             });
-
-            campo.addEventListener("input", function () {
-                campo.setCustomValidity("");
-            });
-
-            campo.addEventListener("change", function () {
-                campo.setCustomValidity("");
-            });
+            campo.addEventListener("input", function () { campo.setCustomValidity(""); });
+            campo.addEventListener("change", function () { campo.setCustomValidity(""); });
         });
     }
 
     function sincronizarRecursosHidricos() {
-        if (!tieneRecursosHidricosInput) {
-            return;
-        }
+        if (!tieneRecursosHidricosInput) return;
 
         var tieneRios = !!(tieneRiosOQuebradasCheck && tieneRiosOQuebradasCheck.checked);
         var tieneNacientes = !!(tieneNacientesCheck && tieneNacientesCheck.checked);
@@ -90,42 +87,28 @@ document.addEventListener("DOMContentLoaded", function () {
     var marcador = null;
 
     function setCoordenadas(latitud, longitud) {
-        var latitudNormalizada = Number(latitud).toFixed(7);
-        var longitudNormalizada = Number(longitud).toFixed(7);
+        var lat = Number(latitud);
+        var lon = Number(longitud);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-        if (latitudInput) {
-            latitudInput.value = latitudNormalizada;
-            latitudInput.setAttribute("value", latitudNormalizada);
-        }
-        if (longitudInput) {
-            longitudInput.value = longitudNormalizada;
-            longitudInput.setAttribute("value", longitudNormalizada);
-        }
+        var latNorm = lat.toFixed(7);
+        var lonNorm = lon.toFixed(7);
+
+        if (latitudInput) latitudInput.value = latNorm;
+        if (longitudInput) longitudInput.value = lonNorm;
     }
 
     function setUbicacionAdministrativa(provincia, canton, distrito) {
-        if (paisInput) {
-            paisInput.value = "Costa Rica";
-        }
-        if (provinciaInput) {
-            provinciaInput.value = provincia || "";
-            provinciaInput.setCustomValidity("");
-        }
-        if (cantonInput) {
-            cantonInput.value = canton || "";
-            cantonInput.setCustomValidity("");
-        }
-        if (distritoInput) {
-            distritoInput.value = distrito || "";
-            distritoInput.setCustomValidity("");
-        }
+        if (paisInput) paisInput.value = "Costa Rica";
+        if (provinciaInput) provinciaInput.value = provincia || "";
+        if (cantonInput) cantonInput.value = canton || "";
+        if (distritoInput) distritoInput.value = distrito || "";
     }
 
     function extraerPrimerValorValido() {
         for (var i = 0; i < arguments.length; i++) {
-            if (arguments[i] && String(arguments[i]).trim()) {
-                return String(arguments[i]).trim();
-            }
+            var valor = arguments[i];
+            if (valor && String(valor).trim()) return String(valor).trim();
         }
         return "";
     }
@@ -136,21 +119,15 @@ document.addEventListener("DOMContentLoaded", function () {
             + "&lon="
             + encodeURIComponent(longitud);
 
-        fetch(url, {
-            headers: {
-                "Accept": "application/json"
-            }
-        })
+        return fetch(url, { headers: { "Accept": "application/json" } })
             .then(function (respuesta) {
-                if (!respuesta.ok) {
-                    throw new Error("No se pudo resolver la ubicación administrativa");
-                }
+                if (!respuesta.ok) throw new Error("No se pudo resolver la ubicación administrativa");
                 return respuesta.json();
             })
             .then(function (resultado) {
                 var address = resultado && resultado.address ? resultado.address : {};
-
                 var paisCodigo = extraerPrimerValorValido(address.country_code).toLowerCase();
+
                 if (paisCodigo !== "cr") {
                     throw new Error("La ubicación seleccionada está fuera de Costa Rica");
                 }
@@ -180,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ).replace(/^Distrito de\s+/i, "").trim();
 
                 setUbicacionAdministrativa(provincia, canton, distrito);
+                if (provinciaInput) provinciaInput.setCustomValidity("");
             })
             .catch(function () {
                 setUbicacionAdministrativa("", "", "");
@@ -214,11 +192,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function inicializarMapa() {
-        if (!mapaContenedor || typeof window.L === "undefined") {
-            return;
-        }
+        if (!mapaContenedor || typeof window.L === "undefined") return;
 
-        var limitesCostaRica = window.L.latLngBounds(
+        limitesCostaRica = window.L.latLngBounds(
             window.L.latLng(8.0, -86.2),
             window.L.latLng(11.4, -82.3)
         );
@@ -253,7 +229,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (tieneRiosOQuebradasCheck) {
         tieneRiosOQuebradasCheck.addEventListener("change", sincronizarRecursosHidricos);
     }
-
     if (tieneNacientesCheck) {
         tieneNacientesCheck.addEventListener("change", sincronizarRecursosHidricos);
     }
@@ -273,14 +248,15 @@ document.addEventListener("DOMContentLoaded", function () {
         var hectareasInput = formulario.querySelector("#Hectareas");
         var hectareas = hectareasInput ? Number(hectareasInput.value) : 0;
         var cantidadNacientes = cantidadNacientesInput ? Number(cantidadNacientesInput.value) : 0;
-        var nacientesValidas = !tieneNacientesCheck || !tieneNacientesCheck.checked
-            ? true
-            : Number.isInteger(cantidadNacientes) && cantidadNacientes > 0;
 
         var coordenadasValidas = Number.isFinite(latitud)
             && Number.isFinite(longitud)
             && latitud >= -90 && latitud <= 90
             && longitud >= -180 && longitud <= 180;
+
+        var nacientesValidas = !tieneNacientesCheck || !tieneNacientesCheck.checked
+            ? true
+            : Number.isInteger(cantidadNacientes) && cantidadNacientes > 0;
 
         var ubicacionAdministrativaCompleta = provinciaInput && cantonInput && distritoInput
             && provinciaInput.value.trim()
@@ -294,10 +270,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        if (!ubicacionAdministrativaCompleta) {
-            if (provinciaInput) {
-                provinciaInput.setCustomValidity("Seleccione un punto válido en el mapa para derivar la ubicación.");
-            }
+        if (!ubicacionAdministrativaCompleta && provinciaInput) {
+            provinciaInput.setCustomValidity("Seleccione un punto válido en el mapa para derivar la ubicación.");
         }
 
         if (!formulario.checkValidity() || !coordenadasValidas || !Number.isFinite(hectareas) || hectareas <= 0 || !nacientesValidas) {
@@ -307,9 +281,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        if (!boton) {
-            return;
-        }
+        if (!boton) return;
 
         boton.disabled = true;
         boton.setAttribute("aria-busy", "true");
