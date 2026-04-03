@@ -428,6 +428,31 @@
     margin-bottom: var(--espacio-4);
 }
 
+.campo-detalle {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.campo-detalle .etiqueta {
+    color: var(--color-texto-principal);
+    font-weight: 500;
+}
+
+.campo-detalle .etiqueta::after {
+    content: ":";
+    margin-left: 0.15rem;
+}
+
+.mapa-detalle-finca {
+    min-height: 320px;
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-md);
+    overflow: hidden;
+    background: var(--color-superficie-secundaria);
+}
+
 @media (max-width: 992px) {
     .barra-lateral {
         position: fixed;
