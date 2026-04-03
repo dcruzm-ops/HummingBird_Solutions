@@ -1,6 +1,9 @@
 @model PSA.WebApp.Models.DashboardAdministradorViewModel
 @{
     ViewData["Title"] = "Dashboard del administrador";
+    var alertas = ViewBag.AlertasAdministrativas as List<string> ?? new List<string>();
+    var actividad = ViewBag.ActividadAuditoria as List<PSA.EntidadesDTO.DTOs.Dashboard.ActividadAuditoriaDTO>
+        ?? new List<PSA.EntidadesDTO.DTOs.Dashboard.ActividadAuditoriaDTO>();
 }
 <section class="seccion-pagina administrador-dashboard">
     <div class="cabecera-pagina">

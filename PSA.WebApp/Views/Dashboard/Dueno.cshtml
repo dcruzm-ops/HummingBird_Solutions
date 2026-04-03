@@ -1,6 +1,7 @@
 @model PSA.WebApp.Models.DashboardDuenoViewModel
 @{
     ViewData["Title"] = "Dashboard del dueño";
+    var actividadReciente = ViewBag.ActividadReciente as List<string> ?? new List<string>();
 }
 <section class="seccion-pagina propietario-dashboard">
     <div class="cabecera-pagina">

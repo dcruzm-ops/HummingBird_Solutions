@@ -1,0 +1,134 @@
+[
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
+    "Method": "Create",
+    "RelativePath": "api/Finca/Create",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "finca",
+        "Type": "PSA.EntidadesDTO.DTOs.Fincas.FincaDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
+    "Method": "Delete",
+    "RelativePath": "api/Finca/Delete/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
+    "Method": "RetrieveAll",
+    "RelativePath": "api/Finca/RetrieveAll",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
+    "Method": "RetrieveById",
+    "RelativePath": "api/Finca/RetrieveById/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
+    "Method": "Update",
+    "RelativePath": "api/Finca/Update",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "finca",
+        "Type": "PSA.EntidadesDTO.DTOs.Fincas.FincaDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.HealthController",
+    "Method": "Test",
+    "RelativePath": "api/Health/test",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.RecuperacionContrasenaController",
+    "Method": "Restablecer",
+    "RelativePath": "api/RecuperacionContrasena/restablecer",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.RestablecerContrasenaDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.RecuperacionContrasenaController",
+    "Method": "SolicitarRecuperacion",
+    "RelativePath": "api/RecuperacionContrasena/solicitar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.RecuperarContrasenaDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.RecuperacionContrasenaController",
+    "Method": "ValidarToken",
+    "RelativePath": "api/RecuperacionContrasena/validar-token",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.ValidarTokenDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

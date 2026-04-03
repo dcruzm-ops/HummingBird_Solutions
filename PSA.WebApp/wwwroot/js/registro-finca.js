@@ -8,11 +8,17 @@ document.addEventListener("DOMContentLoaded", function () {
     var textoBoton = formulario.querySelector("[data-loading-texto]");
     var spinnerBoton = formulario.querySelector("[data-loading-spinner]");
 
-    var provinciaSelect = document.getElementById("provinciaSelect");
-    var cantonSelect = document.getElementById("cantonSelect");
-    var distritoSelect = document.getElementById("distritoSelect");
-    var latitudInput = document.getElementById("Latitud");
-    var longitudInput = document.getElementById("Longitud");
+    function obtenerCampo(principalId, alternoNombre) {
+        return document.getElementById(principalId)
+            || formulario.querySelector("[name='" + alternoNombre + "']");
+    }
+
+    var paisInput = document.getElementById("paisInput");
+    var provinciaInput = obtenerCampo("provinciaInput", "Provincia");
+    var cantonInput = obtenerCampo("cantonInput", "Canton");
+    var distritoInput = obtenerCampo("distritoInput", "Distrito");
+    var latitudInput = obtenerCampo("Latitud", "Latitud");
+    var longitudInput = obtenerCampo("Longitud", "Longitud");
     var tieneRiosOQuebradasCheck = document.getElementById("tieneRiosOQuebradas");
     var tieneNacientesCheck = document.getElementById("tieneNacientes");
     var cantidadNacientesInput = document.getElementById("cantidadNacientes");
@@ -230,9 +236,17 @@ document.addEventListener("DOMContentLoaded", function () {
         var cantonActual = cantonSelect.dataset.valorActual || cantonSelect.value;
         var distritoActual = distritoSelect.dataset.valorActual || distritoSelect.value;
 
+        if (!provinciaActual) {
+            provinciaActual = "San José";
+        }
+
         if (provinciaActual && ubicacionesCR[provinciaActual]) {
             provinciaSelect.value = provinciaActual;
             cargarCantones(provinciaActual, cantonActual, distritoActual);
+            var centroInicial = centrosProvincia[provinciaActual];
+            if (mapa && centroInicial) {
+                mapa.setView(centroInicial, 11);
+            }
         } else {
             cantonSelect.disabled = true;
             distritoSelect.disabled = true;
@@ -276,6 +290,11 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        limitesCostaRica = window.L.latLngBounds(
+            window.L.latLng(8.0, -86.2),
+            window.L.latLng(11.4, -82.3)
+        );
+
         mapa = window.L.map("mapaUbicacionFinca", {
             scrollWheelZoom: false,
             doubleClickZoom: false,
@@ -290,6 +309,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }).addTo(mapa);
 
         mapa.on("click", function (evento) {
+            if (limitesCostaRica && !limitesCostaRica.contains(evento.latlng)) {
+                if (latitudInput) {
+                    latitudInput.setCustomValidity("Seleccione un punto dentro de Costa Rica.");
+                }
+                return;
+            }
+
+            if (latitudInput) {
+                latitudInput.setCustomValidity("");
+            }
             colocarPin(evento.latlng.lat, evento.latlng.lng, true);
         });
 
@@ -300,6 +329,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function colocarPin(latitud, longitud, centrar) {
         if (!mapa) {
+            return;
+        }
+
+        if (limitesCostaRica && !limitesCostaRica.contains(window.L.latLng(latitud, longitud))) {
             return;
         }
 
@@ -323,38 +356,51 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setCoordenadas(latitud, longitud) {
+        var latitudNormalizada = Number(latitud).toFixed(7);
+        var longitudNormalizada = Number(longitud).toFixed(7);
+
         if (latitudInput) {
-            latitudInput.value = Number(latitud).toFixed(7);
+            latitudInput.value = latitudNormalizada;
+            latitudInput.setAttribute("value", latitudNormalizada);
         }
         if (longitudInput) {
-            longitudInput.value = Number(longitud).toFixed(7);
+            longitudInput.value = longitudNormalizada;
+            longitudInput.setAttribute("value", longitudNormalizada);
         }
     }
 
-    function limpiarCoordenadas() {
-        if (latitudInput) {
-            latitudInput.value = "";
+    function setUbicacionAdministrativa(provincia, canton, distrito) {
+        if (paisInput) {
+            paisInput.value = "Costa Rica";
         }
-        if (longitudInput) {
-            longitudInput.value = "";
+        if (provinciaInput) {
+            provinciaInput.value = provincia || "";
+            provinciaInput.setCustomValidity("");
         }
-        if (mapa && marcador) {
-            mapa.removeLayer(marcador);
-            marcador = null;
+        if (cantonInput) {
+            cantonInput.value = canton || "";
+            cantonInput.setCustomValidity("");
+        }
+        if (distritoInput) {
+            distritoInput.value = distrito || "";
+            distritoInput.setCustomValidity("");
         }
     }
 
-    function enfocarZonaSeleccionada() {
-        var provincia = provinciaSelect.value;
-        var canton = cantonSelect.value;
-        var distrito = distritoSelect.value;
-
-        if (!mapa || !provincia || !canton || !distrito) {
-            return;
+    function extraerPrimerValorValido() {
+        for (var i = 0; i < arguments.length; i++) {
+            if (arguments[i] && String(arguments[i]).trim()) {
+                return String(arguments[i]).trim();
+            }
         }
+        return "";
+    }
 
-        var consulta = encodeURIComponent(distrito + ", " + canton + ", " + provincia + ", Costa Rica");
-        var url = "https://nominatim.openstreetmap.org/search?format=json&countrycodes=cr&limit=1&q=" + consulta;
+    function resolverUbicacionAdministrativa(latitud, longitud) {
+        var url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&accept-language=es&zoom=18&lat="
+            + encodeURIComponent(latitud)
+            + "&lon="
+            + encodeURIComponent(longitud);
 
         fetch(url, {
             headers: {
@@ -363,27 +409,48 @@ document.addEventListener("DOMContentLoaded", function () {
         })
             .then(function (respuesta) {
                 if (!respuesta.ok) {
-                    throw new Error("No se pudo consultar la ubicación");
+                    throw new Error("No se pudo resolver la ubicación administrativa");
                 }
                 return respuesta.json();
             })
-            .then(function (resultados) {
-                if (resultados && resultados.length > 0) {
-                    var lat = Number(resultados[0].lat);
-                    var lon = Number(resultados[0].lon);
-                    mapa.setView([lat, lon], 12);
-                    return;
+            .then(function (resultado) {
+                var address = resultado && resultado.address ? resultado.address : {};
+
+                var paisCodigo = extraerPrimerValorValido(address.country_code).toLowerCase();
+                if (paisCodigo !== "cr") {
+                    throw new Error("La ubicación seleccionada está fuera de Costa Rica");
                 }
 
-                var centro = centrosProvincia[provincia];
-                if (centro) {
-                    mapa.setView(centro, 10);
-                }
+                var provincia = extraerPrimerValorValido(
+                    address.state,
+                    address.region,
+                    address.province,
+                    address.state_district
+                ).replace(/^Provincia de\s+/i, "").trim();
+
+                var canton = extraerPrimerValorValido(
+                    address.county,
+                    address.city,
+                    address.town,
+                    address.municipality,
+                    address.state_district
+                ).replace(/^Cant[oó]n de\s+/i, "").trim();
+
+                var distrito = extraerPrimerValorValido(
+                    address.city_district,
+                    address.suburb,
+                    address.village,
+                    address.hamlet,
+                    address.neighbourhood,
+                    address.quarter
+                ).replace(/^Distrito de\s+/i, "").trim();
+
+                setUbicacionAdministrativa(provincia, canton, distrito);
             })
             .catch(function () {
-                var centro = centrosProvincia[provincia];
-                if (centro) {
-                    mapa.setView(centro, 10);
+                setUbicacionAdministrativa("", "", "");
+                if (provinciaInput) {
+                    provinciaInput.setCustomValidity("Seleccione un punto dentro del territorio de Costa Rica.");
                 }
             });
     }
@@ -557,13 +624,20 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        cargarCantones(provinciaSelect.value);
-
-        var centro = centrosProvincia[provinciaSelect.value];
-        if (mapa && centro) {
-            mapa.setView(centro, 10);
+        if (!marcador) {
+            marcador = window.L.marker([latitud, longitud], { draggable: true }).addTo(mapa);
+            marcador.on("dragend", function (evento) {
+                var pos = evento.target.getLatLng();
+                setCoordenadas(pos.lat, pos.lng);
+                resolverUbicacionAdministrativa(pos.lat, pos.lng);
+            });
+        } else {
+            marcador.setLatLng([latitud, longitud]);
         }
-    });
+
+        if (centrar) {
+            mapa.setView([latitud, longitud], Math.max(mapa.getZoom(), 13));
+        }
 
     cantonSelect.addEventListener("change", function () {
         if (actualizandoUbicacionDesdeMapa) {
@@ -572,14 +646,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
         limpiarCoordenadas();
 
-        if (!provinciaSelect.value || !cantonSelect.value) {
-            llenarOpciones(distritoSelect, [], "Seleccione primero un cantón");
-            distritoSelect.disabled = true;
+    function inicializarMapa() {
+        if (!mapaContenedor || typeof window.L === "undefined") {
             return;
         }
 
-        cargarDistritos(provinciaSelect.value, cantonSelect.value);
-    });
+        var limitesCostaRica = window.L.latLngBounds(
+            window.L.latLng(8.0, -86.2),
+            window.L.latLng(11.4, -82.3)
+        );
 
     distritoSelect.addEventListener("change", function () {
         if (actualizandoUbicacionDesdeMapa) {
@@ -603,10 +678,6 @@ document.addEventListener("DOMContentLoaded", function () {
     inicializarUbicaciones();
     inicializarMapa();
     sincronizarRecursosHidricos();
-
-    if (provinciaSelect.value && cantonSelect.value && distritoSelect.value) {
-        enfocarZonaSeleccionada();
-    }
 
     if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
         var latitudInicial = Number(latitudInput.value);
@@ -637,10 +708,21 @@ document.addEventListener("DOMContentLoaded", function () {
             && latitud >= -90 && latitud <= 90
             && longitud >= -180 && longitud <= 180;
 
+        var ubicacionAdministrativaCompleta = provinciaInput && cantonInput && distritoInput
+            && provinciaInput.value.trim()
+            && cantonInput.value.trim()
+            && distritoInput.value.trim();
+
         if (hectareasInput) {
             hectareasInput.setCustomValidity("");
             if (!Number.isFinite(hectareas) || hectareas <= 0) {
                 hectareasInput.setCustomValidity("El valor de hectáreas debe ser mayor a 0.");
+            }
+        }
+
+        if (!ubicacionAdministrativaCompleta) {
+            if (provinciaInput) {
+                provinciaInput.setCustomValidity("Seleccione un punto válido en el mapa para derivar la ubicación.");
             }
         }
 

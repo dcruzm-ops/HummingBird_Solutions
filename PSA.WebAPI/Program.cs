@@ -12,7 +12,6 @@ Console.WriteLine("PSAConnection: " + builder.Configuration["ConnectionStrings:P
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(options =>
 {
@@ -61,6 +60,32 @@ builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
     return new EvaluacionTecnicaDAO(ObtenerCadenaConexion(configuration));
 });
 
+builder.Services.AddScoped<AuditoriaLogDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+    }
+
+    return new AuditoriaLogDAO(connectionString);
+});
+
+builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+    }
+
+    return new TokenRecuperacionDAO(connectionString);
+});
+
 builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
@@ -79,10 +104,9 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("./v1/swagger.json", "PSA.WebAPI v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "PSA.WebAPI v1");
         options.RoutePrefix = "swagger";
     });
 }
