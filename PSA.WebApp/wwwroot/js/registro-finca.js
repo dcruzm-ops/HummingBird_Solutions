@@ -34,13 +34,21 @@ document.addEventListener("DOMContentLoaded", function () {
             ? campo.labels[0].textContent.trim()
             : "Este campo";
 
-        if (campo.validity.valueMissing) return "El campo '" + nombreCampo + "' es obligatorio.";
-        if (campo.validity.typeMismatch) return "El valor de '" + nombreCampo + "' no es válido.";
-        if (campo.validity.rangeUnderflow || campo.validity.rangeOverflow) return "El valor de '" + nombreCampo + "' está fuera del rango permitido.";
-        if (campo.validity.stepMismatch) return "El formato numérico de '" + nombreCampo + "' no es válido.";
-        if (campo.validity.tooLong) return "El valor de '" + nombreCampo + "' supera la longitud permitida.";
-        if (campo.validity.tooShort) return "El valor de '" + nombreCampo + "' es demasiado corto.";
-        if (campo.validity.badInput) return "El valor ingresado en '" + nombreCampo + "' no tiene un formato válido.";
+        if (campo.validity.valueMissing) {
+            return "El campo '" + nombreCampo + "' es obligatorio.";
+        }
+
+        if (campo.validity.typeMismatch) {
+            return "El valor de '" + nombreCampo + "' no es válido.";
+        }
+
+        if (campo.validity.rangeUnderflow || campo.validity.rangeOverflow) {
+            return "El valor de '" + nombreCampo + "' está fuera del rango permitido.";
+        }
+
+        if (campo.validity.stepMismatch) {
+            return "El formato numérico de '" + nombreCampo + "' no es válido.";
+        }
 
         return "";
     }
@@ -73,6 +81,10 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
+
+    var mapaContenedor = document.getElementById("mapaUbicacionFinca");
+    var mapa = null;
+    var marcador = null;
 
     function setCoordenadas(latitud, longitud) {
         var lat = Number(latitud);
@@ -156,13 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function colocarPin(latitud, longitud, centrar) {
-        if (!mapa || typeof window.L === "undefined") return;
-
-        var latLng = window.L.latLng(latitud, longitud);
-        if (limitesCostaRica && !limitesCostaRica.contains(latLng)) {
-            if (provinciaInput) {
-                provinciaInput.setCustomValidity("Seleccione un punto dentro del territorio de Costa Rica.");
-            }
+        if (!mapa) {
             return;
         }
 
@@ -198,8 +204,10 @@ document.addEventListener("DOMContentLoaded", function () {
             doubleClickZoom: false,
             boxZoom: false,
             keyboard: false,
-            tap: false
-        }).setView([9.9325, -84.08], 11);
+            tap: false,
+            maxBounds: limitesCostaRica,
+            maxBoundsViscosity: 1.0
+        }).setView([9.7489, -83.7534], 8);
 
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -207,24 +215,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }).addTo(mapa);
 
         mapa.on("click", function (evento) {
+            if (!limitesCostaRica.contains(evento.latlng)) {
+                return;
+            }
             colocarPin(evento.latlng.lat, evento.latlng.lng, true);
         });
 
-        setTimeout(function () { mapa.invalidateSize(); }, 120);
-
-        if (latitudInput && longitudInput && latitudInput.value && longitudInput.value) {
-            var latitudInicial = Number(latitudInput.value);
-            var longitudInicial = Number(longitudInput.value);
-            var coordenadasInicialesValidas = Number.isFinite(latitudInicial)
-                && Number.isFinite(longitudInicial)
-                && latitudInicial >= -90 && latitudInicial <= 90
-                && longitudInicial >= -180 && longitudInicial <= 180
-                && !(latitudInicial === 0 && longitudInicial === 0);
-
-            if (coordenadasInicialesValidas) {
-                colocarPin(latitudInicial, longitudInicial, true);
-            }
-        }
+        setTimeout(function () {
+            mapa.invalidateSize();
+        }, 120);
     }
 
     if (tieneRiosOQuebradasCheck) {
@@ -235,9 +234,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     configurarMensajesValidacionEspanol();
-    formulario.setAttribute("lang", "es");
-    sincronizarRecursosHidricos();
+    setUbicacionAdministrativa("", "", "");
     inicializarMapa();
+    sincronizarRecursosHidricos();
+
+    if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
+        colocarPin(Number(latitudInput.value), Number(longitudInput.value), true);
+    }
 
     formulario.addEventListener("submit", function (evento) {
         var latitud = latitudInput ? Number(latitudInput.value) : NaN;
