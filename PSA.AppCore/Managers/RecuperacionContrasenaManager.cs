@@ -20,6 +20,7 @@ namespace PSA.AppCore.Managers
             _usuarioDAO = usuarioDAO ?? throw new ArgumentNullException(nameof(usuarioDAO));
             _tokenRecuperacionDAO = tokenRecuperacionDAO ?? throw new ArgumentNullException(nameof(tokenRecuperacionDAO));
             _servicioHash = servicioHash ?? throw new ArgumentNullException(nameof(servicioHash));
+            _auditoriaLogDAO = auditoriaLogDAO ?? throw new ArgumentNullException(nameof(auditoriaLogDAO));
         }
 
         public async Task<(string Token, string NombreUsuario)> GenerarTokenConNombreAsync(string email)
