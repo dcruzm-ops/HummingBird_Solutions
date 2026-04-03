@@ -16,6 +16,7 @@
     <Compile Include="DTOs\Auditoria\AuditoriaLogDTO.cs" />
     <Compile Include="DTOs\Dashboard\ResumenDashboardAdministradorDTO.cs" />
     <Compile Include="DTOs\Evaluaciones\EvaluacionEvidenciaDTO.cs" />
+    <Compile Include="DTOs\Evaluaciones\EvaluacionFlujoDTOs.cs" />
     <Compile Include="DTOs\Evaluaciones\EvaluacionTecnicaDTO.cs" />
     <Compile Include="DTOs\FincaDetalleDTO.cs" />
     <Compile Include="DTOs\FincaResumenDTO.cs" />
