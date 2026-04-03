@@ -1,0 +1,113 @@
+@model PSA.WebApp.Models.DashboardIngenieroViewModel
+@{
+    ViewData["Title"] = "Dashboard del ingeniero";
+    var forecast = ViewBag.ForecastProvincias as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var topProvincias = ViewBag.TopProvincias as List<string> ?? new List<string>();
+}
+<section class="seccion-pagina ingeniero-dashboard">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Vista técnica</span>
+            <h2>Resumen del ingeniero forestal</h2>
+            <p>Administre evaluaciones, visitas y decisiones técnicas.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Evaluaciones" asp-action="FincasPendientes">Ver fincas pendientes</a>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Fincas pendientes</span>
+            <strong>@Model.FincasPendientes</strong>
+            <small>Con evaluación en estado Pendiente</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Evaluaciones abiertas</span>
+            <strong>@Model.EvaluacionesAbiertas</strong>
+            <small>Asignadas al ingeniero actual</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Decisiones emitidas</span>
+            <strong>@Model.DecisionesMesActual</strong>
+            <small>Durante el mes actual</small>
+        </article>
+    </div>
+
+    <div class="grid-dos-paneles">
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Provincias con mayor carga operativa</h3>
+            </div>
+            <ul class="lista-timeline">
+                @if (topProvincias.Count == 0)
+                {
+                    <li>Sin datos suficientes por provincia.</li>
+                }
+                else
+                {
+                    foreach (var item in topProvincias)
+                    {
+                        <li>@item</li>
+                    }
+                }
+            </ul>
+        </section>
+
+        <section class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Próximas acciones</h3>
+            </div>
+            <ul class="lista-timeline">
+                <li><a asp-controller="Evaluaciones" asp-action="FincasPendientes">Revisar fincas pendientes para asignación semanal.</a></li>
+                <li><a asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">Actualizar evaluaciones en proceso con evidencias.</a></li>
+                <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Emitir decisiones técnicas pendientes del mes.</a></li>
+            </ul>
+        </section>
+    </div>
+
+    <section class="tarjeta-panel mt-4">
+        <div class="cabecera-bloque">
+            <h3>Forecast por provincia (Costa Rica)</h3>
+        </div>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Provincia</th>
+                        <th>Pronóstico</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (forecast.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="2">No hay pronóstico disponible en este momento.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in forecast)
+                        {
+                            <tr>
+                                <td>@item.Key</td>
+                                <td>@item.Value</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+        <ul class="lista-timeline">
+            @if (Model.ProximasAcciones.Any())
+            {
+                @foreach (var accion in Model.ProximasAcciones)
+                {
+                    <li><a href="@(accion.Url ?? "#")">@accion.Titulo</a></li>
+                }
+            }
+            else
+            {
+                <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">No hay acciones pendientes para mostrar.</a></li>
+            }
+        </ul>
+    </section>
+</section>

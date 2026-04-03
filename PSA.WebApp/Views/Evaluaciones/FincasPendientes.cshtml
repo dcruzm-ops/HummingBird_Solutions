@@ -1,0 +1,82 @@
+@model PSA.WebApp.Models.BandejaEvaluacionesViewModel
+@{
+    ViewData["Title"] = "Fincas pendientes";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Módulo técnico</span>
+            <h2>Fincas pendientes de evaluación</h2>
+            <p>Seleccione un expediente para iniciar o continuar la evaluación técnica.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">Evaluaciones en proceso</a>
+    </div>
+
+    <section class="tarjeta-panel mb-3">
+        <form method="get" asp-action="FincasPendientes" class="d-flex gap-2 align-items-end flex-wrap">
+            <div>
+                <label for="estado" class="form-label">Filtrar por estado</label>
+                <select id="estado" name="estado" class="form-select">
+                    <option value="Todos" selected="@(Model.EstadoFiltro == "Todos")">Todos</option>
+                    <option value="Pendiente" selected="@(Model.EstadoFiltro == "Pendiente")">Pendiente</option>
+                    <option value="En proceso" selected="@(Model.EstadoFiltro == "En proceso")">En proceso</option>
+                </select>
+            </div>
+            <button type="submit" class="boton-primario">Aplicar filtro</button>
+        </form>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Finca</th>
+                        <th>Ubicación</th>
+                        <th>Hectáreas</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.Pendientes.Any())
+                {
+                    foreach (var item in Model.Pendientes)
+                    {
+                        <tr>
+                            <td>#@item.IdEvaluacion</td>
+                            <td>@item.NombreFinca</td>
+                            <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                            <td>@item.Hectareas.ToString("N2")</td>
+                            <td><span class="badge-estado @(item.EstadoEvaluacion == "En proceso" ? "badge-info" : "badge-pendiente")">@item.EstadoEvaluacion</span></td>
+                            <td>
+                                <a class="boton-link me-2" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
+                                    @(item.EstadoEvaluacion == "En proceso" ? "Continuar" : "Evaluar")
+                                </a>
+                                <a class="boton-link" asp-controller="Evaluaciones" asp-action="DetalleEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
+                                    Ver detalle
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6">No hay evaluaciones pendientes en este momento.</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Dashboard" asp-action="Ingeniero">Volver al dashboard</a>
+            <a class="acceso-rapido" asp-controller="Evaluaciones" asp-action="FincasIngeniero">Ver fincas del ingeniero</a>
+            <a class="acceso-rapido" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Ver reportes</a>
+        </div>
+    </section>
+</section>

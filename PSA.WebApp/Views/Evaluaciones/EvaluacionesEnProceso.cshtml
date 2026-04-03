@@ -1,0 +1,34 @@
+@model List<PSA.EntidadesDTO.DTOs.Evaluaciones.BandejaEvaluacionPendienteDTO>
+@{
+    ViewData["Title"] = "Evaluaciones en proceso";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Seguimiento operativo</span>
+            <h2>Evaluaciones en proceso</h2>
+            <p>Expedientes tomados por ingeniería que requieren gestión de visita o cierre técnico.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Ver reportes</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <ul class="lista-actividad">
+            @if (Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <li>
+                        <a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
+                            Evaluación #@item.IdEvaluacion - @item.NombreFinca (@item.Provincia, @item.Canton)
+                        </a>
+                    </li>
+                }
+            }
+            else
+            {
+                <li>No hay evaluaciones en proceso actualmente.</li>
+            }
+        </ul>
+    </section>
+</section>

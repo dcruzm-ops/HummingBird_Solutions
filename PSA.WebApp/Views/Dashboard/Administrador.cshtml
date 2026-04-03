@@ -1,0 +1,54 @@
+@model PSA.WebApp.Models.DashboardAdministradorViewModel
+@{
+    ViewData["Title"] = "Dashboard del administrador";
+    var alertas = ViewBag.AlertasAdministrativas as List<string> ?? new List<string>();
+    var actividad = ViewBag.ActividadAuditoria as List<PSA.EntidadesDTO.DTOs.Dashboard.ActividadAuditoriaDTO>
+        ?? new List<PSA.EntidadesDTO.DTOs.Dashboard.ActividadAuditoriaDTO>();
+}
+<section class="seccion-pagina administrador-dashboard">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Vista operativa</span>
+            <h2>Resumen administrativo</h2>
+            <p>Monitoree usuarios, parámetros, validaciones bancarias y auditoría.</p>
+        </div>
+        <a class="boton-primario" asp-controller="Administracion" asp-action="GestionUsuarios">Gestionar usuarios</a>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Usuarios activos</span>
+            <strong>@Model.UsuariosActivos</strong>
+            <small>Registros en estado Activo</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Cuentas por validar</span>
+            <strong>@Model.CuentasPorValidar</strong>
+            <small>Revisión administrativa requerida</small>
+        </article>
+        <article class="tarjeta-kpi">
+            <span class="etiqueta-kpi">Eventos de auditoría</span>
+            <strong>@Model.EventosAuditoria24h</strong>
+            <small>Últimas 24 horas</small>
+        </article>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Alertas administrativas</h3>
+        </div>
+        <ul class="lista-timeline">
+            @if (Model.Alertas.Any())
+            {
+                @foreach (var alerta in Model.Alertas)
+                {
+                    <li><a href="@(alerta.Url ?? "#")">@alerta.Titulo</a></li>
+                }
+            }
+            else
+            {
+                <li><a asp-controller="Administracion" asp-action="AuditoriaLogs">No hay alertas administrativas recientes.</a></li>
+            }
+        </ul>
+    </section>
+</section>

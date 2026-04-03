@@ -1,0 +1,67 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Reportes";
+    var rolId = User.FindFirstValue(ClaimTypes.Role);
+    var esDueno = rolId == "1";
+    var esAdmin = rolId == "2";
+    var esIngeniero = rolId == "3";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Consulta analítica</span>
+            <h2>Reportes del sistema</h2>
+            <p>Pantallas base de reportes visibles según su rol.</p>
+        </div>
+    </div>
+
+    <div class="grid-tarjetas-kpi">
+        @if (esDueno)
+        {
+            <a class="tarjeta-kpi" asp-controller="Pagos" asp-action="HistorialPagos">
+                <span class="etiqueta-kpi">Reporte de dueño</span>
+                <strong>Pagos e historial</strong>
+                <small>Revise sus pagos registrados y estado.</small>
+            </a>
+            <a class="tarjeta-kpi" asp-controller="Fincas" asp-action="MisFincas">
+                <span class="etiqueta-kpi">Reporte de fincas</span>
+                <strong>Estado de fincas</strong>
+                <small>Consulte el estado general de sus fincas.</small>
+            </a>
+        }
+
+        @if (esIngeniero)
+        {
+            <a class="tarjeta-kpi" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">
+                <span class="etiqueta-kpi">Reporte técnico</span>
+                <strong>Evaluaciones por período</strong>
+                <small>Consulte evaluaciones por filtros técnicos.</small>
+            </a>
+            <a class="tarjeta-kpi" asp-controller="Evaluaciones" asp-action="FincasIngeniero">
+                <span class="etiqueta-kpi">Reporte operativo</span>
+                <strong>Fincas del ingeniero</strong>
+                <small>Resumen de fincas evaluadas y en proceso.</small>
+            </a>
+        }
+
+        @if (esAdmin)
+        {
+            <a class="tarjeta-kpi" asp-controller="Pagos" asp-action="PlanesPago">
+                <span class="etiqueta-kpi">Reporte financiero</span>
+                <strong>Planes de pago</strong>
+                <small>Estado general de planes y cuotas.</small>
+            </a>
+            <a class="tarjeta-kpi" asp-controller="Administracion" asp-action="AuditoriaLogs">
+                <span class="etiqueta-kpi">Reporte administrativo</span>
+                <strong>Auditoría y trazabilidad</strong>
+                <small>Eventos clave y acciones administrativas.</small>
+            </a>
+        }
+    </div>
+
+    <section class="tarjeta-panel mt-3">
+        <div class="lista-accesos">
+            <a class="acceso-rapido" asp-controller="Dashboard" asp-action="@(esAdmin ? "Administrador" : esIngeniero ? "Ingeniero" : "Dueno")">Volver al dashboard</a>
+        </div>
+    </section>
+</section>
