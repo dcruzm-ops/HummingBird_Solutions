@@ -20,6 +20,8 @@
     <Compile Include="Controllers\NotificacionesController.cs" />
     <Compile Include="Controllers\PagosController.cs" />
     <Compile Include="Controllers\ReportesController.cs" />
+    <Compile Include="Models\DashboardViewModels.cs" />
+    <Compile Include="Models\EvaluacionesViewModels.cs" />
     <Compile Include="Models\RecuperarContrasenaViewModel.cs" />
     <Compile Include="Models\RestablecerContrasenaViewModel.cs" />
     <Compile Include="Program.cs" />

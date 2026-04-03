@@ -25,6 +25,10 @@
     }
 }
 
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+}
+
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
@@ -54,27 +58,25 @@
                 <div class="campo-detalle"><span class="etiqueta">Fecha de registro</span><strong>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong></div>
                 <div class="campo-detalle"><span class="etiqueta">Última actualización</span><strong>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</strong></div>
             </div>
-            <div class="grid-dos-columnas mt-3 detalle-resumen-grid">
-                <div><strong>Latitud</strong><div>@Model.Latitud</div></div>
-                <div><strong>Longitud</strong><div>@Model.Longitud</div></div>
-            </div>
-            @if (evidencias.Any())
-            {
-                <ul class="lista-timeline">
-                    @foreach (var evidencia in evidencias)
-                    {
-                        <li>@evidencia</li>
-                    }
-                </ul>
-            }
         </section>
-    </div>
 
         <section class="tarjeta-panel">
-            <div class="cabecera-bloque"><h3>Ubicación</h3></div>
+            <div class="cabecera-bloque">
+                <h3>Ubicación</h3>
+            </div>
             <div class="grid-dos-columnas">
                 <div class="campo-detalle"><span class="etiqueta">Latitud</span><strong>@latitudData</strong></div>
                 <div class="campo-detalle"><span class="etiqueta">Longitud</span><strong>@longitudData</strong></div>
+            </div>
+
+            <div id="mapaDetalleFinca"
+                 class="mapa-detalle-finca mt-3"
+                 data-latitud="@latitudData"
+                 data-longitud="@longitudData"
+                 data-nombre-finca="@Model.NombreFinca"
+                 aria-label="Mapa de ubicación de la finca"
+                 role="img">
+                <p class="texto-ayuda p-3">Cargando mapa de ubicación...</p>
             </div>
         </section>
 
@@ -97,7 +99,7 @@
                         <tr><th>Archivo</th><th>Tipo</th><th>Fecha</th><th>Acción</th></tr>
                     </thead>
                     <tbody>
-                        @foreach (PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO evidencia in evidencias)
+                        @foreach (var evidencia in evidencias)
                         {
                             <tr>
                                 <td>@evidencia.NombreArchivo</td>
@@ -115,10 +117,13 @@
             }
         </section>
     </div>
-</section>
 
-        <div class="fila-acciones-formulario">
-            <a class="boton-secundario" asp-action="MisFincas">Volver</a>
-        </div>
+    <div class="fila-acciones-formulario">
+        <a class="boton-secundario" asp-action="MisFincas">Volver</a>
     </div>
 </section>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="~/js/detalle-finca.js" asp-append-version="true"></script>
+}
