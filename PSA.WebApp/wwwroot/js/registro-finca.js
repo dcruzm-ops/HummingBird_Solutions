@@ -8,54 +8,39 @@ document.addEventListener("DOMContentLoaded", function () {
     var textoBoton = formulario.querySelector("[data-loading-texto]");
     var spinnerBoton = formulario.querySelector("[data-loading-spinner]");
 
-    function obtenerCampo(principalId, alternoNombre) {
-        return document.getElementById(principalId)
-            || formulario.querySelector("[name='" + alternoNombre + "']");
+    function obtenerCampo(id) {
+        return document.getElementById(id) || null;
     }
 
-    var paisInput = document.getElementById("paisInput");
-    var provinciaInput = obtenerCampo("provinciaInput", "Provincia");
-    var cantonInput = obtenerCampo("cantonInput", "Canton");
-    var distritoInput = obtenerCampo("distritoInput", "Distrito");
-    var latitudInput = obtenerCampo("Latitud", "Latitud");
-    var longitudInput = obtenerCampo("Longitud", "Longitud");
-    var tieneRiosOQuebradasCheck = document.getElementById("tieneRiosOQuebradas");
-    var tieneNacientesCheck = document.getElementById("tieneNacientes");
-    var cantidadNacientesInput = document.getElementById("cantidadNacientes");
-    var tieneRecursosHidricosInput = document.getElementById("tieneRecursosHidricos");
+    var paisInput = obtenerCampo("paisSeleccionado");
+    var provinciaInput = obtenerCampo("provinciaInput");
+    var cantonInput = obtenerCampo("cantonInput");
+    var distritoInput = obtenerCampo("distritoInput");
+    var latitudInput = obtenerCampo("Latitud");
+    var longitudInput = obtenerCampo("Longitud");
+
+    var tieneRiosOQuebradasCheck = obtenerCampo("tieneRiosOQuebradas");
+    var tieneNacientesCheck = obtenerCampo("tieneNacientes");
+    var cantidadNacientesInput = obtenerCampo("cantidadNacientes");
+    var tieneRecursosHidricosInput = obtenerCampo("tieneRecursosHidricos");
+
+    var mapaContenedor = obtenerCampo("mapaUbicacionFinca");
+    var mapa = null;
+    var marcador = null;
+    var limitesCostaRica = null;
 
     function obtenerMensajeValidacion(campo) {
         var nombreCampo = (campo.labels && campo.labels[0] && campo.labels[0].textContent)
             ? campo.labels[0].textContent.trim()
             : "Este campo";
 
-        if (campo.validity.valueMissing) {
-            return "El campo '" + nombreCampo + "' es obligatorio.";
-        }
-
-        if (campo.validity.typeMismatch) {
-            return "El valor de '" + nombreCampo + "' no es válido.";
-        }
-
-        if (campo.validity.rangeUnderflow || campo.validity.rangeOverflow) {
-            return "El valor de '" + nombreCampo + "' está fuera del rango permitido.";
-        }
-
-        if (campo.validity.stepMismatch) {
-            return "El formato numérico de '" + nombreCampo + "' no es válido.";
-        }
-
-        if (campo.validity.tooLong) {
-            return "El valor de '" + nombreCampo + "' supera la longitud permitida.";
-        }
-
-        if (campo.validity.tooShort) {
-            return "El valor de '" + nombreCampo + "' es demasiado corto.";
-        }
-
-        if (campo.validity.badInput) {
-            return "El valor ingresado en '" + nombreCampo + "' no tiene un formato válido.";
-        }
+        if (campo.validity.valueMissing) return "El campo '" + nombreCampo + "' es obligatorio.";
+        if (campo.validity.typeMismatch) return "El valor de '" + nombreCampo + "' no es válido.";
+        if (campo.validity.rangeUnderflow || campo.validity.rangeOverflow) return "El valor de '" + nombreCampo + "' está fuera del rango permitido.";
+        if (campo.validity.stepMismatch) return "El formato numérico de '" + nombreCampo + "' no es válido.";
+        if (campo.validity.tooLong) return "El valor de '" + nombreCampo + "' supera la longitud permitida.";
+        if (campo.validity.tooShort) return "El valor de '" + nombreCampo + "' es demasiado corto.";
+        if (campo.validity.badInput) return "El valor ingresado en '" + nombreCampo + "' no tiene un formato válido.";
 
         return "";
     }
@@ -65,21 +50,13 @@ document.addEventListener("DOMContentLoaded", function () {
             campo.addEventListener("invalid", function () {
                 campo.setCustomValidity(obtenerMensajeValidacion(campo));
             });
-
-            campo.addEventListener("input", function () {
-                campo.setCustomValidity("");
-            });
-
-            campo.addEventListener("change", function () {
-                campo.setCustomValidity("");
-            });
+            campo.addEventListener("input", function () { campo.setCustomValidity(""); });
+            campo.addEventListener("change", function () { campo.setCustomValidity(""); });
         });
     }
 
     function sincronizarRecursosHidricos() {
-        if (!tieneRecursosHidricosInput) {
-            return;
-        }
+        if (!tieneRecursosHidricosInput) return;
 
         var tieneRios = !!(tieneRiosOQuebradasCheck && tieneRiosOQuebradasCheck.checked);
         var tieneNacientes = !!(tieneNacientesCheck && tieneNacientesCheck.checked);
@@ -97,301 +74,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    var ubicacionesCR = {
-        "San José": {
-            "San José": ["Carmen", "Merced", "Hospital", "Catedral", "Zapote", "San Francisco de Dos Ríos", "Uruca", "Mata Redonda", "Pavas", "Hatillo", "San Sebastián"],
-            "Escazú": ["Escazú", "San Antonio", "San Rafael"],
-            "Desamparados": ["Desamparados", "San Miguel", "San Juan de Dios", "San Rafael Arriba", "San Antonio", "Frailes", "Patarrá", "San Cristóbal", "Rosario", "Damas", "San Rafael Abajo", "Gravilias", "Los Guido"],
-            "Puriscal": ["Santiago", "Mercedes Sur", "Barbacoas", "Grifo Alto", "San Rafael", "Candelarita", "Desamparaditos", "San Antonio", "Chires"],
-            "Tarrazú": ["San Marcos", "San Lorenzo", "San Carlos"],
-            "Aserrí": ["Aserrí", "Tarbaca", "Vuelta de Jorco", "San Gabriel", "Legua", "Monterrey", "Salitrillos"],
-            "Mora": ["Colón", "Guayabo", "Tabarcia", "Piedras Negras", "Picagres", "Jaris", "Quitirrisí"],
-            "Goicoechea": ["Guadalupe", "San Francisco", "Calle Blancos", "Mata de Plátano", "Ipís", "Rancho Redondo", "Purral"],
-            "Santa Ana": ["Santa Ana", "Salitral", "Pozos", "Uruca", "Piedades", "Brasil"],
-            "Alajuelita": ["Alajuelita", "San Josecito", "San Antonio", "Concepción", "San Felipe"],
-            "Vázquez de Coronado": ["San Isidro", "San Rafael", "Dulce Nombre de Jesús", "Patalillo", "Cascajal"],
-            "Acosta": ["San Ignacio", "Guaitil", "Palmichal", "Cangrejal", "Sabanillas"],
-            "Tibás": ["San Juan", "Cinco Esquinas", "Anselmo Llorente", "León XIII", "Colima"],
-            "Moravia": ["San Vicente", "San Jerónimo", "La Trinidad"],
-            "Montes de Oca": ["San Pedro", "Sabanilla", "Mercedes", "San Rafael"],
-            "Turrubares": ["San Pablo", "San Pedro", "San Juan de Mata", "San Luis", "Carara"],
-            "Dota": ["Santa María", "Jardín", "Copey"],
-            "Curridabat": ["Curridabat", "Granadilla", "Sánchez", "Tirrases"],
-            "Pérez Zeledón": ["San Isidro de El General", "El General", "Daniel Flores", "Rivas", "San Pedro", "Platanar", "Pejibaye", "Cajón", "Barú", "Río Nuevo", "Páramo", "La Amistad"],
-            "León Cortés Castro": ["San Pablo", "San Andrés", "Llano Bonito", "San Isidro", "Santa Cruz", "San Antonio"]
-        },
-        "Alajuela": {
-            "Alajuela": ["Alajuela", "San José", "Carrizal", "San Antonio", "Guácima", "San Isidro", "Sabanilla", "San Rafael", "Río Segundo", "Desamparados", "Turrúcares", "Tambor", "Garita", "Sarapiquí"],
-            "San Ramón": ["San Ramón", "Santiago", "San Juan", "Piedades Norte", "Piedades Sur", "San Rafael", "San Isidro", "Ángeles", "Alfaro", "Volio", "Concepción", "Zapotal", "Peñas Blancas", "San Lorenzo"],
-            "Grecia": ["Grecia", "San Isidro", "San José", "San Roque", "Tacares", "Puente de Piedra", "Bolívar"],
-            "San Mateo": ["San Mateo", "Desmonte", "Jesús María", "Labrador"],
-            "Atenas": ["Atenas", "Jesús", "Mercedes", "San Isidro", "Concepción", "San José", "Santa Eulalia", "Escobal"],
-            "Naranjo": ["Naranjo", "San Miguel", "San José", "Cirrí Sur", "San Jerónimo", "San Juan", "El Rosario", "Palmitos"],
-            "Palmares": ["Palmares", "Zaragoza", "Buenos Aires", "Santiago", "Candelaria", "Esquipulas", "La Granja"],
-            "Poás": ["San Pedro", "San Juan", "San Rafael", "Carrillos", "Sabana Redonda"],
-            "Orotina": ["Orotina", "El Mastate", "Hacienda Vieja", "Coyolar", "La Ceiba"],
-            "San Carlos": ["Quesada", "Florencia", "Buenavista", "Aguas Zarcas", "Venecia", "Pital", "La Fortuna", "La Tigra", "La Palmera", "Venado", "Cutris", "Monterrey", "Pocosol"],
-            "Zarcero": ["Zarcero", "Laguna", "Tapezco", "Guadalupe", "Palmira", "Zapote", "Brisas"],
-            "Sarchí": ["Sarchí Norte", "Sarchí Sur", "Toro Amarillo", "San Pedro", "Rodríguez"],
-            "Upala": ["Upala", "Aguas Claras", "San José o Pizote", "Bijagua", "Delicias", "Dos Ríos", "Yolillal", "Canalete"],
-            "Los Chiles": ["Los Chiles", "Caño Negro", "El Amparo", "San Jorge"],
-            "Guatuso": ["San Rafael", "Buenavista", "Cote", "Katira"],
-            "Río Cuarto": ["Río Cuarto", "Santa Rita", "Santa Isabel"]
-        },
-        "Cartago": {
-            "Cartago": ["Oriental", "Occidental", "Carmen", "San Nicolás", "Aguacaliente o San Francisco", "Guadalupe o Arenilla", "Corralillo", "Tierra Blanca", "Dulce Nombre", "Llano Grande", "Quebradilla"],
-            "Paraíso": ["Paraíso", "Santiago", "Orosi", "Cachí", "Llanos de Santa Lucía", "Birrisito"],
-            "La Unión": ["Tres Ríos", "San Diego", "San Juan", "San Rafael", "Concepción", "Dulce Nombre", "San Ramón", "Río Azul"],
-            "Jiménez": ["Juan Viñas", "Tucurrique", "Pejibaye", "La Victoria"],
-            "Turrialba": ["Turrialba", "La Suiza", "Peralta", "Santa Cruz", "Santa Teresita", "Pavones", "Tuis", "Tayutic", "Santa Rosa", "Tres Equis"],
-            "Alvarado": ["Pacayas", "Cervantes", "Capellades"],
-            "Oreamuno": ["San Rafael", "Cot", "Potrero Cerrado", "Cipreses", "Santa Rosa"],
-            "El Guarco": ["El Tejar", "San Isidro", "Tobosí", "Patio de Agua"]
-        },
-        "Heredia": {
-            "Heredia": ["Heredia", "Mercedes", "San Francisco", "Ulloa", "Varablanca"],
-            "Barva": ["Barva", "San Pedro", "San Pablo", "San Roque", "Santa Lucía", "San José de la Montaña", "Puente Salas"],
-            "Santo Domingo": ["Santo Domingo", "San Vicente", "San Miguel", "Paracito", "Santo Tomás", "Santa Rosa", "Tures", "Pará"],
-            "Santa Bárbara": ["Santa Bárbara", "San Pedro", "San Juan", "Jesús", "Santo Domingo", "Purabá"],
-            "San Rafael": ["San Rafael", "San Josecito", "Santiago", "Los Ángeles", "Concepción"],
-            "San Isidro": ["San Isidro", "San José", "Concepción", "San Francisco"],
-            "Belén": ["San Antonio", "La Ribera", "La Asunción"],
-            "Flores": ["San Joaquín", "Barrantes", "Llorente"],
-            "San Pablo": ["San Pablo", "Rincón de Sabanilla"],
-            "Sarapiquí": ["Puerto Viejo", "La Virgen", "Las Horquetas", "Llanuras del Gaspar", "Cureña"]
-        },
-        "Guanacaste": {
-            "Liberia": ["Liberia", "Cañas Dulces", "Mayorga", "Nacascolo", "Curubandé"],
-            "Nicoya": ["Nicoya", "Mansión", "San Antonio", "Quebrada Honda", "Sámara", "Nosara", "Belén de Nosarita"],
-            "Santa Cruz": ["Santa Cruz", "Bolsón", "Veintisiete de Abril", "Tempate", "Cartagena", "Cuajiniquil", "Diriá", "Cabo Velas", "Tamarindo"],
-            "Bagaces": ["Bagaces", "La Fortuna", "Mogote", "Río Naranjo"],
-            "Carrillo": ["Filadelfia", "Palmira", "Sardinal", "Belén"],
-            "Cañas": ["Cañas", "Palmira", "San Miguel", "Bebedero", "Porozal"],
-            "Abangares": ["Las Juntas", "Sierra", "San Juan", "Colorado"],
-            "Tilarán": ["Tilarán", "Quebrada Grande", "Tronadora", "Santa Rosa", "Líbano", "Tierras Morenas", "Arenal", "Cabeceras"],
-            "Nandayure": ["Carmona", "Santa Rita", "Zapotal", "San Pablo", "Porvenir", "Bejuco"],
-            "La Cruz": ["La Cruz", "Santa Cecilia", "La Garita", "Santa Elena"],
-            "Hojancha": ["Hojancha", "Monte Romo", "Puerto Carrillo", "Huacas", "Matambú"]
-        },
-        "Puntarenas": {
-            "Puntarenas": ["Puntarenas", "Pitahaya", "Chomes", "Lepanto", "Paquera", "Manzanillo", "Guacimal", "Barranca", "Isla del Coco", "Cóbano", "Chacarita", "Chira", "Acapulco", "El Roble", "Arancibia"],
-            "Esparza": ["Espíritu Santo", "San Juan Grande", "Macacona", "San Rafael", "San Jerónimo", "Caldera"],
-            "Buenos Aires": ["Buenos Aires", "Volcán", "Potrero Grande", "Boruca", "Pilas", "Colinas", "Chánguena", "Biolley", "Brunka"],
-            "Montes de Oro": ["Miramar", "La Unión", "San Isidro"],
-            "Osa": ["Puerto Cortés", "Palmar", "Sierpe", "Bahía Ballena", "Piedras Blancas", "Bahía Drake"],
-            "Quepos": ["Quepos", "Savegre", "Naranjito"],
-            "Golfito": ["Golfito", "Guaycará", "Pavón"],
-            "Coto Brus": ["San Vito", "Sabalito", "Aguabuena", "Limoncito", "Pittier", "Gutiérrez Braun"],
-            "Parrita": ["Parrita"],
-            "Corredores": ["Corredor", "La Cuesta", "Canoas", "Laurel"],
-            "Garabito": ["Jacó", "Tárcoles", "Lagunillas"],
-            "Monteverde": ["Monteverde"],
-            "Puerto Jiménez": ["Puerto Jiménez"]
-        },
-        "Limón": {
-            "Limón": ["Limón", "Valle La Estrella", "Río Blanco", "Matama"],
-            "Pococí": ["Guápiles", "Jiménez", "Rita", "Roxana", "Cariari", "Colorado", "La Colonia"],
-            "Siquirres": ["Siquirres", "Pacuarito", "Florida", "Germania", "El Cairo", "Alegría", "Reventazón"],
-            "Talamanca": ["Bratsi", "Sixaola", "Cahuita", "Telire"],
-            "Matina": ["Matina", "Batán", "Carrandi"],
-            "Guácimo": ["Guácimo", "Mercedes", "Pocora", "Río Jiménez", "Duacarí"]
-        }
-    };
-
-    var centrosProvincia = {
-        "San José": [9.9281, -84.0907],
-        "Alajuela": [10.0162, -84.2116],
-        "Cartago": [9.8644, -83.9194],
-        "Heredia": [9.9980, -84.1165],
-        "Guanacaste": [10.6350, -85.4377],
-        "Puntarenas": [9.9762, -84.8384],
-        "Limón": [9.9907, -83.0359]
-    };
-
-    function llenarOpciones(select, opciones, placeholder) {
-        if (!select) {
-            return;
-        }
-
-        select.innerHTML = "";
-
-        var opcionInicial = document.createElement("option");
-        opcionInicial.value = "";
-        opcionInicial.textContent = placeholder;
-        select.appendChild(opcionInicial);
-
-        opciones.forEach(function (opcion) {
-            var item = document.createElement("option");
-            item.value = opcion;
-            item.textContent = opcion;
-            select.appendChild(item);
-        });
-    }
-
-    function inicializarUbicaciones() {
-        var provincias = Object.keys(ubicacionesCR);
-        llenarOpciones(provinciaSelect, provincias, "Seleccione una provincia");
-
-        var provinciaActual = provinciaSelect.dataset.valorActual || provinciaSelect.value;
-        var cantonActual = cantonSelect.dataset.valorActual || cantonSelect.value;
-        var distritoActual = distritoSelect.dataset.valorActual || distritoSelect.value;
-
-        if (!provinciaActual) {
-            provinciaActual = "San José";
-        }
-
-        if (provinciaActual && ubicacionesCR[provinciaActual]) {
-            provinciaSelect.value = provinciaActual;
-            cargarCantones(provinciaActual, cantonActual, distritoActual);
-            var centroInicial = centrosProvincia[provinciaActual];
-            if (mapa && centroInicial) {
-                mapa.setView(centroInicial, 11);
-            }
-        } else {
-            cantonSelect.disabled = true;
-            distritoSelect.disabled = true;
-            llenarOpciones(cantonSelect, [], "Seleccione primero una provincia");
-            llenarOpciones(distritoSelect, [], "Seleccione primero un cantón");
-        }
-    }
-
-    function cargarCantones(provincia, cantonSeleccionado, distritoSeleccionado) {
-        var cantones = Object.keys(ubicacionesCR[provincia] || {});
-        llenarOpciones(cantonSelect, cantones, "Seleccione un cantón");
-        cantonSelect.disabled = cantones.length === 0;
-
-        if (cantonSeleccionado && cantones.indexOf(cantonSeleccionado) >= 0) {
-            cantonSelect.value = cantonSeleccionado;
-            cargarDistritos(provincia, cantonSeleccionado, distritoSeleccionado);
-            return;
-        }
-
-        llenarOpciones(distritoSelect, [], "Seleccione primero un cantón");
-        distritoSelect.disabled = true;
-    }
-
-    function cargarDistritos(provincia, canton, distritoSeleccionado) {
-        var distritos = ((ubicacionesCR[provincia] || {})[canton]) || [];
-        llenarOpciones(distritoSelect, distritos, "Seleccione un distrito");
-        distritoSelect.disabled = distritos.length === 0;
-
-        if (distritoSeleccionado && distritos.indexOf(distritoSeleccionado) >= 0) {
-            distritoSelect.value = distritoSeleccionado;
-        }
-    }
-
-    var mapaContenedor = document.getElementById("mapaUbicacionFinca");
-    var mapa = null;
-    var marcador = null;
-    var actualizandoUbicacionDesdeMapa = false;
-
-    function inicializarMapa() {
-        if (!mapaContenedor || typeof window.L === "undefined") {
-            return;
-        }
-
-        limitesCostaRica = window.L.latLngBounds(
-            window.L.latLng(8.0, -86.2),
-            window.L.latLng(11.4, -82.3)
-        );
-
-        mapa = window.L.map("mapaUbicacionFinca", {
-            scrollWheelZoom: false,
-            doubleClickZoom: false,
-            boxZoom: false,
-            keyboard: false,
-            tap: false
-        }).setView([9.9325, -84.08], 11);
-
-        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19,
-            attribution: "&copy; OpenStreetMap contributors"
-        }).addTo(mapa);
-
-        mapa.on("click", function (evento) {
-            if (limitesCostaRica && !limitesCostaRica.contains(evento.latlng)) {
-                if (latitudInput) {
-                    latitudInput.setCustomValidity("Seleccione un punto dentro de Costa Rica.");
-                }
-                return;
-            }
-
-            if (latitudInput) {
-                latitudInput.setCustomValidity("");
-            }
-            colocarPin(evento.latlng.lat, evento.latlng.lng, true);
-        });
-
-        setTimeout(function () {
-            mapa.invalidateSize();
-        }, 120);
-    }
-
-    function colocarPin(latitud, longitud, centrar) {
-        if (!mapa) {
-            return;
-        }
-
-        if (limitesCostaRica && !limitesCostaRica.contains(window.L.latLng(latitud, longitud))) {
-            return;
-        }
-
-        if (!marcador) {
-            marcador = window.L.marker([latitud, longitud], { draggable: true }).addTo(mapa);
-            marcador.on("dragend", function (evento) {
-                var pos = evento.target.getLatLng();
-                setCoordenadas(pos.lat, pos.lng);
-                autocompletarUbicacionDesdeCoordenadas(pos.lat, pos.lng);
-            });
-        } else {
-            marcador.setLatLng([latitud, longitud]);
-        }
-
-        if (centrar) {
-            mapa.setView([latitud, longitud], Math.max(mapa.getZoom(), 13));
-        }
-
-        setCoordenadas(latitud, longitud);
-        autocompletarUbicacionDesdeCoordenadas(latitud, longitud);
-    }
-
     function setCoordenadas(latitud, longitud) {
-        var latitudNormalizada = Number(latitud).toFixed(7);
-        var longitudNormalizada = Number(longitud).toFixed(7);
+        var lat = Number(latitud);
+        var lon = Number(longitud);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-        if (latitudInput) {
-            latitudInput.value = latitudNormalizada;
-            latitudInput.setAttribute("value", latitudNormalizada);
-        }
-        if (longitudInput) {
-            longitudInput.value = longitudNormalizada;
-            longitudInput.setAttribute("value", longitudNormalizada);
-        }
+        var latNorm = lat.toFixed(7);
+        var lonNorm = lon.toFixed(7);
+
+        if (latitudInput) latitudInput.value = latNorm;
+        if (longitudInput) longitudInput.value = lonNorm;
     }
 
     function setUbicacionAdministrativa(provincia, canton, distrito) {
-        if (paisInput) {
-            paisInput.value = "Costa Rica";
-        }
-        if (provinciaInput) {
-            provinciaInput.value = provincia || "";
-            provinciaInput.setCustomValidity("");
-        }
-        if (cantonInput) {
-            cantonInput.value = canton || "";
-            cantonInput.setCustomValidity("");
-        }
-        if (distritoInput) {
-            distritoInput.value = distrito || "";
-            distritoInput.setCustomValidity("");
-        }
+        if (paisInput) paisInput.value = "Costa Rica";
+        if (provinciaInput) provinciaInput.value = provincia || "";
+        if (cantonInput) cantonInput.value = canton || "";
+        if (distritoInput) distritoInput.value = distrito || "";
     }
 
     function extraerPrimerValorValido() {
         for (var i = 0; i < arguments.length; i++) {
-            if (arguments[i] && String(arguments[i]).trim()) {
-                return String(arguments[i]).trim();
-            }
+            var valor = arguments[i];
+            if (valor && String(valor).trim()) return String(valor).trim();
         }
         return "";
     }
@@ -402,21 +107,15 @@ document.addEventListener("DOMContentLoaded", function () {
             + "&lon="
             + encodeURIComponent(longitud);
 
-        fetch(url, {
-            headers: {
-                "Accept": "application/json"
-            }
-        })
+        return fetch(url, { headers: { "Accept": "application/json" } })
             .then(function (respuesta) {
-                if (!respuesta.ok) {
-                    throw new Error("No se pudo resolver la ubicación administrativa");
-                }
+                if (!respuesta.ok) throw new Error("No se pudo resolver la ubicación administrativa");
                 return respuesta.json();
             })
             .then(function (resultado) {
                 var address = resultado && resultado.address ? resultado.address : {};
-
                 var paisCodigo = extraerPrimerValorValido(address.country_code).toLowerCase();
+
                 if (paisCodigo !== "cr") {
                     throw new Error("La ubicación seleccionada está fuera de Costa Rica");
                 }
@@ -446,6 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 ).replace(/^Distrito de\s+/i, "").trim();
 
                 setUbicacionAdministrativa(provincia, canton, distrito);
+                if (provinciaInput) provinciaInput.setCustomValidity("");
             })
             .catch(function () {
                 setUbicacionAdministrativa("", "", "");
@@ -455,172 +155,14 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    function normalizarTexto(valor) {
-        return (valor || "")
-            .toString()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/\s+/g, " ")
-            .trim()
-            .toLowerCase();
-    }
+    function colocarPin(latitud, longitud, centrar) {
+        if (!mapa || typeof window.L === "undefined") return;
 
-    function buscarCoincidencia(opciones, valorBuscado) {
-        if (!valorBuscado || !opciones || !opciones.length) {
-            return null;
-        }
-
-        var buscado = normalizarTexto(valorBuscado);
-        var exacta = opciones.find(function (opcion) { return normalizarTexto(opcion) === buscado; });
-        if (exacta) {
-            return exacta;
-        }
-
-        return opciones.find(function (opcion) {
-            var normalizada = normalizarTexto(opcion);
-            return normalizada.indexOf(buscado) >= 0 || buscado.indexOf(normalizada) >= 0;
-        }) || null;
-    }
-
-    function obtenerProvinciaDesdeAddress(address) {
-        var candidatas = [address.state, address.region, address.province];
-        var provincias = Object.keys(ubicacionesCR);
-        for (var i = 0; i < candidatas.length; i++) {
-            var provincia = buscarCoincidencia(provincias, candidatas[i]);
-            if (provincia) {
-                return provincia;
+        var latLng = window.L.latLng(latitud, longitud);
+        if (limitesCostaRica && !limitesCostaRica.contains(latLng)) {
+            if (provinciaInput) {
+                provinciaInput.setCustomValidity("Seleccione un punto dentro del territorio de Costa Rica.");
             }
-        }
-        return null;
-    }
-
-    function obtenerCantonDesdeAddress(address, provincia) {
-        if (!provincia || !ubicacionesCR[provincia]) {
-            return null;
-        }
-
-        var candidatos = [address.county, address.city, address.town, address.municipality];
-        var cantones = Object.keys(ubicacionesCR[provincia]);
-
-        for (var i = 0; i < candidatos.length; i++) {
-            var canton = buscarCoincidencia(cantones, candidatos[i]);
-            if (canton) {
-                return canton;
-            }
-        }
-
-        return null;
-    }
-
-    function obtenerDistritoDesdeAddress(address, provincia, canton) {
-        if (!provincia || !canton || !ubicacionesCR[provincia] || !ubicacionesCR[provincia][canton]) {
-            return null;
-        }
-
-        var candidatos = [address.suburb, address.village, address.city_district, address.hamlet, address.neighbourhood];
-        var distritos = ubicacionesCR[provincia][canton];
-
-        for (var i = 0; i < candidatos.length; i++) {
-            var distrito = buscarCoincidencia(distritos, candidatos[i]);
-            if (distrito) {
-                return distrito;
-            }
-        }
-
-        return null;
-    }
-
-    function inferirCantonYDistrito(provincia, address) {
-        if (!provincia || !ubicacionesCR[provincia]) {
-            return { canton: null, distrito: null };
-        }
-
-        var canton = obtenerCantonDesdeAddress(address, provincia);
-        var distrito = obtenerDistritoDesdeAddress(address, provincia, canton);
-        if (canton && distrito) {
-            return { canton: canton, distrito: distrito };
-        }
-
-        var candidatosDistrito = [address.suburb, address.village, address.city_district, address.hamlet, address.neighbourhood];
-        var cantones = Object.keys(ubicacionesCR[provincia]);
-
-        for (var i = 0; i < cantones.length; i++) {
-            var cantonActual = cantones[i];
-            var distritos = ubicacionesCR[provincia][cantonActual] || [];
-
-            for (var j = 0; j < candidatosDistrito.length; j++) {
-                var distritoMatch = buscarCoincidencia(distritos, candidatosDistrito[j]);
-                if (distritoMatch) {
-                    return { canton: cantonActual, distrito: distritoMatch };
-                }
-            }
-        }
-
-        return { canton: canton, distrito: distrito };
-    }
-
-    function autocompletarUbicacionDesdeCoordenadas(latitud, longitud) {
-        var url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + encodeURIComponent(latitud) +
-            "&lon=" + encodeURIComponent(longitud) + "&zoom=18&addressdetails=1&accept-language=es";
-
-        fetch(url, {
-            headers: {
-                "Accept": "application/json"
-            }
-        })
-            .then(function (respuesta) {
-                if (!respuesta.ok) {
-                    throw new Error("No fue posible obtener la ubicación.");
-                }
-                return respuesta.json();
-            })
-            .then(function (data) {
-                if (!data || !data.address) {
-                    return;
-                }
-
-                var address = data.address;
-                var provincia = obtenerProvinciaDesdeAddress(address);
-                if (!provincia) {
-                    return;
-                }
-
-                var ubicacionInferida = inferirCantonYDistrito(provincia, address);
-                var canton = ubicacionInferida.canton;
-                var distrito = ubicacionInferida.distrito;
-
-                actualizandoUbicacionDesdeMapa = true;
-                provinciaSelect.value = provincia;
-                cargarCantones(provincia, canton || undefined, distrito || undefined);
-
-                if (canton) {
-                    cantonSelect.value = canton;
-                    cargarDistritos(provincia, canton, distrito || undefined);
-                }
-
-                if (distrito) {
-                    distritoSelect.value = distrito;
-                }
-
-                actualizandoUbicacionDesdeMapa = false;
-            })
-            .catch(function () {
-                actualizandoUbicacionDesdeMapa = false;
-            });
-    }
-
-    provinciaSelect.addEventListener("change", function () {
-        if (actualizandoUbicacionDesdeMapa) {
-            return;
-        }
-
-        limpiarCoordenadas();
-
-        if (!provinciaSelect.value) {
-            llenarOpciones(cantonSelect, [], "Seleccione primero una provincia");
-            llenarOpciones(distritoSelect, [], "Seleccione primero un cantón");
-            cantonSelect.disabled = true;
-            distritoSelect.disabled = true;
             return;
         }
 
@@ -639,59 +181,63 @@ document.addEventListener("DOMContentLoaded", function () {
             mapa.setView([latitud, longitud], Math.max(mapa.getZoom(), 13));
         }
 
-    cantonSelect.addEventListener("change", function () {
-        if (actualizandoUbicacionDesdeMapa) {
-            return;
-        }
-
-        limpiarCoordenadas();
+        setCoordenadas(latitud, longitud);
+        resolverUbicacionAdministrativa(latitud, longitud);
+    }
 
     function inicializarMapa() {
-        if (!mapaContenedor || typeof window.L === "undefined") {
-            return;
-        }
+        if (!mapaContenedor || typeof window.L === "undefined") return;
 
-        var limitesCostaRica = window.L.latLngBounds(
+        limitesCostaRica = window.L.latLngBounds(
             window.L.latLng(8.0, -86.2),
             window.L.latLng(11.4, -82.3)
         );
 
-    distritoSelect.addEventListener("change", function () {
-        if (actualizandoUbicacionDesdeMapa) {
-            return;
-        }
+        mapa = window.L.map("mapaUbicacionFinca", {
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false,
+            tap: false
+        }).setView([9.9325, -84.08], 11);
 
-        limpiarCoordenadas();
-        enfocarZonaSeleccionada();
-    });
+        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(mapa);
+
+        mapa.on("click", function (evento) {
+            colocarPin(evento.latlng.lat, evento.latlng.lng, true);
+        });
+
+        setTimeout(function () { mapa.invalidateSize(); }, 120);
+
+        if (latitudInput && longitudInput && latitudInput.value && longitudInput.value) {
+            var latitudInicial = Number(latitudInput.value);
+            var longitudInicial = Number(longitudInput.value);
+            var coordenadasInicialesValidas = Number.isFinite(latitudInicial)
+                && Number.isFinite(longitudInicial)
+                && latitudInicial >= -90 && latitudInicial <= 90
+                && longitudInicial >= -180 && longitudInicial <= 180
+                && !(latitudInicial === 0 && longitudInicial === 0);
+
+            if (coordenadasInicialesValidas) {
+                colocarPin(latitudInicial, longitudInicial, true);
+            }
+        }
+    }
 
     if (tieneRiosOQuebradasCheck) {
         tieneRiosOQuebradasCheck.addEventListener("change", sincronizarRecursosHidricos);
     }
-
     if (tieneNacientesCheck) {
         tieneNacientesCheck.addEventListener("change", sincronizarRecursosHidricos);
     }
 
     configurarMensajesValidacionEspanol();
     formulario.setAttribute("lang", "es");
-    inicializarUbicaciones();
-    inicializarMapa();
     sincronizarRecursosHidricos();
-
-    if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
-        var latitudInicial = Number(latitudInput.value);
-        var longitudInicial = Number(longitudInput.value);
-        var coordenadasInicialesValidas = Number.isFinite(latitudInicial)
-            && Number.isFinite(longitudInicial)
-            && latitudInicial >= -90 && latitudInicial <= 90
-            && longitudInicial >= -180 && longitudInicial <= 180
-            && !(latitudInicial === 0 && longitudInicial === 0);
-
-        if (coordenadasInicialesValidas) {
-            colocarPin(latitudInicial, longitudInicial, true);
-        }
-    }
+    inicializarMapa();
 
     formulario.addEventListener("submit", function (evento) {
         var latitud = latitudInput ? Number(latitudInput.value) : NaN;
@@ -699,14 +245,15 @@ document.addEventListener("DOMContentLoaded", function () {
         var hectareasInput = formulario.querySelector("#Hectareas");
         var hectareas = hectareasInput ? Number(hectareasInput.value) : 0;
         var cantidadNacientes = cantidadNacientesInput ? Number(cantidadNacientesInput.value) : 0;
-        var nacientesValidas = !tieneNacientesCheck || !tieneNacientesCheck.checked
-            ? true
-            : Number.isInteger(cantidadNacientes) && cantidadNacientes > 0;
 
         var coordenadasValidas = Number.isFinite(latitud)
             && Number.isFinite(longitud)
             && latitud >= -90 && latitud <= 90
             && longitud >= -180 && longitud <= 180;
+
+        var nacientesValidas = !tieneNacientesCheck || !tieneNacientesCheck.checked
+            ? true
+            : Number.isInteger(cantidadNacientes) && cantidadNacientes > 0;
 
         var ubicacionAdministrativaCompleta = provinciaInput && cantonInput && distritoInput
             && provinciaInput.value.trim()
@@ -720,10 +267,8 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
-        if (!ubicacionAdministrativaCompleta) {
-            if (provinciaInput) {
-                provinciaInput.setCustomValidity("Seleccione un punto válido en el mapa para derivar la ubicación.");
-            }
+        if (!ubicacionAdministrativaCompleta && provinciaInput) {
+            provinciaInput.setCustomValidity("Seleccione un punto válido en el mapa para derivar la ubicación.");
         }
 
         if (!formulario.checkValidity() || !coordenadasValidas || !Number.isFinite(hectareas) || hectareas <= 0 || !nacientesValidas) {
@@ -733,9 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        if (!boton) {
-            return;
-        }
+        if (!boton) return;
 
         boton.disabled = true;
         boton.setAttribute("aria-busy", "true");
