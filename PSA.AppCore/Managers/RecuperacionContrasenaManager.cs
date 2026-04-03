@@ -17,14 +17,19 @@ namespace PSA.AppCore.Managers
             IServicioHashContrasena servicioHash,
             AuditoriaLogDAO auditoriaLogDAO)
         {
-            _usuarioDAO = usuarioDAO;
-            _tokenRecuperacionDAO = tokenRecuperacionDAO;
-            _servicioHash = servicioHash;
-            _auditoriaLogDAO = auditoriaLogDAO;
+            _usuarioDAO = usuarioDAO ?? throw new ArgumentNullException(nameof(usuarioDAO));
+            _tokenRecuperacionDAO = tokenRecuperacionDAO ?? throw new ArgumentNullException(nameof(tokenRecuperacionDAO));
+            _servicioHash = servicioHash ?? throw new ArgumentNullException(nameof(servicioHash));
         }
 
         public async Task<(string Token, string NombreUsuario)> GenerarTokenConNombreAsync(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new InvalidOperationException("El correo es obligatorio.");
+            }
+
+            email = email.Trim();
             var usuario = await _usuarioDAO.ObtenerPorEmailAsync(email);
             if (usuario == null)
             {
@@ -58,6 +63,11 @@ namespace PSA.AppCore.Managers
 
         public async Task<bool> TokenEsValidoAsync(string token)
         {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return false;
+            }
+
             var registro = await _tokenRecuperacionDAO.ObtenerTokenVigenteAsync(token);
 
             await _auditoriaLogDAO.RegistrarEventoAsync(
@@ -88,6 +98,16 @@ namespace PSA.AppCore.Managers
 
         public async Task RestablecerContrasenaAsync(string token, string nuevaContrasena)
         {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                throw new InvalidOperationException("El token es obligatorio.");
+            }
+
+            if (string.IsNullOrWhiteSpace(nuevaContrasena) || nuevaContrasena.Trim().Length < 8)
+            {
+                throw new InvalidOperationException("La nueva contraseña debe contener al menos 8 caracteres.");
+            }
+
             var registro = await _tokenRecuperacionDAO.ObtenerTokenVigenteAsync(token);
             if (registro == null)
             {
@@ -108,7 +128,7 @@ namespace PSA.AppCore.Managers
                 throw new InvalidOperationException("No se encontró el usuario asociado al token.");
             }
 
-            var hash = _servicioHash.GenerarHash(nuevaContrasena);
+            var hash = _servicioHash.GenerarHash(nuevaContrasena.Trim());
             await _usuarioDAO.ActualizarPasswordHashPorEmailAsync(usuario.Email, hash);
             await _tokenRecuperacionDAO.MarcarTokenComoUsadoAsync(registro.IdToken);
 

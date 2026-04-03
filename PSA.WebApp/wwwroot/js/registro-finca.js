@@ -45,6 +45,18 @@ document.addEventListener("DOMContentLoaded", function () {
             return "El formato numérico de '" + nombreCampo + "' no es válido.";
         }
 
+        if (campo.validity.tooLong) {
+            return "El valor de '" + nombreCampo + "' supera la longitud permitida.";
+        }
+
+        if (campo.validity.tooShort) {
+            return "El valor de '" + nombreCampo + "' es demasiado corto.";
+        }
+
+        if (campo.validity.badInput) {
+            return "El valor ingresado en '" + nombreCampo + "' no tiene un formato válido.";
+        }
+
         return "";
     }
 
@@ -271,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var mapaContenedor = document.getElementById("mapaUbicacionFinca");
     var mapa = null;
     var marcador = null;
-    var limitesCostaRica = null;
+    var actualizandoUbicacionDesdeMapa = false;
 
     function inicializarMapa() {
         if (!mapaContenedor || typeof window.L === "undefined") {
@@ -288,10 +300,8 @@ document.addEventListener("DOMContentLoaded", function () {
             doubleClickZoom: false,
             boxZoom: false,
             keyboard: false,
-            tap: false,
-            maxBounds: limitesCostaRica,
-            maxBoundsViscosity: 1.0
-        }).setView([9.9281, -84.0907], 11);
+            tap: false
+        }).setView([9.9325, -84.08], 11);
 
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -331,6 +341,7 @@ document.addEventListener("DOMContentLoaded", function () {
             marcador.on("dragend", function (evento) {
                 var pos = evento.target.getLatLng();
                 setCoordenadas(pos.lat, pos.lng);
+                autocompletarUbicacionDesdeCoordenadas(pos.lat, pos.lng);
             });
         } else {
             marcador.setLatLng([latitud, longitud]);
@@ -341,6 +352,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         setCoordenadas(latitud, longitud);
+        autocompletarUbicacionDesdeCoordenadas(latitud, longitud);
     }
 
     function setCoordenadas(latitud, longitud) {
@@ -443,8 +455,172 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    function colocarPin(latitud, longitud, centrar) {
-        if (!mapa) {
+    function normalizarTexto(valor) {
+        return (valor || "")
+            .toString()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toLowerCase();
+    }
+
+    function buscarCoincidencia(opciones, valorBuscado) {
+        if (!valorBuscado || !opciones || !opciones.length) {
+            return null;
+        }
+
+        var buscado = normalizarTexto(valorBuscado);
+        var exacta = opciones.find(function (opcion) { return normalizarTexto(opcion) === buscado; });
+        if (exacta) {
+            return exacta;
+        }
+
+        return opciones.find(function (opcion) {
+            var normalizada = normalizarTexto(opcion);
+            return normalizada.indexOf(buscado) >= 0 || buscado.indexOf(normalizada) >= 0;
+        }) || null;
+    }
+
+    function obtenerProvinciaDesdeAddress(address) {
+        var candidatas = [address.state, address.region, address.province];
+        var provincias = Object.keys(ubicacionesCR);
+        for (var i = 0; i < candidatas.length; i++) {
+            var provincia = buscarCoincidencia(provincias, candidatas[i]);
+            if (provincia) {
+                return provincia;
+            }
+        }
+        return null;
+    }
+
+    function obtenerCantonDesdeAddress(address, provincia) {
+        if (!provincia || !ubicacionesCR[provincia]) {
+            return null;
+        }
+
+        var candidatos = [address.county, address.city, address.town, address.municipality];
+        var cantones = Object.keys(ubicacionesCR[provincia]);
+
+        for (var i = 0; i < candidatos.length; i++) {
+            var canton = buscarCoincidencia(cantones, candidatos[i]);
+            if (canton) {
+                return canton;
+            }
+        }
+
+        return null;
+    }
+
+    function obtenerDistritoDesdeAddress(address, provincia, canton) {
+        if (!provincia || !canton || !ubicacionesCR[provincia] || !ubicacionesCR[provincia][canton]) {
+            return null;
+        }
+
+        var candidatos = [address.suburb, address.village, address.city_district, address.hamlet, address.neighbourhood];
+        var distritos = ubicacionesCR[provincia][canton];
+
+        for (var i = 0; i < candidatos.length; i++) {
+            var distrito = buscarCoincidencia(distritos, candidatos[i]);
+            if (distrito) {
+                return distrito;
+            }
+        }
+
+        return null;
+    }
+
+    function inferirCantonYDistrito(provincia, address) {
+        if (!provincia || !ubicacionesCR[provincia]) {
+            return { canton: null, distrito: null };
+        }
+
+        var canton = obtenerCantonDesdeAddress(address, provincia);
+        var distrito = obtenerDistritoDesdeAddress(address, provincia, canton);
+        if (canton && distrito) {
+            return { canton: canton, distrito: distrito };
+        }
+
+        var candidatosDistrito = [address.suburb, address.village, address.city_district, address.hamlet, address.neighbourhood];
+        var cantones = Object.keys(ubicacionesCR[provincia]);
+
+        for (var i = 0; i < cantones.length; i++) {
+            var cantonActual = cantones[i];
+            var distritos = ubicacionesCR[provincia][cantonActual] || [];
+
+            for (var j = 0; j < candidatosDistrito.length; j++) {
+                var distritoMatch = buscarCoincidencia(distritos, candidatosDistrito[j]);
+                if (distritoMatch) {
+                    return { canton: cantonActual, distrito: distritoMatch };
+                }
+            }
+        }
+
+        return { canton: canton, distrito: distrito };
+    }
+
+    function autocompletarUbicacionDesdeCoordenadas(latitud, longitud) {
+        var url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + encodeURIComponent(latitud) +
+            "&lon=" + encodeURIComponent(longitud) + "&zoom=18&addressdetails=1&accept-language=es";
+
+        fetch(url, {
+            headers: {
+                "Accept": "application/json"
+            }
+        })
+            .then(function (respuesta) {
+                if (!respuesta.ok) {
+                    throw new Error("No fue posible obtener la ubicación.");
+                }
+                return respuesta.json();
+            })
+            .then(function (data) {
+                if (!data || !data.address) {
+                    return;
+                }
+
+                var address = data.address;
+                var provincia = obtenerProvinciaDesdeAddress(address);
+                if (!provincia) {
+                    return;
+                }
+
+                var ubicacionInferida = inferirCantonYDistrito(provincia, address);
+                var canton = ubicacionInferida.canton;
+                var distrito = ubicacionInferida.distrito;
+
+                actualizandoUbicacionDesdeMapa = true;
+                provinciaSelect.value = provincia;
+                cargarCantones(provincia, canton || undefined, distrito || undefined);
+
+                if (canton) {
+                    cantonSelect.value = canton;
+                    cargarDistritos(provincia, canton, distrito || undefined);
+                }
+
+                if (distrito) {
+                    distritoSelect.value = distrito;
+                }
+
+                actualizandoUbicacionDesdeMapa = false;
+            })
+            .catch(function () {
+                actualizandoUbicacionDesdeMapa = false;
+            });
+    }
+
+    provinciaSelect.addEventListener("change", function () {
+        if (actualizandoUbicacionDesdeMapa) {
+            return;
+        }
+
+        limpiarCoordenadas();
+
+        if (!provinciaSelect.value) {
+            llenarOpciones(cantonSelect, [], "Seleccione primero una provincia");
+            llenarOpciones(distritoSelect, [], "Seleccione primero un cantón");
+            cantonSelect.disabled = true;
+            distritoSelect.disabled = true;
             return;
         }
 
@@ -463,9 +639,12 @@ document.addEventListener("DOMContentLoaded", function () {
             mapa.setView([latitud, longitud], Math.max(mapa.getZoom(), 13));
         }
 
-        setCoordenadas(latitud, longitud);
-        resolverUbicacionAdministrativa(latitud, longitud);
-    }
+    cantonSelect.addEventListener("change", function () {
+        if (actualizandoUbicacionDesdeMapa) {
+            return;
+        }
+
+        limpiarCoordenadas();
 
     function inicializarMapa() {
         if (!mapaContenedor || typeof window.L === "undefined") {
@@ -477,32 +656,14 @@ document.addEventListener("DOMContentLoaded", function () {
             window.L.latLng(11.4, -82.3)
         );
 
-        mapa = window.L.map("mapaUbicacionFinca", {
-            scrollWheelZoom: false,
-            doubleClickZoom: false,
-            boxZoom: false,
-            keyboard: false,
-            tap: false,
-            maxBounds: limitesCostaRica,
-            maxBoundsViscosity: 1.0
-        }).setView([9.7489, -83.7534], 8);
+    distritoSelect.addEventListener("change", function () {
+        if (actualizandoUbicacionDesdeMapa) {
+            return;
+        }
 
-        window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            maxZoom: 19,
-            attribution: "&copy; OpenStreetMap contributors"
-        }).addTo(mapa);
-
-        mapa.on("click", function (evento) {
-            if (!limitesCostaRica.contains(evento.latlng)) {
-                return;
-            }
-            colocarPin(evento.latlng.lat, evento.latlng.lng, true);
-        });
-
-        setTimeout(function () {
-            mapa.invalidateSize();
-        }, 120);
-    }
+        limpiarCoordenadas();
+        enfocarZonaSeleccionada();
+    });
 
     if (tieneRiosOQuebradasCheck) {
         tieneRiosOQuebradasCheck.addEventListener("change", sincronizarRecursosHidricos);
@@ -513,15 +674,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     configurarMensajesValidacionEspanol();
-    setUbicacionAdministrativa("", "", "");
+    formulario.setAttribute("lang", "es");
+    inicializarUbicaciones();
     inicializarMapa();
     sincronizarRecursosHidricos();
 
     if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
-        var latInicial = Number(latitudInput.value);
-        var lonInicial = Number(longitudInput.value);
-        if (Number.isFinite(latInicial) && Number.isFinite(lonInicial) && (Math.abs(latInicial) > 0.000001 || Math.abs(lonInicial) > 0.000001)) {
-            colocarPin(latInicial, lonInicial, true);
+        var latitudInicial = Number(latitudInput.value);
+        var longitudInicial = Number(longitudInput.value);
+        var coordenadasInicialesValidas = Number.isFinite(latitudInicial)
+            && Number.isFinite(longitudInicial)
+            && latitudInicial >= -90 && latitudInicial <= 90
+            && longitudInicial >= -180 && longitudInicial <= 180
+            && !(latitudInicial === 0 && longitudInicial === 0);
+
+        if (coordenadasInicialesValidas) {
+            colocarPin(latitudInicial, longitudInicial, true);
         }
     }
 

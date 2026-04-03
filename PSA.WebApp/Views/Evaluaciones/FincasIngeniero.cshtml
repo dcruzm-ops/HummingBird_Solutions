@@ -1,0 +1,53 @@
+@model List<PSA.EntidadesDTO.DTOs.Evaluaciones.ItemReporteEvaluacionDTO>
+@{
+    ViewData["Title"] = "Fincas del ingeniero";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Vista operativa</span>
+            <h2>Fincas y evaluaciones asignadas</h2>
+            <p>Consulte rápidamente todas las evaluaciones vinculadas al ingeniero autenticado.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Evaluaciones" asp-action="FincasPendientes">Ir a pendientes</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Finca</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Decisión</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>#@item.IdEvaluacion</td>
+                                <td>@item.NombreFinca</td>
+                                <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                                <td>@item.EstadoEvaluacion</td>
+                                <td>@(string.IsNullOrWhiteSpace(item.DecisionTecnica) ? "N/A" : item.DecisionTecnica)</td>
+                                <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="DetalleEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">Ver detalle</a></td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6">No hay evaluaciones para mostrar.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

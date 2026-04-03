@@ -1,29 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using PSA.DataAccess.DAO;
+using PSA.WebApp.Models;
 using System.Security.Claims;
-using Microsoft.Data.SqlClient;
-using System.Text.Json;
-using System.Net.Http.Json;
-using PSA.EntidadesDTO.DTOs.Dashboard;
 
 namespace PSA.WebApp.Controllers
 {
     [Authorize]
     public class DashboardController : Controller
     {
-        private readonly FincaDAO _fincaDAO;
-        private readonly IConfiguration _configuration;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly DashboardDAO _dashboardDAO;
 
-        public DashboardController(
-            FincaDAO fincaDAO,
-            IConfiguration configuration,
-            IHttpClientFactory httpClientFactory)
+        public DashboardController(DashboardDAO dashboardDAO)
         {
-            _fincaDAO = fincaDAO;
-            _configuration = configuration;
-            _httpClientFactory = httpClientFactory;
+            _dashboardDAO = dashboardDAO;
         }
 
         [HttpGet]
@@ -37,21 +27,27 @@ namespace PSA.WebApp.Controllers
             ViewBag.BreadcrumbActual = "Dashboard";
 
             var idUsuario = ObtenerIdUsuarioSesion();
-            var fincas = idUsuario > 0
-                ? await _fincaDAO.ObtenerPorPropietarioAsync(idUsuario)
-                : new List<PSA.EntidadesDTO.DTOs.FincaResumenDTO>();
+            if (idUsuario <= 0)
+            {
+                return RedirectToAction("IniciarSesion", "Autenticacion");
+            }
 
-            ViewBag.TotalFincas = fincas.Count;
-            ViewBag.FincasActivas = fincas.Count(f => string.Equals(f.EstadoFinca, "Activa", StringComparison.OrdinalIgnoreCase));
-            ViewBag.EvaluacionesPendientes = fincas.Count(f => !string.Equals(f.EstadoEvaluacion, "Aprobada", StringComparison.OrdinalIgnoreCase));
-            ViewBag.EnRevision = fincas.Count(f => string.Equals(f.EstadoFinca, "Registrada", StringComparison.OrdinalIgnoreCase) || string.Equals(f.EstadoFinca, "En revision", StringComparison.OrdinalIgnoreCase));
-            ViewBag.ActividadReciente = fincas
-                .OrderByDescending(f => f.FechaRegistro)
-                .Take(3)
-                .Select(f => $"Expediente #{f.IdFinca:D3} - {f.NombreFinca} ({f.EstadoEvaluacion})")
-                .ToList();
+            var resumen = await _dashboardDAO.ObtenerResumenDuenoAsync(idUsuario);
+            var modelo = new DashboardDuenoViewModel
+            {
+                FincasRegistradas = resumen.FincasRegistradas,
+                EvaluacionesPendientes = resumen.EvaluacionesPendientes,
+                CuotasPorConfirmar = resumen.CuotasPorConfirmar,
+                ActividadReciente = resumen.Actividad
+                    .Select(x => new ActividadDashboardViewModel
+                    {
+                        Titulo = x.Mensaje,
+                        Url = x.IdEntidad.HasValue ? Url.Action("DetalleFinca", "Fincas", new { id = x.IdEntidad.Value }) : Url.Action("Index", "Notificaciones")
+                    })
+                    .ToList()
+            };
 
-            return View();
+            return View(modelo);
         }
 
         [HttpGet]
@@ -64,14 +60,28 @@ namespace PSA.WebApp.Controllers
             ViewBag.SubtituloPagina = "Accesos rápidos a evaluaciones, visitas y fincas pendientes.";
             ViewBag.BreadcrumbActual = "Dashboard";
 
-            var resumen = await ObtenerResumenIngenieroDesdeDbAsync();
-            ViewBag.FincasPendientes = resumen.FincasPendientes;
-            ViewBag.EvaluacionesEnProceso = resumen.EvaluacionesEnProceso;
-            ViewBag.DecisionesMes = resumen.DecisionesMes;
-            ViewBag.TopProvincias = resumen.TopProvincias;
-            ViewBag.ForecastProvincias = await ObtenerPronosticoProvinciasAsync();
+            var idUsuario = ObtenerIdUsuarioSesion();
+            if (idUsuario <= 0)
+            {
+                return RedirectToAction("IniciarSesion", "Autenticacion");
+            }
 
-            return View();
+            var resumen = await _dashboardDAO.ObtenerResumenIngenieroAsync(idUsuario);
+            var modelo = new DashboardIngenieroViewModel
+            {
+                FincasPendientes = resumen.FincasPendientes,
+                EvaluacionesAbiertas = resumen.EvaluacionesAbiertas,
+                DecisionesMesActual = resumen.DecisionesMesActual,
+                ProximasAcciones = resumen.ProximasAcciones
+                    .Select(x => new ActividadDashboardViewModel
+                    {
+                        Titulo = $"Registrar o completar evaluación para \"{x.NombreFinca}\".",
+                        Url = Url.Action("NuevaEvaluacion", "Evaluaciones", new { fincaId = x.IdFinca })
+                    })
+                    .ToList()
+            };
+
+            return View(modelo);
         }
 
         [HttpGet]
@@ -84,16 +94,26 @@ namespace PSA.WebApp.Controllers
             ViewBag.SubtituloPagina = "Monitoreo operativo del sistema, usuarios, pagos y auditoría.";
             ViewBag.BreadcrumbActual = "Dashboard";
 
-            var resumen = await ObtenerResumenAdministradorDesdeApiOBaseDatosAsync();
-            ViewBag.UsuariosActivos = resumen.UsuariosActivos;
-            ViewBag.UsuariosNuevosHoy = resumen.UsuariosNuevosHoy;
-            ViewBag.UsuariosPendientesAprobacion = resumen.UsuariosPendientesAprobacion;
-            ViewBag.CuentasPorValidar = resumen.CuentasPorValidar;
-            ViewBag.EventosAuditoria24h = resumen.EventosAuditoria24h;
-            ViewBag.AlertasAdministrativas = resumen.Alertas;
-            ViewBag.ActividadAuditoria = resumen.ActividadAuditoria;
+            var resumen = await _dashboardDAO.ObtenerResumenAdministradorAsync();
+            var modelo = new DashboardAdministradorViewModel
+            {
+                UsuariosActivos = resumen.UsuariosActivos,
+                CuentasPorValidar = resumen.CuentasPorValidar,
+                EventosAuditoria24h = resumen.EventosAuditoria24h,
+                Alertas = resumen.Alertas.Select(x => new ActividadDashboardViewModel
+                {
+                    Titulo = x,
+                    Url = Url.Action("AuditoriaLogs", "Administracion")
+                }).ToList()
+            };
 
-            return View();
+            return View(modelo);
+        }
+
+        private int ObtenerIdUsuarioSesion()
+        {
+            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(idClaim, out var idUsuario) ? idUsuario : 0;
         }
 
         private int ObtenerIdUsuarioSesion()

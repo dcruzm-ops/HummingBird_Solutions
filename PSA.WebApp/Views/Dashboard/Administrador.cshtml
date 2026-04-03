@@ -1,3 +1,4 @@
+@model PSA.WebApp.Models.DashboardAdministradorViewModel
 @{
     ViewData["Title"] = "Dashboard del administrador";
     var alertas = ViewBag.AlertasAdministrativas as List<string> ?? new List<string>();
@@ -17,23 +18,18 @@
     <div class="grid-tarjetas-kpi">
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Usuarios activos</span>
-            <strong>@(ViewBag.UsuariosActivos ?? 0)</strong>
-            <small>@(ViewBag.UsuariosPendientesAprobacion ?? 0) inactivos o bloqueados</small>
-        </article>
-        <article class="tarjeta-kpi">
-            <span class="etiqueta-kpi">Usuarios nuevos hoy</span>
-            <strong>@(ViewBag.UsuariosNuevosHoy ?? 0)</strong>
-            <small>Registros con fecha de creación de hoy</small>
+            <strong>@Model.UsuariosActivos</strong>
+            <small>Registros en estado Activo</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Cuentas por validar</span>
-            <strong>@(ViewBag.CuentasPorValidar ?? 0)</strong>
+            <strong>@Model.CuentasPorValidar</strong>
             <small>Revisión administrativa requerida</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Eventos de auditoría</span>
-            <strong>@(ViewBag.EventosAuditoria24h ?? 0)</strong>
-            <small>Total acumulado</small>
+            <strong>@Model.EventosAuditoria24h</strong>
+            <small>Últimas 24 horas</small>
         </article>
     </div>
 
@@ -42,39 +38,16 @@
             <h3>Alertas administrativas</h3>
         </div>
         <ul class="lista-timeline">
-            @if (alertas.Count == 0)
+            @if (Model.Alertas.Any())
             {
-                <li>No hay alertas administrativas registradas en este momento.</li>
+                @foreach (var alerta in Model.Alertas)
+                {
+                    <li><a href="@(alerta.Url ?? "#")">@alerta.Titulo</a></li>
+                }
             }
             else
             {
-                foreach (var alerta in alertas)
-                {
-                    <li>@alerta</li>
-                }
-            }
-        </ul>
-    </section>
-
-    <section class="tarjeta-panel mt-4">
-        <div class="cabecera-bloque">
-            <h3>Actividad de auditoría reciente</h3>
-        </div>
-        <ul class="lista-timeline">
-            @if (actividad.Count == 0)
-            {
-                <li>No hay actividad de auditoría registrada.</li>
-            }
-            else
-            {
-                foreach (var evento in actividad)
-                {
-                    <li>
-                        <strong>@evento.Modulo</strong> · @evento.Accion<br />
-                        <span>@evento.Detalle</span><br />
-                        <small>@evento.FechaAccion.ToString("dd/MM/yyyy HH:mm")</small>
-                    </li>
-                }
+                <li><a asp-controller="Administracion" asp-action="AuditoriaLogs">No hay alertas administrativas recientes.</a></li>
             }
         </ul>
     </section>

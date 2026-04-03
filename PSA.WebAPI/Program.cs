@@ -3,6 +3,7 @@ using PSA.AppCore.Managers;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess;
 using PSA.DataAccess.DAO;
+using PSA.WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,45 +13,51 @@ Console.WriteLine("PSAConnection: " + builder.Configuration["ConnectionStrings:P
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy
+                .WithOrigins("https://localhost:59664")
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
+
+static string ObtenerCadenaConexion(IConfiguration configuration)
+{
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+    if (string.IsNullOrWhiteSpace(connectionString))
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+
+    return connectionString;
+}
 
 builder.Services.AddScoped<DbContextHelper>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
-
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
-    }
-
-    return new DbContextHelper(connectionString);
+    return new DbContextHelper(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<UsuarioDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
-
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
-    }
-
-    return new UsuarioDAO(connectionString);
+    return new UsuarioDAO(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<FincaDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
+    return new FincaDAO(ObtenerCadenaConexion(configuration));
+});
 
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
-    }
-
-    return new FincaDAO(connectionString);
+builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    return new EvaluacionTecnicaDAO(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<AuditoriaLogDAO>(sp =>
@@ -82,19 +89,15 @@ builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
 builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
 {
     var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
-
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
-    }
-
-    return new RecuperacionContrasenaDAO(connectionString);
+    return new RecuperacionContrasenaDAO(ObtenerCadenaConexion(configuration));
 });
 
 builder.Services.AddScoped<FincaService>();
+builder.Services.AddScoped<EvaluacionService>();
+builder.Services.AddScoped<FincaEvidenciaService>();
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
+builder.Services.AddScoped<EvaluacionTecnicaManager>();
 
 var app = builder.Build();
 
@@ -108,7 +111,14 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.MapGet("/openapi/v1.json", () => Results.Redirect("/swagger/v1/swagger.json"));
+
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+
+app.UseCors("AllowFrontend");
+
 app.UseAuthorization();
 app.MapControllers();
 

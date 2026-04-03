@@ -1,3 +1,4 @@
+@model PSA.WebApp.Models.DashboardDuenoViewModel
 @{
     ViewData["Title"] = "Dashboard del dueño";
     var actividadReciente = ViewBag.ActividadReciente as List<string> ?? new List<string>();
@@ -15,18 +16,18 @@
     <div class="grid-tarjetas-kpi">
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Fincas registradas</span>
-            <strong>@(ViewBag.TotalFincas ?? 0)</strong>
-            <small>@(ViewBag.FincasActivas ?? 0) activas y @(ViewBag.EnRevision ?? 0) en revisión</small>
+            <strong>@Model.FincasRegistradas</strong>
+            <small>Datos en tiempo real desde base de datos</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Evaluaciones pendientes</span>
-            <strong>@(ViewBag.EvaluacionesPendientes ?? 0)</strong>
-            <small>Resumen calculado desde sus fincas registradas</small>
+            <strong>@Model.EvaluacionesPendientes</strong>
+            <small>Estados Pendiente y En Proceso</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Cuotas por confirmar</span>
-            <strong>@Math.Max(0, (int)(ViewBag.EvaluacionesPendientes ?? 0) - (int)(ViewBag.EnRevision ?? 0))</strong>
-            <small>Estimación operativa para próximos pagos</small>
+            <strong>@Model.CuotasPorConfirmar</strong>
+            <small>Cuotas programadas, atrasadas o acumuladas</small>
         </article>
     </div>
 
@@ -47,16 +48,16 @@
                 <h3>Actividad reciente</h3>
             </div>
             <ul class="lista-timeline">
-                @if (actividadReciente.Count == 0)
+                @if (Model.ActividadReciente.Any())
                 {
-                    <li>No hay actividad reciente para mostrar.</li>
+                    @foreach (var actividad in Model.ActividadReciente)
+                    {
+                        <li><a href="@(actividad.Url ?? "#")">@actividad.Titulo</a></li>
+                    }
                 }
                 else
                 {
-                    foreach (var item in actividadReciente)
-                    {
-                        <li>@item</li>
-                    }
+                    <li><a asp-controller="Notificaciones" asp-action="Index">No hay actividad reciente para mostrar.</a></li>
                 }
             </ul>
         </section>
