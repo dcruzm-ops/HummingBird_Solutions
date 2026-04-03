@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
-using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Security.Claims;
@@ -14,7 +13,7 @@ namespace PSA.WebApp.Controllers
 {
     public class AutenticacionController : Controller
     {
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IHttpClientFactory? _httpClientFactory;
         private readonly IConfiguration _configuration;
         private readonly AutenticacionManager _autenticacionManager;
         private readonly RecuperacionContrasenaManager _recuperacionContrasenaManager;
@@ -25,13 +24,13 @@ namespace PSA.WebApp.Controllers
             AutenticacionManager autenticacionManager,
             RecuperacionContrasenaManager recuperacionContrasenaManager,
             IServicioCorreo servicioCorreo,
-            IServiceProvider serviceProvider)
+            IHttpClientFactory? httpClientFactory = null)
         {
             _configuration = configuration;
             _autenticacionManager = autenticacionManager;
             _recuperacionContrasenaManager = recuperacionContrasenaManager;
             _servicioCorreo = servicioCorreo;
-            _serviceProvider = serviceProvider;
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpGet]
@@ -65,8 +64,7 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+                using var client = CreateAuthApiClient();
                 var response = await PostToApiAsync(client, "/api/Autenticacion/iniciar-sesion", dto);
 
                 if (!response.IsSuccessStatusCode)
@@ -117,8 +115,7 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+                using var client = CreateAuthApiClient();
                 var response = await PostToApiAsync(client, "/api/Autenticacion/registrar", dto);
 
                 if (!response.IsSuccessStatusCode)
@@ -359,6 +356,20 @@ Cuenta automática Do-Not-Reply";
                 "No fue posible conectar con el API en ninguna URL configurada.",
                 ultimaExcepcion
             );
+        }
+
+        private HttpClient CreateAuthApiClient()
+        {
+            if (_httpClientFactory != null)
+            {
+                return _httpClientFactory.CreateClient("AuthApi");
+            }
+
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+            return new HttpClient(handler, disposeHandler: true);
         }
 
         private IEnumerable<string> GetApiBaseUrls()
