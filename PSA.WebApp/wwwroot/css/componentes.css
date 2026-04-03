@@ -428,6 +428,11 @@
     margin-bottom: var(--espacio-4);
 }
 
+.grid-detalle-finca {
+    display: grid;
+    gap: var(--espacio-5);
+}
+
 .campo-detalle {
     display: flex;
     align-items: baseline;
