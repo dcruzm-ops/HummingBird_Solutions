@@ -31,7 +31,12 @@ builder.Services.AddHttpClient("AuthApi")
     .ConfigurePrimaryHttpMessageHandler(() =>
     {
         var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+        if (builder.Environment.IsDevelopment())
+        {
+            handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        }
+
         return handler;
     });
 

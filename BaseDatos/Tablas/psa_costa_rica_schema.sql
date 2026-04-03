@@ -80,7 +80,7 @@ CREATE TABLE dbo.Usuarios
     IdUsuario       INT IDENTITY(1,1) NOT NULL,
     NombreCompleto  VARCHAR(150) NOT NULL,
     Email           VARCHAR(150) NOT NULL,
-    PasswordHash    VARCHAR(255) NOT NULL,
+    PasswordHash    NVARCHAR(500) NOT NULL,
     IdRol           INT NOT NULL,
     Estado          VARCHAR(20) NOT NULL CONSTRAINT DF_Usuarios_Estado DEFAULT ('Activo'),
     FechaCreacion   DATETIME2 NOT NULL CONSTRAINT DF_Usuarios_FechaCreacion DEFAULT (SYSDATETIME()),
@@ -90,10 +90,6 @@ CREATE TABLE dbo.Usuarios
     CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (IdRol) REFERENCES dbo.Roles(IdRol),
     CONSTRAINT CK_Usuarios_Estado CHECK (Estado IN ('Activo', 'Inactivo', 'Bloqueado'))
 );
-GO
-
-ALTER TABLE Usuarios
-ALTER COLUMN PasswordHash NVARCHAR(500) NULL;
 GO
 
 /* =========================================
