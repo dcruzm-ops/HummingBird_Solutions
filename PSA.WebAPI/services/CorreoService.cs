@@ -1,4 +1,4 @@
-﻿using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
+using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
 using System.Net;
 using System.Net.Mail;
 
@@ -40,6 +40,22 @@ namespace PSA.WebAPI.Services
             mensaje.Subject = asunto;
             mensaje.Body = cuerpo;
             mensaje.IsBodyHtml = true;
+
+            using var cliente = new SmtpClient(_smtp.Host, _smtp.Port);
+            cliente.Credentials = new NetworkCredential(_smtp.Username, _smtp.Password);
+            cliente.EnableSsl = _smtp.EnableSsl;
+
+            cliente.Send(mensaje);
+        }
+
+        public void EnviarCorreoTextoPlano(string destino, string asunto, string cuerpo)
+        {
+            using var mensaje = new MailMessage();
+            mensaje.From = new MailAddress(_smtp.FromEmail, _smtp.FromName);
+            mensaje.To.Add(destino);
+            mensaje.Subject = asunto;
+            mensaje.Body = cuerpo;
+            mensaje.IsBodyHtml = false;
 
             using var cliente = new SmtpClient(_smtp.Host, _smtp.Port);
             cliente.Credentials = new NetworkCredential(_smtp.Username, _smtp.Password);

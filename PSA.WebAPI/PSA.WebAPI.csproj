@@ -20,7 +20,7 @@
     <Compile Include="Controllers\Models\ApiResponse.cs" />
     <Compile Include="Controllers\RecuperacionContrasenaController.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Services\CorreoService.cs" />
+    <Compile Include="services\CorreoService.cs" />
     <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
     <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
