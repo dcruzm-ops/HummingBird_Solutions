@@ -56,65 +56,60 @@ BEGIN TRY
     SELECT @IdRolIngeniero = IdRol FROM dbo.Roles WHERE Nombre = 'Ingeniero Forestal';
 
     /* =========================================
-       3. Usuarios base
-       Nota:
-       PasswordHash usa SHA2_256 en hexadecimal como valor semilla.
-       Si tu autenticación usa otro algoritmo, debes reemplazarlo.
+       3. Usuarios semilla (20 en total)
+       Distribución:
+       - 3 administradores
+       - 3 ingenieros forestales
+       - 14 propietarios ficticios
+       Password inicial para todos: 123456789
        ========================================= */
-    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'admin@psa.local')
-        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
-        VALUES (
-            'Administrador General PSA',
-            'admin@psa.local',
-            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'Admin123!'), 2),
-            @IdRolAdministrador,
-            'Activo',
-            SYSDATETIME()
-        );
+    DECLARE @PasswordSemilla NVARCHAR(500) = CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', '123456789'), 2);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'propietario1@psa.local')
-        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
-        VALUES (
-            'María Fernanda Rojas',
-            'propietario1@psa.local',
-            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'Propietario123!'), 2),
-            @IdRolPropietario,
-            'Activo',
-            NULL
-        );
+    DECLARE @UsuariosSemilla TABLE
+    (
+        NombreCompleto NVARCHAR(150) NOT NULL,
+        Email NVARCHAR(150) NOT NULL,
+        IdRol INT NOT NULL,
+        Estado VARCHAR(20) NOT NULL,
+        UltimoAcceso DATETIME2 NULL
+    );
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'ingeniero1@psa.local')
-        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
-        VALUES (
-            'Carlos Andrés Solano',
-            'ingeniero1@psa.local',
-            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'Ingeniero123!'), 2),
-            @IdRolIngeniero,
-            'Activo',
-            NULL
-        );
+    INSERT INTO @UsuariosSemilla (NombreCompleto, Email, IdRol, Estado, UltimoAcceso)
+    VALUES
+        -- Administradores (3)
+        (N'Administrador General PSA', N'admin@psa.local', @IdRolAdministrador, 'Activo', SYSDATETIME()),
+        (N'Ana Lucía Quesada', N'admin2@psa.local', @IdRolAdministrador, 'Activo', NULL),
+        (N'Roberto Brenes Solís', N'admin3@psa.local', @IdRolAdministrador, 'Activo', NULL),
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'nuevo.hoy@psa.local')
-        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
-        VALUES (
-            'Usuario Nuevo del Día',
-            'nuevo.hoy@psa.local',
-            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'NuevoHoy123!'), 2),
-            @IdRolPropietario,
-            'Activo',
-            NULL
-        );
+        -- Ingenieros forestales (3)
+        (N'Carlos Andrés Solano', N'ingeniero1@psa.local', @IdRolIngeniero, 'Activo', NULL),
+        (N'Mariana Arce Villalobos', N'ingeniero2@psa.local', @IdRolIngeniero, 'Activo', NULL),
+        (N'Esteban Jiménez Chacón', N'ingeniero3@psa.local', @IdRolIngeniero, 'Activo', NULL),
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = 'pendiente.validacion@psa.local')
-        INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
-        VALUES (
-            'Usuario Pendiente Validación',
-            'pendiente.validacion@psa.local',
-            CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', 'Pendiente123!'), 2),
-            @IdRolPropietario,
-            'Inactivo',
-            NULL
-        );
+        -- Propietarios ficticios (14)
+        (N'María Fernanda Rojas', N'propietario1@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'José Pablo Mora', N'propietario2@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Sofía Calderón Vega', N'propietario3@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Luis Diego Ureña', N'propietario4@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Karla Sánchez Campos', N'propietario5@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Andrés Chaves León', N'propietario6@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Paola Cordero Paniagua', N'propietario7@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Gilberto Navarro Arias', N'propietario8@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Natalia Herrera Segura', N'propietario9@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Daniel Álvarez Castro', N'propietario10@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Rebeca Salazar Arias', N'propietario11@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Miguel Zúñiga Quesada', N'propietario12@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Laura Fallas Rivas', N'propietario13@psa.local', @IdRolPropietario, 'Activo', NULL),
+        (N'Jorge Mena Solano', N'propietario14@psa.local', @IdRolPropietario, 'Activo', NULL);
+
+    INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado, UltimoAcceso)
+    SELECT u.NombreCompleto, u.Email, @PasswordSemilla, u.IdRol, u.Estado, u.UltimoAcceso
+    FROM @UsuariosSemilla u
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM dbo.Usuarios existente
+        WHERE existente.Email = u.Email
+    );
 
     SELECT @IdAdmin = IdUsuario FROM dbo.Usuarios WHERE Email = 'admin@psa.local';
     SELECT @IdPropietario = IdUsuario FROM dbo.Usuarios WHERE Email = 'propietario1@psa.local';
@@ -434,6 +429,103 @@ BEGIN TRY
     FROM dbo.Fincas
     WHERE IdPropietario = @IdPropietario
       AND NombreFinca = 'Finca Los Robles';
+
+    /* =========================================
+       7.1 Fincas masivas para propietarios ficticios
+       Regla:
+       - cada propietario tiene 1 finca
+       - propietarios pares tienen una segunda finca
+       ========================================= */
+    ;WITH Propietarios AS
+    (
+        SELECT
+            u.IdUsuario,
+            u.NombreCompleto,
+            ROW_NUMBER() OVER (ORDER BY u.IdUsuario) AS NumeroPropietario
+        FROM dbo.Usuarios u
+        WHERE u.IdRol = @IdRolPropietario
+    )
+    INSERT INTO dbo.Fincas
+    (
+        IdPropietario,
+        NombreFinca,
+        Provincia,
+        Canton,
+        Distrito,
+        DireccionExacta,
+        Latitud,
+        Longitud,
+        Hectareas,
+        Vegetacion,
+        TieneRecursosHidricos,
+        TieneRiosOQuebradas,
+        TieneNacientes,
+        CantidadNacientes,
+        UsoSuelo,
+        Pendiente,
+        EstadoFinca
+    )
+    SELECT
+        p.IdUsuario,
+        CONCAT('Finca Modelo ', p.NumeroPropietario, '-', v.NumFinca) AS NombreFinca,
+        CASE (p.NumeroPropietario % 7)
+            WHEN 0 THEN 'San José'
+            WHEN 1 THEN 'Alajuela'
+            WHEN 2 THEN 'Cartago'
+            WHEN 3 THEN 'Heredia'
+            WHEN 4 THEN 'Guanacaste'
+            WHEN 5 THEN 'Puntarenas'
+            ELSE 'Limón'
+        END AS Provincia,
+        CONCAT('Cantón ', p.NumeroPropietario) AS Canton,
+        CONCAT('Distrito ', v.NumFinca) AS Distrito,
+        CONCAT('Referencia lote ', p.NumeroPropietario, '-', v.NumFinca) AS DireccionExacta,
+        CAST(8.9500000 + (p.NumeroPropietario * 0.0300000) + (v.NumFinca * 0.0050000) AS DECIMAL(10,7)) AS Latitud,
+        CAST(-84.3000000 + (p.NumeroPropietario * 0.0400000) + (v.NumFinca * 0.0030000) AS DECIMAL(10,7)) AS Longitud,
+        CAST(6.50 + (p.NumeroPropietario * 1.20) + (v.NumFinca * 0.75) AS DECIMAL(10,2)) AS Hectareas,
+        CASE ((p.NumeroPropietario + v.NumFinca) % 4)
+            WHEN 0 THEN 'Bosque primario'
+            WHEN 1 THEN 'Bosque secundario'
+            WHEN 2 THEN 'Plantación forestal'
+            ELSE 'Pasto'
+        END AS Vegetacion,
+        CASE WHEN (p.NumeroPropietario % 2) = 0 THEN 1 ELSE 0 END AS TieneRecursosHidricos,
+        CASE WHEN (p.NumeroPropietario % 3) = 0 THEN 1 ELSE 0 END AS TieneRiosOQuebradas,
+        CASE WHEN (p.NumeroPropietario % 4) = 0 THEN 1 ELSE 0 END AS TieneNacientes,
+        CASE WHEN (p.NumeroPropietario % 4) = 0 THEN 1 ELSE 0 END AS CantidadNacientes,
+        CASE ((p.NumeroPropietario + v.NumFinca) % 5)
+            WHEN 0 THEN 'Conservación'
+            WHEN 1 THEN 'Producción forestal'
+            WHEN 2 THEN 'Agroforestal'
+            WHEN 3 THEN 'Ganadería'
+            ELSE 'Uso mixto'
+        END AS UsoSuelo,
+        CASE ((p.NumeroPropietario + v.NumFinca) % 3)
+            WHEN 0 THEN 'Plana'
+            WHEN 1 THEN 'Inclinada'
+            ELSE 'Muy inclinada'
+        END AS Pendiente,
+        CASE ((p.NumeroPropietario + v.NumFinca) % 4)
+            WHEN 0 THEN 'Aprobada'
+            WHEN 1 THEN 'EnRevision'
+            WHEN 2 THEN 'Registrada'
+            ELSE 'Registrada'
+        END AS EstadoFinca
+    FROM Propietarios p
+    CROSS APPLY
+    (
+        SELECT 1 AS NumFinca
+        UNION ALL
+        SELECT 2
+        WHERE (p.NumeroPropietario % 2) = 0
+    ) v
+    WHERE NOT EXISTS
+    (
+        SELECT 1
+        FROM dbo.Fincas f
+        WHERE f.IdPropietario = p.IdUsuario
+          AND f.NombreFinca = CONCAT('Finca Modelo ', p.NumeroPropietario, '-', v.NumFinca)
+    );
 
     /* =========================================
        8. Evaluación técnica para finca aprobada
@@ -853,6 +945,15 @@ UNION ALL
 SELECT 'CuotasPago', COUNT(*) FROM dbo.CuotasPago
 UNION ALL
 SELECT 'Notificaciones', COUNT(*) FROM dbo.Notificaciones;
+GO
+
+SELECT
+    r.Nombre AS Rol,
+    COUNT(*) AS TotalUsuarios
+FROM dbo.Usuarios u
+INNER JOIN dbo.Roles r ON r.IdRol = u.IdRol
+GROUP BY r.Nombre
+ORDER BY r.Nombre;
 GO
 
 SELECT u.IdUsuario, u.NombreCompleto, u.Email, r.Nombre AS Rol, u.Estado
