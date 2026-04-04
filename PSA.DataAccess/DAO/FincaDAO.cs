@@ -2,16 +2,18 @@ using Microsoft.Data.SqlClient;
     using PSA.EntidadesDTO.DTOs;
     using PSA.EntidadesDTO.DTOs.Fincas;
 
-    namespace PSA.DataAccess.DAO
+    using PSA.DataAccess;
+
+namespace PSA.DataAccess.DAO
     {
         public class FincaDAO
         {
-            private readonly string _connectionString;
+            private readonly IDbConnectionFactory _connectionFactory;
 
-            public FincaDAO(string connectionString)
-            {
-                _connectionString = connectionString;
-            }
+            public FincaDAO(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
 
             public async Task<List<FincaResumenDTO>> ObtenerPorPropietarioAsync(int idPropietario)
             {
@@ -38,7 +40,7 @@ ORDER BY f.FechaRegistro DESC;";
 
                 var resultado = new List<FincaResumenDTO>();
 
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 using var command = new SqlCommand(sql, connection);
                 command.Parameters.AddWithValue("@IdPropietario", idPropietario);
 
@@ -118,7 +120,7 @@ OUTER APPLY (
 WHERE f.IdFinca = @IdFinca
   AND f.IdPropietario = @IdPropietario;";
 
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 using var command = new SqlCommand(sql, connection);
                 command.Parameters.AddWithValue("@IdFinca", idFinca);
                 command.Parameters.AddWithValue("@IdPropietario", idPropietario);
@@ -162,7 +164,7 @@ WHERE f.IdFinca = @IdFinca
             {
                 var list = new List<FincaDTO>();
 
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 SELECT IdFinca, IdPropietario, NombreFinca, Provincia, Canton, Distrito,
        DireccionExacta, Latitud, Longitud, Hectareas, Vegetacion,
@@ -184,7 +186,7 @@ FROM dbo.Fincas";
 
             public FincaDTO? RetrieveById(int id)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 SELECT IdFinca, IdPropietario, NombreFinca, Provincia, Canton, Distrito,
        DireccionExacta, Latitud, Longitud, Hectareas, Vegetacion,
@@ -203,7 +205,7 @@ WHERE IdFinca = @IdFinca";
 
             public void Create(FincaDTO finca)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 INSERT INTO dbo.Fincas
 (IdPropietario, NombreFinca, Provincia, Canton, Distrito, DireccionExacta,
@@ -222,7 +224,7 @@ VALUES
 
             public void Update(FincaDTO finca)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 UPDATE dbo.Fincas
 SET IdPropietario = @IdPropietario,
@@ -251,7 +253,7 @@ WHERE IdFinca = @IdFinca";
 
             public void Delete(int id)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = "DELETE FROM dbo.Fincas WHERE IdFinca = @IdFinca";
 
                 using var command = new SqlCommand(query, connection);
@@ -348,7 +350,7 @@ VALUES
 );
 SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
             command.Parameters.AddWithValue("@NombreFinca", dto.NombreFinca);
@@ -389,7 +391,7 @@ SET NombreFinca = @NombreFinca,
 WHERE IdFinca = @IdFinca
   AND IdPropietario = @IdPropietario;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdFinca", idFinca);
             command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
@@ -417,7 +419,7 @@ DELETE FROM Fincas
 WHERE IdFinca = @IdFinca
   AND IdPropietario = @IdPropietario;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdFinca", idFinca);
             command.Parameters.AddWithValue("@IdPropietario", idPropietario);
@@ -437,7 +439,7 @@ ORDER BY OrdenVisual, Valor;";
 
             var resultados = new List<string>();
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@TipoCatalogo", tipoFactor);
 

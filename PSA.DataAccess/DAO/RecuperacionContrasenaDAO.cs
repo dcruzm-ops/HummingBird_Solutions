@@ -1,20 +1,22 @@
 using Microsoft.Data.SqlClient;
     using System.Security.Cryptography;
 
-    namespace PSA.DataAccess.DAO
+    using PSA.DataAccess;
+
+namespace PSA.DataAccess.DAO
     {
         public class RecuperacionContrasenaDAO
         {
-            private readonly string _connectionString;
+            private readonly IDbConnectionFactory _connectionFactory;
 
-            public RecuperacionContrasenaDAO(string connectionString)
-            {
-                _connectionString = connectionString;
-            }
+            public RecuperacionContrasenaDAO(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
 
             public (int IdUsuario, string NombreCompleto, string Email)? ObtenerUsuarioActivoPorCorreo(string correo)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 connection.Open();
 
                 var sql = @"
@@ -41,7 +43,7 @@ WHERE Email = @Email
 
             public void InvalidarTokensAnteriores(int idUsuario)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 connection.Open();
 
                 var sql = @"
@@ -58,7 +60,7 @@ WHERE IdUsuario = @IdUsuario
 
             public void GuardarToken(int idUsuario, string token, DateTime fechaExpiracion)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 connection.Open();
 
                 var sql = @"
@@ -76,7 +78,7 @@ VALUES
 
             public bool TokenEsValido(string token)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 connection.Open();
 
                 var sql = @"
@@ -94,7 +96,7 @@ WHERE Token = @Token
 
             public int? ObtenerIdUsuarioPorToken(string token)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 connection.Open();
 
                 var sql = @"
@@ -113,7 +115,7 @@ WHERE Token = @Token
 
             public void ActualizarPassword(int idUsuario, string passwordHash)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 connection.Open();
 
                 var sql = @"
@@ -129,7 +131,7 @@ WHERE IdUsuario = @IdUsuario;";
 
             public void MarcarTokenComoUsado(string token)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 connection.Open();
 
                 var sql = @"
