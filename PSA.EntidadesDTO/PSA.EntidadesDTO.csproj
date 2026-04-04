@@ -55,9 +55,6 @@
     <Compile Include="Entidades\Rol.cs" />
     <Compile Include="Entidades\TokenRecuperacion.cs" />
     <Compile Include="Entidades\Usuario.cs" />
-    <Compile Include="Entidades\Usuarios\Rol.cs" />
-    <Compile Include="Entidades\Usuarios\TokenRecuperacion.cs" />
-    <Compile Include="Entidades\Usuarios\Usuario.cs" />
   </ItemGroup>
 
 </Project>

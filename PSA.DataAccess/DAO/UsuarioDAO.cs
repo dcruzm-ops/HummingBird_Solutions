@@ -1,15 +1,17 @@
 using Microsoft.Data.SqlClient;
 using PSA.EntidadesDTO.Entidades;
 
+using PSA.DataAccess;
+
 namespace PSA.DataAccess.DAO
 {
     public class UsuarioDAO
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public UsuarioDAO(string connectionString)
+        public UsuarioDAO(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<int> CrearUsuarioAsync(Usuario usuario)
@@ -38,7 +40,7 @@ VALUES
 
 SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("@NombreCompleto", usuario.NombreCompleto);
@@ -70,7 +72,7 @@ SELECT TOP 1
 FROM Usuarios
 WHERE Email = @Email;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("@Email", email);
@@ -112,7 +114,7 @@ SELECT TOP 1
 FROM Usuarios
 WHERE IdUsuario = @IdUsuario;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
 
@@ -142,7 +144,7 @@ SELECT 1
 FROM Roles
 WHERE IdRol = @IdRol;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdRol", idRol);
 
@@ -160,7 +162,7 @@ UPDATE Usuarios
 SET PasswordHash = @PasswordHash
 WHERE Email = @Email;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@PasswordHash", passwordHash);
             command.Parameters.AddWithValue("@Email", email);
@@ -181,7 +183,7 @@ UPDATE Usuarios
 SET UltimoAcceso = @UltimoAcceso
 WHERE IdUsuario = @IdUsuario;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@UltimoAcceso", fechaUltimoAcceso);
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
