@@ -1,37 +1,34 @@
+@using System.Security.Claims
 @{
-    var titulo = ViewBag.TituloPagina as string ?? "PSA Costa Rica";
-    var rolActivo = ViewBag.RolActivo as string ?? "Dueno";
-    var nombreUsuario = User?.Identity?.Name ?? "Usuario";
-    var partesNombre = nombreUsuario.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-    var iniciales = string.Empty;
-    if (partesNombre.Length >= 2)
+    var nombreUsuario = User?.Identity?.Name;
+    var nombreMostrar = string.IsNullOrWhiteSpace(nombreUsuario) ? "Usuario" : nombreUsuario;
+    var rolClaim = User.FindFirstValue(ClaimTypes.Role);
+    var rolActivo = rolClaim switch
     {
-        iniciales = $"{char.ToUpperInvariant(partesNombre[0][0])}{char.ToUpperInvariant(partesNombre[1][0])}";
-    }
-    else if (partesNombre.Length == 1 && partesNombre[0].Length > 0)
-    {
-        iniciales = char.ToUpperInvariant(partesNombre[0][0]).ToString();
-    }
+        "1" => "Administrador",
+        "3" => "Ingeniero",
+        _ => "Dueño"
+    };
 }
-<header class="encabezado-sistema">
-    <div class="encabezado-sistema__izquierda">
-        <button type="button" class="boton-icono d-lg-none" id="botonMenuLateral" aria-label="Abrir menú">
-            ☰
+<header class="encabezado-principal" role="banner">
+    <div class="encabezado-principal__izquierda">
+        <button class="btn-menu" id="toggleSidebar" type="button" aria-label="Mostrar u ocultar menú">
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
-        <div>
-            <p class="eyebrow">Sistema de Pago por Servicios Ambientales</p>
-            <h1 class="titulo-encabezado">@titulo</h1>
+        <div class="encabezado-principal__marca">
+            <h1>PSA Costa Rica</h1>
+            <p>Programa de Servicios Ambientales</p>
         </div>
     </div>
 
-    <div class="encabezado-sistema__derecha">
-        <button type="button" class="boton-secundario boton-sm" id="botonTema">
-            Cambiar tema
-        </button>
-        <div class="bloque-usuario">
-            <span class="avatar-usuario">@(string.IsNullOrWhiteSpace(iniciales) ? "U" : iniciales)</span>
+    <div class="encabezado-principal__derecha">
+        <button class="btn btn-sm btn-outline-secondary" id="toggleTema" type="button">Cambiar tema</button>
+        <div class="usuario-resumen" aria-label="Resumen de usuario">
+            <div class="avatar">@nombreMostrar.Substring(0, 1).ToUpperInvariant()</div>
             <div>
-                <strong>@nombreUsuario</strong>
+                <strong>@nombreMostrar</strong>
                 <small>@rolActivo</small>
             </div>
         </div>
