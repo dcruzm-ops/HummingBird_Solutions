@@ -2,15 +2,17 @@
 using PSA.EntidadesDTO.DTOs.Fincas;
 using PSA.EntidadesDTO.Entidades.Fincas;
 
+using PSA.DataAccess;
+
 namespace PSA.DataAccess.DAO
 {
     public class FincaEvidenciaDAO
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public FincaEvidenciaDAO(string connectionString)
+        public FincaEvidenciaDAO(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<int> CrearAsync(FincaEvidencia evidencia)
@@ -36,7 +38,7 @@ VALUES
 );
 SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("@IdFinca", evidencia.FincaId);
@@ -67,7 +69,7 @@ ORDER BY FechaCarga DESC;";
 
             var lista = new List<FincaEvidenciaDTO>();
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdFinca", idFinca);
 
@@ -105,7 +107,7 @@ SELECT TOP 1
 FROM FincaEvidencias
 WHERE IdEvidencia = @IdEvidencia;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdEvidencia", idEvidencia);
 
