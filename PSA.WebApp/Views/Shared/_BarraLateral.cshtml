@@ -1,6 +1,14 @@
+@using System.Security.Claims
 @{
     var moduloActivo = (ViewBag.ModuloActivo as string ?? string.Empty).ToLowerInvariant();
-    var rolActivo = (ViewBag.RolActivo as string ?? "Dueno").ToLowerInvariant();
+    var rolClaim = User.FindFirstValue(ClaimTypes.Role);
+    var rolActivo = rolClaim switch
+    {
+        "1" => "administrador",
+        "3" => "ingeniero",
+        _ => "dueno"
+    };
+
     var accionDashboard = rolActivo switch
     {
         "administrador" => "Administrador",

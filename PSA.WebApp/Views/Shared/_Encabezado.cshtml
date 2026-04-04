@@ -1,38 +1,31 @@
+@using System.Security.Claims
 @{
-    var titulo = ViewBag.TituloPagina as string ?? "PSA Costa Rica";
-    var rolActivo = ViewBag.RolActivo as string ?? "Dueno";
-    var nombreUsuario = User?.Identity?.Name ?? "Usuario";
-    var partesNombre = nombreUsuario.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-    var iniciales = string.Empty;
-    if (partesNombre.Length >= 2)
+    var nombreUsuario = User?.Identity?.Name;
+    var nombreMostrar = string.IsNullOrWhiteSpace(nombreUsuario) ? "Usuario" : nombreUsuario;
+    var rolClaim = User.FindFirstValue(ClaimTypes.Role);
+    var rolActivo = rolClaim switch
     {
-        iniciales = $"{char.ToUpperInvariant(partesNombre[0][0])}{char.ToUpperInvariant(partesNombre[1][0])}";
-    }
-    else if (partesNombre.Length == 1 && partesNombre[0].Length > 0)
-    {
-        iniciales = char.ToUpperInvariant(partesNombre[0][0]).ToString();
-    }
+        "1" => "Administrador",
+        "3" => "Ingeniero",
+        _ => "Dueño"
+    };
 }
-<header class="encabezado-sistema">
+<header class="encabezado-sistema" role="banner">
     <div class="encabezado-sistema__izquierda">
-        <button type="button" class="boton-icono d-lg-none" id="botonMenuLateral" aria-label="Abrir menú">
-            ☰
-        </button>
+        <button class="boton-icono" id="botonMenuLateral" type="button" aria-label="Mostrar u ocultar menú">☰</button>
         <div>
-            <p class="eyebrow">Sistema de Pago por Servicios Ambientales</p>
-            <h1 class="titulo-encabezado">@titulo</h1>
+            <h2 class="titulo-encabezado">PSA Costa Rica</h2>
+            <p class="mb-0">Programa de Servicios Ambientales</p>
         </div>
     </div>
 
     <div class="encabezado-sistema__derecha">
-        <button type="button" class="boton-secundario boton-sm" id="botonTema">
-            Cambiar tema
-        </button>
-        <div class="bloque-usuario">
-            <span class="avatar-usuario">@(string.IsNullOrWhiteSpace(iniciales) ? "U" : iniciales)</span>
+        <button class="boton-secundario boton-sm" id="botonTema" type="button">Cambiar tema</button>
+        <div class="bloque-usuario" aria-label="Resumen de usuario">
+            <div class="avatar-usuario">@nombreMostrar.Substring(0, 1).ToUpperInvariant()</div>
             <div>
-                <strong>@nombreUsuario</strong>
-                <small>@rolActivo</small>
+                <strong>@nombreMostrar</strong>
+                <small class="d-block">@rolActivo</small>
             </div>
         </div>
     </div>

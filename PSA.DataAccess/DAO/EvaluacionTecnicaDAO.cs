@@ -3,15 +3,17 @@ using PSA.EntidadesDTO.DTOs.Evaluaciones;
 using System.Linq;
 using System.Text;
 
+using PSA.DataAccess;
+
 namespace PSA.DataAccess.DAO
 {
     public class EvaluacionTecnicaDAO
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public EvaluacionTecnicaDAO(string connectionString)
+        public EvaluacionTecnicaDAO(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<int> CrearEvaluacionPendienteAsync(int idFinca)
@@ -31,7 +33,7 @@ FROM EvaluacionesTecnicas
 WHERE IdFinca = @IdFinca
 ORDER BY IdEvaluacion DESC;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdFinca", idFinca);
             command.Parameters.AddWithValue("@EstadoPendiente", EstadosEvaluacionTecnica.Pendiente);
@@ -54,7 +56,7 @@ ORDER BY e.IdEvaluacion ASC;";
 
             var resultado = new List<BandejaEvaluacionPendienteDTO>();
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@EstadoPendiente", EstadosEvaluacionTecnica.Pendiente);
             command.Parameters.AddWithValue("@EstadoEnProceso", EstadosEvaluacionTecnica.EnProceso);
@@ -112,7 +114,7 @@ FROM EvaluacionesTecnicas e
 INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
 WHERE e.IdEvaluacion = @IdEvaluacion;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdEvaluacion", idEvaluacion);
 
@@ -182,7 +184,7 @@ WHERE e.IdEvaluacion = @IdEvaluacion;
 COMMIT TRAN;
 SELECT CAST(1 AS bit);";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdEvaluacion", idEvaluacion);
             command.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
@@ -245,7 +247,7 @@ WHERE e.IdEvaluacion = @IdEvaluacion;
 COMMIT TRAN;
 SELECT CAST(1 AS bit);";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdEvaluacion", idEvaluacion);
             command.Parameters.AddWithValue("@FechaVisita", dto.FechaVisita);
@@ -273,7 +275,7 @@ UPDATE EvaluacionesTecnicas
 SET EstadoEvaluacion = @EstadoEvaluacion
 WHERE IdEvaluacion = @IdEvaluacion;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdEvaluacion", idEvaluacion);
             command.Parameters.AddWithValue("@EstadoEvaluacion", nuevoEstado);
@@ -299,7 +301,7 @@ FROM EvaluacionesTecnicas e
 INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
 WHERE 1 = 1");
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand();
             command.Connection = connection;
 
