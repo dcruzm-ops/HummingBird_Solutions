@@ -13,6 +13,8 @@
 		<Compile Include="DAO\EvaluacionDAO.cs" />
 		<Compile Include="DAO\FincaEvidenciaDAO.cs" />
 		<Compile Include="DbContextHelper.cs" />
+		<Compile Include="IDbConnectionFactory.cs" />
+		<Compile Include="SqlConnectionFactory.cs" />
 		<Compile Include="DAO\FincaDAO.cs" />
 		<Compile Include="DAO\DashboardDAO.cs" />
 		<Compile Include="DAO\AuditoriaLogDAO.cs" />
