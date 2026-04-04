@@ -19,10 +19,19 @@ if (string.IsNullOrWhiteSpace(apiBaseUrl))
     throw new InvalidOperationException("Debe configurar ApiSettings:BaseUrl en PSA.WebApp.");
 }
 
-builder.Services.AddHttpClient("AuthApi", client =>
+var httpClientBuilder = builder.Services.AddHttpClient("AuthApi", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(20);
 });
+
+if (builder.Environment.IsDevelopment())
+{
+    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    });
+}
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
