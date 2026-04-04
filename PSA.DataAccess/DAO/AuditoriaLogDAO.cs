@@ -1,14 +1,16 @@
 using Microsoft.Data.SqlClient;
 
+using PSA.DataAccess;
+
 namespace PSA.DataAccess.DAO
 {
     public class AuditoriaLogDAO
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public AuditoriaLogDAO(string connectionString)
+        public AuditoriaLogDAO(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task RegistrarEventoAsync(
@@ -48,7 +50,7 @@ VALUES
     @Detalle
 );";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("@IdUsuario", (object?)idUsuario ?? DBNull.Value);
