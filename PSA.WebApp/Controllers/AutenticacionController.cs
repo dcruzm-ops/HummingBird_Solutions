@@ -28,17 +28,36 @@ namespace PSA.WebApp.Controllers
         public async Task<IActionResult> IniciarSesion(InicioSesionDTO dto)
         {
             if (!ModelState.IsValid) return View(dto);
-            var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/Autenticacion/iniciar-sesion", dto);
-            if (!response.IsSuccessStatusCode)
+
+            try
             {
-                ModelState.AddModelError(string.Empty, "Credenciales inválidas.");
+                var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/Autenticacion/iniciar-sesion", dto);
+                if (!response.IsSuccessStatusCode)
+                {
+                    ModelState.AddModelError(string.Empty, "Credenciales inválidas.");
+                    return View(dto);
+                }
+
+                var respuesta = await response.Content.ReadFromJsonAsync<RespuestaInicioSesionDTO>();
+                if (respuesta == null)
+                {
+                    ModelState.AddModelError(string.Empty, "No se recibió una respuesta válida del servidor.");
+                    return View(dto);
+                }
+
+                await IniciarSesionWebAsync(respuesta);
+                return RedirectToAction(GetDashboardActionByRole(respuesta.IdRol), "Dashboard");
+            }
+            catch (HttpRequestException)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo conectar con el API de autenticación. Verifique que PSA.WebAPI esté ejecutándose.");
                 return View(dto);
             }
-
-            var respuesta = await response.Content.ReadFromJsonAsync<RespuestaInicioSesionDTO>();
-            if (respuesta == null) return View(dto);
-            await IniciarSesionWebAsync(respuesta);
-            return RedirectToAction(GetDashboardActionByRole(respuesta.IdRol), "Dashboard");
+            catch (TaskCanceledException)
+            {
+                ModelState.AddModelError(string.Empty, "El API tardó demasiado en responder. Intente nuevamente.");
+                return View(dto);
+            }
         }
 
         [HttpPost]
@@ -46,15 +65,24 @@ namespace PSA.WebApp.Controllers
         public async Task<IActionResult> RegistroUsuario(RegistrarUsuarioDTO dto)
         {
             if (!ModelState.IsValid) return View(dto);
-            var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/Autenticacion/registrar", dto);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                var errorBody = await response.Content.ReadAsStringAsync();
-                ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
+                var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/Autenticacion/registrar", dto);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
+                    return View(dto);
+                }
+
+                TempData["MensajeExito"] = "Usuario registrado correctamente.";
+                return RedirectToAction(nameof(IniciarSesion));
+            }
+            catch (HttpRequestException)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo conectar con el API. Verifique la disponibilidad de PSA.WebAPI.");
                 return View(dto);
             }
-            TempData["MensajeExito"] = "Usuario registrado correctamente.";
-            return RedirectToAction(nameof(IniciarSesion));
         }
 
         [HttpPost]
