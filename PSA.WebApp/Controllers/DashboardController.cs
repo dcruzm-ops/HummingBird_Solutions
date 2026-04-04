@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PSA.DataAccess.DAO;
 using PSA.WebApp.Models;
+using System.Net.Http.Json;
 using System.Security.Claims;
 
 namespace PSA.WebApp.Controllers
@@ -9,111 +9,68 @@ namespace PSA.WebApp.Controllers
     [Authorize]
     public class DashboardController : Controller
     {
-        private readonly DashboardDAO _dashboardDAO;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public DashboardController(DashboardDAO dashboardDAO)
+        public DashboardController(IHttpClientFactory httpClientFactory)
         {
-            _dashboardDAO = dashboardDAO;
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpGet]
         [Authorize(Roles = "2")]
         public async Task<IActionResult> Dueno()
         {
-            ViewBag.ModuloActivo = "dashboard";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Dashboard del dueño de finca";
-            ViewBag.SubtituloPagina = "Resumen general de fincas, evaluaciones, notificaciones y pagos.";
-            ViewBag.BreadcrumbActual = "Dashboard";
-
             var idUsuario = ObtenerIdUsuarioSesion();
-            if (idUsuario <= 0)
-            {
-                return RedirectToAction("IniciarSesion", "Autenticacion");
-            }
+            if (idUsuario <= 0) return RedirectToAction("IniciarSesion", "Autenticacion");
 
-            var resumen = await _dashboardDAO.ObtenerResumenDuenoAsync(idUsuario);
-            var modelo = new DashboardDuenoViewModel
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var resumen = await client.GetFromJsonAsync<DashboardDuenoApiModel>($"api/Dashboard/dueno-resumen/{idUsuario}") ?? new();
+            return View(new DashboardDuenoViewModel
             {
                 FincasRegistradas = resumen.FincasRegistradas,
                 EvaluacionesPendientes = resumen.EvaluacionesPendientes,
                 CuotasPorConfirmar = resumen.CuotasPorConfirmar,
-                ActividadReciente = resumen.Actividad
-                    .Select(x => new ActividadDashboardViewModel
-                    {
-                        Titulo = x.Mensaje,
-                        Url = x.IdEntidad.HasValue ? Url.Action("DetalleFinca", "Fincas", new { id = x.IdEntidad.Value }) : Url.Action("Index", "Notificaciones")
-                    })
-                    .ToList()
-            };
-
-            return View(modelo);
+                ActividadReciente = resumen.Actividad.Select(x => new ActividadDashboardViewModel { Titulo = x.Mensaje }).ToList()
+            });
         }
 
         [HttpGet]
         [Authorize(Roles = "3")]
         public async Task<IActionResult> Ingeniero()
         {
-            ViewBag.ModuloActivo = "dashboard";
-            ViewBag.RolActivo = "Ingeniero";
-            ViewBag.TituloPagina = "Dashboard del ingeniero forestal";
-            ViewBag.SubtituloPagina = "Accesos rápidos a evaluaciones, visitas y fincas pendientes.";
-            ViewBag.BreadcrumbActual = "Dashboard";
-
             var idUsuario = ObtenerIdUsuarioSesion();
-            if (idUsuario <= 0)
-            {
-                return RedirectToAction("IniciarSesion", "Autenticacion");
-            }
-
-            var resumen = await _dashboardDAO.ObtenerResumenIngenieroAsync(idUsuario);
-            var modelo = new DashboardIngenieroViewModel
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var resumen = await client.GetFromJsonAsync<DashboardIngenieroApiModel>($"api/Dashboard/ingeniero-resumen/{idUsuario}") ?? new();
+            return View(new DashboardIngenieroViewModel
             {
                 FincasPendientes = resumen.FincasPendientes,
                 EvaluacionesAbiertas = resumen.EvaluacionesAbiertas,
                 DecisionesMesActual = resumen.DecisionesMesActual,
-                ProximasAcciones = resumen.ProximasAcciones
-                    .Select(x => new ActividadDashboardViewModel
-                    {
-                        Titulo = $"Registrar o completar evaluación para \"{x.NombreFinca}\".",
-                        Url = Url.Action("NuevaEvaluacion", "Evaluaciones", new { fincaId = x.IdFinca })
-                    })
-                    .ToList()
-            };
-
-            return View(modelo);
+                ProximasAcciones = resumen.ProximasAcciones.Select(x => new ActividadDashboardViewModel { Titulo = x.NombreFinca }).ToList()
+            });
         }
 
         [HttpGet]
         [Authorize(Roles = "1")]
         public async Task<IActionResult> Administrador()
         {
-            ViewBag.ModuloActivo = "dashboard";
-            ViewBag.RolActivo = "Administrador";
-            ViewBag.TituloPagina = "Dashboard del administrador";
-            ViewBag.SubtituloPagina = "Monitoreo operativo del sistema, usuarios, pagos y auditoría.";
-            ViewBag.BreadcrumbActual = "Dashboard";
-
-            var resumen = await _dashboardDAO.ObtenerResumenAdministradorAsync();
-            var modelo = new DashboardAdministradorViewModel
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var resumen = await client.GetFromJsonAsync<DashboardAdminApiModel>("api/Dashboard/administrador-resumen") ?? new();
+            return View(new DashboardAdministradorViewModel
             {
                 UsuariosActivos = resumen.UsuariosActivos,
                 CuentasPorValidar = resumen.CuentasPorValidar,
                 EventosAuditoria24h = resumen.EventosAuditoria24h,
-                Alertas = resumen.Alertas.Select(x => new ActividadDashboardViewModel
-                {
-                    Titulo = x,
-                    Url = Url.Action("AuditoriaLogs", "Administracion")
-                }).ToList()
-            };
-
-            return View(modelo);
+                Alertas = resumen.Alertas.Select(x => new ActividadDashboardViewModel { Titulo = x }).ToList()
+            });
         }
 
-        private int ObtenerIdUsuarioSesion()
-        {
-            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(idClaim, out var idUsuario) ? idUsuario : 0;
-        }
+        private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        public class DashboardDuenoApiModel { public int FincasRegistradas { get; set; } public int EvaluacionesPendientes { get; set; } public int CuotasPorConfirmar { get; set; } public List<ActividadApiModel> Actividad { get; set; } = new(); }
+        public class DashboardIngenieroApiModel { public int FincasPendientes { get; set; } public int EvaluacionesAbiertas { get; set; } public int DecisionesMesActual { get; set; } public List<AccionApiModel> ProximasAcciones { get; set; } = new(); }
+        public class DashboardAdminApiModel { public int UsuariosActivos { get; set; } public int CuentasPorValidar { get; set; } public int EventosAuditoria24h { get; set; } public List<string> Alertas { get; set; } = new(); }
+        public class ActividadApiModel { public string Mensaje { get; set; } = string.Empty; }
+        public class AccionApiModel { public int IdFinca { get; set; } public string NombreFinca { get; set; } = string.Empty; }
     }
 }

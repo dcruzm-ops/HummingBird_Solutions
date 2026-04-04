@@ -1,14 +1,16 @@
 using Microsoft.Data.SqlClient;
 
+using PSA.DataAccess;
+
 namespace PSA.DataAccess.DAO
 {
     public class DashboardDAO
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public DashboardDAO(string connectionString)
+        public DashboardDAO(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<(int FincasRegistradas, int EvaluacionesPendientes, int CuotasPorConfirmar, List<(string Mensaje, int? IdEntidad)> Actividad)> ObtenerResumenDuenoAsync(int idPropietario)
@@ -34,7 +36,7 @@ FROM Notificaciones
 WHERE IdUsuario = @IdPropietario
 ORDER BY FechaCreacion DESC;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
             int fincas = 0;
@@ -92,7 +94,7 @@ WHERE e.IdIngeniero = @IdIngeniero
   AND e.EstadoEvaluacion IN ('Pendiente', 'En Proceso')
 ORDER BY ISNULL(e.FechaVisita, CAST(GETDATE() AS date)) ASC, e.IdEvaluacion DESC;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
             int pendientes = 0;
@@ -142,7 +144,7 @@ FROM AuditoriaLog
 WHERE Detalle IS NOT NULL AND LTRIM(RTRIM(Detalle)) <> ''
 ORDER BY FechaAccion DESC;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
 
             int usuarios = 0;
