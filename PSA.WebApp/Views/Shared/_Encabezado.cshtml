@@ -10,26 +10,22 @@
         _ => "Dueño"
     };
 }
-<header class="encabezado-principal" role="banner">
-    <div class="encabezado-principal__izquierda">
-        <button class="btn-menu" id="toggleSidebar" type="button" aria-label="Mostrar u ocultar menú">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-        <div class="encabezado-principal__marca">
-            <h1>PSA Costa Rica</h1>
-            <p>Programa de Servicios Ambientales</p>
+<header class="encabezado-sistema" role="banner">
+    <div class="encabezado-sistema__izquierda">
+        <button class="boton-icono" id="botonMenuLateral" type="button" aria-label="Mostrar u ocultar menú">☰</button>
+        <div>
+            <h2 class="titulo-encabezado">PSA Costa Rica</h2>
+            <p class="mb-0">Programa de Servicios Ambientales</p>
         </div>
     </div>
 
-    <div class="encabezado-principal__derecha">
-        <button class="btn btn-sm btn-outline-secondary" id="toggleTema" type="button">Cambiar tema</button>
-        <div class="usuario-resumen" aria-label="Resumen de usuario">
-            <div class="avatar">@nombreMostrar.Substring(0, 1).ToUpperInvariant()</div>
+    <div class="encabezado-sistema__derecha">
+        <button class="boton-secundario boton-sm" id="botonTema" type="button">Cambiar tema</button>
+        <div class="bloque-usuario" aria-label="Resumen de usuario">
+            <div class="avatar-usuario">@nombreMostrar.Substring(0, 1).ToUpperInvariant()</div>
             <div>
                 <strong>@nombreMostrar</strong>
-                <small>@rolActivo</small>
+                <small class="d-block">@rolActivo</small>
             </div>
         </div>
     </div>
