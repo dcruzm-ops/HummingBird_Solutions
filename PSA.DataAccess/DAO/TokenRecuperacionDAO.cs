@@ -1,15 +1,17 @@
 using Microsoft.Data.SqlClient;
 using PSA.EntidadesDTO.Entidades;
 
+using PSA.DataAccess;
+
 namespace PSA.DataAccess.DAO
 {
     public class TokenRecuperacionDAO
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public TokenRecuperacionDAO(string connectionString)
+        public TokenRecuperacionDAO(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task InvalidarTokensActivosPorUsuarioAsync(int idUsuario)
@@ -22,7 +24,7 @@ WHERE IdUsuario = @IdUsuario
   AND Usado = 0
   AND FechaExpiracion > SYSDATETIME();";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
             await connection.OpenAsync();
@@ -36,7 +38,7 @@ INSERT INTO TokensRecuperacion (IdUsuario, Token, FechaExpiracion, Usado)
 VALUES (@IdUsuario, @Token, @FechaExpiracion, 0);
 SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
             command.Parameters.AddWithValue("@Token", token);
@@ -55,7 +57,7 @@ WHERE Token = @Token
   AND Usado = 0
   AND FechaExpiracion > SYSDATETIME();";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@Token", token);
             await connection.OpenAsync();
@@ -86,7 +88,7 @@ SET Usado = 1,
     FechaUso = SYSDATETIME()
 WHERE IdToken = @IdToken;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdToken", idToken);
             await connection.OpenAsync();

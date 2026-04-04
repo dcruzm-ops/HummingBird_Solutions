@@ -1,119 +1,79 @@
-    using PSA.AppCore;
-    using PSA.AppCore.Managers;
-    using PSA.AppCore.Servicios;
-    using PSA.DataAccess;
-    using PSA.DataAccess.DAO;
-    using PSA.WebAPI.Services;
+using PSA.AppCore;
+using PSA.AppCore.Managers;
+using PSA.AppCore.Servicios;
+using PSA.DataAccess;
+using PSA.DataAccess.DAO;
+using PSA.WebAPI.Controllers.Middleware;
 
-    var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-    Console.WriteLine("Ambiente: " + builder.Environment.EnvironmentName);
-    Console.WriteLine("PSAConnection: " + builder.Configuration["ConnectionStrings:PSAConnection"]);
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
-
-    builder.Services.AddCors(options =>
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        options.AddPolicy("AllowFrontend", policy =>
-        {
-            policy.WithOrigins("https://localhost:59664")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
-        });
+        policy.WithOrigins("https://localhost:59664")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
     });
+});
 
-    builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
+builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
 
-    static string ObtenerCadenaConexion(IConfiguration configuration)
+builder.Services.AddScoped<IDbConnectionFactory>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
     {
-        var connectionString = configuration.GetConnectionString("PSAConnection");
-        if (string.IsNullOrWhiteSpace(connectionString))
-            throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
-
-        return connectionString;
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
     }
 
-    builder.Services.AddScoped<DbContextHelper>(sp =>
+    return new SqlConnectionFactory(connectionString);
+});
+
+builder.Services.AddScoped<DbContextHelper>();
+builder.Services.AddScoped<UsuarioDAO>();
+builder.Services.AddScoped<FincaDAO>();
+builder.Services.AddScoped<EvaluacionTecnicaDAO>();
+builder.Services.AddScoped<RecuperacionContrasenaDAO>();
+builder.Services.AddScoped<TokenRecuperacionDAO>();
+builder.Services.AddScoped<FincaEvidenciaDAO>();
+builder.Services.AddScoped<EvaluacionDAO>();
+builder.Services.AddScoped<AuditoriaLogDAO>();
+builder.Services.AddScoped<DashboardDAO>();
+
+builder.Services.AddScoped<FincaService>();
+builder.Services.AddScoped<EvaluacionService>();
+builder.Services.AddScoped<FincaEvidenciaService>();
+builder.Services.AddScoped<AutenticacionManager>();
+builder.Services.AddScoped<RecuperacionContrasenaManager>();
+builder.Services.AddScoped<EvaluacionTecnicaManager>();
+builder.Services.AddScoped<FincaManager>();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
     {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new DbContextHelper(ObtenerCadenaConexion(configuration));
+        options.SwaggerEndpoint("./v1/swagger.json", "PSA.WebAPI v1");
+        options.RoutePrefix = "swagger";
     });
+}
 
-    builder.Services.AddScoped<UsuarioDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new UsuarioDAO(ObtenerCadenaConexion(configuration));
-    });
+app.MapGet("/openapi/v1.json", () => Results.Redirect("/swagger/v1/swagger.json"));
 
-    builder.Services.AddScoped<FincaDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new FincaDAO(ObtenerCadenaConexion(configuration));
-    });
+app.UseMiddleware<ExceptionMiddleware>();
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseCors("AllowFrontend");
+app.UseAuthorization();
+app.MapControllers();
 
-    builder.Services.AddScoped<EvaluacionTecnicaDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new EvaluacionTecnicaDAO(ObtenerCadenaConexion(configuration));
-    });
-
-    builder.Services.AddScoped<RecuperacionContrasenaDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new RecuperacionContrasenaDAO(ObtenerCadenaConexion(configuration));
-    });
-
-    builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new TokenRecuperacionDAO(ObtenerCadenaConexion(configuration));
-    });
-
-    builder.Services.AddScoped<FincaEvidenciaDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new FincaEvidenciaDAO(ObtenerCadenaConexion(configuration));
-    });
-
-    builder.Services.AddScoped<EvaluacionDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new EvaluacionDAO(ObtenerCadenaConexion(configuration));
-    });
-
-    builder.Services.AddScoped<AuditoriaLogDAO>(sp =>
-    {
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        return new AuditoriaLogDAO(ObtenerCadenaConexion(configuration));
-    });
-
-    builder.Services.AddScoped<FincaService>();
-    builder.Services.AddScoped<EvaluacionService>();
-    builder.Services.AddScoped<FincaEvidenciaService>();
-    builder.Services.AddScoped<AutenticacionManager>();
-    builder.Services.AddScoped<RecuperacionContrasenaManager>();
-    builder.Services.AddScoped<EvaluacionTecnicaManager>();
-
-    var app = builder.Build();
-
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI(options =>
-        {
-            options.SwaggerEndpoint("./v1/swagger.json", "PSA.WebAPI v1");
-            options.RoutePrefix = "swagger";
-        });
-    }
-
-    app.MapGet("/openapi/v1.json", () => Results.Redirect("/swagger/v1/swagger.json"));
-
-    app.UseHttpsRedirection();
-    app.UseStaticFiles();
-    app.UseCors("AllowFrontend");
-    app.UseAuthorization();
-    app.MapControllers();
-
-    app.Run();
+app.Run();

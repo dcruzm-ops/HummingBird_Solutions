@@ -1,26 +1,21 @@
-using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace PSA.DataAccess
 {
     public class DbContextHelper
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public DbContextHelper(string connectionString)
+        public DbContextHelper(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public bool TestConnection()
         {
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             connection.Open();
-            return connection.State == System.Data.ConnectionState.Open;
-        }
-
-        public SqlConnection CreateConnection()
-        {
-            return new SqlConnection(_connectionString);
+            return connection.State == ConnectionState.Open;
         }
     }
 }
