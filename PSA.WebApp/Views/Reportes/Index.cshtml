@@ -1,67 +1,174 @@
+@model PSA.WebApp.Models.ReportesIndexViewModel
 @using System.Security.Claims
 @{
     ViewData["Title"] = "Reportes";
-    var rolId = User.FindFirstValue(ClaimTypes.Role);
-    var esDueno = rolId == "1";
-    var esAdmin = rolId == "2";
+    var rolId = User?.FindFirstValue(ClaimTypes.Role);
+    var esDueno = rolId == "2";
+    var esAdmin = rolId == "1";
     var esIngeniero = rolId == "3";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
             <span class="eyebrow">Consulta analítica</span>
-            <h2>Reportes del sistema</h2>
-            <p>Pantallas base de reportes visibles según su rol.</p>
+            <h2>Reportes y análisis de datos</h2>
+            <p>Filtre por período y visualice reportes según su rol.</p>
         </div>
     </div>
 
-    <div class="grid-tarjetas-kpi">
-        @if (esDueno)
-        {
-            <a class="tarjeta-kpi" asp-controller="Pagos" asp-action="HistorialPagos">
-                <span class="etiqueta-kpi">Reporte de dueño</span>
-                <strong>Pagos e historial</strong>
-                <small>Revise sus pagos registrados y estado.</small>
-            </a>
-            <a class="tarjeta-kpi" asp-controller="Fincas" asp-action="MisFincas">
-                <span class="etiqueta-kpi">Reporte de fincas</span>
-                <strong>Estado de fincas</strong>
-                <small>Consulte el estado general de sus fincas.</small>
-            </a>
-        }
-
-        @if (esIngeniero)
-        {
-            <a class="tarjeta-kpi" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">
-                <span class="etiqueta-kpi">Reporte técnico</span>
-                <strong>Evaluaciones por período</strong>
-                <small>Consulte evaluaciones por filtros técnicos.</small>
-            </a>
-            <a class="tarjeta-kpi" asp-controller="Evaluaciones" asp-action="FincasIngeniero">
-                <span class="etiqueta-kpi">Reporte operativo</span>
-                <strong>Fincas del ingeniero</strong>
-                <small>Resumen de fincas evaluadas y en proceso.</small>
-            </a>
-        }
-
-        @if (esAdmin)
-        {
-            <a class="tarjeta-kpi" asp-controller="Pagos" asp-action="PlanesPago">
-                <span class="etiqueta-kpi">Reporte financiero</span>
-                <strong>Planes de pago</strong>
-                <small>Estado general de planes y cuotas.</small>
-            </a>
-            <a class="tarjeta-kpi" asp-controller="Administracion" asp-action="AuditoriaLogs">
-                <span class="etiqueta-kpi">Reporte administrativo</span>
-                <strong>Auditoría y trazabilidad</strong>
-                <small>Eventos clave y acciones administrativas.</small>
-            </a>
-        }
-    </div>
-
-    <section class="tarjeta-panel mt-3">
-        <div class="lista-accesos">
-            <a class="acceso-rapido" asp-controller="Dashboard" asp-action="@(esAdmin ? "Administrador" : esIngeniero ? "Ingeniero" : "Dueno")">Volver al dashboard</a>
+    <form method="get" class="seccion-formulario mb-3">
+        <div class="grid-tres-columnas">
+            <div class="campo-formulario">
+                <label for="anio">Año</label>
+                <input id="anio" name="anio" type="number" min="2000" max="2100" value="@Model.Anio" />
+            </div>
+            <div class="campo-formulario">
+                <label for="mes">Mes</label>
+                <input id="mes" name="mes" type="number" min="1" max="12" value="@Model.Mes" />
+            </div>
+            <div class="campo-formulario d-flex align-items-end">
+                <button type="submit" class="boton-primario">Aplicar filtros</button>
+            </div>
         </div>
-    </section>
+    </form>
+
+    @if (esDueno)
+    {
+        <section class="tarjeta-panel mb-3">
+            <h3>Reporte de pagos mensuales y cálculo</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead>
+                        <tr>
+                            <th>Finca</th><th>Año/Mes</th><th>Base</th><th>% Ajuste</th><th>Monto calculado</th><th>Pendiente</th><th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.PagosDueno.PagosMensuales)
+                    {
+                        <tr>
+                            <td>@item.NombreFinca</td>
+                            <td>@item.Anio/@item.Mes</td>
+                            <td>@item.MontoBaseMensual.ToString("N2")</td>
+                            <td>@item.PorcentajeAjusteTotal.ToString("N2")%</td>
+                            <td>@item.MontoMensualCalculado.ToString("N2")</td>
+                            <td>@item.MontoPendiente.ToString("N2")</td>
+                            <td>@item.EstadoCuota</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel mb-3">
+            <h3>Ajustes por criterios</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Plan</th><th>Factor</th><th>Valor</th><th>%</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.PagosDueno.AjustesAplicados)
+                    {
+                        <tr>
+                            <td>@item.IdPlanPago</td>
+                            <td>@item.TipoFactor</td>
+                            <td>@item.ValorFactor</td>
+                            <td>@item.PorcentajeAjuste.ToString("N2")%</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel">
+            <h3>Histórico de transacciones</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Fecha</th><th>Finca</th><th>Monto</th><th>Estado</th><th>Referencia</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.TransaccionesDueno)
+                    {
+                        <tr>
+                            <td>@item.FechaTransaccion.ToString("yyyy-MM-dd")</td>
+                            <td>@item.NombreFinca</td>
+                            <td>@item.MontoTotal.ToString("N2")</td>
+                            <td>@item.EstadoTransaccion</td>
+                            <td>@item.ReferenciaExterna</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+
+    @if (esIngeniero)
+    {
+        <section class="grid-tarjetas-kpi mb-3">
+            <div class="tarjeta-kpi"><span class="etiqueta-kpi">Total</span><strong>@Model.EvaluacionesIngeniero.Total</strong></div>
+            <div class="tarjeta-kpi"><span class="etiqueta-kpi">Califica</span><strong>@Model.EvaluacionesIngeniero.TotalCalifica</strong></div>
+            <div class="tarjeta-kpi"><span class="etiqueta-kpi">No califica</span><strong>@Model.EvaluacionesIngeniero.TotalNoCalifica</strong></div>
+        </section>
+
+        <section class="tarjeta-panel">
+            <h3>Fincas evaluadas (mensual/anual)</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Evaluación</th><th>Finca</th><th>Estado</th><th>Decisión</th><th>Fecha</th><th>Ubicación</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.EvaluacionesIngeniero.Evaluaciones)
+                    {
+                        <tr>
+                            <td>@item.IdEvaluacion</td>
+                            <td>@item.NombreFinca</td>
+                            <td>@item.EstadoEvaluacion</td>
+                            <td>@item.DecisionTecnica</td>
+                            <td>@((item.FechaDecision ?? item.FechaVisita)?.ToString("yyyy-MM-dd"))</td>
+                            <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
+
+    @if (esAdmin)
+    {
+        <section class="tarjeta-panel mb-3">
+            <h3>Montos pagados por provincia, cantón y distrito</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Año/Mes</th><th>Provincia</th><th>Cantón</th><th>Distrito</th><th>Pagado</th><th>Programado</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.PagosPorUbicacion)
+                    {
+                        <tr>
+                            <td>@item.Anio/@item.Mes</td>
+                            <td>@item.Provincia</td>
+                            <td>@item.Canton</td>
+                            <td>@item.Distrito</td>
+                            <td>@item.MontoPagadoMes.ToString("N2")</td>
+                            <td>@item.MontoProgramadoMes.ToString("N2")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel">
+            <h3>Resumen de actividad del sistema</h3>
+            <div class="grid-tarjetas-kpi">
+                @foreach (var item in Model.ResumenActividad)
+                {
+                    <div class="tarjeta-kpi">
+                        <span class="etiqueta-kpi">@item.Indicador</span>
+                        <strong>@item.Total</strong>
+                    </div>
+                }
+            </div>
+        </section>
+    }
 </section>

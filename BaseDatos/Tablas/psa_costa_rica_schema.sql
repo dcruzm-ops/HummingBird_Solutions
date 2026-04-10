@@ -21,6 +21,16 @@ GO
    ========================================= */
 IF OBJECT_ID(N'dbo.vw_FincasMapa', N'V') IS NOT NULL
     DROP VIEW dbo.vw_FincasMapa;
+IF OBJECT_ID(N'dbo.vw_ReportePagosMensualesDueno', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_ReportePagosMensualesDueno;
+IF OBJECT_ID(N'dbo.vw_ReporteTransaccionesPagosDueno', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_ReporteTransaccionesPagosDueno;
+IF OBJECT_ID(N'dbo.vw_ReporteEvaluacionesIngeniero', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_ReporteEvaluacionesIngeniero;
+IF OBJECT_ID(N'dbo.vw_ReportePagosPorUbicacion', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_ReportePagosPorUbicacion;
+IF OBJECT_ID(N'dbo.vw_ResumenActividadSistema', N'V') IS NOT NULL
+    DROP VIEW dbo.vw_ResumenActividadSistema;
 GO
 
 IF OBJECT_ID(N'dbo.Notificaciones', N'U') IS NOT NULL DROP TABLE dbo.Notificaciones;
@@ -146,7 +156,7 @@ CREATE TABLE dbo.Fincas
     CONSTRAINT CK_Fincas_Longitud CHECK (Longitud BETWEEN -180 AND 180),
     CONSTRAINT CK_Fincas_Hectareas CHECK (Hectareas > 0),
     CONSTRAINT CK_Fincas_CantidadNacientes CHECK (CantidadNacientes >= 0 AND (TieneNacientes = 1 OR CantidadNacientes = 0)),
-    CONSTRAINT CK_Fincas_Estado CHECK (EstadoFinca IN ('Registrada', 'EnRevision', 'Aprobada', 'Rechazada', 'Inactiva'))
+    CONSTRAINT CK_Fincas_Estado CHECK (EstadoFinca IN ('Registrada', 'Pendiente', 'EnRevision', 'En proceso', 'Aprobada', 'Rechazada', 'Suspendida', 'Inactiva'))
 );
 GO
 
@@ -157,7 +167,7 @@ CREATE TABLE dbo.EvaluacionesTecnicas
 (
     IdEvaluacion                 INT IDENTITY(1,1) NOT NULL,
     IdFinca                      INT NOT NULL,
-    IdIngeniero                  INT NOT NULL,
+    IdIngeniero                  INT NULL,
     EstadoEvaluacion             VARCHAR(30) NOT NULL CONSTRAINT DF_Evaluaciones_Estado DEFAULT ('Pendiente'),
     FechaVisita                  DATE NULL,
     Observaciones                NVARCHAR(MAX) NULL,
@@ -171,7 +181,19 @@ CREATE TABLE dbo.EvaluacionesTecnicas
     CONSTRAINT PK_EvaluacionesTecnicas PRIMARY KEY (IdEvaluacion),
     CONSTRAINT FK_Evaluaciones_Fincas FOREIGN KEY (IdFinca) REFERENCES dbo.Fincas(IdFinca),
     CONSTRAINT FK_Evaluaciones_Usuarios_Ingeniero FOREIGN KEY (IdIngeniero) REFERENCES dbo.Usuarios(IdUsuario),
-    CONSTRAINT CK_Evaluaciones_Estado CHECK (EstadoEvaluacion IN ('Pendiente', 'En Proceso', 'Finalizada')),
+    CONSTRAINT CK_Evaluaciones_Estado CHECK (
+        EstadoEvaluacion IN (
+            'Pendiente',
+            'En Proceso',
+            'Finalizada',
+            'En proceso',
+            'Evaluada – No califica',
+            'Evaluada – Califica',
+            'Pendiente de cuenta bancaria',
+            'Pendiente de aprobación final de pago',
+            'Pagos activos'
+        )
+    ),
     CONSTRAINT CK_Evaluaciones_Decision CHECK (DecisionTecnica IS NULL OR DecisionTecnica IN ('Califica', 'No Califica')),
     CONSTRAINT CK_Evaluaciones_HectareasAjustadas CHECK (HectareasAjustadas IS NULL OR HectareasAjustadas > 0)
 );
@@ -433,6 +455,114 @@ SELECT
 FROM dbo.Fincas f
 INNER JOIN dbo.Usuarios u
     ON u.IdUsuario = f.IdPropietario;
+GO
+
+/* =========================================
+   Vistas para reportes y análisis de datos
+   ========================================= */
+CREATE VIEW dbo.vw_ReportePagosMensualesDueno
+AS
+SELECT
+    pp.IdPlanPago,
+    f.IdFinca,
+    f.IdPropietario,
+    f.NombreFinca,
+    pp.Anio,
+    cp.Mes,
+    cp.FechaProgramada,
+    pp.MontoBaseMensual,
+    pp.PorcentajeAjusteTotal,
+    cp.MontoProgramado AS MontoMensualCalculado,
+    cp.MontoPendiente,
+    cp.EstadoCuota
+FROM dbo.PlanesPago pp
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+INNER JOIN dbo.CuotasPago cp ON cp.IdPlanPago = pp.IdPlanPago;
+GO
+
+CREATE VIEW dbo.vw_ReporteTransaccionesPagosDueno
+AS
+SELECT
+    tp.IdTransaccionPago,
+    tp.FechaTransaccion,
+    tp.MontoTotal,
+    tp.EstadoTransaccion,
+    tp.ReferenciaExterna,
+    tp.Observaciones,
+    pp.IdPlanPago,
+    pp.Anio,
+    f.IdFinca,
+    f.IdPropietario,
+    f.NombreFinca,
+    f.Provincia,
+    f.Canton,
+    f.Distrito
+FROM dbo.TransaccionesPago tp
+INNER JOIN dbo.PlanesPago pp ON pp.IdPlanPago = tp.IdPlanPago
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca;
+GO
+
+CREATE VIEW dbo.vw_ReporteEvaluacionesIngeniero
+AS
+SELECT
+    e.IdEvaluacion,
+    e.IdIngeniero,
+    u.NombreCompleto AS Ingeniero,
+    e.EstadoEvaluacion,
+    e.DecisionTecnica,
+    e.FechaVisita,
+    e.FechaDecision,
+    f.IdFinca,
+    f.NombreFinca,
+    f.Provincia,
+    f.Canton,
+    f.Distrito
+FROM dbo.EvaluacionesTecnicas e
+LEFT JOIN dbo.Usuarios u ON u.IdUsuario = e.IdIngeniero
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca;
+GO
+
+CREATE VIEW dbo.vw_ReportePagosPorUbicacion
+AS
+SELECT
+    f.Provincia,
+    f.Canton,
+    f.Distrito,
+    pp.Anio,
+    cp.Mes,
+    SUM(cp.MontoProgramado - cp.MontoPendiente) AS MontoPagadoMes,
+    SUM(cp.MontoProgramado) AS MontoProgramadoMes
+FROM dbo.CuotasPago cp
+INNER JOIN dbo.PlanesPago pp ON pp.IdPlanPago = cp.IdPlanPago
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+GROUP BY
+    f.Provincia,
+    f.Canton,
+    f.Distrito,
+    pp.Anio,
+    cp.Mes;
+GO
+
+CREATE VIEW dbo.vw_ResumenActividadSistema
+AS
+SELECT 'Usuarios activos' AS Indicador, CAST(COUNT_BIG(1) AS BIGINT) AS Total
+FROM dbo.Usuarios
+WHERE Estado = 'Activo'
+UNION ALL
+SELECT 'Fincas registradas', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.Fincas
+UNION ALL
+SELECT 'Evaluaciones pendientes', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.EvaluacionesTecnicas
+WHERE EstadoEvaluacion IN ('Pendiente', 'En proceso', 'En Proceso')
+UNION ALL
+SELECT 'Planes de pago activos', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.PlanesPago
+WHERE EstadoPlan = 'Activo'
+UNION ALL
+SELECT 'Transacciones procesadas', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.TransaccionesPago
+WHERE EstadoTransaccion = 'Procesada';
 GO
 
 /* =========================================
