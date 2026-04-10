@@ -39,9 +39,22 @@ ORDER BY IdEvaluacion DESC;";
             command.Parameters.AddWithValue("@EstadoPendiente", EstadosEvaluacionTecnica.Pendiente);
             command.Parameters.AddWithValue("@EstadoEnProceso", EstadosEvaluacionTecnica.EnProceso);
 
-            await connection.OpenAsync();
-            var result = await command.ExecuteScalarAsync();
-            return result != null ? Convert.ToInt32(result) : 0;
+            try
+            {
+                await connection.OpenAsync();
+                var result = await command.ExecuteScalarAsync();
+                return result != null ? Convert.ToInt32(result) : 0;
+            }
+            catch (SqlException ex)
+            {
+                Console.Error.WriteLine($"Error SQL al crear evaluación pendiente para la finca {idFinca}: {ex.Message}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error inesperado al crear evaluación pendiente para la finca {idFinca}: {ex.Message}");
+                return 0;
+            }
         }
 
         public async Task<List<BandejaEvaluacionPendienteDTO>> ObtenerBandejaPendientesAsync()
