@@ -14,7 +14,6 @@ BEGIN TRY
     IF COL_LENGTH('dbo.EvaluacionesTecnicas', 'IdIngeniero') IS NOT NULL
     BEGIN
         DECLARE @isNullable BIT;
-        DECLARE @fkName SYSNAME;
 
         SELECT @isNullable = c.is_nullable
         FROM sys.columns c
@@ -24,14 +23,15 @@ BEGIN TRY
 
         IF (@isNullable = 0)
         BEGIN
-            SELECT TOP 1 @fkName = fk.name
-            FROM sys.foreign_keys fk
-            WHERE fk.parent_object_id = OBJECT_ID('dbo.EvaluacionesTecnicas')
-              AND fk.referenced_object_id = OBJECT_ID('dbo.Usuarios');
-
-            IF @fkName IS NOT NULL
+            IF EXISTS (
+                SELECT 1
+                FROM sys.foreign_keys
+                WHERE name = 'FK_Evaluaciones_Usuarios_Ingeniero'
+                  AND parent_object_id = OBJECT_ID('dbo.EvaluacionesTecnicas')
+            )
             BEGIN
-                EXEC ('ALTER TABLE dbo.EvaluacionesTecnicas DROP CONSTRAINT ' + QUOTENAME(@fkName));
+                ALTER TABLE dbo.EvaluacionesTecnicas
+                    DROP CONSTRAINT FK_Evaluaciones_Usuarios_Ingeniero;
             END
 
             ALTER TABLE dbo.EvaluacionesTecnicas
