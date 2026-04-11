@@ -1,0 +1,43 @@
+@model PSA.WebApp.Models.ReporteIngenieroTecnicoViewModel
+
+<section class="seccion-pagina">
+    <h2>Reporte técnico por finca</h2>
+
+    <form method="get" class="seccion-formulario">
+        <div class="grid-tres-columnas">
+            <div class="campo-formulario">
+                <label>Año</label>
+                <input name="anio" type="number" value="@Model.Anio" />
+            </div>
+            <div class="campo-formulario">
+                <label>Mes</label>
+                <select name="mes">
+                    <option value="">Todos</option>
+                    @for (var m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(Model.Mes == m)">@m</option>
+                    }
+                </select>
+            </div>
+            <div class="campo-formulario">
+                <label>Decisión</label>
+                <select name="decision">
+                    <option value="">Todas</option>
+                    <option value="Califica" selected="@(Model.Decision == "Califica")">Califica</option>
+                    <option value="No Califica" selected="@(Model.Decision == "No Califica")">No califica</option>
+                </select>
+            </div>
+        </div>
+        <button class="boton-primario" type="submit">Filtrar</button>
+    </form>
+
+    <table class="tabla-base">
+        <thead><tr><th>Evaluación</th><th>Finca</th><th>Ajustes</th><th>Decisión</th><th>Fecha</th><th>Observaciones</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr><td>@i.IdEvaluacion</td><td>@i.NombreFinca</td><td>@i.HectareasAjustadas / @i.VegetacionAjustada / @i.UsoSueloAjustado</td><td>@i.DecisionTecnica</td><td>@i.FechaVisita?.ToString("yyyy-MM-dd")</td><td>@i.Observaciones</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

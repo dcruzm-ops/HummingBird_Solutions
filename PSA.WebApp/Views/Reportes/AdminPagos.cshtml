@@ -1,0 +1,104 @@
+@model PSA.WebApp.Models.ReporteAdminPagosViewModel
+
+<section class="seccion-pagina">
+    <h2>Pagos administrativos</h2>
+
+    <h3>Planes</h3>
+    <form method="get" class="seccion-formulario">
+        <input type="hidden" name="anioUbicacion" value="@Model.AnioUbicacion" />
+        <input type="hidden" name="provincia" value="@Model.Provincia" />
+        <input type="hidden" name="canton" value="@Model.Canton" />
+        <input type="hidden" name="distrito" value="@Model.Distrito" />
+
+        <div class="grid-dos-columnas">
+            <div class="campo-formulario">
+                <label>Año de plan</label>
+                <input name="anioPlanes" type="number" value="@Model.AnioPlanes" />
+            </div>
+            <div class="campo-formulario">
+                <label>Estado de cuotas</label>
+                <select name="estadoCuotas">
+                    <option value="">Todas</option>
+                    <option value="Pendientes" selected="@(Model.EstadoCuotas == "Pendientes")">Pendientes</option>
+                    <option value="Pagadas" selected="@(Model.EstadoCuotas == "Pagadas")">Pagadas</option>
+                </select>
+            </div>
+        </div>
+        <button class="boton-primario" type="submit">Filtrar planes</button>
+    </form>
+
+    <table class="tabla-base">
+        <thead><tr><th>Plan</th><th>Finca</th><th>Año</th><th>Pagadas</th><th>Pendientes</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Planes)
+            {
+                <tr><td>@i.IdPlanPago</td><td>@i.NombreFinca</td><td>@i.Anio</td><td>@i.CuotasPagadas</td><td>@i.CuotasPendientes</td></tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Pagos por ubicación</h3>
+    <form method="get" class="seccion-formulario">
+        <input type="hidden" name="anioPlanes" value="@Model.AnioPlanes" />
+        <input type="hidden" name="estadoCuotas" value="@Model.EstadoCuotas" />
+
+        <div class="grid-cuatro-columnas">
+            <div class="campo-formulario">
+                <label>Año</label>
+                <input name="anioUbicacion" type="number" value="@Model.AnioUbicacion" />
+            </div>
+            <div class="campo-formulario">
+                <label>Provincia</label>
+                <select name="provincia">
+                    <option value="">Todas</option>
+                    <option value="San José" selected="@(Model.Provincia == "San José")">San José</option>
+                    <option value="Alajuela" selected="@(Model.Provincia == "Alajuela")">Alajuela</option>
+                    <option value="Cartago" selected="@(Model.Provincia == "Cartago")">Cartago</option>
+                    <option value="Heredia" selected="@(Model.Provincia == "Heredia")">Heredia</option>
+                    <option value="Guanacaste" selected="@(Model.Provincia == "Guanacaste")">Guanacaste</option>
+                    <option value="Puntarenas" selected="@(Model.Provincia == "Puntarenas")">Puntarenas</option>
+                    <option value="Limón" selected="@(Model.Provincia == "Limón")">Limón</option>
+                </select>
+            </div>
+            <div class="campo-formulario">
+                <label>Cantón</label>
+                <select name="canton">
+                    <option value="">Todos</option>
+                    <option value="Pérez Zeledón" selected="@(Model.Canton == "Pérez Zeledón")">Pérez Zeledón</option>
+                    <option value="Turrialba" selected="@(Model.Canton == "Turrialba")">Turrialba</option>
+                    <option value="San Carlos" selected="@(Model.Canton == "San Carlos")">San Carlos</option>
+                    <option value="Corredores" selected="@(Model.Canton == "Corredores")">Corredores</option>
+                    <option value="Buenos Aires" selected="@(Model.Canton == "Buenos Aires")">Buenos Aires</option>
+                    <option value="Nandayure" selected="@(Model.Canton == "Nandayure")">Nandayure</option>
+                    <option value="Talamanca" selected="@(Model.Canton == "Talamanca")">Talamanca</option>
+                    <option value="Sarapiquí" selected="@(Model.Canton == "Sarapiquí")">Sarapiquí</option>
+                </select>
+            </div>
+            <div class="campo-formulario">
+                <label>Distrito</label>
+                <select name="distrito">
+                    <option value="">Todos</option>
+                    <option value="General" selected="@(Model.Distrito == "General")">General</option>
+                    <option value="Santa Cruz" selected="@(Model.Distrito == "Santa Cruz")">Santa Cruz</option>
+                    <option value="Quesada" selected="@(Model.Distrito == "Quesada")">Quesada</option>
+                    <option value="Corredor" selected="@(Model.Distrito == "Corredor")">Corredor</option>
+                    <option value="Buenos Aires" selected="@(Model.Distrito == "Buenos Aires")">Buenos Aires</option>
+                    <option value="Carmona" selected="@(Model.Distrito == "Carmona")">Carmona</option>
+                    <option value="Bratsi" selected="@(Model.Distrito == "Bratsi")">Bratsi</option>
+                    <option value="Puerto Viejo" selected="@(Model.Distrito == "Puerto Viejo")">Puerto Viejo</option>
+                </select>
+            </div>
+        </div>
+        <button class="boton-primario" type="submit">Filtrar ubicación</button>
+    </form>
+
+    <table class="tabla-base">
+        <thead><tr><th>Año/Mes</th><th>Provincia</th><th>Cantón</th><th>Distrito</th><th>Pagado</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.PagosPorUbicacion)
+            {
+                <tr><td>@i.Anio/@i.Mes</td><td>@i.Provincia</td><td>@i.Canton</td><td>@i.Distrito</td><td>@i.MontoPagadoMes.ToString("N2")</td></tr>
+            }
+        </tbody>
+    </table>
+</section>
