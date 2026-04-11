@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PSA.EntidadesDTO")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+337921903e3a543067e2429a837f5e92ff59ef5b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0fb9286b794fa928305a3c857c0be0552227463d")]
 [assembly: System.Reflection.AssemblyProductAttribute("PSA.EntidadesDTO")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PSA.EntidadesDTO")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -363,6 +363,69 @@
   },
   {
     "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerAuditoriaCritica",
+    "RelativePath": "api/Reportes/administrador/auditoria-critica",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "top",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerEvaluacionesTecnicasAdmin",
+    "RelativePath": "api/Reportes/administrador/evaluaciones-tecnicas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "anio",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "mes",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerFincasPorEstado",
+    "RelativePath": "api/Reportes/administrador/fincas-estado",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerPagosAdmin",
+    "RelativePath": "api/Reportes/administrador/pagos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "anio",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
     "Method": "ObtenerPagosPorUbicacion",
     "RelativePath": "api/Reportes/administrador/pagos-ubicacion",
     "HttpMethod": "GET",
@@ -390,6 +453,32 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerUsuariosRoles",
+    "RelativePath": "api/Reportes/administrador/usuarios-roles",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerFincasDueno",
+    "RelativePath": "api/Reportes/dueno/{idPropietario}/fincas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idPropietario",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -468,6 +557,42 @@
         "IsRequired": false
       }
     ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerReporteTecnicoFinca",
+    "RelativePath": "api/Reportes/ingeniero/{idIngeniero}/tecnico-finca",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idIngeniero",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "anio",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "mes",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.ReportesController",
+    "Method": "ObtenerFincasPendientesIngeniero",
+    "RelativePath": "api/Reportes/ingeniero/fincas-pendientes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
     "ReturnTypes": []
   },
   {
