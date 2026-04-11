@@ -40,16 +40,11 @@
                     <label for="paisInput">País</label>
                     <input id="paisInput" value="Costa Rica" readonly />
                 </div>
-                <div class="campo-formulario"></div>
-            </div>
-
-            <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label asp-for="Provincia"></label>
                     <input asp-for="Provincia" id="provinciaInput" required readonly placeholder="Se completa al elegir un punto en el mapa" />
                     <span asp-validation-for="Provincia" class="text-danger"></span>
                 </div>
-                <div class="campo-formulario"></div>
             </div>
 
             <div class="grid-dos-columnas">
@@ -136,14 +131,14 @@
             <div class="grid-tres-columnas">
                 <div class="control-check">
                     <input asp-for="TieneRiosOQuebradas" type="checkbox" id="tieneRiosOQuebradas" />
-                    <label asp-for="TieneRiosOQuebradas">Sí tiene ríos o quebradas</label>
+                    <label asp-for="TieneRiosOQuebradas">¿Contiene ríos o quebradas?</label>
                 </div>
                 <div class="control-check">
                     <input asp-for="TieneNacientes" type="checkbox" id="tieneNacientes" />
-                    <label asp-for="TieneNacientes">Sí tiene nacientes</label>
+                    <label asp-for="TieneNacientes">¿Posee nacientes?</label>
                 </div>
                 <div class="campo-formulario">
-                    <label asp-for="CantidadNacientes">Cuántas nacientes tiene</label>
+                    <label asp-for="CantidadNacientes">Cantidad de nacientes</label>
                     <input asp-for="CantidadNacientes" type="number" min="0" step="1" id="cantidadNacientes" />
                     <span asp-validation-for="CantidadNacientes" class="text-danger"></span>
                 </div>

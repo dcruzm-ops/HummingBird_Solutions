@@ -1,0 +1,10 @@
+@model PSA.WebApp.Models.ReporteIngenieroTecnicoViewModel
+<section class="seccion-pagina"><h2>Reporte técnico por finca</h2>
+<form method="get" class="seccion-formulario"><div class="grid-tres-columnas">
+<div class="campo-formulario"><label>Año</label><input name="anio" type="number" value="@Model.Anio"/></div>
+<div class="campo-formulario"><label>Mes</label><input name="mes" type="number" value="@Model.Mes"/></div>
+<div class="campo-formulario"><label>Decisión</label><input name="decision" value="@Model.Decision"/></div>
+</div><button class="boton-primario" type="submit">Filtrar</button></form>
+<table class="tabla-base"><thead><tr><th>Eval</th><th>Finca</th><th>Ajustes</th><th>Decisión</th><th>Fecha</th><th>Obs</th></tr></thead><tbody>
+@foreach (var i in Model.Items){<tr><td>@i.IdEvaluacion</td><td>@i.NombreFinca</td><td>@i.HectareasAjustadas / @i.VegetacionAjustada / @i.UsoSueloAjustado</td><td>@i.DecisionTecnica</td><td>@i.FechaVisita?.ToString("yyyy-MM-dd")</td><td>@i.Observaciones</td></tr>}
+</tbody></table></section>
