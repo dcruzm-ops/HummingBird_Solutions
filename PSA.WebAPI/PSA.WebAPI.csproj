@@ -16,6 +16,7 @@
     <Compile Include="Controllers\EvaluacionesTecnicasController.cs" />
     <Compile Include="Controllers\FincasController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
+    <Compile Include="Controllers\ReportesController.cs" />
     <Compile Include="Controllers\Middleware\ExceptionMiddleware.cs" />
     <Compile Include="Controllers\Models\ApiResponse.cs" />
     <Compile Include="Controllers\RecuperacionContrasenaController.cs" />

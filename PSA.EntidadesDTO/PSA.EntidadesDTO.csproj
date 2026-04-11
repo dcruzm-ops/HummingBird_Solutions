@@ -35,6 +35,7 @@
     <Compile Include="DTOs\RecuperarContrasenaDTO.cs" />
     <Compile Include="DTOs\RegistrarFincaDTO.cs" />
     <Compile Include="DTOs\RegistrarUsuarioDTO.cs" />
+    <Compile Include="DTOs\Reportes\ReportesDTO.cs" />
     <Compile Include="DTOs\RespuestaInicioSesionDTO.cs" />
     <Compile Include="DTOs\RestablecerContrasenaDTO.cs" />
     <Compile Include="DTOs\Usuarios\RolDTO.cs" />
