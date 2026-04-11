@@ -2,7 +2,7 @@
 @{
     var nombreUsuario = User?.Identity?.Name;
     var nombreMostrar = string.IsNullOrWhiteSpace(nombreUsuario) ? "Usuario" : nombreUsuario;
-    var rolClaim = User.FindFirstValue(ClaimTypes.Role);
+    var rolClaim = User?.FindFirstValue(ClaimTypes.Role);
     var rolActivo = rolClaim switch
     {
         "1" => "Administrador",

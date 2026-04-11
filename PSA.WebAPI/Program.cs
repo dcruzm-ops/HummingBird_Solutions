@@ -46,6 +46,7 @@ builder.Services.AddScoped<FincaEvidenciaDAO>();
 builder.Services.AddScoped<EvaluacionDAO>();
 builder.Services.AddScoped<AuditoriaLogDAO>();
 builder.Services.AddScoped<DashboardDAO>();
+builder.Services.AddScoped<ReportesDAO>();
 
 builder.Services.AddScoped<FincaService>();
 builder.Services.AddScoped<EvaluacionService>();
@@ -54,6 +55,7 @@ builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
 builder.Services.AddScoped<EvaluacionTecnicaManager>();
 builder.Services.AddScoped<FincaManager>();
+builder.Services.AddScoped<ReportesManager>();
 
 var app = builder.Build();
 
