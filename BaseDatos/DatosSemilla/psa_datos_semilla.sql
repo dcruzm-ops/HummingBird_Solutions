@@ -324,9 +324,9 @@ BEGIN TRY
         INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
         VALUES ('UsoSuelo', 'Ganadería', 1, 4);
 
-    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Uso mixto')
+    IF NOT EXISTS (SELECT 1 FROM dbo.CatalogoFincaValores WHERE TipoCatalogo = 'UsoSuelo' AND Valor = 'Mixto')
         INSERT INTO dbo.CatalogoFincaValores (TipoCatalogo, Valor, Activo, OrdenVisual)
-        VALUES ('UsoSuelo', 'Uso mixto', 1, 5);
+        VALUES ('UsoSuelo', 'Mixto', 1, 5);
 
     /* =========================================
        7. Fincas de ejemplo
@@ -436,13 +436,13 @@ BEGIN TRY
       AND NombreFinca = 'Finca Los Robles';
 
     /* =========================================
-       8. Evaluación técnica para finca aprobada
+       8. Evaluaciones técnicas para fincas semilla
        ========================================= */
     IF NOT EXISTS (
         SELECT 1
         FROM dbo.EvaluacionesTecnicas
         WHERE IdFinca = @IdFincaAprobada
-          AND IdIngeniero = @IdIngeniero
+          AND EstadoEvaluacion IN ('Evaluada – Califica', 'Finalizada')
     )
         INSERT INTO dbo.EvaluacionesTecnicas
         (
@@ -463,7 +463,7 @@ BEGIN TRY
         (
             @IdFincaAprobada,
             @IdIngeniero,
-            'Finalizada',
+            'Evaluada – Califica',
             DATEFROMPARTS(@AnioBase, 2, 10),
             N'La finca presenta cobertura boscosa continua y condiciones favorables para PSA.',
             'Califica',
@@ -478,8 +478,44 @@ BEGIN TRY
     SELECT TOP (1) @IdEvaluacion = IdEvaluacion
     FROM dbo.EvaluacionesTecnicas
     WHERE IdFinca = @IdFincaAprobada
-      AND IdIngeniero = @IdIngeniero
+      AND EstadoEvaluacion IN ('Evaluada – Califica', 'Finalizada')
     ORDER BY IdEvaluacion;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.EvaluacionesTecnicas
+        WHERE IdFinca = @IdFincaPendiente
+    )
+        INSERT INTO dbo.EvaluacionesTecnicas
+        (
+            IdFinca,
+            IdIngeniero,
+            EstadoEvaluacion,
+            FechaVisita,
+            Observaciones,
+            DecisionTecnica,
+            HectareasAjustadas,
+            VegetacionAjustada,
+            RecursosHidricosAjustado,
+            UsoSueloAjustado,
+            PendienteAjustada,
+            FechaDecision
+        )
+        VALUES
+        (
+            @IdFincaPendiente,
+            NULL,
+            'Pendiente',
+            NULL,
+            N'Evaluación generada automáticamente para nueva finca de semilla.',
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL
+        );
 
     /* =========================================
        9. Plan de pago para finca aprobada
