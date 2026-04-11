@@ -1,23 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\PSA.WebApp.csproj": {}
+    "C:\\Proyectos\\psa-costa-rica\\PSA.WebApp\\PSA.WebApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+    "C:\\Proyectos\\psa-costa-rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
+        "projectUniqueName": "C:\\Proyectos\\psa-costa-rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
         "projectName": "PSA.EntidadesDTO",
-        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
-        "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\obj\\",
+        "projectPath": "C:\\Proyectos\\psa-costa-rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
+        "packagesPath": "C:\\Users\\denniscruzmontiel\\.nuget\\packages\\",
+        "outputPath": "C:\\Proyectos\\psa-costa-rica\\PSA.EntidadesDTO\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Proyectos\\psa-costa-rica\\NuGet.Config",
+          "C:\\Users\\denniscruzmontiel\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -25,7 +26,6 @@
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -44,7 +44,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net10.0": {
@@ -65,7 +65,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -343,20 +343,21 @@
         }
       }
     },
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\PSA.WebApp.csproj": {
+    "C:\\Proyectos\\psa-costa-rica\\PSA.WebApp\\PSA.WebApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\PSA.WebApp.csproj",
+        "projectUniqueName": "C:\\Proyectos\\psa-costa-rica\\PSA.WebApp\\PSA.WebApp.csproj",
         "projectName": "PSA.WebApp",
-        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\PSA.WebApp.csproj",
-        "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\obj\\",
+        "projectPath": "C:\\Proyectos\\psa-costa-rica\\PSA.WebApp\\PSA.WebApp.csproj",
+        "packagesPath": "C:\\Users\\denniscruzmontiel\\.nuget\\packages\\",
+        "outputPath": "C:\\Proyectos\\psa-costa-rica\\PSA.WebApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Proyectos\\psa-costa-rica\\NuGet.Config",
+          "C:\\Users\\denniscruzmontiel\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -364,15 +365,14 @@
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
-                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+              "C:\\Proyectos\\psa-costa-rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+                "projectPath": "C:\\Proyectos\\psa-costa-rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
               }
             }
           }
@@ -387,7 +387,7 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.200"
       },
       "frameworks": {
         "net10.0": {
@@ -411,7 +411,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
