@@ -317,6 +317,284 @@ WHERE EstadoTransaccion = 'Procesada';";
         return resultado;
     }
 
+    public async Task<List<ItemFincaDuenoReporteDTO>> ObtenerReporteFincasDuenoAsync(int idPropietario)
+    {
+        const string sql = @"
+SELECT
+    f.IdFinca,
+    f.NombreFinca,
+    f.Provincia,
+    f.Canton,
+    f.Distrito,
+    f.EstadoFinca,
+    ISNULL(e.EstadoEvaluacion, 'Pendiente') AS EstadoEvaluacion,
+    e.Observaciones
+FROM dbo.Fincas f
+OUTER APPLY (
+    SELECT TOP 1 EstadoEvaluacion, Observaciones
+    FROM dbo.EvaluacionesTecnicas
+    WHERE IdFinca = f.IdFinca
+    ORDER BY IdEvaluacion DESC
+) e
+WHERE f.IdPropietario = @IdPropietario
+ORDER BY f.FechaRegistro DESC;";
+
+        var resultado = new List<ItemFincaDuenoReporteDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdPropietario", idPropietario);
+
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemFincaDuenoReporteDTO
+            {
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
+                Canton = reader["Canton"]?.ToString() ?? string.Empty,
+                Distrito = reader["Distrito"]?.ToString() ?? string.Empty,
+                EstadoFinca = reader["EstadoFinca"]?.ToString() ?? string.Empty,
+                EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
+                ObservacionesEvaluacion = reader["Observaciones"] as string
+            });
+        }
+
+        return resultado;
+    }
+
+    public async Task<List<ItemFincaPendienteIngenieroDTO>> ObtenerFincasPendientesIngenieroAsync()
+    {
+        const string sql = @"
+SELECT e.IdEvaluacion, e.IdFinca, f.NombreFinca, f.Provincia, f.Canton, f.Distrito, e.EstadoEvaluacion
+FROM dbo.EvaluacionesTecnicas e
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+WHERE e.EstadoEvaluacion = 'Pendiente'
+ORDER BY e.IdEvaluacion ASC;";
+
+        var resultado = new List<ItemFincaPendienteIngenieroDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemFincaPendienteIngenieroDTO
+            {
+                IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
+                Canton = reader["Canton"]?.ToString() ?? string.Empty,
+                Distrito = reader["Distrito"]?.ToString() ?? string.Empty,
+                EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty
+            });
+        }
+        return resultado;
+    }
+
+    public async Task<List<ItemTecnicoFincaDTO>> ObtenerReporteTecnicoPorFincaAsync(int? idIngeniero, FiltroReporteDTO filtro)
+    {
+        const string sql = @"
+SELECT
+    e.IdEvaluacion, e.IdFinca, f.NombreFinca, e.EstadoEvaluacion, e.FechaVisita, e.Observaciones, e.DecisionTecnica,
+    e.HectareasAjustadas, e.VegetacionAjustada, e.RecursosHidricosAjustado, e.UsoSueloAjustado, e.PendienteAjustada
+FROM dbo.EvaluacionesTecnicas e
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+WHERE (@IdIngeniero IS NULL OR e.IdIngeniero = @IdIngeniero)
+  AND e.EstadoEvaluacion IN ('En proceso', 'En Proceso', 'Evaluada – Califica', 'Evaluada – No califica', 'Finalizada')
+  AND (@Anio IS NULL OR YEAR(COALESCE(e.FechaDecision, e.FechaVisita)) = @Anio)
+  AND (@Mes IS NULL OR MONTH(COALESCE(e.FechaDecision, e.FechaVisita)) = @Mes)
+ORDER BY e.IdEvaluacion DESC;";
+
+        var resultado = new List<ItemTecnicoFincaDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdIngeniero", (object?)idIngeniero ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Mes", (object?)filtro.Mes ?? DBNull.Value);
+
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemTecnicoFincaDTO
+            {
+                IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
+                FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
+                Observaciones = reader["Observaciones"] as string,
+                DecisionTecnica = reader["DecisionTecnica"] as string,
+                HectareasAjustadas = reader["HectareasAjustadas"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("HectareasAjustadas")),
+                VegetacionAjustada = reader["VegetacionAjustada"] as string,
+                RecursosHidricosAjustado = reader["RecursosHidricosAjustado"] == DBNull.Value ? null : reader.GetBoolean(reader.GetOrdinal("RecursosHidricosAjustado")),
+                UsoSueloAjustado = reader["UsoSueloAjustado"] as string,
+                PendienteAjustada = reader["PendienteAjustada"] as string
+            });
+        }
+        return resultado;
+    }
+
+    public async Task<List<ItemUsuarioRolReporteDTO>> ObtenerReporteUsuariosRolesAsync()
+    {
+        const string sql = @"
+SELECT u.IdUsuario, u.NombreCompleto, u.Email, r.Nombre AS Rol, u.Estado
+FROM dbo.Usuarios u
+INNER JOIN dbo.Roles r ON r.IdRol = u.IdRol
+ORDER BY u.Estado, r.Nombre, u.NombreCompleto;";
+
+        var resultado = new List<ItemUsuarioRolReporteDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemUsuarioRolReporteDTO
+            {
+                IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                NombreCompleto = reader["NombreCompleto"]?.ToString() ?? string.Empty,
+                Email = reader["Email"]?.ToString() ?? string.Empty,
+                Rol = reader["Rol"]?.ToString() ?? string.Empty,
+                Estado = reader["Estado"]?.ToString() ?? string.Empty
+            });
+        }
+        return resultado;
+    }
+
+    public async Task<List<ItemFincaEstadoAdminDTO>> ObtenerReporteFincasPorEstadoAsync()
+    {
+        const string sql = @"
+SELECT EstadoFinca, COUNT(1) AS Cantidad
+FROM dbo.Fincas
+GROUP BY EstadoFinca
+ORDER BY EstadoFinca;";
+
+        var resultado = new List<ItemFincaEstadoAdminDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemFincaEstadoAdminDTO
+            {
+                EstadoFinca = reader["EstadoFinca"]?.ToString() ?? string.Empty,
+                Cantidad = reader.GetInt32(reader.GetOrdinal("Cantidad"))
+            });
+        }
+        return resultado;
+    }
+
+    public async Task<List<ItemEvaluacionAdminDTO>> ObtenerReporteEvaluacionesAdminAsync(FiltroReporteDTO filtro)
+    {
+        const string sql = @"
+SELECT
+    e.IdEvaluacion, f.NombreFinca, ISNULL(u.NombreCompleto, 'Sin asignar') AS Ingeniero,
+    e.FechaVisita, e.FechaDecision, e.EstadoEvaluacion, e.DecisionTecnica, e.Observaciones
+FROM dbo.EvaluacionesTecnicas e
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+LEFT JOIN dbo.Usuarios u ON u.IdUsuario = e.IdIngeniero
+WHERE (@Anio IS NULL OR YEAR(COALESCE(e.FechaDecision, e.FechaVisita)) = @Anio)
+  AND (@Mes IS NULL OR MONTH(COALESCE(e.FechaDecision, e.FechaVisita)) = @Mes)
+ORDER BY e.IdEvaluacion DESC;";
+
+        var resultado = new List<ItemEvaluacionAdminDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Mes", (object?)filtro.Mes ?? DBNull.Value);
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemEvaluacionAdminDTO
+            {
+                IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Ingeniero = reader["Ingeniero"]?.ToString() ?? string.Empty,
+                FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
+                FechaDecision = reader["FechaDecision"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaDecision")),
+                EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
+                DecisionTecnica = reader["DecisionTecnica"] as string,
+                Observaciones = reader["Observaciones"] as string
+            });
+        }
+        return resultado;
+    }
+
+    public async Task<List<ItemPagosAdminDTO>> ObtenerReportePagosAdminAsync(int? anio)
+    {
+        const string sql = @"
+SELECT
+    pp.IdPlanPago,
+    f.NombreFinca,
+    pp.Anio,
+    SUM(CASE WHEN c.EstadoCuota = 'Pagada' THEN 1 ELSE 0 END) AS CuotasPagadas,
+    SUM(CASE WHEN c.EstadoCuota <> 'Pagada' THEN 1 ELSE 0 END) AS CuotasPendientes
+FROM dbo.PlanesPago pp
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+INNER JOIN dbo.CuotasPago c ON c.IdPlanPago = pp.IdPlanPago
+WHERE (@Anio IS NULL OR pp.Anio = @Anio)
+GROUP BY pp.IdPlanPago, f.NombreFinca, pp.Anio
+ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
+
+        var resultado = new List<ItemPagosAdminDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@Anio", (object?)anio ?? DBNull.Value);
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemPagosAdminDTO
+            {
+                IdPlanPago = reader.GetInt32(reader.GetOrdinal("IdPlanPago")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
+                CuotasPagadas = reader.GetInt32(reader.GetOrdinal("CuotasPagadas")),
+                CuotasPendientes = reader.GetInt32(reader.GetOrdinal("CuotasPendientes"))
+            });
+        }
+        return resultado;
+    }
+
+    public async Task<List<ItemAuditoriaCriticaDTO>> ObtenerAuditoriaCriticaAsync(int top = 50)
+    {
+        const string sql = @"
+SELECT TOP (@TopN)
+    a.FechaAccion, a.Modulo, a.TablaAfectada, a.Accion, a.Detalle,
+    ISNULL(u.NombreCompleto, 'Sistema') AS Usuario
+FROM dbo.AuditoriaLog a
+LEFT JOIN dbo.Usuarios u ON u.IdUsuario = a.IdUsuario
+WHERE a.Modulo IN ('Autenticacion', 'Usuarios', 'Pagos', 'Evaluaciones', 'Administracion', 'Seguridad')
+   OR a.TablaAfectada IN ('Usuarios', 'ConfiguracionesPago', 'EvaluacionesTecnicas', 'PlanesPago', 'CuotasPago')
+ORDER BY a.FechaAccion DESC;";
+
+        var resultado = new List<ItemAuditoriaCriticaDTO>();
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@TopN", top);
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new ItemAuditoriaCriticaDTO
+            {
+                FechaAccion = reader.GetDateTime(reader.GetOrdinal("FechaAccion")),
+                Modulo = reader["Modulo"]?.ToString() ?? string.Empty,
+                TablaAfectada = reader["TablaAfectada"]?.ToString() ?? string.Empty,
+                Accion = reader["Accion"]?.ToString() ?? string.Empty,
+                Detalle = reader["Detalle"] as string,
+                Usuario = reader["Usuario"]?.ToString() ?? string.Empty
+            });
+        }
+        return resultado;
+    }
+
     private static async Task<bool> ExisteVistaAsync(SqlConnection connection, string nombreVista)
     {
         const string sql = @"

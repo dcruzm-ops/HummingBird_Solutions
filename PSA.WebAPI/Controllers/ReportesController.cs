@@ -49,4 +49,60 @@ public class ReportesController : ControllerBase
         var data = await _reportesManager.ObtenerResumenActividadAsync();
         return Ok(data);
     }
+
+    [HttpGet("dueno/{idPropietario:int}/fincas")]
+    public async Task<IActionResult> ObtenerFincasDueno([FromRoute] int idPropietario)
+    {
+        var data = await _reportesManager.ObtenerReporteFincasDuenoAsync(idPropietario);
+        return Ok(data);
+    }
+
+    [HttpGet("ingeniero/fincas-pendientes")]
+    public async Task<IActionResult> ObtenerFincasPendientesIngeniero()
+    {
+        var data = await _reportesManager.ObtenerFincasPendientesIngenieroAsync();
+        return Ok(data);
+    }
+
+    [HttpGet("ingeniero/{idIngeniero:int}/tecnico-finca")]
+    public async Task<IActionResult> ObtenerReporteTecnicoFinca([FromRoute] int idIngeniero, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
+    {
+        var data = await _reportesManager.ObtenerReporteTecnicoPorFincaAsync(idIngeniero, new FiltroReporteDTO { Anio = anio, Mes = mes });
+        return Ok(data);
+    }
+
+    [HttpGet("administrador/usuarios-roles")]
+    public async Task<IActionResult> ObtenerUsuariosRoles()
+    {
+        var data = await _reportesManager.ObtenerReporteUsuariosRolesAsync();
+        return Ok(data);
+    }
+
+    [HttpGet("administrador/fincas-estado")]
+    public async Task<IActionResult> ObtenerFincasPorEstado()
+    {
+        var data = await _reportesManager.ObtenerReporteFincasPorEstadoAsync();
+        return Ok(data);
+    }
+
+    [HttpGet("administrador/evaluaciones-tecnicas")]
+    public async Task<IActionResult> ObtenerEvaluacionesTecnicasAdmin([FromQuery] int? anio = null, [FromQuery] int? mes = null)
+    {
+        var data = await _reportesManager.ObtenerReporteEvaluacionesAdminAsync(new FiltroReporteDTO { Anio = anio, Mes = mes });
+        return Ok(data);
+    }
+
+    [HttpGet("administrador/pagos")]
+    public async Task<IActionResult> ObtenerPagosAdmin([FromQuery] int? anio = null)
+    {
+        var data = await _reportesManager.ObtenerReportePagosAdminAsync(anio);
+        return Ok(data);
+    }
+
+    [HttpGet("administrador/auditoria-critica")]
+    public async Task<IActionResult> ObtenerAuditoriaCritica([FromQuery] int top = 50)
+    {
+        var data = await _reportesManager.ObtenerAuditoriaCriticaAsync(top);
+        return Ok(data);
+    }
 }

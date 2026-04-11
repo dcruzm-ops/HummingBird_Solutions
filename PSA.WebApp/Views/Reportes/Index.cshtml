@@ -35,6 +35,27 @@
     @if (esDueno)
     {
         <section class="tarjeta-panel mb-3">
+            <h3>Reporte de mis fincas</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Finca</th><th>Ubicación</th><th>Estado finca</th><th>Estado evaluación</th><th>Observaciones</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.FincasDueno)
+                    {
+                        <tr>
+                            <td>@item.NombreFinca</td>
+                            <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                            <td>@item.EstadoFinca</td>
+                            <td>@item.EstadoEvaluacion</td>
+                            <td>@item.ObservacionesEvaluacion</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel mb-3">
             <h3>Reporte de pagos mensuales y cálculo</h3>
             <div class="table-responsive">
                 <table class="tabla-base">
@@ -105,6 +126,26 @@
 
     @if (esIngeniero)
     {
+        <section class="tarjeta-panel mb-3">
+            <h3>Fincas pendientes por evaluar</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Evaluación</th><th>Finca</th><th>Ubicación</th><th>Estado</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.FincasPendientesIngeniero)
+                    {
+                        <tr>
+                            <td>@item.IdEvaluacion</td>
+                            <td>@item.NombreFinca</td>
+                            <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                            <td>@item.EstadoEvaluacion</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <section class="grid-tarjetas-kpi mb-3">
             <div class="tarjeta-kpi"><span class="etiqueta-kpi">Total</span><strong>@Model.EvaluacionesIngeniero.Total</strong></div>
             <div class="tarjeta-kpi"><span class="etiqueta-kpi">Califica</span><strong>@Model.EvaluacionesIngeniero.TotalCalifica</strong></div>
@@ -132,10 +173,110 @@
                 </table>
             </div>
         </section>
+
+        <section class="tarjeta-panel mt-3">
+            <h3>Reporte técnico por finca</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Evaluación</th><th>Finca</th><th>Ajustes</th><th>Decisión</th><th>Fecha visita</th><th>Observaciones</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.ReporteTecnicoFinca)
+                    {
+                        <tr>
+                            <td>@item.IdEvaluacion</td>
+                            <td>@item.NombreFinca</td>
+                            <td>
+                                Hectáreas: @item.HectareasAjustadas |
+                                Vegetación: @item.VegetacionAjustada |
+                                Recursos: @item.RecursosHidricosAjustado |
+                                Uso: @item.UsoSueloAjustado |
+                                Superficie: @item.PendienteAjustada
+                            </td>
+                            <td>@item.DecisionTecnica</td>
+                            <td>@item.FechaVisita?.ToString("yyyy-MM-dd")</td>
+                            <td>@item.Observaciones</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
     }
 
     @if (esAdmin)
     {
+        <section class="tarjeta-panel mb-3">
+            <h3>Reporte general de usuarios y roles</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Usuario</th><th>Email</th><th>Rol</th><th>Estado</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.UsuariosRoles)
+                    {
+                        <tr>
+                            <td>@item.NombreCompleto</td>
+                            <td>@item.Email</td>
+                            <td>@item.Rol</td>
+                            <td>@item.Estado</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel mb-3">
+            <h3>Reporte de fincas por estado</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Estado</th><th>Cantidad</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.FincasPorEstado)
+                    {
+                        <tr><td>@item.EstadoFinca</td><td>@item.Cantidad</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel mb-3">
+            <h3>Reporte de evaluaciones técnicas</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Evaluación</th><th>Finca</th><th>Ingeniero</th><th>Fecha</th><th>Resultado</th><th>Observaciones</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.EvaluacionesAdmin)
+                    {
+                        <tr>
+                            <td>@item.IdEvaluacion</td>
+                            <td>@item.NombreFinca</td>
+                            <td>@item.Ingeniero</td>
+                            <td>@((item.FechaDecision ?? item.FechaVisita)?.ToString("yyyy-MM-dd"))</td>
+                            <td>@item.EstadoEvaluacion / @item.DecisionTecnica</td>
+                            <td>@item.Observaciones</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="tarjeta-panel mb-3">
+            <h3>Reporte de pagos (planes y cuotas)</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Plan</th><th>Finca</th><th>Año</th><th>Pagadas</th><th>Pendientes</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.PagosAdmin)
+                    {
+                        <tr><td>@item.IdPlanPago</td><td>@item.NombreFinca</td><td>@item.Anio</td><td>@item.CuotasPagadas</td><td>@item.CuotasPendientes</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <section class="tarjeta-panel mb-3">
             <h3>Montos pagados por provincia, cantón y distrito</h3>
             <div class="table-responsive">
@@ -168,6 +309,28 @@
                         <strong>@item.Total</strong>
                     </div>
                 }
+            </div>
+        </section>
+
+        <section class="tarjeta-panel mt-3">
+            <h3>Auditoría / movimientos críticos</h3>
+            <div class="table-responsive">
+                <table class="tabla-base">
+                    <thead><tr><th>Fecha</th><th>Módulo</th><th>Tabla</th><th>Acción</th><th>Usuario</th><th>Detalle</th></tr></thead>
+                    <tbody>
+                    @foreach (var item in Model.AuditoriaCritica)
+                    {
+                        <tr>
+                            <td>@item.FechaAccion.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@item.Modulo</td>
+                            <td>@item.TablaAfectada</td>
+                            <td>@item.Accion</td>
+                            <td>@item.Usuario</td>
+                            <td>@item.Detalle</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
             </div>
         </section>
     }

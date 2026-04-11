@@ -26,4 +26,28 @@ public class ReportesManager
 
     public Task<List<ItemResumenActividadDTO>> ObtenerResumenActividadAsync()
         => _reportesDao.ObtenerResumenActividadAsync();
+
+    public Task<List<ItemFincaDuenoReporteDTO>> ObtenerReporteFincasDuenoAsync(int idPropietario)
+        => _reportesDao.ObtenerReporteFincasDuenoAsync(idPropietario);
+
+    public Task<List<ItemFincaPendienteIngenieroDTO>> ObtenerFincasPendientesIngenieroAsync()
+        => _reportesDao.ObtenerFincasPendientesIngenieroAsync();
+
+    public Task<List<ItemTecnicoFincaDTO>> ObtenerReporteTecnicoPorFincaAsync(int? idIngeniero, FiltroReporteDTO filtro)
+        => _reportesDao.ObtenerReporteTecnicoPorFincaAsync(idIngeniero, filtro ?? new FiltroReporteDTO());
+
+    public Task<List<ItemUsuarioRolReporteDTO>> ObtenerReporteUsuariosRolesAsync()
+        => _reportesDao.ObtenerReporteUsuariosRolesAsync();
+
+    public Task<List<ItemFincaEstadoAdminDTO>> ObtenerReporteFincasPorEstadoAsync()
+        => _reportesDao.ObtenerReporteFincasPorEstadoAsync();
+
+    public Task<List<ItemEvaluacionAdminDTO>> ObtenerReporteEvaluacionesAdminAsync(FiltroReporteDTO filtro)
+        => _reportesDao.ObtenerReporteEvaluacionesAdminAsync(filtro ?? new FiltroReporteDTO());
+
+    public Task<List<ItemPagosAdminDTO>> ObtenerReportePagosAdminAsync(int? anio)
+        => _reportesDao.ObtenerReportePagosAdminAsync(anio);
+
+    public Task<List<ItemAuditoriaCriticaDTO>> ObtenerAuditoriaCriticaAsync(int top = 50)
+        => _reportesDao.ObtenerAuditoriaCriticaAsync(top);
 }

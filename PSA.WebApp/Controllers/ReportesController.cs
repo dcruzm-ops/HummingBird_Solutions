@@ -38,19 +38,27 @@ namespace PSA.WebApp.Controllers
             if (rolId == "2" && idUsuario > 0)
             {
                 var query = $"?anio={anio}&mes={mes}";
+                modelo.FincasDueno = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaDuenoReporteDTO>>($"api/Reportes/dueno/{idUsuario}/fincas") ?? new();
                 modelo.PagosDueno = await client.GetFromJsonAsync<PSA.EntidadesDTO.DTOs.Reportes.ReportePagosDuenoDTO>($"api/Reportes/dueno/{idUsuario}/pagos{query}") ?? new();
                 modelo.TransaccionesDueno = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemTransaccionDuenoDTO>>($"api/Reportes/dueno/{idUsuario}/transacciones{query}") ?? new();
             }
             else if (rolId == "3" && idUsuario > 0)
             {
                 var query = $"?anio={anio}&mes={mes}";
+                modelo.FincasPendientesIngeniero = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaPendienteIngenieroDTO>>("api/Reportes/ingeniero/fincas-pendientes") ?? new();
                 modelo.EvaluacionesIngeniero = await client.GetFromJsonAsync<PSA.EntidadesDTO.DTOs.Reportes.ReporteEvaluacionesIngenieroDTO>($"api/Reportes/ingeniero/{idUsuario}/evaluaciones{query}") ?? new();
+                modelo.ReporteTecnicoFinca = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemTecnicoFincaDTO>>($"api/Reportes/ingeniero/{idUsuario}/tecnico-finca{query}") ?? new();
             }
             else if (rolId == "1")
             {
                 var query = $"?anio={anio}&mes={mes}";
                 modelo.PagosPorUbicacion = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagoUbicacionDTO>>($"api/Reportes/administrador/pagos-ubicacion{query}") ?? new();
                 modelo.ResumenActividad = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemResumenActividadDTO>>("api/Reportes/administrador/resumen-actividad") ?? new();
+                modelo.UsuariosRoles = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemUsuarioRolReporteDTO>>("api/Reportes/administrador/usuarios-roles") ?? new();
+                modelo.FincasPorEstado = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaEstadoAdminDTO>>("api/Reportes/administrador/fincas-estado") ?? new();
+                modelo.EvaluacionesAdmin = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemEvaluacionAdminDTO>>($"api/Reportes/administrador/evaluaciones-tecnicas{query}") ?? new();
+                modelo.PagosAdmin = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagosAdminDTO>>($"api/Reportes/administrador/pagos?anio={anio}") ?? new();
+                modelo.AuditoriaCritica = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemAuditoriaCriticaDTO>>("api/Reportes/administrador/auditoria-critica?top=50") ?? new();
             }
 
             return View(modelo);
