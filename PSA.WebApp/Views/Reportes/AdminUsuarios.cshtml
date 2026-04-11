@@ -1,0 +1,4 @@
+@model PSA.WebApp.Models.ReporteAdminUsuariosViewModel
+<section class="seccion-pagina"><h2>Usuarios y roles</h2>
+<form method="get" class="seccion-formulario"><div class="grid-dos-columnas"><div class="campo-formulario"><label>Rol</label><input name="rol" value="@Model.Rol"/></div><div class="campo-formulario"><label>Estado</label><input name="estado" value="@Model.Estado"/></div></div><button class="boton-primario" type="submit">Filtrar</button></form>
+<table class="tabla-base"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th></tr></thead><tbody>@foreach(var i in Model.Items){<tr><td>@i.NombreCompleto</td><td>@i.Email</td><td>@i.Rol</td><td>@i.Estado</td></tr>}</tbody></table></section>

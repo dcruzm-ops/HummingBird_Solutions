@@ -1,0 +1,4 @@
+@model PSA.WebApp.Models.ReporteAdminAuditoriaViewModel
+<section class="seccion-pagina"><h2>Auditoría crítica</h2>
+<form method="get" class="seccion-formulario"><div class="grid-tres-columnas"><div class="campo-formulario"><label>Módulo</label><input name="modulo" value="@Model.Modulo"/></div><div class="campo-formulario"><label>Acción</label><input name="accion" value="@Model.Accion"/></div><div class="campo-formulario"><label>Top</label><input name="top" type="number" value="@Model.Top"/></div></div><button class="boton-primario" type="submit">Filtrar</button></form>
+<table class="tabla-base"><thead><tr><th>Fecha</th><th>Módulo</th><th>Tabla</th><th>Acción</th><th>Usuario</th><th>Detalle</th></tr></thead><tbody>@foreach(var i in Model.Items){<tr><td>@i.FechaAccion.ToString("yyyy-MM-dd HH:mm")</td><td>@i.Modulo</td><td>@i.TablaAfectada</td><td>@i.Accion</td><td>@i.Usuario</td><td>@i.Detalle</td></tr>}</tbody></table></section>

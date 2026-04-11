@@ -1,0 +1,9 @@
+@model PSA.WebApp.Models.ReporteDuenoFincasViewModel
+<section class="seccion-pagina"><h2>Mis fincas</h2>
+<form method="get" class="seccion-formulario"><div class="grid-dos-columnas">
+<div class="campo-formulario"><label>Estado finca</label><input name="estadoFinca" value="@Model.EstadoFinca" /></div>
+<div class="campo-formulario"><label>Estado evaluación</label><input name="estadoEvaluacion" value="@Model.EstadoEvaluacion" /></div>
+</div><button class="boton-primario" type="submit">Filtrar</button></form>
+<table class="tabla-base"><thead><tr><th>Finca</th><th>Ubicación</th><th>Estado finca</th><th>Estado evaluación</th><th>Observaciones</th></tr></thead><tbody>
+@foreach (var i in Model.Items){<tr><td>@i.NombreFinca</td><td>@i.Provincia, @i.Canton, @i.Distrito</td><td>@i.EstadoFinca</td><td>@i.EstadoEvaluacion</td><td>@i.ObservacionesEvaluacion</td></tr>}
+</tbody></table></section>
