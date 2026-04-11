@@ -14,7 +14,7 @@ public class ReportesDAO
 
     public async Task<ReportePagosDuenoDTO> ObtenerPagosDuenoAsync(int idPropietario, FiltroReporteDTO filtro)
     {
-        const string sqlPagos = @"
+        const string sqlPagosVista = @"
 SELECT IdPlanPago, IdFinca, NombreFinca, Anio, Mes, FechaProgramada,
        MontoBaseMensual, PorcentajeAjusteTotal, MontoMensualCalculado,
        MontoPendiente, EstadoCuota
@@ -23,6 +23,19 @@ WHERE IdPropietario = @IdPropietario
   AND (@Anio IS NULL OR Anio = @Anio)
   AND (@Mes IS NULL OR Mes = @Mes)
 ORDER BY Anio DESC, Mes DESC, IdPlanPago DESC;";
+
+        const string sqlPagosFallback = @"
+SELECT
+    pp.IdPlanPago, f.IdFinca, f.NombreFinca, pp.Anio, cp.Mes, cp.FechaProgramada,
+    pp.MontoBaseMensual, pp.PorcentajeAjusteTotal, cp.MontoProgramado AS MontoMensualCalculado,
+    cp.MontoPendiente, cp.EstadoCuota
+FROM dbo.PlanesPago pp
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+INNER JOIN dbo.CuotasPago cp ON cp.IdPlanPago = pp.IdPlanPago
+WHERE f.IdPropietario = @IdPropietario
+  AND (@Anio IS NULL OR pp.Anio = @Anio)
+  AND (@Mes IS NULL OR cp.Mes = @Mes)
+ORDER BY pp.Anio DESC, cp.Mes DESC, pp.IdPlanPago DESC;";
 
         const string sqlAjustes = @"
 SELECT DISTINCT
@@ -47,8 +60,9 @@ ORDER BY pp.IdPlanPago DESC, d.TipoFactor;";
 
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
+        var usarVistaPagos = await ExisteVistaAsync(connection, "vw_ReportePagosMensualesDueno");
 
-        using (var command = new SqlCommand(sqlPagos, connection))
+        using (var command = new SqlCommand(usarVistaPagos ? sqlPagosVista : sqlPagosFallback, connection))
         {
             command.Parameters.AddWithValue("@IdPropietario", idPropietario);
             command.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
@@ -97,7 +111,7 @@ ORDER BY pp.IdPlanPago DESC, d.TipoFactor;";
 
     public async Task<List<ItemTransaccionDuenoDTO>> ObtenerTransaccionesDuenoAsync(int idPropietario, FiltroReporteDTO filtro)
     {
-        const string sql = @"
+        const string sqlVista = @"
 SELECT IdTransaccionPago, FechaTransaccion, MontoTotal, EstadoTransaccion,
        ReferenciaExterna, Observaciones, IdPlanPago, IdFinca, NombreFinca
 FROM dbo.vw_ReporteTransaccionesPagosDueno
@@ -106,14 +120,26 @@ WHERE IdPropietario = @IdPropietario
   AND (@Mes IS NULL OR MONTH(FechaTransaccion) = @Mes)
 ORDER BY FechaTransaccion DESC, IdTransaccionPago DESC;";
 
+        const string sqlFallback = @"
+SELECT
+    tp.IdTransaccionPago, tp.FechaTransaccion, tp.MontoTotal, tp.EstadoTransaccion,
+    tp.ReferenciaExterna, tp.Observaciones, pp.IdPlanPago, f.IdFinca, f.NombreFinca
+FROM dbo.TransaccionesPago tp
+INNER JOIN dbo.PlanesPago pp ON pp.IdPlanPago = tp.IdPlanPago
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+WHERE f.IdPropietario = @IdPropietario
+  AND (@Anio IS NULL OR YEAR(tp.FechaTransaccion) = @Anio)
+  AND (@Mes IS NULL OR MONTH(tp.FechaTransaccion) = @Mes)
+ORDER BY tp.FechaTransaccion DESC, tp.IdTransaccionPago DESC;";
+
         var resultado = new List<ItemTransaccionDuenoDTO>();
         using var connection = _connectionFactory.CreateConnection();
-        using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync();
+        var usarVista = await ExisteVistaAsync(connection, "vw_ReporteTransaccionesPagosDueno");
+        using var command = new SqlCommand(usarVista ? sqlVista : sqlFallback, connection);
         command.Parameters.AddWithValue("@IdPropietario", idPropietario);
         command.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
         command.Parameters.AddWithValue("@Mes", (object?)filtro.Mes ?? DBNull.Value);
-
-        await connection.OpenAsync();
         using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -136,7 +162,7 @@ ORDER BY FechaTransaccion DESC, IdTransaccionPago DESC;";
 
     public async Task<ReporteEvaluacionesIngenieroDTO> ObtenerEvaluacionesIngenieroAsync(int idIngeniero, FiltroReporteDTO filtro)
     {
-        const string sql = @"
+        const string sqlVista = @"
 SELECT IdEvaluacion, IdIngeniero, Ingeniero, EstadoEvaluacion, DecisionTecnica,
        FechaVisita, FechaDecision, IdFinca, NombreFinca, Provincia, Canton, Distrito
 FROM dbo.vw_ReporteEvaluacionesIngeniero
@@ -145,15 +171,27 @@ WHERE IdIngeniero = @IdIngeniero
   AND (@Mes IS NULL OR MONTH(COALESCE(FechaDecision, FechaVisita)) = @Mes)
 ORDER BY COALESCE(FechaDecision, FechaVisita) DESC, IdEvaluacion DESC;";
 
+        const string sqlFallback = @"
+SELECT
+    e.IdEvaluacion, e.IdIngeniero, ISNULL(u.NombreCompleto, '') AS Ingeniero, e.EstadoEvaluacion, e.DecisionTecnica,
+    e.FechaVisita, e.FechaDecision, f.IdFinca, f.NombreFinca, f.Provincia, f.Canton, f.Distrito
+FROM dbo.EvaluacionesTecnicas e
+LEFT JOIN dbo.Usuarios u ON u.IdUsuario = e.IdIngeniero
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+WHERE e.IdIngeniero = @IdIngeniero
+  AND (@Anio IS NULL OR YEAR(COALESCE(e.FechaDecision, e.FechaVisita)) = @Anio)
+  AND (@Mes IS NULL OR MONTH(COALESCE(e.FechaDecision, e.FechaVisita)) = @Mes)
+ORDER BY COALESCE(e.FechaDecision, e.FechaVisita) DESC, e.IdEvaluacion DESC;";
+
         var resultado = new ReporteEvaluacionesIngenieroDTO();
 
         using var connection = _connectionFactory.CreateConnection();
-        using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync();
+        var usarVista = await ExisteVistaAsync(connection, "vw_ReporteEvaluacionesIngeniero");
+        using var command = new SqlCommand(usarVista ? sqlVista : sqlFallback, connection);
         command.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
         command.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
         command.Parameters.AddWithValue("@Mes", (object?)filtro.Mes ?? DBNull.Value);
-
-        await connection.OpenAsync();
         using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -185,20 +223,37 @@ ORDER BY COALESCE(FechaDecision, FechaVisita) DESC, IdEvaluacion DESC;";
 
     public async Task<List<ItemPagoUbicacionDTO>> ObtenerPagosPorUbicacionAsync(FiltroReporteDTO filtro)
     {
-        const string sql = @"
+        const string sqlVista = @"
 SELECT Provincia, Canton, Distrito, Anio, Mes, MontoPagadoMes, MontoProgramadoMes
 FROM dbo.vw_ReportePagosPorUbicacion
 WHERE (@Anio IS NULL OR Anio = @Anio)
   AND (@Mes IS NULL OR Mes = @Mes)
 ORDER BY Anio DESC, Mes DESC, Provincia, Canton, Distrito;";
 
+        const string sqlFallback = @"
+SELECT
+    f.Provincia,
+    f.Canton,
+    f.Distrito,
+    pp.Anio,
+    cp.Mes,
+    SUM(cp.MontoProgramado - cp.MontoPendiente) AS MontoPagadoMes,
+    SUM(cp.MontoProgramado) AS MontoProgramadoMes
+FROM dbo.CuotasPago cp
+INNER JOIN dbo.PlanesPago pp ON pp.IdPlanPago = cp.IdPlanPago
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+WHERE (@Anio IS NULL OR pp.Anio = @Anio)
+  AND (@Mes IS NULL OR cp.Mes = @Mes)
+GROUP BY f.Provincia, f.Canton, f.Distrito, pp.Anio, cp.Mes
+ORDER BY pp.Anio DESC, cp.Mes DESC, f.Provincia, f.Canton, f.Distrito;";
+
         var resultado = new List<ItemPagoUbicacionDTO>();
         using var connection = _connectionFactory.CreateConnection();
-        using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync();
+        var usarVista = await ExisteVistaAsync(connection, "vw_ReportePagosPorUbicacion");
+        using var command = new SqlCommand(usarVista ? sqlVista : sqlFallback, connection);
         command.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
         command.Parameters.AddWithValue("@Mes", (object?)filtro.Mes ?? DBNull.Value);
-
-        await connection.OpenAsync();
         using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -219,16 +274,36 @@ ORDER BY Anio DESC, Mes DESC, Provincia, Canton, Distrito;";
 
     public async Task<List<ItemResumenActividadDTO>> ObtenerResumenActividadAsync()
     {
-        const string sql = @"
+        const string sqlVista = @"
 SELECT Indicador, Total
 FROM dbo.vw_ResumenActividadSistema
 ORDER BY Indicador;";
 
+        const string sqlFallback = @"
+SELECT 'Usuarios activos' AS Indicador, CAST(COUNT_BIG(1) AS BIGINT) AS Total
+FROM dbo.Usuarios
+WHERE Estado = 'Activo'
+UNION ALL
+SELECT 'Fincas registradas', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.Fincas
+UNION ALL
+SELECT 'Evaluaciones pendientes', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.EvaluacionesTecnicas
+WHERE EstadoEvaluacion IN ('Pendiente', 'En proceso', 'En Proceso')
+UNION ALL
+SELECT 'Planes de pago activos', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.PlanesPago
+WHERE EstadoPlan = 'Activo'
+UNION ALL
+SELECT 'Transacciones procesadas', CAST(COUNT_BIG(1) AS BIGINT)
+FROM dbo.TransaccionesPago
+WHERE EstadoTransaccion = 'Procesada';";
+
         var resultado = new List<ItemResumenActividadDTO>();
         using var connection = _connectionFactory.CreateConnection();
-        using var command = new SqlCommand(sql, connection);
-
         await connection.OpenAsync();
+        var usarVista = await ExisteVistaAsync(connection, "vw_ResumenActividadSistema");
+        using var command = new SqlCommand(usarVista ? sqlVista : sqlFallback, connection);
         using var reader = await command.ExecuteReaderAsync();
         while (await reader.ReadAsync())
         {
@@ -240,5 +315,15 @@ ORDER BY Indicador;";
         }
 
         return resultado;
+    }
+
+    private static async Task<bool> ExisteVistaAsync(SqlConnection connection, string nombreVista)
+    {
+        const string sql = @"
+SELECT CASE WHEN OBJECT_ID(@NombreVista, 'V') IS NULL THEN CAST(0 AS bit) ELSE CAST(1 AS bit) END;";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@NombreVista", $"dbo.{nombreVista}");
+        var result = await command.ExecuteScalarAsync();
+        return result is bool value && value;
     }
 }
