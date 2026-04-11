@@ -1,6 +1,6 @@
 @model PSA.WebApp.Models.ReporteIngenieroPendientesViewModel
 <section class="seccion-pagina"><h2>Fincas pendientes por evaluar</h2>
-<form method="get" class="seccion-formulario"><div class="campo-formulario"><label>Provincia</label><input name="provincia" value="@Model.Provincia"/></div><button class="boton-primario" type="submit">Filtrar</button></form>
+<form method="get" class="seccion-formulario"><div class="campo-formulario"><label>Provincia</label><select name="provincia"><option value="">Todas</option><option value="San José" selected="@(Model.Provincia == "San José")">San José</option><option value="Alajuela" selected="@(Model.Provincia == "Alajuela")">Alajuela</option><option value="Cartago" selected="@(Model.Provincia == "Cartago")">Cartago</option><option value="Heredia" selected="@(Model.Provincia == "Heredia")">Heredia</option><option value="Guanacaste" selected="@(Model.Provincia == "Guanacaste")">Guanacaste</option><option value="Puntarenas" selected="@(Model.Provincia == "Puntarenas")">Puntarenas</option><option value="Limón" selected="@(Model.Provincia == "Limón")">Limón</option></select></div><button class="boton-primario" type="submit">Filtrar</button></form>
 <table class="tabla-base"><thead><tr><th>Evaluación</th><th>Finca</th><th>Ubicación</th><th>Estado</th></tr></thead><tbody>
 @foreach (var i in Model.Items){<tr><td>@i.IdEvaluacion</td><td>@i.NombreFinca</td><td>@i.Provincia, @i.Canton, @i.Distrito</td><td>@i.EstadoEvaluacion</td></tr>}
 </tbody></table></section>

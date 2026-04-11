@@ -19,7 +19,7 @@ public class ReportesController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        ConfigurarVistaBase("Inicio de reportes", "Seleccione un reporte disponible para su rol.");
+        ConfigurarVistaBase("Inicio de reportes", "Seleccione un reporte disponible para su rol.", true);
         var rolId = User.FindFirstValue(ClaimTypes.Role);
         return View(new ReportesIndexViewModel
         {
@@ -163,13 +163,25 @@ public class ReportesController : Controller
 
     private int ObtenerIdUsuario() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
 
-    private void ConfigurarVistaBase(string titulo, string subtitulo)
+    private void ConfigurarVistaBase(string titulo, string subtitulo, bool esInicioReportes = false)
     {
         ViewBag.ModuloActivo = "reportes";
         ViewBag.RolActivo = ObtenerNombreRol();
         ViewBag.TituloPagina = titulo;
         ViewBag.SubtituloPagina = subtitulo;
-        ViewBag.BreadcrumbActual = "Reportes";
+        ViewBag.BreadcrumbInicioTexto = "Inicio de reportes";
+        ViewBag.BreadcrumbInicioControlador = "Reportes";
+        ViewBag.BreadcrumbInicioAccion = "Index";
+
+        if (esInicioReportes)
+        {
+            ViewBag.BreadcrumbActual = "Inicio";
+            return;
+        }
+
+        ViewBag.BreadcrumbPadreTexto = "Reportes";
+        ViewBag.BreadcrumbPadreUrl = Url.Action("Index", "Reportes");
+        ViewBag.BreadcrumbActual = titulo;
     }
 
     private string ObtenerNombreRol()
