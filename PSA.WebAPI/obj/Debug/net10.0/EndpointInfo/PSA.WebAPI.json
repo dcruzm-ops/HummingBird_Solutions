@@ -5,11 +5,30 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/Finca/RetrieveAll": {
-      "get": {
+    "/api/Autenticacion/registrar": {
+      "post": {
         "tags": [
-          "Finca"
+          "Autenticacion"
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarUsuarioDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarUsuarioDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarUsuarioDTO"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -17,14 +36,45 @@
         }
       }
     },
-    "/api/Finca/RetrieveById/{id}": {
+    "/api/Autenticacion/iniciar-sesion": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InicioSesionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InicioSesionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InicioSesionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/dueno-resumen/{idUsuario}": {
       "get": {
         "tags": [
-          "Finca"
+          "Dashboard"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "idUsuario",
             "in": "path",
             "required": true,
             "schema": {
@@ -40,78 +90,401 @@
         }
       }
     },
-    "/api/Finca/Create": {
-      "post": {
+    "/api/Dashboard/ingeniero-resumen/{idUsuario}": {
+      "get": {
         "tags": [
-          "Finca"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Finca/Update": {
-      "put": {
-        "tags": [
-          "Finca"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Finca/Delete/{id}": {
-      "delete": {
-        "tags": [
-          "Finca"
+          "Dashboard"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "idUsuario",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/administrador-resumen": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenDashboardAdministradorDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenDashboardAdministradorDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenDashboardAdministradorDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/bandeja-pendientes": {
+      "get": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/detalle": {
+      "get": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/asignar": {
+      "put": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarEvaluacionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarEvaluacionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarEvaluacionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/resultado": {
+      "put": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarResultadoEvaluacionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarResultadoEvaluacionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarResultadoEvaluacionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/estado": {
+      "put": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/reportes": {
+      "get": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mes",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "estadoEvaluacion",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "decisionTecnica",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idIngeniero",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas/mis-fincas": {
+      "get": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idPropietario",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas/{idFinca}/detalle": {
+      "get": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idFinca",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idPropietario",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas": {
+      "post": {
+        "tags": [
+          "Fincas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas/{idFinca}": {
+      "put": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idFinca",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idFinca",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idPropietario",
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -129,6 +502,18 @@
       "get": {
         "tags": [
           "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/openapi/v1.json": {
+      "get": {
+        "tags": [
+          "PSA.WebAPI"
         ],
         "responses": {
           "200": {
@@ -229,16 +614,245 @@
           }
         }
       }
+    },
+    "/api/Reportes/dueno/{idPropietario}/pagos": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "parameters": [
+          {
+            "name": "idPropietario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mes",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Reportes/dueno/{idPropietario}/transacciones": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "parameters": [
+          {
+            "name": "idPropietario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mes",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Reportes/ingeniero/{idIngeniero}/evaluaciones": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "parameters": [
+          {
+            "name": "idIngeniero",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mes",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Reportes/administrador/pagos-ubicacion": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mes",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Reportes/administrador/resumen-actividad": {
+      "get": {
+        "tags": [
+          "Reportes"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
-      "FincaDTO": {
+      "ActividadAuditoriaDTO": {
+        "type": "object",
+        "properties": {
+          "modulo": {
+            "type": "string",
+            "nullable": true
+          },
+          "accion": {
+            "type": "string",
+            "nullable": true
+          },
+          "detalle": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaAccion": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AsignarEvaluacionDTO": {
+        "type": "object",
+        "properties": {
+          "idIngeniero": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "InicioSesionDTO": {
+        "required": [
+          "contrasena",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "contrasena": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecuperarContrasenaDTO": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "correo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RegistrarFincaDTO": {
         "required": [
           "canton",
           "distrito",
-          "estadoFinca",
-          "idPropietario",
+          "hectareas",
+          "latitud",
+          "longitud",
           "nombreFinca",
           "pendiente",
           "provincia",
@@ -247,34 +861,33 @@
         ],
         "type": "object",
         "properties": {
-          "idFinca": {
-            "type": "integer",
-            "format": "int32"
-          },
           "idPropietario": {
-            "maximum": 2147483647,
-            "minimum": 1,
             "type": "integer",
             "format": "int32"
           },
           "nombreFinca": {
-            "maxLength": 100,
+            "maxLength": 150,
             "minLength": 0,
             "type": "string"
           },
           "provincia": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "canton": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "distrito": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "direccionExacta": {
+            "maxLength": 250,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },
@@ -291,64 +904,174 @@
             "format": "double"
           },
           "hectareas": {
-            "maximum": 1.7976931348623157E+308,
+            "maximum": 100000,
             "minimum": 0.01,
             "type": "number",
             "format": "double"
           },
           "vegetacion": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "tieneRecursosHidricos": {
             "type": "boolean"
           },
+          "tieneRiosOQuebradas": {
+            "type": "boolean"
+          },
+          "tieneNacientes": {
+            "type": "boolean"
+          },
+          "cantidadNacientes": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
           "usoSuelo": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "pendiente": {
-            "minLength": 1,
+            "maxLength": 50,
+            "minLength": 0,
             "type": "string"
-          },
-          "estadoFinca": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "fechaRegistro": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "fechaActualizacion": {
-            "type": "string",
-            "format": "date-time"
           }
         },
         "additionalProperties": false
       },
-      "RecuperarContrasenaDTO": {
+      "RegistrarResultadoEvaluacionDTO": {
         "type": "object",
         "properties": {
-          "correo": {
+          "fechaVisita": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "observaciones": {
             "type": "string",
             "nullable": true
+          },
+          "decisionTecnica": {
+            "type": "string",
+            "nullable": true
+          },
+          "hectareasAjustadas": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "vegetacionAjustada": {
+            "type": "string",
+            "nullable": true
+          },
+          "recursosHidricosAjustado": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "usoSueloAjustado": {
+            "type": "string",
+            "nullable": true
+          },
+          "pendienteAjustada": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RegistrarUsuarioDTO": {
+        "required": [
+          "confirmacionContrasena",
+          "contrasena",
+          "email",
+          "nombreCompleto"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreCompleto": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "contrasena": {
+            "minLength": 8,
+            "type": "string"
+          },
+          "confirmacionContrasena": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "idRol": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
       },
       "RestablecerContrasenaDTO": {
+        "required": [
+          "confirmarContrasena",
+          "nuevaContrasena",
+          "token"
+        ],
         "type": "object",
         "properties": {
           "token": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "nuevaContrasena": {
-            "type": "string",
-            "nullable": true
+            "minLength": 8,
+            "type": "string"
           },
           "confirmarContrasena": {
-            "type": "string",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResumenDashboardAdministradorDTO": {
+        "type": "object",
+        "properties": {
+          "usuariosActivos": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "usuariosNuevosHoy": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "usuariosPendientesAprobacion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cuentasPorValidar": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventosAuditoria24h": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "alertas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "actividadAuditoria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActividadAuditoriaDTO"
+            },
             "nullable": true
           }
         },
@@ -368,13 +1091,28 @@
   },
   "tags": [
     {
-      "name": "Finca"
+      "name": "Autenticacion"
+    },
+    {
+      "name": "Dashboard"
+    },
+    {
+      "name": "EvaluacionesTecnicas"
+    },
+    {
+      "name": "Fincas"
     },
     {
       "name": "Health"
     },
     {
+      "name": "PSA.WebAPI"
+    },
+    {
       "name": "RecuperacionContrasena"
+    },
+    {
+      "name": "Reportes"
     }
   ]
 }
