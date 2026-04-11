@@ -65,8 +65,12 @@ public class ReporteAdminEvaluacionesViewModel
 
 public class ReporteAdminPagosViewModel
 {
-    public int? Anio { get; set; }
+    public int? AnioPlanes { get; set; }
+    public int? AnioUbicacion { get; set; }
     public string? EstadoCuotas { get; set; }
+    public string? Provincia { get; set; }
+    public string? Canton { get; set; }
+    public string? Distrito { get; set; }
     public List<ItemPagosAdminDTO> Planes { get; set; } = new();
     public List<ItemPagoUbicacionDTO> PagosPorUbicacion { get; set; } = new();
 }

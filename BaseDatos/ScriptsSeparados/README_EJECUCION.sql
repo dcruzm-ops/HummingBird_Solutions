@@ -5,4 +5,7 @@ Orden recomendado de ejecución:
 3) 04_creacion_stored_procedures.sql
 4) 05_creacion_triggers.sql
 5) 02_insercion_datos_semilla_extensos.sql
+
+-- Si ya tienes una base creada con semilla anterior, ejecutar además:
+6) 06_actualizacion_ubicaciones_semilla_existentes.sql
 */

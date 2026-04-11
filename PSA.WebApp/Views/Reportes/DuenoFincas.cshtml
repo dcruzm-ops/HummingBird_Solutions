@@ -1,9 +1,41 @@
 @model PSA.WebApp.Models.ReporteDuenoFincasViewModel
-<section class="seccion-pagina"><h2>Mis fincas</h2>
-<form method="get" class="seccion-formulario"><div class="grid-dos-columnas">
-<div class="campo-formulario"><label>Estado finca</label><select name="estadoFinca"><option value="">Todos</option><option value="Registrada" selected="@(Model.EstadoFinca == "Registrada")">Registrada</option><option value="En evaluación" selected="@(Model.EstadoFinca == "En evaluación")">En evaluación</option><option value="Aprobada" selected="@(Model.EstadoFinca == "Aprobada")">Aprobada</option><option value="Rechazada" selected="@(Model.EstadoFinca == "Rechazada")">Rechazada</option></select></div>
-<div class="campo-formulario"><label>Estado evaluación</label><select name="estadoEvaluacion"><option value="">Todos</option><option value="Pendiente" selected="@(Model.EstadoEvaluacion == "Pendiente")">Pendiente</option><option value="En proceso" selected="@(Model.EstadoEvaluacion == "En proceso")">En proceso</option><option value="Evaluada - Califica" selected="@(Model.EstadoEvaluacion == "Evaluada - Califica")">Evaluada - Califica</option><option value="Evaluada - No califica" selected="@(Model.EstadoEvaluacion == "Evaluada - No califica")">Evaluada - No califica</option></select></div>
-</div><button class="boton-primario" type="submit">Filtrar</button></form>
-<table class="tabla-base"><thead><tr><th>Finca</th><th>Ubicación</th><th>Estado finca</th><th>Estado evaluación</th><th>Observaciones</th></tr></thead><tbody>
-@foreach (var i in Model.Items){<tr><td>@i.NombreFinca</td><td>@i.Provincia, @i.Canton, @i.Distrito</td><td>@i.EstadoFinca</td><td>@i.EstadoEvaluacion</td><td>@i.ObservacionesEvaluacion</td></tr>}
-</tbody></table></section>
+
+<section class="seccion-pagina">
+    <h2>Mis fincas</h2>
+
+    <form method="get" class="seccion-formulario">
+        <div class="grid-dos-columnas">
+            <div class="campo-formulario">
+                <label>Estado de finca</label>
+                <select name="estadoFinca">
+                    <option value="">Todos</option>
+                    <option value="Registrada" selected="@(Model.EstadoFinca == "Registrada")">Registrada</option>
+                    <option value="En proceso" selected="@(Model.EstadoFinca == "En proceso")">En proceso</option>
+                    <option value="Aprobada" selected="@(Model.EstadoFinca == "Aprobada")">Aprobada</option>
+                    <option value="Rechazada" selected="@(Model.EstadoFinca == "Rechazada")">Rechazada</option>
+                </select>
+            </div>
+            <div class="campo-formulario">
+                <label>Estado de evaluación</label>
+                <select name="estadoEvaluacion">
+                    <option value="">Todos</option>
+                    <option value="Pendiente" selected="@(Model.EstadoEvaluacion == "Pendiente")">Pendiente</option>
+                    <option value="En proceso" selected="@(Model.EstadoEvaluacion == "En proceso")">En proceso</option>
+                    <option value="Evaluada – Califica" selected="@(Model.EstadoEvaluacion == "Evaluada – Califica")">Evaluada – Califica</option>
+                    <option value="Evaluada – No califica" selected="@(Model.EstadoEvaluacion == "Evaluada – No califica")">Evaluada – No califica</option>
+                </select>
+            </div>
+        </div>
+        <button class="boton-primario" type="submit">Filtrar</button>
+    </form>
+
+    <table class="tabla-base">
+        <thead><tr><th>Finca</th><th>Ubicación</th><th>Estado de finca</th><th>Estado de evaluación</th><th>Observaciones</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr><td>@i.NombreFinca</td><td>@i.Provincia, @i.Canton, @i.Distrito</td><td>@i.EstadoFinca</td><td>@i.EstadoEvaluacion</td><td>@i.ObservacionesEvaluacion</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

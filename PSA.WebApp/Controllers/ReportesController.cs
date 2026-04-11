@@ -133,19 +133,42 @@ public class ReportesController : Controller
     }
 
     [HttpGet, Authorize(Roles = "1")]
-    public async Task<IActionResult> AdminPagos(int? anio = null, string? estadoCuotas = null)
+    public async Task<IActionResult> AdminPagos(
+        int? anioPlanes = null,
+        string? estadoCuotas = null,
+        int? anioUbicacion = null,
+        string? provincia = null,
+        string? canton = null,
+        string? distrito = null)
     {
         ConfigurarVistaBase("Reporte de pagos", "Planes generados y estado de cuotas.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var planes = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagosAdminDTO>>($"api/Reportes/administrador/pagos?anio={anio}") ?? new();
-        var porUbicacion = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagoUbicacionDTO>>($"api/Reportes/administrador/pagos-ubicacion?anio={anio}") ?? new();
+        var planes = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagosAdminDTO>>($"api/Reportes/administrador/pagos?anio={anioPlanes}") ?? new();
+        var porUbicacion = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagoUbicacionDTO>>($"api/Reportes/administrador/pagos-ubicacion?anio={anioUbicacion}") ?? new();
 
         if (string.Equals(estadoCuotas, "Pendientes", StringComparison.OrdinalIgnoreCase))
             planes = planes.Where(x => x.CuotasPendientes > 0).ToList();
         else if (string.Equals(estadoCuotas, "Pagadas", StringComparison.OrdinalIgnoreCase))
             planes = planes.Where(x => x.CuotasPendientes == 0).ToList();
 
-        return View(new ReporteAdminPagosViewModel { Anio = anio, EstadoCuotas = estadoCuotas, Planes = planes, PagosPorUbicacion = porUbicacion });
+        if (!string.IsNullOrWhiteSpace(provincia))
+            porUbicacion = porUbicacion.Where(x => x.Provincia.Equals(provincia, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!string.IsNullOrWhiteSpace(canton))
+            porUbicacion = porUbicacion.Where(x => x.Canton.Equals(canton, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!string.IsNullOrWhiteSpace(distrito))
+            porUbicacion = porUbicacion.Where(x => x.Distrito.Equals(distrito, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        return View(new ReporteAdminPagosViewModel
+        {
+            AnioPlanes = anioPlanes,
+            AnioUbicacion = anioUbicacion,
+            EstadoCuotas = estadoCuotas,
+            Provincia = provincia,
+            Canton = canton,
+            Distrito = distrito,
+            Planes = planes,
+            PagosPorUbicacion = porUbicacion
+        });
     }
 
     [HttpGet, Authorize(Roles = "1")]
@@ -191,7 +214,7 @@ public class ReportesController : Controller
         {
             "1" => "Administrador",
             "3" => "Ingeniero",
-            _ => "Dueno"
+            _ => "Dueño"
         };
     }
 }
