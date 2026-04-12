@@ -2,6 +2,15 @@
 
 <section class="seccion-pagina">
     <h2>Pagos administrativos</h2>
+    @{
+        var montoTotalAnual = Model.PagosPorUbicacion.Sum(x => x.MontoPagadoMes);
+        var montoPromedioMensual = Model.PagosPorUbicacion.Count > 0 ? Model.PagosPorUbicacion.GroupBy(x => new { x.Anio, x.Mes }).Average(g => g.Sum(x => x.MontoPagadoMes)) : 0;
+    }
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi"><strong>@montoTotalAnual.ToString("N2")</strong><small>Monto pagado acumulado</small></article>
+        <article class="tarjeta-kpi"><strong>@montoPromedioMensual.ToString("N2")</strong><small>Promedio mensual pagado</small></article>
+    </div>
 
     <h3>Planes</h3>
     <form method="get" class="seccion-formulario">

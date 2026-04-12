@@ -4,10 +4,17 @@
     <h2>Evaluaciones del ingeniero</h2>
 
     <form method="get" class="seccion-formulario">
-        <div class="grid-tres-columnas">
+        <div class="grid-cuatro-columnas">
             <div class="campo-formulario">
                 <label>Año</label>
                 <input name="anio" type="number" value="@Model.Anio" />
+            </div>
+            <div class="campo-formulario">
+                <label>Vista</label>
+                <select name="vistaPeriodo">
+                    <option value="Mensual" selected="@(Model.VistaPeriodo == "Mensual")">Mensual</option>
+                    <option value="Anual" selected="@(Model.VistaPeriodo == "Anual")">Anual</option>
+                </select>
             </div>
             <div class="campo-formulario">
                 <label>Mes</label>
@@ -32,6 +39,13 @@
         </div>
         <button class="boton-primario" type="submit">Filtrar</button>
     </form>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.Total</strong><small>Fincas evaluadas (periodo)</small></article>
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.TotalHectareasEvaluadas.ToString("N2")</strong><small>Hectáreas evaluadas</small></article>
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.TotalCalifica</strong><small>Califica</small></article>
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.TotalNoCalifica</strong><small>No califica</small></article>
+    </div>
 
     <table class="tabla-base">
         <thead><tr><th>Evaluación</th><th>Finca</th><th>Estado</th><th>Decisión</th><th>Fecha</th></tr></thead>

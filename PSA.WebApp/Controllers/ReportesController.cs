@@ -74,11 +74,16 @@ public class ReportesController : Controller
     }
 
     [HttpGet, Authorize(Roles = "3")]
-    public async Task<IActionResult> IngenieroEvaluaciones(int? anio = null, int? mes = null, string? estadoEvaluacion = null)
+    public async Task<IActionResult> IngenieroEvaluaciones(int? anio = null, int? mes = null, string? estadoEvaluacion = null, string vistaPeriodo = "Mensual")
     {
         ConfigurarVistaBase("Evaluaciones en proceso/finalizadas", "Reporte de evaluaciones del ingeniero.");
         var idUsuario = ObtenerIdUsuario();
         var client = _httpClientFactory.CreateClient("AuthApi");
+        if (string.Equals(vistaPeriodo, "Anual", StringComparison.OrdinalIgnoreCase))
+        {
+            mes = null;
+        }
+
         var query = $"?anio={anio}&mes={mes}";
         var reporte = await client.GetFromJsonAsync<PSA.EntidadesDTO.DTOs.Reportes.ReporteEvaluacionesIngenieroDTO>($"api/Reportes/ingeniero/{idUsuario}/evaluaciones{query}") ?? new();
 
@@ -88,7 +93,14 @@ public class ReportesController : Controller
             reporte.Total = reporte.Evaluaciones.Count;
         }
 
-        return View(new ReporteIngenieroEvaluacionesViewModel { Anio = anio, Mes = mes, EstadoEvaluacion = estadoEvaluacion, Reporte = reporte });
+        return View(new ReporteIngenieroEvaluacionesViewModel
+        {
+            Anio = anio,
+            Mes = mes,
+            VistaPeriodo = vistaPeriodo,
+            EstadoEvaluacion = estadoEvaluacion,
+            Reporte = reporte
+        });
     }
 
     [HttpGet, Authorize(Roles = "3")]
@@ -182,6 +194,24 @@ public class ReportesController : Controller
         if (!string.IsNullOrWhiteSpace(accion)) items = items.Where(x => x.Accion.Equals(accion, StringComparison.OrdinalIgnoreCase)).ToList();
 
         return View(new ReporteAdminAuditoriaViewModel { Modulo = modulo, Accion = accion, Top = top, Items = items });
+    }
+
+    [HttpGet, Authorize(Roles = "1")]
+    public async Task<IActionResult> AdminFincasEstado()
+    {
+        ConfigurarVistaBase("Fincas por estado", "Resumen de fincas registradas, en proceso, aprobadas y rechazadas.");
+        var client = _httpClientFactory.CreateClient("AuthApi");
+        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaEstadoAdminDTO>>("api/Reportes/administrador/fincas-estado") ?? new();
+        return View(new ReporteAdminFincasEstadoViewModel { Items = items });
+    }
+
+    [HttpGet, Authorize(Roles = "1")]
+    public async Task<IActionResult> AdminResumenActividad()
+    {
+        ConfigurarVistaBase("Resumen de actividad", "Indicadores clave de actividad del sistema.");
+        var client = _httpClientFactory.CreateClient("AuthApi");
+        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemResumenActividadDTO>>("api/Reportes/administrador/resumen-actividad") ?? new();
+        return View(new ReporteAdminResumenActividadViewModel { Items = items });
     }
 
     private int ObtenerIdUsuario() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
