@@ -150,8 +150,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0ZXNcQWRtaW5FdmFsdWFjaW9uZXMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/Reportes/AdminFincasEstado.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0ZXNcQWRtaW5GaW5jYXNFc3RhZG8uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/Reportes/AdminPagos.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0ZXNcQWRtaW5QYWdvcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/Reportes/AdminResumenActividad.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0ZXNcQWRtaW5SZXN1bWVuQWN0aXZpZGFkLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/Reportes/AdminUsuarios.cshtml]
