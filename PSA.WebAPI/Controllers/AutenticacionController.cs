@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.WebAPI.Services;
 
 namespace PSA.WebAPI.Controllers
@@ -58,6 +59,20 @@ namespace PSA.WebAPI.Controllers
                 {
                     Mensaje = ex.Message
                 });
+            }
+        }
+
+        [HttpPost("asignar-rol")]
+        public async Task<IActionResult> AsignarRol([FromBody] AsignarRolUsuarioDTO dto)
+        {
+            try
+            {
+                await _autenticacionManager.AsignarRolAsync(dto);
+                return Ok(new { Mensaje = "Rol asignado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
             }
         }
 
