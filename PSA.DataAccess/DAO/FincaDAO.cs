@@ -311,47 +311,13 @@ WHERE IdFinca = @IdFinca";
                 command.Parameters.AddWithValue("@FechaActualizacion", finca.FechaActualizacion);
             }
 
-            public async Task<int> CrearFincaAsync(RegistrarFincaDTO dto)
+        public async Task<int> CrearFincaAsync(RegistrarFincaDTO dto)
         {
-            const string sql = @"
-INSERT INTO Fincas
-(
-    IdPropietario,
-    NombreFinca,
-    Provincia,
-    Canton,
-    Distrito,
-    DireccionExacta,
-    Latitud,
-    Longitud,
-    Hectareas,
-    Vegetacion,
-    TieneRecursosHidricos,
-    UsoSuelo,
-    Pendiente,
-    EstadoFinca
-)
-VALUES
-(
-    @IdPropietario,
-    @NombreFinca,
-    @Provincia,
-    @Canton,
-    @Distrito,
-    @DireccionExacta,
-    @Latitud,
-    @Longitud,
-    @Hectareas,
-    @Vegetacion,
-    @TieneRecursosHidricos,
-    @UsoSuelo,
-    @Pendiente,
-    'Registrada'
-);
-SELECT CAST(SCOPE_IDENTITY() AS INT);";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Fincas_Registrar", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
             command.Parameters.AddWithValue("@NombreFinca", dto.NombreFinca);
             command.Parameters.AddWithValue("@Provincia", dto.Provincia);
@@ -363,6 +329,9 @@ SELECT CAST(SCOPE_IDENTITY() AS INT);";
             command.Parameters.AddWithValue("@Hectareas", dto.Hectareas);
             command.Parameters.AddWithValue("@Vegetacion", dto.Vegetacion);
             command.Parameters.AddWithValue("@TieneRecursosHidricos", dto.TieneRecursosHidricos);
+            command.Parameters.AddWithValue("@TieneRiosOQuebradas", dto.TieneRiosOQuebradas);
+            command.Parameters.AddWithValue("@TieneNacientes", dto.TieneNacientes);
+            command.Parameters.AddWithValue("@CantidadNacientes", dto.CantidadNacientes);
             command.Parameters.AddWithValue("@UsoSuelo", dto.UsoSuelo);
             command.Parameters.AddWithValue("@Pendiente", dto.Pendiente);
 
@@ -373,26 +342,11 @@ SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
         public async Task<bool> ActualizarFincaAsync(int idFinca, RegistrarFincaDTO dto)
         {
-            const string sql = @"
-UPDATE Fincas
-SET NombreFinca = @NombreFinca,
-    Provincia = @Provincia,
-    Canton = @Canton,
-    Distrito = @Distrito,
-    DireccionExacta = @DireccionExacta,
-    Latitud = @Latitud,
-    Longitud = @Longitud,
-    Hectareas = @Hectareas,
-    Vegetacion = @Vegetacion,
-    TieneRecursosHidricos = @TieneRecursosHidricos,
-    UsoSuelo = @UsoSuelo,
-    Pendiente = @Pendiente,
-    FechaActualizacion = SYSDATETIME()
-WHERE IdFinca = @IdFinca
-  AND IdPropietario = @IdPropietario;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Fincas_Actualizar", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdFinca", idFinca);
             command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
             command.Parameters.AddWithValue("@NombreFinca", dto.NombreFinca);
@@ -405,42 +359,41 @@ WHERE IdFinca = @IdFinca
             command.Parameters.AddWithValue("@Hectareas", dto.Hectareas);
             command.Parameters.AddWithValue("@Vegetacion", dto.Vegetacion);
             command.Parameters.AddWithValue("@TieneRecursosHidricos", dto.TieneRecursosHidricos);
+            command.Parameters.AddWithValue("@TieneRiosOQuebradas", dto.TieneRiosOQuebradas);
+            command.Parameters.AddWithValue("@TieneNacientes", dto.TieneNacientes);
+            command.Parameters.AddWithValue("@CantidadNacientes", dto.CantidadNacientes);
             command.Parameters.AddWithValue("@UsoSuelo", dto.UsoSuelo);
             command.Parameters.AddWithValue("@Pendiente", dto.Pendiente);
 
             await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+            var filasAfectadas = Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
+            return filasAfectadas > 0;
         }
 
         public async Task<bool> EliminarFincaAsync(int idFinca, int idPropietario)
         {
-            const string sql = @"
-DELETE FROM Fincas
-WHERE IdFinca = @IdFinca
-  AND IdPropietario = @IdPropietario;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Fincas_Eliminar", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdFinca", idFinca);
             command.Parameters.AddWithValue("@IdPropietario", idPropietario);
 
             await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+            var filasAfectadas = Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
+            return filasAfectadas > 0;
         }
 
         public async Task<List<string>> ObtenerCatalogoFactorAsync(string tipoFactor)
         {
-            const string sql = @"
-SELECT Valor
-FROM CatalogoFincaValores
-WHERE TipoCatalogo = @TipoCatalogo
-  AND Activo = 1
-ORDER BY OrdenVisual, Valor;";
-
             var resultados = new List<string>();
 
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Fincas_CatalogoValores", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@TipoCatalogo", tipoFactor);
 
             await connection.OpenAsync();

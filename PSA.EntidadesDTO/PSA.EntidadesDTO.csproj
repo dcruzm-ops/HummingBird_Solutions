@@ -23,6 +23,7 @@
     <Compile Include="DTOs\Fincas\FincaDTO.cs" />
     <Compile Include="DTOs\Fincas\FincaEvidenciaDTO.cs" />
     <Compile Include="DTOs\InicioSesionDTO.cs" />
+    <Compile Include="DTOs\Landing\LandingContenidoDTO.cs" />
     <Compile Include="DTOs\Notificaciones\NotificacionDTO.cs" />
     <Compile Include="DTOs\Pagos\ConfiguracionPagoDTO.cs" />
     <Compile Include="DTOs\Pagos\CuentaBancariaDTO.cs" />
@@ -39,6 +40,7 @@
     <Compile Include="DTOs\RespuestaInicioSesionDTO.cs" />
     <Compile Include="DTOs\RestablecerContrasenaDTO.cs" />
     <Compile Include="DTOs\Usuarios\RolDTO.cs" />
+    <Compile Include="DTOs\Usuarios\AsignarRolUsuarioDTO.cs" />
     <Compile Include="DTOs\Usuarios\TokenRecuperacionDTO.cs" />
     <Compile Include="DTOs\Usuarios\UsuarioDTO.cs" />
     <Compile Include="DTOs\ValidarTokenRecuperacionDTO.cs" />

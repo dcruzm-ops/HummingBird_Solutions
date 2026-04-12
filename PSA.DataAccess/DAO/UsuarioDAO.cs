@@ -16,32 +16,11 @@ namespace PSA.DataAccess.DAO
 
         public async Task<int> CrearUsuarioAsync(Usuario usuario)
         {
-            const string sql = @"
-INSERT INTO Usuarios
-(
-    NombreCompleto,
-    Email,
-    PasswordHash,
-    IdRol,
-    Estado,
-    FechaCreacion,
-    UltimoAcceso
-)
-VALUES
-(
-    @NombreCompleto,
-    @Email,
-    @PasswordHash,
-    @IdRol,
-    @Estado,
-    @FechaCreacion,
-    @UltimoAcceso
-);
-
-SELECT CAST(SCOPE_IDENTITY() AS INT);";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_RegistrarUsuario", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
 
             command.Parameters.AddWithValue("@NombreCompleto", usuario.NombreCompleto);
             command.Parameters.AddWithValue("@Email", usuario.Email);
@@ -59,21 +38,11 @@ SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
         public async Task<Usuario?> ObtenerPorEmailAsync(string email)
         {
-            const string sql = @"
-SELECT TOP 1
-    IdUsuario,
-    NombreCompleto,
-    Email,
-    PasswordHash,
-    IdRol,
-    Estado,
-    FechaCreacion,
-    UltimoAcceso
-FROM Usuarios
-WHERE Email = @Email;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_ObtenerUsuarioPorEmail", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
 
             command.Parameters.AddWithValue("@Email", email);
 
@@ -101,21 +70,11 @@ WHERE Email = @Email;";
 
         public async Task<Usuario?> ObtenerPorIdAsync(int idUsuario)
         {
-            const string sql = @"
-SELECT TOP 1
-    IdUsuario,
-    NombreCompleto,
-    Email,
-    PasswordHash,
-    IdRol,
-    Estado,
-    FechaCreacion,
-    UltimoAcceso
-FROM Usuarios
-WHERE IdUsuario = @IdUsuario;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_ObtenerUsuarioPorId", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
 
             await connection.OpenAsync();
@@ -139,13 +98,11 @@ WHERE IdUsuario = @IdUsuario;";
 
         public async Task<bool> ExisteRolAsync(int idRol)
         {
-            const string sql = @"
-SELECT 1
-FROM Roles
-WHERE IdRol = @IdRol;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_ExisteRol", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdRol", idRol);
 
             await connection.OpenAsync();
@@ -157,18 +114,16 @@ WHERE IdRol = @IdRol;";
 
         public async Task ActualizarPasswordHashPorEmailAsync(string email, string passwordHash)
         {
-            const string sql = @"
-UPDATE Usuarios
-SET PasswordHash = @PasswordHash
-WHERE Email = @Email;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_ActualizarPasswordHashPorEmail", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@PasswordHash", passwordHash);
             command.Parameters.AddWithValue("@Email", email);
 
             await connection.OpenAsync();
-            var filas = await command.ExecuteNonQueryAsync();
+            var filas = Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
 
             if (filas <= 0)
             {
@@ -178,18 +133,35 @@ WHERE Email = @Email;";
 
         public async Task ActualizarUltimoAccesoAsync(int idUsuario, DateTime fechaUltimoAcceso)
         {
-            const string sql = @"
-UPDATE Usuarios
-SET UltimoAcceso = @UltimoAcceso
-WHERE IdUsuario = @IdUsuario;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_ActualizarUltimoAcceso", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@UltimoAcceso", fechaUltimoAcceso);
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
 
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task AsignarRolAsync(int idUsuario, int idRol)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("dbo.SP_Usuarios_AsignarRol", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+            command.Parameters.AddWithValue("@IdRol", idRol);
+
+            await connection.OpenAsync();
+            var filas = Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
+            if (filas <= 0)
+            {
+                throw new InvalidOperationException("No se pudo asignar el rol al usuario indicado.");
+            }
         }
     }
 }

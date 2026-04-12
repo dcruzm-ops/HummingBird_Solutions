@@ -23,6 +23,7 @@
 		<Compile Include="DAO\ReportesDAO.cs" />
 		<Compile Include="DAO\TokenRecuperacionDAO.cs" />
 		<Compile Include="DAO\UsuarioDAO.cs" />
+		<Compile Include="DAO\LandingDAO.cs" />
 		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
 	</ItemGroup>

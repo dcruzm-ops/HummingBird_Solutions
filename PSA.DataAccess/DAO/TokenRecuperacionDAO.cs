@@ -16,16 +16,11 @@ namespace PSA.DataAccess.DAO
 
         public async Task InvalidarTokensActivosPorUsuarioAsync(int idUsuario)
         {
-            const string sql = @"
-UPDATE TokensRecuperacion
-SET Usado = 1,
-    FechaUso = SYSDATETIME()
-WHERE IdUsuario = @IdUsuario
-  AND Usado = 0
-  AND FechaExpiracion > SYSDATETIME();";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_InvalidarTokensActivos", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
@@ -33,13 +28,11 @@ WHERE IdUsuario = @IdUsuario
 
         public async Task<int> CrearTokenAsync(int idUsuario, string token, DateTime fechaExpiracionUtc)
         {
-            const string sql = @"
-INSERT INTO TokensRecuperacion (IdUsuario, Token, FechaExpiracion, Usado)
-VALUES (@IdUsuario, @Token, @FechaExpiracion, 0);
-SELECT CAST(SCOPE_IDENTITY() AS INT);";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_CrearTokenRecuperacion", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdUsuario", idUsuario);
             command.Parameters.AddWithValue("@Token", token);
             command.Parameters.AddWithValue("@FechaExpiracion", fechaExpiracionUtc);
@@ -50,15 +43,11 @@ SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
         public async Task<TokenRecuperacion?> ObtenerTokenVigenteAsync(string token)
         {
-            const string sql = @"
-SELECT TOP 1 IdToken, IdUsuario, Token, FechaCreacion, FechaExpiracion, Usado, FechaUso
-FROM TokensRecuperacion
-WHERE Token = @Token
-  AND Usado = 0
-  AND FechaExpiracion > SYSDATETIME();";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_ObtenerTokenVigente", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@Token", token);
             await connection.OpenAsync();
             using var reader = await command.ExecuteReaderAsync();
@@ -82,14 +71,11 @@ WHERE Token = @Token
 
         public async Task MarcarTokenComoUsadoAsync(int idToken)
         {
-            const string sql = @"
-UPDATE TokensRecuperacion
-SET Usado = 1,
-    FechaUso = SYSDATETIME()
-WHERE IdToken = @IdToken;";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_Auth_MarcarTokenComoUsado", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@IdToken", idToken);
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
