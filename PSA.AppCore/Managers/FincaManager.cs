@@ -19,18 +19,25 @@ public class FincaManager
 
     public async Task<int> RegistrarFincaAsync(RegistrarFincaDTO dto)
     {
-        var idFinca = await _fincaDao.CrearFincaAsync(dto);
-
         try
         {
-            await _evaluacionTecnicaManager.CrearPendientePorNuevaFincaAsync(idFinca);
+            var idFinca = await _fincaDao.CrearFincaAsync(dto);
+
+            try
+            {
+                await _evaluacionTecnicaManager.CrearPendientePorNuevaFincaAsync(idFinca);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"No se pudo crear la evaluación técnica pendiente para la finca {idFinca}: {ex.Message}");
+            }
+
+            return idFinca;
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"No se pudo crear la evaluación técnica pendiente para la finca {idFinca}: {ex.Message}");
+            throw new InvalidOperationException($"No se pudo registrar la finca: {ex.Message}", ex);
         }
-
-        return idFinca;
     }
 
     public Task<bool> ActualizarFincaAsync(int idFinca, RegistrarFincaDTO dto) => _fincaDao.ActualizarFincaAsync(idFinca, dto);
