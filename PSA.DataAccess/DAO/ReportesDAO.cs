@@ -193,26 +193,28 @@ ORDER BY COALESCE(e.FechaDecision, e.FechaVisita) DESC, e.IdEvaluacion DESC;";
         command.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
         command.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
         command.Parameters.AddWithValue("@Mes", (object?)filtro.Mes ?? DBNull.Value);
-        using var reader = await command.ExecuteReaderAsync();
-        while (await reader.ReadAsync())
+        using (var reader = await command.ExecuteReaderAsync())
         {
-            var item = new ItemEvaluacionIngenieroDTO
+            while (await reader.ReadAsync())
             {
-                IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
-                IdIngeniero = reader["IdIngeniero"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
-                Ingeniero = reader["Ingeniero"]?.ToString() ?? string.Empty,
-                EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
-                DecisionTecnica = reader["DecisionTecnica"] as string,
-                FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
-                FechaDecision = reader["FechaDecision"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaDecision")),
-                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
-                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
-                Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
-                Canton = reader["Canton"]?.ToString() ?? string.Empty,
-                Distrito = reader["Distrito"]?.ToString() ?? string.Empty
-            };
+                var item = new ItemEvaluacionIngenieroDTO
+                {
+                    IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
+                    IdIngeniero = reader["IdIngeniero"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
+                    Ingeniero = reader["Ingeniero"]?.ToString() ?? string.Empty,
+                    EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
+                    DecisionTecnica = reader["DecisionTecnica"] as string,
+                    FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
+                    FechaDecision = reader["FechaDecision"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaDecision")),
+                    IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                    NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                    Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
+                    Canton = reader["Canton"]?.ToString() ?? string.Empty,
+                    Distrito = reader["Distrito"]?.ToString() ?? string.Empty
+                };
 
-            resultado.Evaluaciones.Add(item);
+                resultado.Evaluaciones.Add(item);
+            }
         }
 
         resultado.Total = resultado.Evaluaciones.Count;
