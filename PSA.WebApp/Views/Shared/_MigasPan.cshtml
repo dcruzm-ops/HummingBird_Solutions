@@ -1,10 +1,13 @@
 @{
+    var inicioTexto = ViewBag.BreadcrumbInicioTexto as string ?? "Inicio";
+    var inicioControlador = ViewBag.BreadcrumbInicioControlador as string ?? "Dashboard";
+    var inicioAccion = ViewBag.BreadcrumbInicioAccion as string ?? "Index";
     var padreTexto = ViewBag.BreadcrumbPadreTexto as string;
     var padreUrl = ViewBag.BreadcrumbPadreUrl as string;
     var actual = ViewBag.BreadcrumbActual as string ?? ViewBag.TituloPagina as string ?? "Página";
 }
 <nav class="migas-pan" aria-label="Migas de pan">
-    <a asp-controller="Home" asp-action="Index">Inicio</a>
+    <a asp-controller="@inicioControlador" asp-action="@inicioAccion">@inicioTexto</a>
     @if (!string.IsNullOrWhiteSpace(padreTexto) && !string.IsNullOrWhiteSpace(padreUrl))
     {
         <span>/</span>

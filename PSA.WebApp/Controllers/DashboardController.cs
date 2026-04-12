@@ -17,6 +17,19 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpGet]
+        public IActionResult Index()
+        {
+            var rol = User.FindFirstValue(ClaimTypes.Role);
+            return rol switch
+            {
+                "1" => RedirectToAction(nameof(Administrador)),
+                "3" => RedirectToAction(nameof(Ingeniero)),
+                "2" => RedirectToAction(nameof(Dueno)),
+                _ => RedirectToAction("IniciarSesion", "Autenticacion")
+            };
+        }
+
+        [HttpGet]
         [Authorize(Roles = "2")]
         public async Task<IActionResult> Dueno()
         {

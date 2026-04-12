@@ -1,0 +1,15 @@
+@model PSA.WebApp.Models.ReporteAdminFincasEstadoViewModel
+
+<section class="seccion-pagina">
+    <h2>Fincas por estado</h2>
+
+    <table class="tabla-base">
+        <thead><tr><th>Estado de finca</th><th>Cantidad</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr><td>@i.EstadoFinca</td><td>@i.Cantidad</td></tr>
+            }
+        </tbody>
+    </table>
+</section>
