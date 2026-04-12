@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return document.getElementById(id) || null;
     }
 
-    var paisInput = obtenerCampo("paisSeleccionado");
+    var paisInput = obtenerCampo("paisInput");
     var provinciaInput = obtenerCampo("provinciaInput");
     var cantonInput = obtenerCampo("cantonInput");
     var distritoInput = obtenerCampo("distritoInput");
@@ -81,10 +81,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     }
-
-    var mapaContenedor = document.getElementById("mapaUbicacionFinca");
-    var mapa = null;
-    var marcador = null;
 
     function setCoordenadas(latitud, longitud) {
         var lat = Number(latitud);

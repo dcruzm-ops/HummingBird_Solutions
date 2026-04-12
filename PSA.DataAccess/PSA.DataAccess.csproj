@@ -20,6 +20,7 @@
 		<Compile Include="DAO\AuditoriaLogDAO.cs" />
 		<Compile Include="DAO\EvaluacionTecnicaDAO.cs" />
 		<Compile Include="DAO\RecuperacionContrasenaDAO.cs" />
+		<Compile Include="DAO\ReportesDAO.cs" />
 		<Compile Include="DAO\TokenRecuperacionDAO.cs" />
 		<Compile Include="DAO\UsuarioDAO.cs" />
 		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
