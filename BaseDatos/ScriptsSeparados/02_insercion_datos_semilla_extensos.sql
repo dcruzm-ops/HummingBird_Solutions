@@ -33,6 +33,27 @@ BEGIN TRY
         SET @i += 1;
     END
 
+    DECLARE @Ubicaciones TABLE
+    (
+        IdOrden INT IDENTITY(1,1) PRIMARY KEY,
+        Provincia VARCHAR(100),
+        Canton VARCHAR(100),
+        Distrito VARCHAR(100),
+        Latitud DECIMAL(10,7),
+        Longitud DECIMAL(10,7)
+    );
+
+    INSERT INTO @Ubicaciones (Provincia, Canton, Distrito, Latitud, Longitud)
+    VALUES
+        ('San José', 'Pérez Zeledón', 'General', 9.3731200, -83.7045100),
+        ('Cartago', 'Turrialba', 'Santa Cruz', 9.8965400, -83.6082300),
+        ('Alajuela', 'San Carlos', 'Quesada', 10.3238100, -84.4271400),
+        ('Puntarenas', 'Corredores', 'Corredor', 8.6402400, -82.9467600),
+        ('Puntarenas', 'Buenos Aires', 'Buenos Aires', 9.1650300, -83.3341700),
+        ('Guanacaste', 'Nandayure', 'Carmona', 9.8664000, -85.2506000),
+        ('Limón', 'Talamanca', 'Bratsi', 9.6201400, -82.8701400),
+        ('Heredia', 'Sarapiquí', 'Puerto Viejo', 10.4400100, -84.0021900);
+
     SET @i = 1;
     WHILE @i <= 20
     BEGIN
@@ -44,6 +65,21 @@ BEGIN TRY
         DECLARE @idEval INT;
         DECLARE @idCuenta INT;
         DECLARE @idConfig INT;
+        DECLARE @idxUbicacion INT = ((@i - 1) % 8) + 1;
+        DECLARE @provincia VARCHAR(100);
+        DECLARE @canton VARCHAR(100);
+        DECLARE @distrito VARCHAR(100);
+        DECLARE @latitudBase DECIMAL(10,7);
+        DECLARE @longitudBase DECIMAL(10,7);
+
+        SELECT
+            @provincia = Provincia,
+            @canton = Canton,
+            @distrito = Distrito,
+            @latitudBase = Latitud,
+            @longitudBase = Longitud
+        FROM @Ubicaciones
+        WHERE IdOrden = @idxUbicacion;
 
         IF NOT EXISTS (SELECT 1 FROM dbo.Usuarios WHERE Email = @emailProp)
             INSERT INTO dbo.Usuarios (NombreCompleto, Email, PasswordHash, IdRol, Estado)
@@ -62,12 +98,12 @@ BEGIN TRY
             VALUES (
                 @idProp,
                 CONCAT('Finca ', FORMAT(@i,'00')),
-                CASE WHEN @i % 4 = 0 THEN 'Puntarenas' WHEN @i % 4 = 1 THEN 'San José' WHEN @i % 4 = 2 THEN 'Alajuela' ELSE 'Cartago' END,
-                CONCAT('Canton ', @i),
-                CONCAT('Distrito ', @i),
+                @provincia,
+                @canton,
+                @distrito,
                 CONCAT('Dirección finca ', @i),
-                9.0 + (@i * 0.03),
-                -84.0 + (@i * 0.02),
+                @latitudBase + (@i * 0.001),
+                @longitudBase + (@i * 0.001),
                 10 + @i,
                 CASE WHEN @i % 4 = 0 THEN 'Bosque primario' WHEN @i % 4 = 1 THEN 'Bosque secundario' WHEN @i % 4 = 2 THEN 'Plantación forestal' ELSE 'Pasto' END,
                 CASE WHEN @i % 2 = 0 THEN 1 ELSE 0 END,

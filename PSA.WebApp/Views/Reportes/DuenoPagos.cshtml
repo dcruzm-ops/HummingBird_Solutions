@@ -1,13 +1,73 @@
 @model PSA.WebApp.Models.ReporteDuenoPagosViewModel
-<section class="seccion-pagina"><h2>Pagos del dueño</h2>
-<form method="get" class="seccion-formulario"><div class="grid-tres-columnas">
-<div class="campo-formulario"><label>Año</label><input name="anio" type="number" value="@Model.Anio"/></div>
-<div class="campo-formulario"><label>Mes</label><input name="mes" type="number" min="1" max="12" value="@Model.Mes"/></div>
-<div class="campo-formulario"><label>Estado cuota</label><select name="estadoCuota"><option value="">Todas</option><option value="Pendiente" selected="@(Model.EstadoCuota == "Pendiente")">Pendiente</option><option value="Pagada" selected="@(Model.EstadoCuota == "Pagada")">Pagada</option></select></div>
-</div><button class="boton-primario" type="submit">Filtrar</button></form>
-<h3>Cuotas</h3><table class="tabla-base"><thead><tr><th>Finca</th><th>Año/Mes</th><th>Estado</th><th>Monto</th></tr></thead><tbody>
-@foreach (var i in Model.ReportePagos.PagosMensuales){<tr><td>@i.NombreFinca</td><td>@i.Anio/@i.Mes</td><td>@i.EstadoCuota</td><td>@i.MontoMensualCalculado.ToString("N2")</td></tr>}
-</tbody></table>
-<h3>Transacciones</h3><table class="tabla-base"><thead><tr><th>Fecha</th><th>Finca</th><th>Monto</th><th>Estado</th></tr></thead><tbody>
-@foreach (var i in Model.Transacciones){<tr><td>@i.FechaTransaccion.ToString("yyyy-MM-dd")</td><td>@i.NombreFinca</td><td>@i.MontoTotal.ToString("N2")</td><td>@i.EstadoTransaccion</td></tr>}
-</tbody></table></section>
+
+<section class="seccion-pagina">
+    <h2>Pagos del dueño</h2>
+
+    <form method="get" class="seccion-formulario">
+        <div class="grid-tres-columnas">
+            <div class="campo-formulario">
+                <label>Año</label>
+                <input name="anio" type="number" value="@Model.Anio" />
+            </div>
+            <div class="campo-formulario">
+                <label>Mes</label>
+                <select name="mes">
+                    <option value="">Todos</option>
+                    @for (var m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(Model.Mes == m)">@m</option>
+                    }
+                </select>
+            </div>
+            <div class="campo-formulario">
+                <label>Estado de cuota</label>
+                <select name="estadoCuota">
+                    <option value="">Todas</option>
+                    <option value="Programada" selected="@(Model.EstadoCuota == "Programada")">Programada</option>
+                    <option value="Pagada" selected="@(Model.EstadoCuota == "Pagada")">Pagada</option>
+                    <option value="Vencida" selected="@(Model.EstadoCuota == "Vencida")">Vencida</option>
+                </select>
+            </div>
+        </div>
+        <button class="boton-primario" type="submit">Filtrar</button>
+    </form>
+
+    <h3>Cuotas</h3>
+    <table class="tabla-base">
+        <thead><tr><th>Finca</th><th>Año/Mes</th><th>Estado</th><th>Monto</th><th>Próxima / ejecutada</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.ReportePagos.PagosMensuales)
+            {
+                <tr>
+                    <td>@i.NombreFinca</td>
+                    <td>@i.Anio/@i.Mes</td>
+                    <td>@i.EstadoCuota</td>
+                    <td>@i.MontoMensualCalculado.ToString("N2")</td>
+                    <td>@(i.FechaPago?.ToString("yyyy-MM-dd") ?? i.FechaProgramada.ToString("yyyy-MM-dd"))</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Detalle del cálculo (tipo factura)</h3>
+    <table class="tabla-base">
+        <thead><tr><th>Plan</th><th>Factor</th><th>Valor</th><th>% Ajuste</th></tr></thead>
+        <tbody>
+            @foreach (var a in Model.ReportePagos.AjustesAplicados)
+            {
+                <tr><td>@a.IdPlanPago</td><td>@a.TipoFactor</td><td>@a.ValorFactor</td><td>@a.PorcentajeAjuste.ToString("N2")%</td></tr>
+            }
+        </tbody>
+    </table>
+
+    <h3>Transacciones</h3>
+    <table class="tabla-base">
+        <thead><tr><th>Fecha</th><th>Finca</th><th>Monto</th><th>Estado</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Transacciones)
+            {
+                <tr><td>@i.FechaTransaccion.ToString("yyyy-MM-dd")</td><td>@i.NombreFinca</td><td>@i.MontoTotal.ToString("N2")</td><td>@i.EstadoTransaccion</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

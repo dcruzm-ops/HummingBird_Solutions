@@ -14,6 +14,7 @@ public class ItemPagoMensualDuenoDTO
     public int Anio { get; set; }
     public int Mes { get; set; }
     public DateTime FechaProgramada { get; set; }
+    public DateTime? FechaPago { get; set; }
     public decimal MontoBaseMensual { get; set; }
     public decimal PorcentajeAjusteTotal { get; set; }
     public decimal MontoMensualCalculado { get; set; }
@@ -69,6 +70,7 @@ public class ReporteEvaluacionesIngenieroDTO
     public int Total { get; set; }
     public int TotalCalifica { get; set; }
     public int TotalNoCalifica { get; set; }
+    public decimal TotalHectareasEvaluadas { get; set; }
     public List<ItemEvaluacionIngenieroDTO> Evaluaciones { get; set; } = new();
 }
 

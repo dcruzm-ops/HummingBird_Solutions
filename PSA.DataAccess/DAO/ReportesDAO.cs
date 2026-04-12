@@ -15,7 +15,7 @@ public class ReportesDAO
     public async Task<ReportePagosDuenoDTO> ObtenerPagosDuenoAsync(int idPropietario, FiltroReporteDTO filtro)
     {
         const string sqlPagosVista = @"
-SELECT IdPlanPago, IdFinca, NombreFinca, Anio, Mes, FechaProgramada,
+SELECT IdPlanPago, IdFinca, NombreFinca, Anio, Mes, FechaProgramada, FechaPago,
        MontoBaseMensual, PorcentajeAjusteTotal, MontoMensualCalculado,
        MontoPendiente, EstadoCuota
 FROM dbo.vw_ReportePagosMensualesDueno
@@ -26,7 +26,7 @@ ORDER BY Anio DESC, Mes DESC, IdPlanPago DESC;";
 
         const string sqlPagosFallback = @"
 SELECT
-    pp.IdPlanPago, f.IdFinca, f.NombreFinca, pp.Anio, cp.Mes, cp.FechaProgramada,
+    pp.IdPlanPago, f.IdFinca, f.NombreFinca, pp.Anio, cp.Mes, cp.FechaProgramada, cp.FechaPago,
     pp.MontoBaseMensual, pp.PorcentajeAjusteTotal, cp.MontoProgramado AS MontoMensualCalculado,
     cp.MontoPendiente, cp.EstadoCuota
 FROM dbo.PlanesPago pp
@@ -79,6 +79,7 @@ ORDER BY pp.IdPlanPago DESC, d.TipoFactor;";
                     Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
                     Mes = reader.GetInt32(reader.GetOrdinal("Mes")),
                     FechaProgramada = reader.GetDateTime(reader.GetOrdinal("FechaProgramada")),
+                    FechaPago = reader["FechaPago"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaPago")),
                     MontoBaseMensual = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")),
                     PorcentajeAjusteTotal = reader.GetDecimal(reader.GetOrdinal("PorcentajeAjusteTotal")),
                     MontoMensualCalculado = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
@@ -217,8 +218,28 @@ ORDER BY COALESCE(e.FechaDecision, e.FechaVisita) DESC, e.IdEvaluacion DESC;";
         resultado.Total = resultado.Evaluaciones.Count;
         resultado.TotalCalifica = resultado.Evaluaciones.Count(x => string.Equals(x.DecisionTecnica, "Califica", StringComparison.OrdinalIgnoreCase));
         resultado.TotalNoCalifica = resultado.Evaluaciones.Count(x => string.Equals(x.DecisionTecnica, "No Califica", StringComparison.OrdinalIgnoreCase));
+        resultado.TotalHectareasEvaluadas = await ObtenerHectareasEvaluadasAsync(connection, idIngeniero, filtro);
 
         return resultado;
+    }
+
+    private static async Task<decimal> ObtenerHectareasEvaluadasAsync(SqlConnection connection, int idIngeniero, FiltroReporteDTO filtro)
+    {
+        const string sql = @"
+SELECT ISNULL(SUM(COALESCE(e.HectareasAjustadas, f.Hectareas)), 0)
+FROM dbo.EvaluacionesTecnicas e
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+WHERE e.IdIngeniero = @IdIngeniero
+  AND e.EstadoEvaluacion IN ('Evaluada – Califica', 'Evaluada – No califica', 'Finalizada')
+  AND (@Anio IS NULL OR YEAR(COALESCE(e.FechaDecision, e.FechaVisita)) = @Anio)
+  AND (@Mes IS NULL OR MONTH(COALESCE(e.FechaDecision, e.FechaVisita)) = @Mes);";
+
+        using var cmd = new SqlCommand(sql, connection);
+        cmd.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
+        cmd.Parameters.AddWithValue("@Anio", (object?)filtro.Anio ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@Mes", (object?)filtro.Mes ?? DBNull.Value);
+        var scalar = await cmd.ExecuteScalarAsync();
+        return scalar == null || scalar == DBNull.Value ? 0m : Convert.ToDecimal(scalar);
     }
 
     public async Task<List<ItemPagoUbicacionDTO>> ObtenerPagosPorUbicacionAsync(FiltroReporteDTO filtro)

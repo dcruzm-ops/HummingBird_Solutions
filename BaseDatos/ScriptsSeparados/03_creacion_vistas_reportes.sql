@@ -41,6 +41,7 @@ SELECT
     pp.Anio,
     cp.Mes,
     cp.FechaProgramada,
+    cp.FechaPago,
     pp.MontoBaseMensual,
     pp.PorcentajeAjusteTotal,
     cp.MontoProgramado AS MontoMensualCalculado,

@@ -1,10 +1,59 @@
 @model PSA.WebApp.Models.ReporteIngenieroEvaluacionesViewModel
-<section class="seccion-pagina"><h2>Evaluaciones del ingeniero</h2>
-<form method="get" class="seccion-formulario"><div class="grid-tres-columnas">
-<div class="campo-formulario"><label>Año</label><input name="anio" type="number" value="@Model.Anio"/></div>
-<div class="campo-formulario"><label>Mes</label><input name="mes" type="number" value="@Model.Mes"/></div>
-<div class="campo-formulario"><label>Estado</label><select name="estadoEvaluacion"><option value="">Todos</option><option value="Pendiente" selected="@(Model.EstadoEvaluacion == "Pendiente")">Pendiente</option><option value="En proceso" selected="@(Model.EstadoEvaluacion == "En proceso")">En proceso</option><option value="Evaluada - Califica" selected="@(Model.EstadoEvaluacion == "Evaluada - Califica")">Evaluada - Califica</option><option value="Evaluada - No califica" selected="@(Model.EstadoEvaluacion == "Evaluada - No califica")">Evaluada - No califica</option></select></div>
-</div><button class="boton-primario" type="submit">Filtrar</button></form>
-<table class="tabla-base"><thead><tr><th>Evaluación</th><th>Finca</th><th>Estado</th><th>Decisión</th><th>Fecha</th></tr></thead><tbody>
-@foreach (var i in Model.Reporte.Evaluaciones){<tr><td>@i.IdEvaluacion</td><td>@i.NombreFinca</td><td>@i.EstadoEvaluacion</td><td>@i.DecisionTecnica</td><td>@((i.FechaDecision??i.FechaVisita)?.ToString("yyyy-MM-dd"))</td></tr>}
-</tbody></table></section>
+
+<section class="seccion-pagina">
+    <h2>Evaluaciones del ingeniero</h2>
+
+    <form method="get" class="seccion-formulario">
+        <div class="grid-cuatro-columnas">
+            <div class="campo-formulario">
+                <label>Año</label>
+                <input name="anio" type="number" value="@Model.Anio" />
+            </div>
+            <div class="campo-formulario">
+                <label>Vista</label>
+                <select name="vistaPeriodo">
+                    <option value="Mensual" selected="@(Model.VistaPeriodo == "Mensual")">Mensual</option>
+                    <option value="Anual" selected="@(Model.VistaPeriodo == "Anual")">Anual</option>
+                </select>
+            </div>
+            <div class="campo-formulario">
+                <label>Mes</label>
+                <select name="mes">
+                    <option value="">Todos</option>
+                    @for (var m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(Model.Mes == m)">@m</option>
+                    }
+                </select>
+            </div>
+            <div class="campo-formulario">
+                <label>Estado</label>
+                <select name="estadoEvaluacion">
+                    <option value="">Todos</option>
+                    <option value="Pendiente" selected="@(Model.EstadoEvaluacion == "Pendiente")">Pendiente</option>
+                    <option value="En proceso" selected="@(Model.EstadoEvaluacion == "En proceso")">En proceso</option>
+                    <option value="Evaluada – Califica" selected="@(Model.EstadoEvaluacion == "Evaluada – Califica")">Evaluada – Califica</option>
+                    <option value="Evaluada – No califica" selected="@(Model.EstadoEvaluacion == "Evaluada – No califica")">Evaluada – No califica</option>
+                </select>
+            </div>
+        </div>
+        <button class="boton-primario" type="submit">Filtrar</button>
+    </form>
+
+    <div class="grid-tarjetas-kpi">
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.Total</strong><small>Fincas evaluadas (periodo)</small></article>
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.TotalHectareasEvaluadas.ToString("N2")</strong><small>Hectáreas evaluadas</small></article>
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.TotalCalifica</strong><small>Califica</small></article>
+        <article class="tarjeta-kpi"><strong>@Model.Reporte.TotalNoCalifica</strong><small>No califica</small></article>
+    </div>
+
+    <table class="tabla-base">
+        <thead><tr><th>Evaluación</th><th>Finca</th><th>Estado</th><th>Decisión</th><th>Fecha</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Reporte.Evaluaciones)
+            {
+                <tr><td>@i.IdEvaluacion</td><td>@i.NombreFinca</td><td>@i.EstadoEvaluacion</td><td>@i.DecisionTecnica</td><td>@((i.FechaDecision ?? i.FechaVisita)?.ToString("yyyy-MM-dd"))</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

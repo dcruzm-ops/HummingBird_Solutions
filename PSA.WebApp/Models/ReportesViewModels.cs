@@ -35,6 +35,7 @@ public class ReporteIngenieroEvaluacionesViewModel
 {
     public int? Anio { get; set; }
     public int? Mes { get; set; }
+    public string VistaPeriodo { get; set; } = "Mensual";
     public string? EstadoEvaluacion { get; set; }
     public ReporteEvaluacionesIngenieroDTO Reporte { get; set; } = new();
 }
@@ -65,8 +66,12 @@ public class ReporteAdminEvaluacionesViewModel
 
 public class ReporteAdminPagosViewModel
 {
-    public int? Anio { get; set; }
+    public int? AnioPlanes { get; set; }
+    public int? AnioUbicacion { get; set; }
     public string? EstadoCuotas { get; set; }
+    public string? Provincia { get; set; }
+    public string? Canton { get; set; }
+    public string? Distrito { get; set; }
     public List<ItemPagosAdminDTO> Planes { get; set; } = new();
     public List<ItemPagoUbicacionDTO> PagosPorUbicacion { get; set; } = new();
 }
@@ -77,4 +82,14 @@ public class ReporteAdminAuditoriaViewModel
     public string? Accion { get; set; }
     public int Top { get; set; } = 50;
     public List<ItemAuditoriaCriticaDTO> Items { get; set; } = new();
+}
+
+public class ReporteAdminFincasEstadoViewModel
+{
+    public List<ItemFincaEstadoAdminDTO> Items { get; set; } = new();
+}
+
+public class ReporteAdminResumenActividadViewModel
+{
+    public List<ItemResumenActividadDTO> Items { get; set; } = new();
 }

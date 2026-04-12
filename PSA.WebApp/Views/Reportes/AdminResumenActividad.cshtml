@@ -1,0 +1,15 @@
+@model PSA.WebApp.Models.ReporteAdminResumenActividadViewModel
+
+<section class="seccion-pagina">
+    <h2>Resumen de actividad del sistema</h2>
+
+    <table class="tabla-base">
+        <thead><tr><th>Indicador</th><th>Total</th></tr></thead>
+        <tbody>
+            @foreach (var i in Model.Items)
+            {
+                <tr><td>@i.Indicador</td><td>@i.Total</td></tr>
+            }
+        </tbody>
+    </table>
+</section>

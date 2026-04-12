@@ -74,11 +74,16 @@ public class ReportesController : Controller
     }
 
     [HttpGet, Authorize(Roles = "3")]
-    public async Task<IActionResult> IngenieroEvaluaciones(int? anio = null, int? mes = null, string? estadoEvaluacion = null)
+    public async Task<IActionResult> IngenieroEvaluaciones(int? anio = null, int? mes = null, string? estadoEvaluacion = null, string vistaPeriodo = "Mensual")
     {
         ConfigurarVistaBase("Evaluaciones en proceso/finalizadas", "Reporte de evaluaciones del ingeniero.");
         var idUsuario = ObtenerIdUsuario();
         var client = _httpClientFactory.CreateClient("AuthApi");
+        if (string.Equals(vistaPeriodo, "Anual", StringComparison.OrdinalIgnoreCase))
+        {
+            mes = null;
+        }
+
         var query = $"?anio={anio}&mes={mes}";
         var reporte = await client.GetFromJsonAsync<PSA.EntidadesDTO.DTOs.Reportes.ReporteEvaluacionesIngenieroDTO>($"api/Reportes/ingeniero/{idUsuario}/evaluaciones{query}") ?? new();
 
@@ -88,7 +93,14 @@ public class ReportesController : Controller
             reporte.Total = reporte.Evaluaciones.Count;
         }
 
-        return View(new ReporteIngenieroEvaluacionesViewModel { Anio = anio, Mes = mes, EstadoEvaluacion = estadoEvaluacion, Reporte = reporte });
+        return View(new ReporteIngenieroEvaluacionesViewModel
+        {
+            Anio = anio,
+            Mes = mes,
+            VistaPeriodo = vistaPeriodo,
+            EstadoEvaluacion = estadoEvaluacion,
+            Reporte = reporte
+        });
     }
 
     [HttpGet, Authorize(Roles = "3")]
@@ -133,19 +145,42 @@ public class ReportesController : Controller
     }
 
     [HttpGet, Authorize(Roles = "1")]
-    public async Task<IActionResult> AdminPagos(int? anio = null, string? estadoCuotas = null)
+    public async Task<IActionResult> AdminPagos(
+        int? anioPlanes = null,
+        string? estadoCuotas = null,
+        int? anioUbicacion = null,
+        string? provincia = null,
+        string? canton = null,
+        string? distrito = null)
     {
         ConfigurarVistaBase("Reporte de pagos", "Planes generados y estado de cuotas.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var planes = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagosAdminDTO>>($"api/Reportes/administrador/pagos?anio={anio}") ?? new();
-        var porUbicacion = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagoUbicacionDTO>>($"api/Reportes/administrador/pagos-ubicacion?anio={anio}") ?? new();
+        var planes = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagosAdminDTO>>($"api/Reportes/administrador/pagos?anio={anioPlanes}") ?? new();
+        var porUbicacion = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagoUbicacionDTO>>($"api/Reportes/administrador/pagos-ubicacion?anio={anioUbicacion}") ?? new();
 
         if (string.Equals(estadoCuotas, "Pendientes", StringComparison.OrdinalIgnoreCase))
             planes = planes.Where(x => x.CuotasPendientes > 0).ToList();
         else if (string.Equals(estadoCuotas, "Pagadas", StringComparison.OrdinalIgnoreCase))
             planes = planes.Where(x => x.CuotasPendientes == 0).ToList();
 
-        return View(new ReporteAdminPagosViewModel { Anio = anio, EstadoCuotas = estadoCuotas, Planes = planes, PagosPorUbicacion = porUbicacion });
+        if (!string.IsNullOrWhiteSpace(provincia))
+            porUbicacion = porUbicacion.Where(x => x.Provincia.Equals(provincia, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!string.IsNullOrWhiteSpace(canton))
+            porUbicacion = porUbicacion.Where(x => x.Canton.Equals(canton, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (!string.IsNullOrWhiteSpace(distrito))
+            porUbicacion = porUbicacion.Where(x => x.Distrito.Equals(distrito, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        return View(new ReporteAdminPagosViewModel
+        {
+            AnioPlanes = anioPlanes,
+            AnioUbicacion = anioUbicacion,
+            EstadoCuotas = estadoCuotas,
+            Provincia = provincia,
+            Canton = canton,
+            Distrito = distrito,
+            Planes = planes,
+            PagosPorUbicacion = porUbicacion
+        });
     }
 
     [HttpGet, Authorize(Roles = "1")]
@@ -159,6 +194,24 @@ public class ReportesController : Controller
         if (!string.IsNullOrWhiteSpace(accion)) items = items.Where(x => x.Accion.Equals(accion, StringComparison.OrdinalIgnoreCase)).ToList();
 
         return View(new ReporteAdminAuditoriaViewModel { Modulo = modulo, Accion = accion, Top = top, Items = items });
+    }
+
+    [HttpGet, Authorize(Roles = "1")]
+    public async Task<IActionResult> AdminFincasEstado()
+    {
+        ConfigurarVistaBase("Fincas por estado", "Resumen de fincas registradas, en proceso, aprobadas y rechazadas.");
+        var client = _httpClientFactory.CreateClient("AuthApi");
+        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaEstadoAdminDTO>>("api/Reportes/administrador/fincas-estado") ?? new();
+        return View(new ReporteAdminFincasEstadoViewModel { Items = items });
+    }
+
+    [HttpGet, Authorize(Roles = "1")]
+    public async Task<IActionResult> AdminResumenActividad()
+    {
+        ConfigurarVistaBase("Resumen de actividad", "Indicadores clave de actividad del sistema.");
+        var client = _httpClientFactory.CreateClient("AuthApi");
+        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemResumenActividadDTO>>("api/Reportes/administrador/resumen-actividad") ?? new();
+        return View(new ReporteAdminResumenActividadViewModel { Items = items });
     }
 
     private int ObtenerIdUsuario() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
@@ -191,7 +244,7 @@ public class ReportesController : Controller
         {
             "1" => "Administrador",
             "3" => "Ingeniero",
-            _ => "Dueno"
+            _ => "Dueño"
         };
     }
 }
