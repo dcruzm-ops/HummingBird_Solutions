@@ -25,38 +25,60 @@
     <nav class="menu-lateral" aria-label="Navegación principal">
         @if (rolActivo == "ingeniero")
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Dashboard</a>
-            <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Evaluaciones</a>
+            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Inicio</a>
+            <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Fincas por evaluar</a>
+            <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Evaluaciones técnicas</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Notificaciones</a>
+            <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
 
-            <p class="menu-lateral__seccion">Próximamente</p>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Visitas técnicas</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Fincas en proceso</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Renovaciones anuales</a>
+            <p class="menu-lateral__seccion">Acciones de evaluación</p>
+            <a class="item-menu" asp-controller="Evaluaciones" asp-action="FincasPendientes">Ver fincas pendientes</a>
+            <a class="item-menu" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion">Registrar evaluación</a>
+            <a class="item-menu" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Historial de evaluaciones</a>
+            <a class="item-menu" asp-controller="Reportes" asp-action="IngenieroPendientes">Evaluaciones pendientes</a>
+            <a class="item-menu" asp-controller="Reportes" asp-action="IngenieroEvaluaciones">Evaluaciones finalizadas</a>
         }
         else if (rolActivo == "administrador")
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Dashboard</a>
-            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Administración</a>
-            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Pagos</a>
-            <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
-
-            <p class="menu-lateral__seccion">Próximamente</p>
+            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Inicio</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Usuarios</a>
             <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Roles y permisos</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Catálogos</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Auditoría</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Fincas</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Evaluaciones</a>
+            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Configuración de pagos</a>
+            <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="AuditoriaLogs">Auditoría</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Notificaciones</a>
+            <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
+
+            <p class="menu-lateral__seccion">Administración</p>
+            <a class="item-menu" asp-controller="Administracion" asp-action="GestionUsuarios">Ver usuarios</a>
+            <a class="item-menu" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear usuario</a>
+            <a class="item-menu" asp-controller="Administracion" asp-action="GestionUsuarios">Asignar rol</a>
+            <a class="item-menu" asp-controller="Administracion" asp-action="ParametrosPago">Precio base y ajustes</a>
+            <a class="item-menu" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validación bancaria</a>
         }
         else
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Dueno">Dashboard</a>
+            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Dueno">Inicio</a>
             <a class="item-menu @(moduloActivo == "fincas" ? "activo" : string.Empty)" asp-controller="Fincas" asp-action="MisFincas">Mis fincas</a>
-            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="HistorialPagos">Pagos</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Cuenta bancaria</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
             <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
+            <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
 
-            <p class="menu-lateral__seccion">Próximamente</p>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Cuenta bancaria</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Planes de pago</a>
+            <p class="menu-lateral__seccion">Gestión de fincas</p>
+            <a class="item-menu" asp-controller="Fincas" asp-action="MisFincas">Ver mis fincas</a>
+            <a class="item-menu" asp-controller="Fincas" asp-action="RegistrarFinca">Registrar nueva finca</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Ver estado de finca</a>
+            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Editar finca (si aplica)</a>
+
+            <p class="menu-lateral__seccion">Reportes</p>
+            <a class="item-menu" asp-controller="Reportes" asp-action="DuenoFincas">Estado de mis solicitudes</a>
+            <a class="item-menu" asp-controller="Reportes" asp-action="DuenoFincas">Historial de fincas</a>
+            <a class="item-menu" asp-controller="Pagos" asp-action="HistorialPagos">Historial de pagos</a>
+            <a class="item-menu" asp-controller="Reportes" asp-action="DuenoPagos">Detalle de pagos por finca</a>
         }
 
         <form asp-controller="Autenticacion" asp-action="CerrarSesion" method="post" class="w-100">
