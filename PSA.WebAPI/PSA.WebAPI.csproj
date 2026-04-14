@@ -19,6 +19,7 @@
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Controllers\LandingController.cs" />
     <Compile Include="Controllers\ReportesController.cs" />
+    <Compile Include="Controllers\PerfilController.cs" />
     <Compile Include="Controllers\Middleware\ExceptionMiddleware.cs" />
     <Compile Include="Controllers\Models\ApiResponse.cs" />
     <Compile Include="Controllers\RecuperacionContrasenaController.cs" />

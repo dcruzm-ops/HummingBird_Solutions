@@ -39,6 +39,7 @@
     <Compile Include="DTOs\Reportes\ReportesDTO.cs" />
     <Compile Include="DTOs\RespuestaInicioSesionDTO.cs" />
     <Compile Include="DTOs\RestablecerContrasenaDTO.cs" />
+    <Compile Include="DTOs\Usuarios\MiPerfilDTO.cs" />
     <Compile Include="DTOs\Usuarios\RolDTO.cs" />
     <Compile Include="DTOs\Usuarios\AsignarRolUsuarioDTO.cs" />
     <Compile Include="DTOs\Usuarios\TokenRecuperacionDTO.cs" />
