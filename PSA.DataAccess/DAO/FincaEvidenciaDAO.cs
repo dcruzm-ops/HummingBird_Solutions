@@ -17,29 +17,11 @@ namespace PSA.DataAccess.DAO
 
         public async Task<int> CrearAsync(FincaEvidencia evidencia)
         {
-            const string sql = @"
-INSERT INTO FincaEvidencias
-(
-    IdFinca,
-    NombreArchivo,
-    RutaArchivo,
-    TipoArchivo,
-    FechaCarga,
-    CargadoPor
-)
-VALUES
-(
-    @IdFinca,
-    @NombreArchivo,
-    @RutaArchivo,
-    @TipoArchivo,
-    SYSDATETIME(),
-    @CargadoPor
-);
-SELECT CAST(SCOPE_IDENTITY() AS INT);";
-
             using var connection = _connectionFactory.CreateConnection();
-            using var command = new SqlCommand(sql, connection);
+            using var command = new SqlCommand("dbo.SP_FincaEvidencias_Crear", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
 
             command.Parameters.AddWithValue("@IdFinca", evidencia.FincaId);
             command.Parameters.AddWithValue("@NombreArchivo", evidencia.NombreArchivo);
