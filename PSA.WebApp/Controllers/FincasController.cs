@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.Fincas;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace PSA.WebApp.Controllers
 {
@@ -27,7 +29,7 @@ namespace PSA.WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RegistrarFinca(RegistrarFincaDTO dto)
+        public async Task<IActionResult> RegistrarFinca(RegistrarFincaDTO dto, List<IFormFile>? archivos)
         {
             CargarViewBag();
             dto.IdPropietario = ObtenerIdUsuarioSesion();
@@ -45,6 +47,17 @@ namespace PSA.WebApp.Controllers
                 TempData["MensajeError"] = "No fue posible registrar la finca.";
                 CargarCatalogosFormularioFinca();
                 return View(dto);
+            }
+
+            var idFinca = await ExtraerIdFincaAsync(response);
+
+            if (idFinca > 0 && archivos != null && archivos.Count > 0)
+            {
+                var evidenciaResponse = await SubirEvidenciasAsync(client, idFinca, dto.IdPropietario, archivos);
+                if (!evidenciaResponse)
+                {
+                    TempData["MensajeError"] = "La finca se registró, pero no fue posible subir las evidencias.";
+                }
             }
 
             TempData["MensajeExito"] = "Finca registrada correctamente.";
@@ -74,22 +87,113 @@ namespace PSA.WebApp.Controllers
             if ((id ?? 0) <= 0) return RedirectToAction(nameof(MisFincas));
 
             var client = _httpClientFactory.CreateClient("AuthApi");
-            var detalle = await client.GetFromJsonAsync<FincaDetalleDTO>($"api/Fincas/{id}/detalle?idPropietario={idPropietario}");
-            if (detalle == null)
+
+            FincaDetalleDTO? detalle;
+            try
             {
-                TempData["MensajeError"] = "No se encontró la finca solicitada.";
+                detalle = await client.GetFromJsonAsync<FincaDetalleDTO>($"api/Fincas/{id}/detalle?idPropietario={idPropietario}");
+                if (detalle == null)
+                {
+                    TempData["MensajeError"] = "No se encontró la finca solicitada.";
+                    return RedirectToAction(nameof(MisFincas));
+                }
+            }
+            catch (HttpRequestException)
+            {
+                TempData["MensajeError"] = "No fue posible conectarse con el API para cargar el detalle de la finca.";
+                return RedirectToAction(nameof(MisFincas));
+            }
+            catch (TaskCanceledException)
+            {
+                TempData["MensajeError"] = "La consulta del detalle de finca tardó demasiado. Intente nuevamente.";
+                return RedirectToAction(nameof(MisFincas));
+            }
+            catch (Exception)
+            {
+                TempData["MensajeError"] = "Ocurrió un error al cargar el detalle de la finca.";
                 return RedirectToAction(nameof(MisFincas));
             }
 
+            var evidencias = new List<FincaEvidenciaDTO>();
+            try
+            {
+                evidencias = await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/por-finca/{id}")
+                    ?? new List<FincaEvidenciaDTO>();
+            }
+            catch
+            {
+                // No se bloquea el render del detalle si falla la carga de evidencias.
+                TempData["MensajeError"] = "No fue posible cargar las evidencias de la finca en este momento.";
+            }
+
+            var baseAddress = client.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+            foreach (var evidencia in evidencias)
+            {
+                if (!string.IsNullOrWhiteSpace(evidencia.UrlDescarga) && evidencia.UrlDescarga.StartsWith('/'))
+                {
+                    evidencia.UrlDescarga = $"{baseAddress}{evidencia.UrlDescarga}";
+                }
+            }
+            ViewBag.Evidencias = evidencias;
+
             return View(detalle);
+        }
+
+        private static async Task<int> ExtraerIdFincaAsync(HttpResponseMessage response)
+        {
+            try
+            {
+                using var contenido = await response.Content.ReadAsStreamAsync();
+                using var documento = await JsonDocument.ParseAsync(contenido);
+                if (documento.RootElement.TryGetProperty("idFinca", out var idFincaLower))
+                {
+                    return idFincaLower.GetInt32();
+                }
+
+                if (documento.RootElement.TryGetProperty("IdFinca", out var idFincaUpper))
+                {
+                    return idFincaUpper.GetInt32();
+                }
+            }
+            catch
+            {
+                // Se ignora para no bloquear flujo principal de registro.
+            }
+
+            return 0;
+        }
+
+        private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idFinca, int idUsuario, List<IFormFile> archivos)
+        {
+            using var form = new MultipartFormDataContent();
+            form.Add(new StringContent(idFinca.ToString()), "idFinca");
+            form.Add(new StringContent(idUsuario.ToString()), "cargadoPor");
+
+            foreach (var archivo in archivos.Where(a => a != null && a.Length > 0))
+            {
+                var contenido = new StreamContent(archivo.OpenReadStream());
+                contenido.Headers.ContentType = new MediaTypeHeaderValue(archivo.ContentType ?? "application/octet-stream");
+                form.Add(contenido, "archivos", archivo.FileName);
+            }
+
+            var response = await client.PostAsync("api/FincaEvidencias/subir", form);
+            return response.IsSuccessStatusCode;
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
         private void CargarCatalogosFormularioFinca()
         {
-            ViewBag.OpcionesPendiente = new[] { "Baja", "Media", "Alta" };
-            ViewBag.OpcionesVegetacion = new[] { "Bosque", "Pasto", "Cultivo" };
-            ViewBag.OpcionesUsoSuelo = new[] { "Conservación", "Ganadería", "Agricultura" };
+            var pendientes = new[] { "Plana", "Inclinada", "Muy inclinada" };
+            var vegetaciones = new[] { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
+            var usosSuelo = new[] { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Mixto" };
+
+            ViewBag.OpcionesPendiente = pendientes;
+            ViewBag.OpcionesVegetacion = vegetaciones;
+            ViewBag.OpcionesUsoSuelo = usosSuelo;
+
+            ViewBag.CatalogoPendiente = pendientes;
+            ViewBag.CatalogoVegetacion = vegetaciones;
+            ViewBag.CatalogoUsoSuelo = usosSuelo;
         }
 
         private void CargarViewBag()

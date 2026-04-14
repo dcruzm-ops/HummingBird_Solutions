@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Cambiar contraseña";
+}
+
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Seguridad</span>
+            <h2>Cambiar contraseña</h2>
+            <p>Ingrese su contraseña actual y defina una nueva.</p>
+        </div>
+    </div>
+
+    <form class="formulario-base formulario-modulo" method="post" data-omitir-trobber-global>
+        @Html.AntiForgeryToken()
+        <div class="seccion-formulario">
+            <div class="campo-formulario">
+                <label>Contraseña actual</label>
+                <input type="password" />
+            </div>
+            <div class="campo-formulario">
+                <label>Nueva contraseña</label>
+                <input type="password" />
+            </div>
+            <div class="campo-formulario">
+                <label>Confirmar nueva contraseña</label>
+                <input type="password" />
+            </div>
+        </div>
+
+        <div class="fila-acciones-formulario">
+            <a class="boton-secundario" asp-controller="MiPerfil" asp-action="Index">Cancelar</a>
+            <button type="submit" class="boton-primario">Actualizar contraseña</button>
+        </div>
+    </form>
+</section>

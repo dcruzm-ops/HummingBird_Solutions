@@ -1,6 +1,7 @@
 using PSA.AppCore.Servicios;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.EntidadesDTO.Entidades;
 
 namespace PSA.AppCore.Managers
@@ -123,6 +124,30 @@ namespace PSA.AppCore.Managers
                 UltimoAcceso = fechaAcceso,
                 Mensaje = "Inicio de sesión exitoso."
             };
+        }
+
+        public async Task AsignarRolAsync(AsignarRolUsuarioDTO dto)
+        {
+            if (dto.IdUsuario <= 0)
+                throw new Exception("El Id del usuario es inválido.");
+
+            if (dto.IdRol <= 0)
+                throw new Exception("El Id del rol es inválido.");
+
+            var rolExiste = await _usuarioDAO.ExisteRolAsync(dto.IdRol);
+            if (!rolExiste)
+                throw new Exception("El rol indicado no existe.");
+
+            await _usuarioDAO.AsignarRolAsync(dto.IdUsuario, dto.IdRol);
+
+            await _auditoriaLogDAO.RegistrarEventoAsync(
+                idUsuario: dto.IdUsuario,
+                modulo: "Autenticacion",
+                tablaAfectada: "Usuarios",
+                idRegistroAfectado: dto.IdUsuario,
+                accion: "ASIGNACION_ROL",
+                detalle: $"Rol {dto.IdRol} asignado al usuario {dto.IdUsuario}."
+            );
         }
     }
 }

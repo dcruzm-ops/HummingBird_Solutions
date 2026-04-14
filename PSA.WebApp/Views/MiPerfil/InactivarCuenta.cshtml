@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Inactivar cuenta";
+}
+
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Cuenta</span>
+            <h2>Inactivar cuenta</h2>
+            <p>Esta acción deshabilita su acceso hasta que un administrador reactive su usuario.</p>
+        </div>
+    </div>
+
+    <div class="tarjeta-panel">
+        <p class="mb-3">Confirme que desea inactivar su cuenta. Esta acción requiere validación posterior.</p>
+
+        <form method="post" data-omitir-trobber-global>
+            @Html.AntiForgeryToken()
+            <div class="fila-acciones-formulario">
+                <a class="boton-secundario" asp-controller="MiPerfil" asp-action="Index">Cancelar</a>
+                <button type="submit" class="boton-primario">Solicitar inactivación</button>
+            </div>
+        </form>
+    </div>
+</section>

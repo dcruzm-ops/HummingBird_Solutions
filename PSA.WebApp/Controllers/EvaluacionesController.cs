@@ -36,6 +36,8 @@ namespace PSA.WebApp.Controllers
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
             if (detalle == null) return RedirectToAction(nameof(FincasPendientes));
 
+            CargarCatalogosEvaluacion();
+
             return View(new NuevaEvaluacionViewModel
             {
                 Detalle = detalle,
@@ -53,6 +55,7 @@ namespace PSA.WebApp.Controllers
             if (!response.IsSuccessStatusCode)
             {
                 TempData["MensajeError"] = "No fue posible guardar la evaluación.";
+                CargarCatalogosEvaluacion();
                 return View(model);
             }
 
@@ -88,6 +91,14 @@ namespace PSA.WebApp.Controllers
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new DetalleFincaParaEvaluacionDTO();
             return View(detalle);
+        }
+
+        private void CargarCatalogosEvaluacion()
+        {
+            ViewBag.CatalogoPendiente = new[] { "Plana", "Inclinada", "Muy inclinada" };
+            ViewBag.CatalogoVegetacion = new[] { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
+            ViewBag.CatalogoUsoSuelo = new[] { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Mixto" };
+            ViewBag.CatalogoEstadoEvaluacion = new[] { "Pendiente", "En proceso", "Evaluada – Califica", "Evaluada – No califica" };
         }
     }
 }
