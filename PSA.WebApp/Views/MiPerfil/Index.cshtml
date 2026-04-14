@@ -1,25 +1,127 @@
+@model PSA.WebApp.Models.MiPerfilViewModel
 @{
     ViewData["Title"] = "Mi perfil";
 }
 
-<section class="seccion-pagina">
+<section class="seccion-pagina perfil-usuario">
     <div class="cabecera-pagina">
         <div>
             <span class="eyebrow">Cuenta</span>
             <h2>Mi perfil</h2>
-            <p>Gestione sus datos personales y seguridad de cuenta.</p>
+            <p>Visualice su información de usuario y habilite la edición cuando necesite actualizar datos.</p>
+        </div>
+
+        <div class="grupo-acciones">
+            <button type="button" id="btnHabilitarEdicion" class="boton-secundario boton-sm">Habilitar edición</button>
+            <button type="submit" form="formMiPerfil" id="btnGuardarPerfil" class="boton-primario boton-sm" disabled>Guardar cambios</button>
         </div>
     </div>
 
-    <div class="tarjeta-panel">
-        <div class="cabecera-bloque">
-            <h3>Opciones disponibles</h3>
+    <form id="formMiPerfil" asp-action="Guardar" method="post" class="perfil-contenido" data-omitir-trobber-global>
+        @Html.AntiForgeryToken()
+        <input asp-for="IdUsuario" type="hidden" />
+
+        <article class="tarjeta-panel perfil-resumen">
+            <div class="perfil-resumen__avatar">@Model.Iniciales</div>
+            <div>
+                <h3>@Model.NombreCompleto</h3>
+                <p>@Model.Email</p>
+                <div class="perfil-resumen__meta">
+                    <span class="badge-estado badge-info">@Model.RolNombre</span>
+                    <span class="badge-estado badge-exito">@Model.Estado</span>
+                </div>
+            </div>
+        </article>
+
+        <div class="grid-dos-paneles">
+            <article class="tarjeta-panel">
+                <div class="cabecera-bloque">
+                    <h3>Información personal</h3>
+                </div>
+                <div class="seccion-formulario">
+                    <div class="campo-formulario">
+                        <label asp-for="NombreCompleto">Nombre completo</label>
+                        <input asp-for="NombreCompleto" class="perfil-input-editable" readonly />
+                        <span asp-validation-for="NombreCompleto" class="validation-message"></span>
+                    </div>
+                    <div class="campo-formulario">
+                        <label asp-for="Email">Correo electrónico</label>
+                        <input asp-for="Email" class="perfil-input-editable" readonly />
+                        <span asp-validation-for="Email" class="validation-message"></span>
+                    </div>
+                </div>
+            </article>
+
+            <article class="tarjeta-panel">
+                <div class="cabecera-bloque">
+                    <h3>Datos de cuenta</h3>
+                </div>
+
+                <dl class="lista-detalle">
+                    <div>
+                        <dt>Id de usuario</dt>
+                        <dd>@Model.IdUsuario</dd>
+                    </div>
+                    <div>
+                        <dt>Rol</dt>
+                        <dd>@Model.RolNombre</dd>
+                    </div>
+                    <div>
+                        <dt>Creado el</dt>
+                        <dd>@Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</dd>
+                    </div>
+                    <div>
+                        <dt>Último acceso</dt>
+                        <dd>@(Model.UltimoAcceso?.ToString("dd/MM/yyyy HH:mm") ?? "Sin registros")</dd>
+                    </div>
+                </dl>
+            </article>
         </div>
 
-        <div class="d-grid gap-2">
-            <a class="boton-primario" asp-controller="MiPerfil" asp-action="Editar">Editar mis datos</a>
-            <a class="boton-primario" asp-controller="MiPerfil" asp-action="CambiarContrasena">Cambiar contraseña</a>
-            <a class="boton-secundario" asp-controller="MiPerfil" asp-action="InactivarCuenta">Inactivar cuenta</a>
-        </div>
-    </div>
+        <article class="tarjeta-panel">
+            <div class="cabecera-bloque">
+                <h3>Seguridad y acciones</h3>
+            </div>
+
+            <div class="perfil-acciones-secundarias">
+                <a class="boton-secundario boton-sm" asp-controller="MiPerfil" asp-action="CambiarContrasena">Cambiar contraseña</a>
+                <a class="boton-secundario boton-sm" asp-controller="MiPerfil" asp-action="InactivarCuenta">Inactivar cuenta</a>
+            </div>
+        </article>
+    </form>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const btnEditar = document.getElementById('btnHabilitarEdicion');
+            const btnGuardar = document.getElementById('btnGuardarPerfil');
+            const inputs = Array.from(document.querySelectorAll('.perfil-input-editable'));
+
+            if (!btnEditar || !btnGuardar || inputs.length === 0) {
+                return;
+            }
+
+            btnEditar.addEventListener('click', function () {
+                const habilitar = btnGuardar.hasAttribute('disabled');
+                inputs.forEach(input => {
+                    if (habilitar) {
+                        input.removeAttribute('readonly');
+                    } else {
+                        input.setAttribute('readonly', 'readonly');
+                    }
+                });
+
+                if (habilitar) {
+                    btnGuardar.removeAttribute('disabled');
+                    btnEditar.textContent = 'Deshabilitar edición';
+                    inputs[0].focus();
+                } else {
+                    btnGuardar.setAttribute('disabled', 'disabled');
+                    btnEditar.textContent = 'Habilitar edición';
+                }
+            });
+        })();
+    </script>
+}

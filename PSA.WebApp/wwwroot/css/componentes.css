@@ -513,3 +513,57 @@
         grid-template-columns: 1fr;
     }
 }
+
+.perfil-usuario .cabecera-pagina .grupo-acciones {
+    align-items: center;
+}
+
+.perfil-contenido {
+    display: grid;
+    gap: var(--espacio-4);
+}
+
+.perfil-resumen {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-4);
+}
+
+.perfil-resumen h3 {
+    margin: 0 0 .2rem;
+}
+
+.perfil-resumen p {
+    margin: 0;
+    color: var(--color-texto-secundario);
+}
+
+.perfil-resumen__avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--color-superficie-secundaria);
+    color: var(--color-primario);
+    font-weight: 800;
+    font-size: 1.15rem;
+}
+
+.perfil-resumen__meta {
+    margin-top: var(--espacio-2);
+    display: flex;
+    gap: var(--espacio-2);
+    flex-wrap: wrap;
+}
+
+.perfil-input-editable[readonly] {
+    background: var(--color-superficie-secundaria);
+    color: var(--color-texto-secundario);
+}
+
+.perfil-acciones-secundarias {
+    display: flex;
+    gap: var(--espacio-3);
+    flex-wrap: wrap;
+}

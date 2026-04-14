@@ -430,3 +430,19 @@ CREATE INDEX IX_EvaluacionEvidencias_IdEvaluacion ON dbo.EvaluacionEvidencias(Id
 CREATE INDEX IX_Notificaciones_IdUsuario ON dbo.Notificaciones(IdUsuario);
 GO
 GO
+
+/* =========================================
+   Migración integrada: validación de ubicación no genérica
+   ========================================= */
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.check_constraints
+    WHERE parent_object_id = OBJECT_ID('dbo.Fincas')
+      AND name = 'CK_Fincas_Ubicacion_NoGenerica'
+)
+BEGIN
+    ALTER TABLE dbo.Fincas
+    ADD CONSTRAINT CK_Fincas_Ubicacion_NoGenerica
+    CHECK (Canton NOT LIKE 'Canton %' AND Distrito NOT LIKE 'Distrito %');
+END
+GO

@@ -21,6 +21,7 @@
     <Compile Include="Controllers\PagosController.cs" />
     <Compile Include="Controllers\ReportesController.cs" />
     <Compile Include="Models\DashboardViewModels.cs" />
+    <Compile Include="Models\MiPerfilViewModel.cs" />
     <Compile Include="Models\EvaluacionesViewModels.cs" />
     <Compile Include="Models\ReportesViewModels.cs" />
     <Compile Include="Models\RecuperarContrasenaViewModel.cs" />

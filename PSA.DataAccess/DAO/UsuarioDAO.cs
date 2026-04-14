@@ -1,5 +1,6 @@
 using Microsoft.Data.SqlClient;
 using PSA.EntidadesDTO.Entidades;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 
 using PSA.DataAccess;
 
@@ -143,6 +144,56 @@ namespace PSA.DataAccess.DAO
 
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
+        }
+
+
+
+        public async Task<MiPerfilDTO?> ObtenerMiPerfilAsync(int idUsuario)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("dbo.SP_Perfil_ObtenerMiPerfil", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+                return null;
+
+            return new MiPerfilDTO
+            {
+                IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                NombreCompleto = reader["NombreCompleto"]?.ToString() ?? string.Empty,
+                Email = reader["Email"]?.ToString() ?? string.Empty,
+                IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
+                RolNombre = reader["RolNombre"]?.ToString() ?? string.Empty,
+                Estado = reader["Estado"]?.ToString() ?? string.Empty,
+                FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
+                UltimoAcceso = reader["UltimoAcceso"] == DBNull.Value
+                    ? null
+                    : reader.GetDateTime(reader.GetOrdinal("UltimoAcceso"))
+            };
+        }
+
+        public async Task<bool> ActualizarMiPerfilAsync(int idUsuario, string nombreCompleto, string email)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("dbo.SP_Perfil_ActualizarMiPerfil", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+            command.Parameters.AddWithValue("@NombreCompleto", nombreCompleto);
+            command.Parameters.AddWithValue("@Email", email);
+
+            await connection.OpenAsync();
+            var filas = Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
+            return filas > 0;
         }
 
         public async Task AsignarRolAsync(int idUsuario, int idRol)
