@@ -87,10 +87,30 @@ namespace PSA.WebApp.Controllers
             if ((id ?? 0) <= 0) return RedirectToAction(nameof(MisFincas));
 
             var client = _httpClientFactory.CreateClient("AuthApi");
-            var detalle = await client.GetFromJsonAsync<FincaDetalleDTO>($"api/Fincas/{id}/detalle?idPropietario={idPropietario}");
-            if (detalle == null)
+
+            FincaDetalleDTO? detalle;
+            try
             {
-                TempData["MensajeError"] = "No se encontró la finca solicitada.";
+                detalle = await client.GetFromJsonAsync<FincaDetalleDTO>($"api/Fincas/{id}/detalle?idPropietario={idPropietario}");
+                if (detalle == null)
+                {
+                    TempData["MensajeError"] = "No se encontró la finca solicitada.";
+                    return RedirectToAction(nameof(MisFincas));
+                }
+            }
+            catch (HttpRequestException)
+            {
+                TempData["MensajeError"] = "No fue posible conectarse con el API para cargar el detalle de la finca.";
+                return RedirectToAction(nameof(MisFincas));
+            }
+            catch (TaskCanceledException)
+            {
+                TempData["MensajeError"] = "La consulta del detalle de finca tardó demasiado. Intente nuevamente.";
+                return RedirectToAction(nameof(MisFincas));
+            }
+            catch (Exception)
+            {
+                TempData["MensajeError"] = "Ocurrió un error al cargar el detalle de la finca.";
                 return RedirectToAction(nameof(MisFincas));
             }
 
