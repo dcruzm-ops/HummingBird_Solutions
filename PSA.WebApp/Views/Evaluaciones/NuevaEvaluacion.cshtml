@@ -1,6 +1,11 @@
 @model PSA.WebApp.Models.NuevaEvaluacionViewModel
 @{
     ViewData["Title"] = "Nueva evaluación técnica";
+
+    var catalogoPendiente = ViewBag.CatalogoPendiente as IEnumerable<string> ?? new[] { "Plana", "Inclinada", "Muy inclinada" };
+    var catalogoVegetacion = ViewBag.CatalogoVegetacion as IEnumerable<string> ?? new[] { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
+    var catalogoUsoSuelo = ViewBag.CatalogoUsoSuelo as IEnumerable<string> ?? new[] { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" };
+    var catalogoEstadoEvaluacion = ViewBag.CatalogoEstadoEvaluacion as IEnumerable<string> ?? new[] { "Pendiente", "En proceso", "Evaluada – Califica", "Evaluada – No califica" };
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
@@ -21,7 +26,7 @@
                 <div class="campo-formulario">
                     <label>Pendiente</label>
                     <select disabled>
-                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoPendiente)
+                        @foreach (var opcion in catalogoPendiente)
                         {
                             if (string.Equals(opcion, Model.Detalle.Pendiente, System.StringComparison.OrdinalIgnoreCase))
                             {
@@ -37,7 +42,7 @@
                 <div class="campo-formulario">
                     <label>Vegetación</label>
                     <select disabled>
-                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoVegetacion)
+                        @foreach (var opcion in catalogoVegetacion)
                         {
                             if (string.Equals(opcion, Model.Detalle.Vegetacion, System.StringComparison.OrdinalIgnoreCase))
                             {
@@ -53,7 +58,7 @@
                 <div class="campo-formulario">
                     <label>Uso de suelo</label>
                     <select disabled>
-                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoUsoSuelo)
+                        @foreach (var opcion in catalogoUsoSuelo)
                         {
                             if (string.Equals(opcion, Model.Detalle.UsoSuelo, System.StringComparison.OrdinalIgnoreCase))
                             {
@@ -85,7 +90,7 @@
                 <div class="campo-formulario">
                     <label>Estado evaluación</label>
                     <select disabled>
-                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoEstadoEvaluacion)
+                        @foreach (var opcion in catalogoEstadoEvaluacion)
                         {
                             if (string.Equals(opcion, Model.Detalle.EstadoEvaluacion, System.StringComparison.OrdinalIgnoreCase))
                             {
@@ -133,45 +138,45 @@
 
         <div class="seccion-formulario">
             <h3>Ajustes técnicos del ingeniero</h3>
-            <p>Estos campos permiten registrar el dato ajustado y mantener trazabilidad respecto al dato original.</p>
+            <p class="texto-ayuda">Campos marcados en verde. Se habilitan cuando se define la fecha de visita.</p>
             <div class="grid-dos-columnas">
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajuste-verde">
                     <label asp-for="Formulario.HectareasAjustadas">Hectáreas ajustadas</label>
-                    <input asp-for="Formulario.HectareasAjustadas" type="number" step="0.01" min="0.01" />
+                    <input asp-for="Formulario.HectareasAjustadas" type="number" step="0.01" min="0.01" class="ajuste-campo" disabled />
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajuste-verde">
                     <label asp-for="Formulario.PendienteAjustada">Pendiente ajustada</label>
-                    <select asp-for="Formulario.PendienteAjustada">
+                    <select asp-for="Formulario.PendienteAjustada" class="ajuste-campo" disabled>
                         <option value="">Sin ajuste</option>
-                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoPendiente)
+                        @foreach (var opcion in catalogoPendiente)
                         {
                             <option value="@opcion">@opcion</option>
                         }
                     </select>
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajuste-verde">
                     <label asp-for="Formulario.VegetacionAjustada">Vegetación ajustada</label>
-                    <select asp-for="Formulario.VegetacionAjustada">
+                    <select asp-for="Formulario.VegetacionAjustada" class="ajuste-campo" disabled>
                         <option value="">Sin ajuste</option>
-                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoVegetacion)
+                        @foreach (var opcion in catalogoVegetacion)
                         {
                             <option value="@opcion">@opcion</option>
                         }
                     </select>
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajuste-verde">
                     <label asp-for="Formulario.UsoSueloAjustado">Uso de suelo ajustado</label>
-                    <select asp-for="Formulario.UsoSueloAjustado">
+                    <select asp-for="Formulario.UsoSueloAjustado" class="ajuste-campo" disabled>
                         <option value="">Sin ajuste</option>
-                        @foreach (var opcion in (IEnumerable<string>)ViewBag.CatalogoUsoSuelo)
+                        @foreach (var opcion in catalogoUsoSuelo)
                         {
                             <option value="@opcion">@opcion</option>
                         }
                     </select>
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajuste-verde">
                     <label asp-for="Formulario.RecursosHidricosAjustado">Recursos hídricos ajustados</label>
-                    <select asp-for="Formulario.RecursosHidricosAjustado">
+                    <select asp-for="Formulario.RecursosHidricosAjustado" class="ajuste-campo" disabled>
                         <option value="">Sin ajuste</option>
                         <option value="true">Sí</option>
                         <option value="false">No</option>
