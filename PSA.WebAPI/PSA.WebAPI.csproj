@@ -14,6 +14,7 @@
     <Compile Include="Controllers\BaseApiController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\EvaluacionesTecnicasController.cs" />
+    <Compile Include="Controllers\FincaEvidenciasController.cs" />
     <Compile Include="Controllers\FincasController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Controllers\LandingController.cs" />

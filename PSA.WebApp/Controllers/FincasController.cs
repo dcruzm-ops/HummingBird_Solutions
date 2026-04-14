@@ -94,7 +94,18 @@ namespace PSA.WebApp.Controllers
                 return RedirectToAction(nameof(MisFincas));
             }
 
-            var evidencias = await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/por-finca/{id}") ?? new List<FincaEvidenciaDTO>();
+            var evidencias = new List<FincaEvidenciaDTO>();
+            try
+            {
+                evidencias = await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/por-finca/{id}")
+                    ?? new List<FincaEvidenciaDTO>();
+            }
+            catch
+            {
+                // No se bloquea el render del detalle si falla la carga de evidencias.
+                TempData["MensajeError"] = "No fue posible cargar las evidencias de la finca en este momento.";
+            }
+
             var baseAddress = client.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
             foreach (var evidencia in evidencias)
             {
