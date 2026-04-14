@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "Mi perfil";
+}
+
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Cuenta</span>
+            <h2>Mi perfil</h2>
+            <p>Gestione sus datos personales y seguridad de cuenta.</p>
+        </div>
+    </div>
+
+    <div class="tarjeta-panel">
+        <div class="cabecera-bloque">
+            <h3>Opciones disponibles</h3>
+        </div>
+
+        <div class="d-grid gap-2">
+            <a class="boton-primario" asp-controller="MiPerfil" asp-action="Editar">Editar mis datos</a>
+            <a class="boton-primario" asp-controller="MiPerfil" asp-action="CambiarContrasena">Cambiar contraseña</a>
+            <a class="boton-secundario" asp-controller="MiPerfil" asp-action="InactivarCuenta">Inactivar cuenta</a>
+        </div>
+    </div>
+</section>

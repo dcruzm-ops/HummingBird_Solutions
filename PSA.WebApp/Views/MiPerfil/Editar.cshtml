@@ -1,0 +1,34 @@
+@{
+    ViewData["Title"] = "Editar mis datos";
+}
+
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Mi perfil</span>
+            <h2>Editar mis datos</h2>
+            <p>Actualice la información visible de su cuenta.</p>
+        </div>
+    </div>
+
+    <form class="formulario-base formulario-modulo" method="post" data-omitir-trobber-global>
+        @Html.AntiForgeryToken()
+        <div class="seccion-formulario">
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label>Nombre completo</label>
+                    <input type="text" value="Usuario PSA" />
+                </div>
+                <div class="campo-formulario">
+                    <label>Correo electrónico</label>
+                    <input type="email" value="usuario@psa.local" />
+                </div>
+            </div>
+        </div>
+
+        <div class="fila-acciones-formulario">
+            <a class="boton-secundario" asp-controller="MiPerfil" asp-action="Index">Cancelar</a>
+            <button type="submit" class="boton-primario">Guardar cambios</button>
+        </div>
+    </form>
+</section>
