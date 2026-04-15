@@ -126,20 +126,20 @@
             </div>
             <div class="campo-formulario">
                 <label>Evidencias (opcional)</label>
-                <input type="file" name="evidencias" multiple accept="image/*,.pdf" />
+                <input asp-for="Evidencias" type="file" multiple accept="image/*,.pdf" />
                 <small>Nota: la persistencia de archivos físicos se gestiona en el flujo de evidencias.</small>
             </div>
         </div>
 
         <div class="seccion-formulario">
             <h3>Ajustes técnicos del ingeniero</h3>
-            <p>Estos campos permiten registrar el dato ajustado y mantener trazabilidad respecto al dato original.</p>
+            <p class="texto-ajustes-tecnicos">Estos campos en verde permiten registrar el dato ajustado y mantener trazabilidad respecto al dato original.</p>
             <div class="grid-dos-columnas">
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajustable">
                     <label asp-for="Formulario.HectareasAjustadas">Hectáreas ajustadas</label>
                     <input asp-for="Formulario.HectareasAjustadas" type="number" step="0.01" min="0.01" />
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajustable">
                     <label asp-for="Formulario.PendienteAjustada">Pendiente ajustada</label>
                     <select asp-for="Formulario.PendienteAjustada">
                         <option value="">Sin ajuste</option>
@@ -149,7 +149,7 @@
                         }
                     </select>
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajustable">
                     <label asp-for="Formulario.VegetacionAjustada">Vegetación ajustada</label>
                     <select asp-for="Formulario.VegetacionAjustada">
                         <option value="">Sin ajuste</option>
@@ -159,7 +159,7 @@
                         }
                     </select>
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajustable">
                     <label asp-for="Formulario.UsoSueloAjustado">Uso de suelo ajustado</label>
                     <select asp-for="Formulario.UsoSueloAjustado">
                         <option value="">Sin ajuste</option>
@@ -169,7 +169,7 @@
                         }
                     </select>
                 </div>
-                <div class="campo-formulario">
+                <div class="campo-formulario campo-ajustable">
                     <label asp-for="Formulario.RecursosHidricosAjustado">Recursos hídricos ajustados</label>
                     <select asp-for="Formulario.RecursosHidricosAjustado">
                         <option value="">Sin ajuste</option>
@@ -190,3 +190,16 @@
 @section Scripts {
     <script src="~/js/evaluaciones.js" asp-append-version="true"></script>
 }
+
+<style>
+    .texto-ajustes-tecnicos {
+        margin-bottom: 1rem;
+    }
+
+    .campo-ajustable {
+        border-left: 4px solid #2e8b57;
+        padding-left: 0.75rem;
+        background-color: #f3fff7;
+        border-radius: 0.4rem;
+    }
+</style>
