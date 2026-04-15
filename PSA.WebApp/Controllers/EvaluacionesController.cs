@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
 using PSA.WebApp.Models;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
 
@@ -20,6 +21,9 @@ namespace PSA.WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> FincasPendientes(string estado = "Todos")
         {
+            ConfigurarVistaBase(
+                "Gestión de visitas técnicas",
+                "Cola de propiedades pendientes de visita y seguimiento de evaluaciones.");
             var client = _httpClientFactory.CreateClient("AuthApi");
             var pendientes = await client.GetFromJsonAsync<List<BandejaEvaluacionPendienteDTO>>("api/EvaluacionesTecnicas/bandeja-pendientes") ?? new();
             if (!string.Equals(estado, "Todos", StringComparison.OrdinalIgnoreCase))
@@ -32,6 +36,9 @@ namespace PSA.WebApp.Controllers
         public async Task<IActionResult> NuevaEvaluacion(int idEvaluacion)
         {
             if (idEvaluacion <= 0) return RedirectToAction(nameof(FincasPendientes));
+            ConfigurarVistaBase(
+                "Gestión de visitas técnicas",
+                "Registro de resultados de la evaluación, ajustes y carga de evidencia.");
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
             if (detalle == null) return RedirectToAction(nameof(FincasPendientes));
@@ -59,13 +66,39 @@ namespace PSA.WebApp.Controllers
                 return View(model);
             }
 
-            TempData["MensajeExito"] = "Evaluación técnica guardada correctamente.";
+            var totalEvidencias = model.Evidencias?.Count(e => e != null && e.Length > 0) ?? 0;
+            if (totalEvidencias > 0)
+            {
+                var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
+                var idFinca = detalle?.IdFinca ?? 0;
+                var idUsuario = ObtenerIdUsuarioSesion();
+
+                if (idFinca > 0 && idUsuario > 0)
+                {
+                    var evidenciaSubida = await SubirEvidenciasAsync(client, idFinca, idUsuario, model.Evidencias);
+                    if (!evidenciaSubida)
+                    {
+                        TempData["MensajeError"] = "La evaluación se guardó, pero no fue posible cargar la evidencia adjunta.";
+                    }
+                }
+                else
+                {
+                    TempData["MensajeError"] = "La evaluación se guardó, pero no fue posible identificar la finca para cargar evidencia.";
+                }
+            }
+
+            TempData["MensajeExito"] = totalEvidencias > 0
+                ? "Evaluación técnica guardada correctamente junto con la evidencia adjunta."
+                : "Evaluación técnica guardada correctamente.";
             return RedirectToAction(nameof(HistorialEvaluaciones));
         }
 
         [HttpGet]
         public async Task<IActionResult> HistorialEvaluaciones(int? anio = null, int? mes = null, string? estadoEvaluacion = null, string? decisionTecnica = null)
         {
+            ConfigurarVistaBase(
+                "Gestión de visitas técnicas",
+                "Historial y métricas de resultados de evaluaciones técnicas.");
             var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
             var client = _httpClientFactory.CreateClient("AuthApi");
             var url = $"api/EvaluacionesTecnicas/reportes?anio={anio}&mes={mes}&estadoEvaluacion={estadoEvaluacion}&decisionTecnica={decisionTecnica}&idIngeniero={idIngeniero}";
@@ -80,6 +113,9 @@ namespace PSA.WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> FincasIngeniero()
         {
+            ConfigurarVistaBase(
+                "Gestión de visitas técnicas",
+                "Resumen de fincas y evaluaciones asignadas al ingeniero.");
             var client = _httpClientFactory.CreateClient("AuthApi");
             var reporte = await client.GetFromJsonAsync<ReporteEvaluacionesDTO>("api/EvaluacionesTecnicas/reportes") ?? new ReporteEvaluacionesDTO();
             return View(reporte.Evaluaciones);
@@ -88,9 +124,42 @@ namespace PSA.WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> DetalleEvaluacion(int idEvaluacion)
         {
+            ConfigurarVistaBase(
+                "Gestión de visitas técnicas",
+                "Detalle de visita técnica y trazabilidad de ajustes.");
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new DetalleFincaParaEvaluacionDTO();
             return View(detalle);
+        }
+
+        private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idFinca, int idUsuario, List<IFormFile> archivos)
+        {
+            using var form = new MultipartFormDataContent();
+            form.Add(new StringContent(idFinca.ToString()), "idFinca");
+            form.Add(new StringContent(idUsuario.ToString()), "cargadoPor");
+
+            foreach (var archivo in archivos.Where(a => a != null && a.Length > 0))
+            {
+                var contenido = new StreamContent(archivo.OpenReadStream());
+                contenido.Headers.ContentType = new MediaTypeHeaderValue(archivo.ContentType ?? "application/octet-stream");
+                form.Add(contenido, "archivos", archivo.FileName);
+            }
+
+            var response = await client.PostAsync("api/FincaEvidencias/subir", form);
+            return response.IsSuccessStatusCode;
+        }
+
+        private void ConfigurarVistaBase(string titulo, string subtitulo)
+        {
+            ViewBag.ModuloActivo = "evaluaciones";
+            ViewBag.RolActivo = "Ingeniero";
+            ViewBag.TituloPagina = titulo;
+            ViewBag.SubtituloPagina = subtitulo;
+            ViewBag.BreadcrumbPadreTexto = "Inicio";
+            ViewBag.BreadcrumbPadreUrl = Url.Action("Ingeniero", "Dashboard");
+            ViewBag.BreadcrumbActual = titulo;
         }
 
         private void CargarCatalogosEvaluacion()
