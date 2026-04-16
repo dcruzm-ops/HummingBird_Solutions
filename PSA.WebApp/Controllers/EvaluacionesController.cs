@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
+using PSA.EntidadesDTO.DTOs.Fincas;
 using PSA.WebApp.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -42,13 +43,15 @@ namespace PSA.WebApp.Controllers
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
             if (detalle == null) return RedirectToAction(nameof(FincasPendientes));
+            var evidencias = await ObtenerEvidenciasPorFincaAsync(client, detalle.IdFinca);
 
             CargarCatalogosEvaluacion();
 
             return View(new NuevaEvaluacionViewModel
             {
                 Detalle = detalle,
-                Formulario = new RegistrarResultadoEvaluacionDTO { FechaVisita = DateTime.Today }
+                Formulario = new RegistrarResultadoEvaluacionDTO { FechaVisita = DateTime.Today },
+                EvidenciasExistentes = evidencias
             });
         }
 
@@ -62,6 +65,8 @@ namespace PSA.WebApp.Controllers
             if (!response.IsSuccessStatusCode)
             {
                 TempData["MensajeError"] = "No fue posible guardar la evaluación.";
+                model.Detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new();
+                model.EvidenciasExistentes = await ObtenerEvidenciasPorFincaAsync(client, model.Detalle.IdFinca);
                 CargarCatalogosEvaluacion();
                 return View(model);
             }
@@ -102,7 +107,7 @@ namespace PSA.WebApp.Controllers
             var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
             var client = _httpClientFactory.CreateClient("AuthApi");
             var url = $"api/EvaluacionesTecnicas/reportes?anio={anio}&mes={mes}&estadoEvaluacion={estadoEvaluacion}&decisionTecnica={decisionTecnica}&idIngeniero={idIngeniero}";
-            var reporte = await client.GetFromJsonAsync<ReporteEvaluacionesDTO>(url) ?? new ReporteEvaluacionesDTO();
+            var reporte = await ObtenerSeguroDesdeApiAsync<ReporteEvaluacionesDTO>(client, url, "No fue posible aplicar los filtros del reporte.") ?? new ReporteEvaluacionesDTO();
             return View(new ReporteEvaluacionesViewModel { Anio = anio, Mes = mes, EstadoEvaluacion = estadoEvaluacion, DecisionTecnica = decisionTecnica, Reporte = reporte });
         }
 
@@ -133,6 +138,44 @@ namespace PSA.WebApp.Controllers
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        private static async Task<List<FincaEvidenciaDTO>> ObtenerEvidenciasPorFincaAsync(HttpClient client, int idFinca)
+        {
+            if (idFinca <= 0) return new();
+            try
+            {
+                using var response = await client.GetAsync($"api/FincaEvidencias/finca/{idFinca}");
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    return new();
+
+                if (!response.IsSuccessStatusCode)
+                    return new();
+
+                return await response.Content.ReadFromJsonAsync<List<FincaEvidenciaDTO>>() ?? new();
+            }
+            catch (HttpRequestException)
+            {
+                return new();
+            }
+        }
+
+        private async Task<T?> ObtenerSeguroDesdeApiAsync<T>(HttpClient client, string url, string mensajeError)
+        {
+            try
+            {
+                return await client.GetFromJsonAsync<T>(url);
+            }
+            catch (HttpRequestException)
+            {
+                TempData["MensajeError"] = mensajeError;
+                return default;
+            }
+            catch (NotSupportedException)
+            {
+                TempData["MensajeError"] = mensajeError;
+                return default;
+            }
+        }
 
         private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idFinca, int idUsuario, List<IFormFile> archivos)
         {

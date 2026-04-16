@@ -13,7 +13,8 @@
     </div>
 
     <section class="tarjeta-panel">
-        <form method="get" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones" class="formulario-base formulario-modulo">
+        <form method="get" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones" class="formulario-base formulario-modulo" data-omitir-trobber-global="true">
+            <p id="mensajeFiltroPeriodo" class="text-danger" style="display:none;"></p>
             <div class="grid-dos-columnas">
                 <div class="campo-formulario">
                     <label for="anio">Año</label>
@@ -131,3 +132,35 @@
         </div>
     </section>
 </section>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form[asp-action="HistorialEvaluaciones"], form[action*="HistorialEvaluaciones"]');
+            if (!form) return;
+
+            form.addEventListener('submit', function (event) {
+                const anio = document.getElementById('anio')?.value?.trim();
+                const mes = document.getElementById('mes')?.value?.trim();
+                const mensaje = document.getElementById('mensajeFiltroPeriodo');
+
+                if (mes && !anio) {
+                    event.preventDefault();
+                    if (window.psa && typeof window.psa.ocultarTrobberGlobal === 'function') {
+                        window.psa.ocultarTrobberGlobal();
+                    }
+                    if (mensaje) {
+                        mensaje.style.display = 'block';
+                        mensaje.textContent = 'Para filtrar por mes debe indicar también el año.';
+                    }
+                    document.getElementById('anio')?.focus();
+                    return;
+                }
+
+                if (window.psa && typeof window.psa.mostrarTrobberGlobal === 'function') {
+                    window.psa.mostrarTrobberGlobal();
+                }
+            });
+        });
+    </script>
+}

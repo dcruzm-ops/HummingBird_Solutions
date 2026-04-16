@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PSA.EntidadesDTO.DTOs.Evaluaciones;
 using PSA.WebApp.Models;
 using System.Net.Http.Json;
 using System.Security.Claims;
@@ -54,12 +55,22 @@ namespace PSA.WebApp.Controllers
             var idUsuario = ObtenerIdUsuarioSesion();
             var client = _httpClientFactory.CreateClient("AuthApi");
             var resumen = await client.GetFromJsonAsync<DashboardIngenieroApiModel>($"api/Dashboard/ingeniero-resumen/{idUsuario}") ?? new();
+            var pendientes = await client.GetFromJsonAsync<List<BandejaEvaluacionPendienteDTO>>("api/EvaluacionesTecnicas/bandeja-pendientes") ?? new();
+            ViewBag.ForecastProvincias = GenerarPronosticoHoy(pendientes);
+
             return View(new DashboardIngenieroViewModel
             {
                 FincasPendientes = resumen.FincasPendientes,
                 EvaluacionesAbiertas = resumen.EvaluacionesAbiertas,
                 DecisionesMesActual = resumen.DecisionesMesActual,
-                ProximasAcciones = resumen.ProximasAcciones.Select(x => new ActividadDashboardViewModel { Titulo = x.NombreFinca }).ToList()
+                ProximasAcciones = resumen.ProximasAcciones.Select(x => new ActividadDashboardViewModel { Titulo = x.NombreFinca }).ToList(),
+                ColaPendientesVisita = pendientes
+                    .Where(p => string.Equals(p.EstadoEvaluacion, "Pendiente", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(p.EstadoEvaluacion, "En proceso", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(p => p.EstadoEvaluacion == "En proceso" ? 1 : 0)
+                    .ThenBy(p => p.IdEvaluacion)
+                    .Take(8)
+                    .ToList()
             });
         }
 
@@ -79,6 +90,43 @@ namespace PSA.WebApp.Controllers
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        private static Dictionary<string, string> GenerarPronosticoHoy(IEnumerable<BandejaEvaluacionPendienteDTO> pendientes)
+        {
+            var pronosticoBase = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["San José"] = "Parcialmente nublado",
+                ["Alajuela"] = "Lluvias aisladas",
+                ["Cartago"] = "Lluvioso",
+                ["Heredia"] = "Parcialmente nublado",
+                ["Guanacaste"] = "Soleado",
+                ["Puntarenas"] = "Lluvias aisladas",
+                ["Limón"] = "Lluvioso"
+            };
+
+            var provinciasPendientes = pendientes
+                .Select(p => p.Provincia)
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (provinciasPendientes.Count == 0) return pronosticoBase;
+
+            var orden = provinciasPendientes
+                .Concat(pronosticoBase.Keys)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var resultado = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var provincia in orden)
+            {
+                resultado[provincia] = pronosticoBase.TryGetValue(provincia, out var valor)
+                    ? valor
+                    : "Condiciones variables";
+            }
+
+            return resultado;
+        }
 
         public class DashboardDuenoApiModel { public int FincasRegistradas { get; set; } public int EvaluacionesPendientes { get; set; } public int CuotasPorConfirmar { get; set; } public List<ActividadApiModel> Actividad { get; set; } = new(); }
         public class DashboardIngenieroApiModel { public int FincasPendientes { get; set; } public int EvaluacionesAbiertas { get; set; } public int DecisionesMesActual { get; set; } public List<AccionApiModel> ProximasAcciones { get; set; } = new(); }
