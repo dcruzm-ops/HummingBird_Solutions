@@ -18,91 +18,95 @@ public class ReportesController : ControllerBase
     [HttpGet("dueno/{idPropietario:int}/pagos")]
     public async Task<IActionResult> ObtenerPagosDueno([FromRoute] int idPropietario, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var data = await _reportesManager.ObtenerPagosDuenoAsync(idPropietario, new FiltroReporteDTO { Anio = anio, Mes = mes });
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerPagosDuenoAsync(idPropietario, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("dueno/{idPropietario:int}/transacciones")]
     public async Task<IActionResult> ObtenerTransaccionesDueno([FromRoute] int idPropietario, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var data = await _reportesManager.ObtenerTransaccionesDuenoAsync(idPropietario, new FiltroReporteDTO { Anio = anio, Mes = mes });
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerTransaccionesDuenoAsync(idPropietario, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("ingeniero/{idIngeniero:int}/evaluaciones")]
     public async Task<IActionResult> ObtenerEvaluacionesIngeniero([FromRoute] int idIngeniero, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var data = await _reportesManager.ObtenerEvaluacionesIngenieroAsync(idIngeniero, new FiltroReporteDTO { Anio = anio, Mes = mes });
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerEvaluacionesIngenieroAsync(idIngeniero, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("administrador/pagos-ubicacion")]
     public async Task<IActionResult> ObtenerPagosPorUbicacion([FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var data = await _reportesManager.ObtenerPagosPorUbicacionAsync(new FiltroReporteDTO { Anio = anio, Mes = mes });
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerPagosPorUbicacionAsync(new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("administrador/resumen-actividad")]
     public async Task<IActionResult> ObtenerResumenActividad()
     {
-        var data = await _reportesManager.ObtenerResumenActividadAsync();
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerResumenActividadAsync());
     }
 
     [HttpGet("dueno/{idPropietario:int}/fincas")]
     public async Task<IActionResult> ObtenerFincasDueno([FromRoute] int idPropietario)
     {
-        var data = await _reportesManager.ObtenerReporteFincasDuenoAsync(idPropietario);
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteFincasDuenoAsync(idPropietario));
     }
 
     [HttpGet("ingeniero/fincas-pendientes")]
     public async Task<IActionResult> ObtenerFincasPendientesIngeniero()
     {
-        var data = await _reportesManager.ObtenerFincasPendientesIngenieroAsync();
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerFincasPendientesIngenieroAsync());
     }
 
     [HttpGet("ingeniero/{idIngeniero:int}/tecnico-finca")]
     public async Task<IActionResult> ObtenerReporteTecnicoFinca([FromRoute] int idIngeniero, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var data = await _reportesManager.ObtenerReporteTecnicoPorFincaAsync(idIngeniero, new FiltroReporteDTO { Anio = anio, Mes = mes });
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteTecnicoPorFincaAsync(idIngeniero, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("administrador/usuarios-roles")]
     public async Task<IActionResult> ObtenerUsuariosRoles()
     {
-        var data = await _reportesManager.ObtenerReporteUsuariosRolesAsync();
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteUsuariosRolesAsync());
     }
 
     [HttpGet("administrador/fincas-estado")]
     public async Task<IActionResult> ObtenerFincasPorEstado()
     {
-        var data = await _reportesManager.ObtenerReporteFincasPorEstadoAsync();
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteFincasPorEstadoAsync());
     }
 
     [HttpGet("administrador/evaluaciones-tecnicas")]
     public async Task<IActionResult> ObtenerEvaluacionesTecnicasAdmin([FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var data = await _reportesManager.ObtenerReporteEvaluacionesAdminAsync(new FiltroReporteDTO { Anio = anio, Mes = mes });
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteEvaluacionesAdminAsync(new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("administrador/pagos")]
     public async Task<IActionResult> ObtenerPagosAdmin([FromQuery] int? anio = null)
     {
-        var data = await _reportesManager.ObtenerReportePagosAdminAsync(anio);
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerReportePagosAdminAsync(anio));
     }
 
     [HttpGet("administrador/auditoria-critica")]
     public async Task<IActionResult> ObtenerAuditoriaCritica([FromQuery] int top = 50)
     {
-        var data = await _reportesManager.ObtenerAuditoriaCriticaAsync(top);
-        return Ok(data);
+        return await EjecutarSeguro(async () => await _reportesManager.ObtenerAuditoriaCriticaAsync(top));
+    }
+
+    private async Task<IActionResult> EjecutarSeguro<T>(Func<Task<T>> accion)
+    {
+        try
+        {
+            var data = await accion();
+            return Ok(data);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { Mensaje = "Ocurrió un error inesperado al generar el reporte." });
+        }
     }
 }

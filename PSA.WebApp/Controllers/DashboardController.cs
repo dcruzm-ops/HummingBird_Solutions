@@ -56,6 +56,7 @@ namespace PSA.WebApp.Controllers
             var client = _httpClientFactory.CreateClient("AuthApi");
             var resumen = await client.GetFromJsonAsync<DashboardIngenieroApiModel>($"api/Dashboard/ingeniero-resumen/{idUsuario}") ?? new();
             var pendientes = await client.GetFromJsonAsync<List<BandejaEvaluacionPendienteDTO>>("api/EvaluacionesTecnicas/bandeja-pendientes") ?? new();
+            ViewBag.ForecastProvincias = GenerarPronosticoHoy(pendientes);
 
             return View(new DashboardIngenieroViewModel
             {
@@ -89,6 +90,37 @@ namespace PSA.WebApp.Controllers
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        private static Dictionary<string, string> GenerarPronosticoHoy(IEnumerable<BandejaEvaluacionPendienteDTO> pendientes)
+        {
+            var pronosticoBase = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["San José"] = "Parcialmente nublado",
+                ["Alajuela"] = "Lluvias aisladas",
+                ["Cartago"] = "Lluvioso",
+                ["Heredia"] = "Parcialmente nublado",
+                ["Guanacaste"] = "Soleado",
+                ["Puntarenas"] = "Lluvias aisladas",
+                ["Limón"] = "Lluvioso"
+            };
+
+            var provinciasPendientes = pendientes
+                .Select(p => p.Provincia)
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (provinciasPendientes.Count == 0)
+                return pronosticoBase;
+
+            return provinciasPendientes
+                .ToDictionary(
+                    provincia => provincia,
+                    provincia => pronosticoBase.TryGetValue(provincia, out var valor)
+                        ? valor
+                        : "Condiciones variables",
+                    StringComparer.OrdinalIgnoreCase);
+        }
 
         public class DashboardDuenoApiModel { public int FincasRegistradas { get; set; } public int EvaluacionesPendientes { get; set; } public int CuotasPorConfirmar { get; set; } public List<ActividadApiModel> Actividad { get; set; } = new(); }
         public class DashboardIngenieroApiModel { public int FincasPendientes { get; set; } public int EvaluacionesAbiertas { get; set; } public int DecisionesMesActual { get; set; } public List<AccionApiModel> ProximasAcciones { get; set; } = new(); }

@@ -107,7 +107,7 @@ namespace PSA.WebApp.Controllers
             var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
             var client = _httpClientFactory.CreateClient("AuthApi");
             var url = $"api/EvaluacionesTecnicas/reportes?anio={anio}&mes={mes}&estadoEvaluacion={estadoEvaluacion}&decisionTecnica={decisionTecnica}&idIngeniero={idIngeniero}";
-            var reporte = await client.GetFromJsonAsync<ReporteEvaluacionesDTO>(url) ?? new ReporteEvaluacionesDTO();
+            var reporte = await ObtenerSeguroDesdeApiAsync<ReporteEvaluacionesDTO>(client, url, "No fue posible aplicar los filtros del reporte.") ?? new ReporteEvaluacionesDTO();
             return View(new ReporteEvaluacionesViewModel { Anio = anio, Mes = mes, EstadoEvaluacion = estadoEvaluacion, DecisionTecnica = decisionTecnica, Reporte = reporte });
         }
 
@@ -156,6 +156,24 @@ namespace PSA.WebApp.Controllers
             catch (HttpRequestException)
             {
                 return new();
+            }
+        }
+
+        private async Task<T?> ObtenerSeguroDesdeApiAsync<T>(HttpClient client, string url, string mensajeError)
+        {
+            try
+            {
+                return await client.GetFromJsonAsync<T>(url);
+            }
+            catch (HttpRequestException)
+            {
+                TempData["MensajeError"] = mensajeError;
+                return default;
+            }
+            catch (NotSupportedException)
+            {
+                TempData["MensajeError"] = mensajeError;
+                return default;
             }
         }
 
