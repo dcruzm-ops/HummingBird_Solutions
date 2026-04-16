@@ -35,7 +35,7 @@ public class ReportesController : Controller
         ConfigurarVistaBase("Reporte de mis fincas", "Fincas y estado de evaluación.");
         var idUsuario = ObtenerIdUsuario();
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaDuenoReporteDTO>>($"api/Reportes/dueno/{idUsuario}/fincas") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaDuenoReporteDTO>>(client, $"api/Reportes/dueno/{idUsuario}/fincas", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(estadoFinca)) items = items.Where(x => x.EstadoFinca.Equals(estadoFinca, StringComparison.OrdinalIgnoreCase)).ToList();
         if (!string.IsNullOrWhiteSpace(estadoEvaluacion)) items = items.Where(x => x.EstadoEvaluacion.Equals(estadoEvaluacion, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -50,8 +50,8 @@ public class ReportesController : Controller
         var idUsuario = ObtenerIdUsuario();
         var client = _httpClientFactory.CreateClient("AuthApi");
         var query = $"?anio={anio}&mes={mes}";
-        var pagos = await client.GetFromJsonAsync<PSA.EntidadesDTO.DTOs.Reportes.ReportePagosDuenoDTO>($"api/Reportes/dueno/{idUsuario}/pagos{query}") ?? new();
-        var transacciones = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemTransaccionDuenoDTO>>($"api/Reportes/dueno/{idUsuario}/transacciones{query}") ?? new();
+        var pagos = await ObtenerSeguroDesdeApiAsync<PSA.EntidadesDTO.DTOs.Reportes.ReportePagosDuenoDTO>(client, $"api/Reportes/dueno/{idUsuario}/pagos{query}", "No fue posible cargar el reporte solicitado.") ?? new();
+        var transacciones = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemTransaccionDuenoDTO>>(client, $"api/Reportes/dueno/{idUsuario}/transacciones{query}", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(estadoCuota))
         {
@@ -66,7 +66,7 @@ public class ReportesController : Controller
     {
         ConfigurarVistaBase("Fincas pendientes por evaluar", "Bandeja de pendientes para ingeniería.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaPendienteIngenieroDTO>>("api/Reportes/ingeniero/fincas-pendientes") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaPendienteIngenieroDTO>>(client, "api/Reportes/ingeniero/fincas-pendientes", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(provincia)) items = items.Where(x => x.Provincia.Equals(provincia, StringComparison.OrdinalIgnoreCase)).ToList();
 
@@ -85,7 +85,7 @@ public class ReportesController : Controller
         }
 
         var query = $"?anio={anio}&mes={mes}";
-        var reporte = await client.GetFromJsonAsync<PSA.EntidadesDTO.DTOs.Reportes.ReporteEvaluacionesIngenieroDTO>($"api/Reportes/ingeniero/{idUsuario}/evaluaciones{query}") ?? new();
+        var reporte = await ObtenerSeguroDesdeApiAsync<PSA.EntidadesDTO.DTOs.Reportes.ReporteEvaluacionesIngenieroDTO>(client, $"api/Reportes/ingeniero/{idUsuario}/evaluaciones{query}", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(estadoEvaluacion))
         {
@@ -110,7 +110,7 @@ public class ReportesController : Controller
         var idUsuario = ObtenerIdUsuario();
         var client = _httpClientFactory.CreateClient("AuthApi");
         var query = $"?anio={anio}&mes={mes}";
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemTecnicoFincaDTO>>($"api/Reportes/ingeniero/{idUsuario}/tecnico-finca{query}") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemTecnicoFincaDTO>>(client, $"api/Reportes/ingeniero/{idUsuario}/tecnico-finca{query}", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(decision)) items = items.Where(x => string.Equals(x.DecisionTecnica, decision, StringComparison.OrdinalIgnoreCase)).ToList();
 
@@ -122,7 +122,7 @@ public class ReportesController : Controller
     {
         ConfigurarVistaBase("Usuarios y roles", "Estados de usuarios y asignación de roles.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemUsuarioRolReporteDTO>>("api/Reportes/administrador/usuarios-roles") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemUsuarioRolReporteDTO>>(client, "api/Reportes/administrador/usuarios-roles", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(rol)) items = items.Where(x => x.Rol.Equals(rol, StringComparison.OrdinalIgnoreCase)).ToList();
         if (!string.IsNullOrWhiteSpace(estado)) items = items.Where(x => x.Estado.Equals(estado, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -136,7 +136,7 @@ public class ReportesController : Controller
         ConfigurarVistaBase("Evaluaciones técnicas", "Quién evaluó, cuándo, resultado y observaciones.");
         var client = _httpClientFactory.CreateClient("AuthApi");
         var query = $"?anio={anio}&mes={mes}";
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemEvaluacionAdminDTO>>($"api/Reportes/administrador/evaluaciones-tecnicas{query}") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemEvaluacionAdminDTO>>(client, $"api/Reportes/administrador/evaluaciones-tecnicas{query}", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(estado)) items = items.Where(x => x.EstadoEvaluacion.Equals(estado, StringComparison.OrdinalIgnoreCase)).ToList();
         if (!string.IsNullOrWhiteSpace(decision)) items = items.Where(x => string.Equals(x.DecisionTecnica, decision, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -155,8 +155,8 @@ public class ReportesController : Controller
     {
         ConfigurarVistaBase("Reporte de pagos", "Planes generados y estado de cuotas.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var planes = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagosAdminDTO>>($"api/Reportes/administrador/pagos?anio={anioPlanes}") ?? new();
-        var porUbicacion = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagoUbicacionDTO>>($"api/Reportes/administrador/pagos-ubicacion?anio={anioUbicacion}") ?? new();
+        var planes = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagosAdminDTO>>(client, $"api/Reportes/administrador/pagos?anio={anioPlanes}", "No fue posible cargar el reporte solicitado.") ?? new();
+        var porUbicacion = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemPagoUbicacionDTO>>(client, $"api/Reportes/administrador/pagos-ubicacion?anio={anioUbicacion}", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (string.Equals(estadoCuotas, "Pendientes", StringComparison.OrdinalIgnoreCase))
             planes = planes.Where(x => x.CuotasPendientes > 0).ToList();
@@ -188,7 +188,7 @@ public class ReportesController : Controller
     {
         ConfigurarVistaBase("Auditoría crítica", "Movimientos críticos del sistema.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemAuditoriaCriticaDTO>>($"api/Reportes/administrador/auditoria-critica?top={top}") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemAuditoriaCriticaDTO>>(client, $"api/Reportes/administrador/auditoria-critica?top={top}", "No fue posible cargar el reporte solicitado.") ?? new();
 
         if (!string.IsNullOrWhiteSpace(modulo)) items = items.Where(x => x.Modulo.Equals(modulo, StringComparison.OrdinalIgnoreCase)).ToList();
         if (!string.IsNullOrWhiteSpace(accion)) items = items.Where(x => x.Accion.Equals(accion, StringComparison.OrdinalIgnoreCase)).ToList();
@@ -201,7 +201,7 @@ public class ReportesController : Controller
     {
         ConfigurarVistaBase("Fincas por estado", "Resumen de fincas registradas, en proceso, aprobadas y rechazadas.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaEstadoAdminDTO>>("api/Reportes/administrador/fincas-estado") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemFincaEstadoAdminDTO>>(client, "api/Reportes/administrador/fincas-estado", "No fue posible cargar el reporte solicitado.") ?? new();
         return View(new ReporteAdminFincasEstadoViewModel { Items = items });
     }
 
@@ -210,8 +210,26 @@ public class ReportesController : Controller
     {
         ConfigurarVistaBase("Resumen de actividad", "Indicadores clave de actividad del sistema.");
         var client = _httpClientFactory.CreateClient("AuthApi");
-        var items = await client.GetFromJsonAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemResumenActividadDTO>>("api/Reportes/administrador/resumen-actividad") ?? new();
+        var items = await ObtenerSeguroDesdeApiAsync<List<PSA.EntidadesDTO.DTOs.Reportes.ItemResumenActividadDTO>>(client, "api/Reportes/administrador/resumen-actividad", "No fue posible cargar el reporte solicitado.") ?? new();
         return View(new ReporteAdminResumenActividadViewModel { Items = items });
+    }
+
+    private async Task<T?> ObtenerSeguroDesdeApiAsync<T>(HttpClient client, string url, string mensajeError)
+    {
+        try
+        {
+            return await client.GetFromJsonAsync<T>(url);
+        }
+        catch (HttpRequestException)
+        {
+            TempData["MensajeError"] = mensajeError;
+            return default;
+        }
+        catch (NotSupportedException)
+        {
+            TempData["MensajeError"] = mensajeError;
+            return default;
+        }
     }
 
     private int ObtenerIdUsuario() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;

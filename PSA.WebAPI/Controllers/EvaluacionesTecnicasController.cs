@@ -78,16 +78,27 @@ namespace PSA.WebAPI.Controllers
             [FromQuery] string? decisionTecnica = null,
             [FromQuery] int? idIngeniero = null)
         {
-            var reporte = await _evaluacionTecnicaManager.ObtenerReporteEvaluacionesAsync(new FiltroReporteEvaluacionesDTO
+            try
             {
-                Anio = anio,
-                Mes = mes,
-                EstadoEvaluacion = estadoEvaluacion,
-                DecisionTecnica = decisionTecnica,
-                IdIngeniero = idIngeniero
-            });
+                var reporte = await _evaluacionTecnicaManager.ObtenerReporteEvaluacionesAsync(new FiltroReporteEvaluacionesDTO
+                {
+                    Anio = anio,
+                    Mes = mes,
+                    EstadoEvaluacion = estadoEvaluacion,
+                    DecisionTecnica = decisionTecnica,
+                    IdIngeniero = idIngeniero
+                });
 
-            return Ok(reporte);
+                return Ok(reporte);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { Mensaje = "Ocurrió un error inesperado al consultar el reporte." });
+            }
         }
     }
 }

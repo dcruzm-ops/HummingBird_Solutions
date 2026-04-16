@@ -1,6 +1,7 @@
 @model PSA.WebApp.Models.NuevaEvaluacionViewModel
 @{
     ViewData["Title"] = "Nueva evaluación técnica";
+    var evidenciasExistentes = Model.EvidenciasExistentes ?? new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
@@ -132,6 +133,50 @@
         </div>
 
         <div class="seccion-formulario">
+            <h3>Evidencias existentes de la finca</h3>
+            @if (evidenciasExistentes.Count > 0)
+            {
+                <div class="lista-evidencias">
+                    @foreach (var evidencia in evidenciasExistentes)
+                    {
+                        var esImagen = !string.IsNullOrWhiteSpace(evidencia.TipoArchivo) && evidencia.TipoArchivo.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+                        var esPdf = string.Equals(evidencia.TipoArchivo, "application/pdf", StringComparison.OrdinalIgnoreCase)
+                            || evidencia.NombreArchivo.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase);
+
+                        <article class="evidencia-item">
+                            <header>
+                                <strong>@evidencia.NombreArchivo</strong>
+                                <div class="texto-ayuda">Subido: @evidencia.FechaCarga.ToString("dd/MM/yyyy HH:mm")</div>
+                            </header>
+
+                            @if (esImagen && !string.IsNullOrWhiteSpace(evidencia.UrlDescarga))
+                            {
+                                <img src="@evidencia.UrlDescarga" alt="@evidencia.NombreArchivo" class="evidencia-preview-imagen" />
+                            }
+                            else if (esPdf && !string.IsNullOrWhiteSpace(evidencia.UrlDescarga))
+                            {
+                                <iframe src="@evidencia.UrlDescarga" title="@evidencia.NombreArchivo" class="evidencia-preview-pdf"></iframe>
+                            }
+                            else
+                            {
+                                <p class="texto-ayuda">Vista previa no disponible para este tipo de archivo.</p>
+                            }
+
+                            @if (!string.IsNullOrWhiteSpace(evidencia.UrlDescarga))
+                            {
+                                <a href="@evidencia.UrlDescarga" target="_blank" rel="noopener" class="boton-secundario">Abrir archivo</a>
+                            }
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <p>No hay evidencias previas registradas para esta finca.</p>
+            }
+        </div>
+
+        <div class="seccion-formulario">
             <h3>Ajustes técnicos del ingeniero</h3>
             <p class="texto-ajustes-tecnicos">Estos campos en verde permiten registrar el dato ajustado y mantener trazabilidad respecto al dato original.</p>
             <div class="grid-dos-columnas">
@@ -201,5 +246,35 @@
         padding-left: 0.75rem;
         background-color: #f3fff7;
         border-radius: 0.4rem;
+    }
+
+    .lista-evidencias {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .evidencia-item {
+        border: 1px solid #d6dde6;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        background: #fff;
+    }
+
+    .evidencia-preview-imagen {
+        width: 100%;
+        max-height: 320px;
+        object-fit: contain;
+        border-radius: 0.4rem;
+        border: 1px solid #d6dde6;
+        margin: 0.5rem 0;
+    }
+
+    .evidencia-preview-pdf {
+        width: 100%;
+        height: 320px;
+        border: 1px solid #d6dde6;
+        border-radius: 0.4rem;
+        margin: 0.5rem 0;
+        background: #fff;
     }
 </style>

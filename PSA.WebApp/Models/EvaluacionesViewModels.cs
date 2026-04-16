@@ -1,4 +1,5 @@
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
+using PSA.EntidadesDTO.DTOs.Fincas;
 using Microsoft.AspNetCore.Http;
 
 namespace PSA.WebApp.Models
@@ -14,6 +15,7 @@ namespace PSA.WebApp.Models
         public DetalleFincaParaEvaluacionDTO Detalle { get; set; } = new();
         public RegistrarResultadoEvaluacionDTO Formulario { get; set; } = new();
         public List<IFormFile> Evidencias { get; set; } = new();
+        public List<FincaEvidenciaDTO> EvidenciasExistentes { get; set; } = new();
     }
 
     public class ReporteEvaluacionesViewModel
