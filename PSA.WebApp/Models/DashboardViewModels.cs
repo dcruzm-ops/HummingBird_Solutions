@@ -1,3 +1,5 @@
+using PSA.EntidadesDTO.DTOs.Evaluaciones;
+
 namespace PSA.WebApp.Models
 {
     public class ActividadDashboardViewModel
@@ -20,6 +22,7 @@ namespace PSA.WebApp.Models
         public int EvaluacionesAbiertas { get; set; }
         public int DecisionesMesActual { get; set; }
         public List<ActividadDashboardViewModel> ProximasAcciones { get; set; } = new();
+        public List<BandejaEvaluacionPendienteDTO> ColaPendientesVisita { get; set; } = new();
     }
 
     public class DashboardAdministradorViewModel

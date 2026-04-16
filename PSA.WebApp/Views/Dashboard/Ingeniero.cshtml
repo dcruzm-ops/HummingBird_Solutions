@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Dashboard del ingeniero";
     var forecast = ViewBag.ForecastProvincias as Dictionary<string, string> ?? new Dictionary<string, string>();
-    var topProvincias = ViewBag.TopProvincias as List<string> ?? new List<string>();
 }
 <section class="seccion-pagina ingeniero-dashboard">
     <div class="cabecera-pagina">
@@ -32,41 +31,9 @@
         </article>
     </div>
 
-    <div class="grid-dos-paneles">
-        <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Provincias con mayor carga operativa</h3>
-            </div>
-            <ul class="lista-timeline">
-                @if (topProvincias.Count == 0)
-                {
-                    <li>Sin datos suficientes por provincia.</li>
-                }
-                else
-                {
-                    foreach (var item in topProvincias)
-                    {
-                        <li>@item</li>
-                    }
-                }
-            </ul>
-        </section>
-
-        <section class="tarjeta-panel">
-            <div class="cabecera-bloque">
-                <h3>Próximas acciones</h3>
-            </div>
-            <ul class="lista-timeline">
-                <li><a asp-controller="Evaluaciones" asp-action="FincasPendientes">Revisar fincas pendientes para asignación semanal.</a></li>
-                <li><a asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">Actualizar evaluaciones en proceso con evidencias.</a></li>
-                <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Emitir decisiones técnicas pendientes del mes.</a></li>
-            </ul>
-        </section>
-    </div>
-
     <section class="tarjeta-panel mt-4">
         <div class="cabecera-bloque">
-            <h3>Forecast por provincia (Costa Rica)</h3>
+            <h3>Pronóstico del tiempo para hoy</h3>
         </div>
         <div class="tabla-responsive">
             <table class="tabla-base">
@@ -96,18 +63,49 @@
                 </tbody>
             </table>
         </div>
-        <ul class="lista-timeline">
-            @if (Model.ProximasAcciones.Any())
-            {
-                @foreach (var accion in Model.ProximasAcciones)
-                {
-                    <li><a href="@(accion.Url ?? "#")">@accion.Titulo</a></li>
-                }
-            }
-            else
-            {
-                <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">No hay acciones pendientes para mostrar.</a></li>
-            }
-        </ul>
+    </section>
+
+    <section class="tarjeta-panel mt-4">
+        <div class="cabecera-bloque">
+            <h3>Cola de propiedades pendientes de visita</h3>
+        </div>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Finca</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ColaPendientesVisita.Any())
+                    {
+                        @foreach (var item in Model.ColaPendientesVisita)
+                        {
+                            <tr>
+                                <td>#@item.IdEvaluacion</td>
+                                <td>@item.NombreFinca</td>
+                                <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                                <td>@item.EstadoEvaluacion</td>
+                                <td>
+                                    <a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
+                                        @(item.EstadoEvaluacion == "En proceso" ? "Continuar" : "Iniciar")
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">No hay propiedades pendientes de visita en este momento.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </section>
 </section>
