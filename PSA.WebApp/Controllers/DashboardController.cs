@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PSA.EntidadesDTO.DTOs.Evaluaciones;
 using PSA.WebApp.Models;
 using System.Net.Http.Json;
 using System.Security.Claims;
@@ -54,12 +55,21 @@ namespace PSA.WebApp.Controllers
             var idUsuario = ObtenerIdUsuarioSesion();
             var client = _httpClientFactory.CreateClient("AuthApi");
             var resumen = await client.GetFromJsonAsync<DashboardIngenieroApiModel>($"api/Dashboard/ingeniero-resumen/{idUsuario}") ?? new();
+            var pendientes = await client.GetFromJsonAsync<List<BandejaEvaluacionPendienteDTO>>("api/EvaluacionesTecnicas/bandeja-pendientes") ?? new();
+
             return View(new DashboardIngenieroViewModel
             {
                 FincasPendientes = resumen.FincasPendientes,
                 EvaluacionesAbiertas = resumen.EvaluacionesAbiertas,
                 DecisionesMesActual = resumen.DecisionesMesActual,
-                ProximasAcciones = resumen.ProximasAcciones.Select(x => new ActividadDashboardViewModel { Titulo = x.NombreFinca }).ToList()
+                ProximasAcciones = resumen.ProximasAcciones.Select(x => new ActividadDashboardViewModel { Titulo = x.NombreFinca }).ToList(),
+                ColaPendientesVisita = pendientes
+                    .Where(p => string.Equals(p.EstadoEvaluacion, "Pendiente", StringComparison.OrdinalIgnoreCase)
+                             || string.Equals(p.EstadoEvaluacion, "En proceso", StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(p => p.EstadoEvaluacion == "En proceso" ? 1 : 0)
+                    .ThenBy(p => p.IdEvaluacion)
+                    .Take(8)
+                    .ToList()
             });
         }
 
