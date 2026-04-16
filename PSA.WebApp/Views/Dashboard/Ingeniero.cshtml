@@ -108,4 +108,48 @@
             </table>
         </div>
     </section>
+
+    <section class="tarjeta-panel mt-4">
+        <div class="cabecera-bloque">
+            <h3>Cola de propiedades pendientes de visita</h3>
+        </div>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Finca</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ColaPendientesVisita.Any())
+                    {
+                        @foreach (var item in Model.ColaPendientesVisita)
+                        {
+                            <tr>
+                                <td>#@item.IdEvaluacion</td>
+                                <td>@item.NombreFinca</td>
+                                <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                                <td>@item.EstadoEvaluacion</td>
+                                <td>
+                                    <a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
+                                        @(item.EstadoEvaluacion == "En proceso" ? "Continuar" : "Iniciar")
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">No hay propiedades pendientes de visita en este momento.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
 </section>
