@@ -142,7 +142,21 @@ namespace PSA.WebApp.Controllers
         private static async Task<List<FincaEvidenciaDTO>> ObtenerEvidenciasPorFincaAsync(HttpClient client, int idFinca)
         {
             if (idFinca <= 0) return new();
-            return await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/finca/{idFinca}") ?? new();
+            try
+            {
+                using var response = await client.GetAsync($"api/FincaEvidencias/finca/{idFinca}");
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    return new();
+
+                if (!response.IsSuccessStatusCode)
+                    return new();
+
+                return await response.Content.ReadFromJsonAsync<List<FincaEvidenciaDTO>>() ?? new();
+            }
+            catch (HttpRequestException)
+            {
+                return new();
+            }
         }
 
         private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idFinca, int idUsuario, List<IFormFile> archivos)
