@@ -41,22 +41,32 @@
                     <tr>
                         <th>Provincia</th>
                         <th>Pronóstico</th>
+                        <th>Icono</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (forecast.Count == 0)
                     {
                         <tr>
-                            <td colspan="2">No hay pronóstico disponible en este momento.</td>
+                            <td colspan="3">No hay pronóstico disponible en este momento.</td>
                         </tr>
                     }
                     else
                     {
                         foreach (var item in forecast)
                         {
+                            var icono = item.Value switch
+                            {
+                                "Soleado" => "☀️",
+                                "Lluvioso" => "🌧️",
+                                "Lluvias aisladas" => "🌦️",
+                                "Parcialmente nublado" => "⛅",
+                                _ => "🌤️"
+                            };
                             <tr>
                                 <td>@item.Key</td>
                                 <td>@item.Value</td>
+                                <td style="font-size:1.25rem;" aria-label="icono pronóstico">@icono</td>
                             </tr>
                         }
                     }

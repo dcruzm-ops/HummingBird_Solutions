@@ -110,16 +110,22 @@ namespace PSA.WebApp.Controllers
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
-            if (provinciasPendientes.Count == 0)
-                return pronosticoBase;
+            if (provinciasPendientes.Count == 0) return pronosticoBase;
 
-            return provinciasPendientes
-                .ToDictionary(
-                    provincia => provincia,
-                    provincia => pronosticoBase.TryGetValue(provincia, out var valor)
-                        ? valor
-                        : "Condiciones variables",
-                    StringComparer.OrdinalIgnoreCase);
+            var orden = provinciasPendientes
+                .Concat(pronosticoBase.Keys)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var resultado = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var provincia in orden)
+            {
+                resultado[provincia] = pronosticoBase.TryGetValue(provincia, out var valor)
+                    ? valor
+                    : "Condiciones variables";
+            }
+
+            return resultado;
         }
 
         public class DashboardDuenoApiModel { public int FincasRegistradas { get; set; } public int EvaluacionesPendientes { get; set; } public int CuotasPorConfirmar { get; set; } public List<ActividadApiModel> Actividad { get; set; } = new(); }
