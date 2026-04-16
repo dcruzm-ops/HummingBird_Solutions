@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
+using PSA.EntidadesDTO.DTOs.Fincas;
 using PSA.WebApp.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -42,13 +43,15 @@ namespace PSA.WebApp.Controllers
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
             if (detalle == null) return RedirectToAction(nameof(FincasPendientes));
+            var evidencias = await ObtenerEvidenciasPorFincaAsync(client, detalle.IdFinca);
 
             CargarCatalogosEvaluacion();
 
             return View(new NuevaEvaluacionViewModel
             {
                 Detalle = detalle,
-                Formulario = new RegistrarResultadoEvaluacionDTO { FechaVisita = DateTime.Today }
+                Formulario = new RegistrarResultadoEvaluacionDTO { FechaVisita = DateTime.Today },
+                EvidenciasExistentes = evidencias
             });
         }
 
@@ -62,6 +65,8 @@ namespace PSA.WebApp.Controllers
             if (!response.IsSuccessStatusCode)
             {
                 TempData["MensajeError"] = "No fue posible guardar la evaluación.";
+                model.Detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new();
+                model.EvidenciasExistentes = await ObtenerEvidenciasPorFincaAsync(client, model.Detalle.IdFinca);
                 CargarCatalogosEvaluacion();
                 return View(model);
             }
@@ -133,6 +138,12 @@ namespace PSA.WebApp.Controllers
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        private static async Task<List<FincaEvidenciaDTO>> ObtenerEvidenciasPorFincaAsync(HttpClient client, int idFinca)
+        {
+            if (idFinca <= 0) return new();
+            return await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/finca/{idFinca}") ?? new();
+        }
 
         private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idFinca, int idUsuario, List<IFormFile> archivos)
         {
