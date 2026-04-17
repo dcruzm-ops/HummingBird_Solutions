@@ -49,6 +49,17 @@ BEGIN
         RETURN;
     END
 
+    DECLARE @TablaRolPermisos SYSNAME = CASE
+        WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
+        WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
+        ELSE NULL
+    END;
+
+    IF @TablaRolPermisos IS NULL
+    BEGIN
+        THROW 50002, 'No existe tabla de relación de roles/permisos (RolesPermisos o RolPermisos).', 1;
+    END
+
     BEGIN TRY
         BEGIN TRANSACTION;
 
