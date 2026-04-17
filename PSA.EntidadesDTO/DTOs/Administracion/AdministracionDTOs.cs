@@ -29,6 +29,12 @@ namespace PSA.EntidadesDTO.DTOs.Administracion
         public int MaximoRegistros { get; set; } = 50;
     }
 
+    public class AuditoriaOpcionesFiltroDTO
+    {
+        public List<string> Modulos { get; set; } = new();
+        public List<string> Acciones { get; set; } = new();
+    }
+
     public class ConfiguracionPagoAdminDTO
     {
         public int IdConfiguracionPago { get; set; }
@@ -85,6 +91,14 @@ namespace PSA.EntidadesDTO.DTOs.Administracion
         public int IdRol { get; set; }
 
         public List<string> CodigosPermiso { get; set; } = new();
+    }
+
+    public class CrearRolDTO
+    {
+        [Required(ErrorMessage = "El nombre del rol es obligatorio.")]
+        public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+        public bool Activo { get; set; } = true;
     }
 
     public class PermisoDTO
