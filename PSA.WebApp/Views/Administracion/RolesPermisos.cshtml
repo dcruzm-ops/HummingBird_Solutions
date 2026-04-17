@@ -11,6 +11,16 @@
         </div>
     </div>
 
+    @if (Model.Roles.Count == 0)
+    {
+        <div class="alert alert-warning">No hay roles disponibles para configurar.</div>
+    }
+
+    @if (Model.PermisosDisponibles.Count == 0)
+    {
+        <div class="alert alert-info">No hay permisos registrados en el catálogo. Ejecuta el script de base de datos de administración para cargar permisos.</div>
+    }
+
     @for (var i = 0; i < Model.Roles.Count; i++)
     {
         var rol = Model.Roles[i];
@@ -30,10 +40,11 @@
                         @foreach (var permiso in Model.PermisosDisponibles)
                         {
                             var checkedPermiso = rol.CodigosPermisoAsignados.Contains(permiso.Codigo);
+                            var controlId = $"permiso_{rol.IdRol}_{permiso.IdPermiso}";
                             <div class="col">
                                 <div class="form-check border rounded p-3 h-100">
-                                    <input class="form-check-input" type="checkbox" name="CodigosPermiso" value="@permiso.Codigo" id="permiso_@rol.IdRol_@permiso.IdPermiso" @(checkedPermiso ? "checked" : string.Empty) />
-                                    <label class="form-check-label ms-1" for="permiso_@rol.IdRol_@permiso.IdPermiso">
+                                    <input class="form-check-input" type="checkbox" name="CodigosPermiso" value="@permiso.Codigo" id="@controlId" @(checkedPermiso ? "checked" : string.Empty) />
+                                    <label class="form-check-label ms-1" for="@controlId">
                                         <strong>@permiso.Nombre</strong><br />
                                         <span class="text-muted small">@permiso.Descripcion</span>
                                     </label>

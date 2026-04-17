@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using PSA.EntidadesDTO.DTOs.Administracion;
 
 using PSA.DataAccess;
 
@@ -65,6 +66,114 @@ VALUES
 
             await connection.OpenAsync();
             await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task<List<AuditoriaEventoDTO>> ObtenerEventosAsync(AuditoriaFiltroDTO filtro)
+        {
+            var sql = @"
+SELECT TOP (@MaximoRegistros)
+    a.IdLog,
+    a.IdUsuario,
+    u.NombreCompleto AS NombreUsuario,
+    a.Modulo,
+    a.TablaAfectada,
+    a.IdRegistroAfectado,
+    a.Accion,
+    a.Detalle,
+    a.IpOrigen,
+    a.FechaAccion,
+    a.ValorAnterior,
+    a.ValorNuevo
+FROM dbo.AuditoriaLog a
+LEFT JOIN dbo.Usuarios u ON u.IdUsuario = a.IdUsuario
+WHERE (@Modulo IS NULL OR a.Modulo = @Modulo)
+  AND (@Accion IS NULL OR a.Accion = @Accion)
+  AND (@FechaDesde IS NULL OR a.FechaAccion >= @FechaDesde)
+  AND (@FechaHasta IS NULL OR a.FechaAccion <= @FechaHasta)
+ORDER BY a.IdLog DESC;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@MaximoRegistros", filtro.MaximoRegistros <= 0 ? 50 : filtro.MaximoRegistros);
+            command.Parameters.AddWithValue("@Modulo", (object?)filtro.Modulo ?? DBNull.Value);
+            command.Parameters.AddWithValue("@Accion", (object?)filtro.Accion ?? DBNull.Value);
+            command.Parameters.AddWithValue("@FechaDesde", (object?)filtro.FechaDesde ?? DBNull.Value);
+            command.Parameters.AddWithValue("@FechaHasta", (object?)filtro.FechaHasta ?? DBNull.Value);
+
+            var eventos = new List<AuditoriaEventoDTO>();
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                eventos.Add(new AuditoriaEventoDTO
+                {
+                    IdLog = reader.GetInt32(reader.GetOrdinal("IdLog")),
+                    IdUsuario = reader["IdUsuario"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                    NombreUsuario = reader["NombreUsuario"] == DBNull.Value ? null : reader["NombreUsuario"]?.ToString(),
+                    Modulo = reader["Modulo"]?.ToString() ?? string.Empty,
+                    TablaAfectada = reader["TablaAfectada"]?.ToString() ?? string.Empty,
+                    IdRegistroAfectado = reader["IdRegistroAfectado"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdRegistroAfectado")),
+                    Accion = reader["Accion"]?.ToString() ?? string.Empty,
+                    Detalle = reader["Detalle"] == DBNull.Value ? null : reader["Detalle"]?.ToString(),
+                    IpOrigen = reader["IpOrigen"] == DBNull.Value ? null : reader["IpOrigen"]?.ToString(),
+                    FechaAccion = reader.GetDateTime(reader.GetOrdinal("FechaAccion")),
+                    ValorAnterior = reader["ValorAnterior"] == DBNull.Value ? null : reader["ValorAnterior"]?.ToString(),
+                    ValorNuevo = reader["ValorNuevo"] == DBNull.Value ? null : reader["ValorNuevo"]?.ToString()
+                });
+            }
+
+            return eventos;
+        }
+
+        public async Task<AuditoriaOpcionesFiltroDTO> ObtenerOpcionesFiltroAsync(string? modulo = null)
+        {
+            const string sqlModulos = @"
+SELECT DISTINCT a.Modulo
+FROM dbo.AuditoriaLog a
+WHERE a.Modulo IS NOT NULL AND LTRIM(RTRIM(a.Modulo)) <> ''
+ORDER BY a.Modulo;";
+
+            const string sqlAcciones = @"
+SELECT DISTINCT a.Accion
+FROM dbo.AuditoriaLog a
+WHERE a.Accion IS NOT NULL
+  AND LTRIM(RTRIM(a.Accion)) <> ''
+  AND (@Modulo IS NULL OR a.Modulo = @Modulo)
+ORDER BY a.Accion;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            var opciones = new AuditoriaOpcionesFiltroDTO();
+
+            using (var commandModulos = new SqlCommand(sqlModulos, connection))
+            using (var reader = await commandModulos.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    var valor = reader["Modulo"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(valor))
+                    {
+                        opciones.Modulos.Add(valor);
+                    }
+                }
+            }
+
+            using (var commandAcciones = new SqlCommand(sqlAcciones, connection))
+            {
+                commandAcciones.Parameters.AddWithValue("@Modulo", string.IsNullOrWhiteSpace(modulo) ? DBNull.Value : modulo);
+                using var reader = await commandAcciones.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var valor = reader["Accion"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(valor))
+                    {
+                        opciones.Acciones.Add(valor);
+                    }
+                }
+            }
+
+            return opciones;
         }
     }
 }
