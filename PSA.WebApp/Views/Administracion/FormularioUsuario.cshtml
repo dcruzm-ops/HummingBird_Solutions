@@ -35,7 +35,7 @@
                     </div>
                     <div class="col-md-4">
                         <label asp-for="Usuario.IdRol" class="form-label">Rol</label>
-                        <select asp-for="Usuario.IdRol" class="form-select" asp-items="@(new SelectList(Model.Roles, "IdRol", "Nombre"))">
+                        <select asp-for="Usuario.IdRol" class="form-select" asp-items="@(new SelectList(Model.Roles, "Id", "Nombre"))">
                             <option value="">Seleccione...</option>
                         </select>
                         <span asp-validation-for="Usuario.IdRol" class="text-danger"></span>

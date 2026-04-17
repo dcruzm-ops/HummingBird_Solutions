@@ -18,6 +18,9 @@
 		<Compile Include="DAO\FincaDAO.cs" />
 		<Compile Include="DAO\DashboardDAO.cs" />
 		<Compile Include="DAO\AuditoriaLogDAO.cs" />
+		<Compile Include="DAO\RolPermisoDAO.cs" />
+		<Compile Include="DAO\ConfiguracionPagoDAO.cs" />
+		<Compile Include="DAO\CuentaBancariaDAO.cs" />
 		<Compile Include="DAO\EvaluacionTecnicaDAO.cs" />
 		<Compile Include="DAO\RecuperacionContrasenaDAO.cs" />
 		<Compile Include="DAO\ReportesDAO.cs" />
