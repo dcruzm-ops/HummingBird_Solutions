@@ -181,4 +181,33 @@ WHERE TABLE_SCHEMA = 'dbo'
         var result = await command.ExecuteScalarAsync();
         return Convert.ToInt32(result ?? 0) > 0;
     }
+
+    public async Task<List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>> ObtenerRolesAsync()
+    {
+        const string sql = @"
+SELECT IdRol, Nombre, Descripcion
+FROM dbo.Roles
+WHERE Estado = 'Activo'
+ORDER BY Nombre;";
+
+        var roles = new List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>();
+
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            roles.Add(new PSA.EntidadesDTO.DTOs.Usuarios.RolDTO
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("IdRol")),
+                Nombre = reader["Nombre"]?.ToString() ?? string.Empty,
+                Descripcion = reader["Descripcion"] == DBNull.Value ? null : reader["Descripcion"]?.ToString()
+            });
+        }
+
+        return roles;
+    }
 }
