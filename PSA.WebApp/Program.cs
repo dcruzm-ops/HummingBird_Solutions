@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using PSA.WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,8 @@ if (builder.Environment.IsDevelopment())
         ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
     });
 }
+
+builder.Services.AddScoped<HttpClientService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

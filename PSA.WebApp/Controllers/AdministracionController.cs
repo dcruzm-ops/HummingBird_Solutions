@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs.Administracion;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.WebApp.Models;
 using PSA.WebApp.Services;
 
