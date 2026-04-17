@@ -29,6 +29,12 @@ namespace PSA.EntidadesDTO.DTOs.Administracion
         public int MaximoRegistros { get; set; } = 50;
     }
 
+    public class AuditoriaOpcionesFiltroDTO
+    {
+        public List<string> Modulos { get; set; } = new();
+        public List<string> Acciones { get; set; } = new();
+    }
+
     public class ConfiguracionPagoAdminDTO
     {
         public int IdConfiguracionPago { get; set; }

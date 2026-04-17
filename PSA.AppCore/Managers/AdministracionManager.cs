@@ -212,6 +212,9 @@ public class AdministracionManager
     public Task<List<AuditoriaEventoDTO>> ObtenerEventosAuditoriaAsync(AuditoriaFiltroDTO filtro)
         => _auditoriaLogDao.ObtenerEventosAsync(filtro);
 
+    public Task<AuditoriaOpcionesFiltroDTO> ObtenerOpcionesFiltroAuditoriaAsync(string? modulo = null)
+        => _auditoriaLogDao.ObtenerOpcionesFiltroAsync(modulo);
+
     private static void ValidarUsuarioAdmin(UsuarioAdminEdicionDTO model, bool requiereContrasena)
     {
         if (string.IsNullOrWhiteSpace(model.NombreCompleto))

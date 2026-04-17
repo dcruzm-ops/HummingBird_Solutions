@@ -45,6 +45,7 @@ namespace PSA.WebApp.Models
     public class AuditoriaLogsViewModel
     {
         public AuditoriaFiltroDTO Filtro { get; set; } = new();
+        public AuditoriaOpcionesFiltroDTO OpcionesFiltro { get; set; } = new();
         public List<AuditoriaEventoDTO> Eventos { get; set; } = new();
     }
 }

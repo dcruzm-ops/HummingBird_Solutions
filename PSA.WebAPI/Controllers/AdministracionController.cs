@@ -195,5 +195,12 @@ namespace PSA.WebAPI.Controllers
             });
             return Ok(eventos);
         }
+
+        [HttpGet("auditoria/opciones-filtro")]
+        public async Task<ActionResult<AuditoriaOpcionesFiltroDTO>> ObtenerOpcionesFiltroAuditoria([FromQuery] string? modulo)
+        {
+            var opciones = await _administracionManager.ObtenerOpcionesFiltroAuditoriaAsync(modulo);
+            return Ok(opciones);
+        }
     }
 }

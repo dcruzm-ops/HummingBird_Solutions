@@ -19,34 +19,42 @@ public class ConfiguracionPagoDAO
         await connection.OpenAsync();
 
         var columnas = await ObtenerColumnasConfiguracionPagoAsync(connection);
-
-        var insertColumns = new List<string>();
-        var insertParams = new List<string>();
-        using var command = new SqlCommand { Connection = connection };
-
-        AgregarSiExiste("Version", dto.Version <= 0 ? 1 : dto.Version);
-        AgregarSiExiste("NombreVersion", dto.NombreVersion);
-        AgregarSiExiste("PrecioBasePorHectarea", dto.PrecioBasePorHectarea);
-        AgregarSiExiste("PorcentajeTopeAjuste", dto.TopePorcentajeAjuste);
-        AgregarSiExiste("TopePorcentajeAjuste", dto.TopePorcentajeAjuste);
-        AgregarSiExiste("FechaVigenciaDesde", dto.FechaVigenciaDesde);
-        AgregarSiExiste("FechaVigenciaHasta", dto.FechaVigenciaHasta);
-        AgregarSiExiste("Estado", dto.Activa ? "Activa" : "Inactiva");
-        AgregarSiExiste("IdAdministrador", dto.CreadoPor);
-        AgregarSiExiste("CreadoPor", dto.CreadoPor);
-
-        if (columnas.Contains("FechaCreacion", StringComparer.OrdinalIgnoreCase))
+        var versionCalculada = dto.Version;
+        var autoGenerarVersion = versionCalculada <= 0 && columnas.Contains("Version", StringComparer.OrdinalIgnoreCase);
+        if (autoGenerarVersion)
         {
-            insertColumns.Add("FechaCreacion");
-            insertParams.Add("SYSUTCDATETIME()");
+            versionCalculada = await ObtenerSiguienteVersionAsync(connection);
         }
 
-        if (insertColumns.Count == 0)
+        for (var intento = 0; intento < 2; intento++)
         {
-            throw new InvalidOperationException("No hay columnas válidas para insertar en ConfiguracionesPago.");
-        }
+            var insertColumns = new List<string>();
+            var insertParams = new List<string>();
+            using var command = new SqlCommand { Connection = connection };
 
-        var sql = $@"
+            AgregarSiExiste("Version", versionCalculada <= 0 ? 1 : versionCalculada);
+            AgregarSiExiste("NombreVersion", dto.NombreVersion);
+            AgregarSiExiste("PrecioBasePorHectarea", dto.PrecioBasePorHectarea);
+            AgregarSiExiste("PorcentajeTopeAjuste", dto.TopePorcentajeAjuste);
+            AgregarSiExiste("TopePorcentajeAjuste", dto.TopePorcentajeAjuste);
+            AgregarSiExiste("FechaVigenciaDesde", dto.FechaVigenciaDesde);
+            AgregarSiExiste("FechaVigenciaHasta", dto.FechaVigenciaHasta);
+            AgregarSiExiste("Estado", dto.Activa ? "Activa" : "Inactiva");
+            AgregarSiExiste("IdAdministrador", dto.CreadoPor);
+            AgregarSiExiste("CreadoPor", dto.CreadoPor);
+
+            if (columnas.Contains("FechaCreacion", StringComparer.OrdinalIgnoreCase))
+            {
+                insertColumns.Add("FechaCreacion");
+                insertParams.Add("SYSUTCDATETIME()");
+            }
+
+            if (insertColumns.Count == 0)
+            {
+                throw new InvalidOperationException("No hay columnas válidas para insertar en ConfiguracionesPago.");
+            }
+
+            var sql = $@"
 INSERT INTO dbo.ConfiguracionesPago
 (
     {string.Join(", ", insertColumns)}
@@ -57,23 +65,33 @@ VALUES
 );
 SELECT CAST(SCOPE_IDENTITY() AS int);";
 
-        command.CommandText = sql;
+            command.CommandText = sql;
 
-        var result = await command.ExecuteScalarAsync();
-        return Convert.ToInt32(result ?? 0);
-
-        void AgregarSiExiste(string columna, object? valor)
-        {
-            if (!columnas.Contains(columna, StringComparer.OrdinalIgnoreCase))
+            try
             {
-                return;
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result ?? 0);
+            }
+            catch (SqlException ex) when (autoGenerarVersion && EsErrorVersionDuplicada(ex) && intento == 0)
+            {
+                versionCalculada = await ObtenerSiguienteVersionAsync(connection);
             }
 
-            var parametro = $"@{columna}";
-            insertColumns.Add(columna);
-            insertParams.Add(parametro);
-            command.Parameters.AddWithValue(parametro, valor ?? DBNull.Value);
+            void AgregarSiExiste(string columna, object? valor)
+            {
+                if (!columnas.Contains(columna, StringComparer.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
+                var parametro = $"@{columna}";
+                insertColumns.Add(columna);
+                insertParams.Add(parametro);
+                command.Parameters.AddWithValue(parametro, valor ?? DBNull.Value);
+            }
         }
+
+        throw new InvalidOperationException("No fue posible guardar la configuración de pago por conflicto de versión.");
     }
 
     public async Task<ConfiguracionPagoAdminDTO?> ObtenerConfiguracionVigenteAsync()
@@ -274,5 +292,21 @@ WHERE TABLE_SCHEMA = 'dbo'
 
         var raw = reader.GetValue(ordinal.Value);
         return raw is bool b ? b : bool.TryParse(raw?.ToString(), out var parsed) ? parsed : null;
+    }
+
+    private static bool EsErrorVersionDuplicada(SqlException ex)
+    {
+        return (ex.Number == 2627 || ex.Number == 2601)
+               && ex.Message.Contains("UQ_ConfiguracionesPago_Version", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task<int> ObtenerSiguienteVersionAsync(SqlConnection connection)
+    {
+        const string sql = @"
+SELECT ISNULL(MAX(Version), 0) + 1
+FROM dbo.ConfiguracionesPago;";
+        using var command = new SqlCommand(sql, connection);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 1);
     }
 }

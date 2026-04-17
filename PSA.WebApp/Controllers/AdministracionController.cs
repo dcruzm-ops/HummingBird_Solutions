@@ -257,6 +257,9 @@ namespace PSA.WebApp.Controllers
             }
 
             var eventos = await _httpClientService.GetAsync<List<AuditoriaEventoDTO>>(endpoint) ?? new();
+            var opcionesFiltro = await _httpClientService.GetAsync<AuditoriaOpcionesFiltroDTO>(
+                $"api/Administracion/auditoria/opciones-filtro{(string.IsNullOrWhiteSpace(modulo) ? string.Empty : $"?modulo={Uri.EscapeDataString(modulo)}")}")
+                ?? new AuditoriaOpcionesFiltroDTO();
 
             var model = new AuditoriaLogsViewModel
             {
@@ -268,6 +271,7 @@ namespace PSA.WebApp.Controllers
                     FechaHasta = fechaHasta,
                     MaximoRegistros = maximoRegistros
                 },
+                OpcionesFiltro = opcionesFiltro,
                 Eventos = eventos
             };
 

@@ -124,5 +124,56 @@ ORDER BY a.IdLog DESC;";
 
             return eventos;
         }
+
+        public async Task<AuditoriaOpcionesFiltroDTO> ObtenerOpcionesFiltroAsync(string? modulo = null)
+        {
+            const string sqlModulos = @"
+SELECT DISTINCT a.Modulo
+FROM dbo.AuditoriaLog a
+WHERE a.Modulo IS NOT NULL AND LTRIM(RTRIM(a.Modulo)) <> ''
+ORDER BY a.Modulo;";
+
+            const string sqlAcciones = @"
+SELECT DISTINCT a.Accion
+FROM dbo.AuditoriaLog a
+WHERE a.Accion IS NOT NULL
+  AND LTRIM(RTRIM(a.Accion)) <> ''
+  AND (@Modulo IS NULL OR a.Modulo = @Modulo)
+ORDER BY a.Accion;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            var opciones = new AuditoriaOpcionesFiltroDTO();
+
+            using (var commandModulos = new SqlCommand(sqlModulos, connection))
+            using (var reader = await commandModulos.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    var valor = reader["Modulo"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(valor))
+                    {
+                        opciones.Modulos.Add(valor);
+                    }
+                }
+            }
+
+            using (var commandAcciones = new SqlCommand(sqlAcciones, connection))
+            {
+                commandAcciones.Parameters.AddWithValue("@Modulo", string.IsNullOrWhiteSpace(modulo) ? DBNull.Value : modulo);
+                using var reader = await commandAcciones.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    var valor = reader["Accion"]?.ToString();
+                    if (!string.IsNullOrWhiteSpace(valor))
+                    {
+                        opciones.Acciones.Add(valor);
+                    }
+                }
+            }
+
+            return opciones;
+        }
     }
 }

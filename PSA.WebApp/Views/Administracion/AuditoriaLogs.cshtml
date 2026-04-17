@@ -15,11 +15,23 @@
         <form method="get" asp-action="AuditoriaLogs" class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label asp-for="Filtro.Modulo" class="form-label">Módulo</label>
-                <input asp-for="Filtro.Modulo" name="modulo" class="form-control" />
+                <select asp-for="Filtro.Modulo" name="modulo" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach (var modulo in Model.OpcionesFiltro.Modulos)
+                    {
+                        <option value="@modulo">@modulo</option>
+                    }
+                </select>
             </div>
             <div class="col-md-3">
                 <label asp-for="Filtro.Accion" class="form-label">Acción</label>
-                <input asp-for="Filtro.Accion" name="accion" class="form-control" />
+                <select asp-for="Filtro.Accion" name="accion" class="form-select">
+                    <option value="">Todas</option>
+                    @foreach (var accion in Model.OpcionesFiltro.Acciones)
+                    {
+                        <option value="@accion">@accion</option>
+                    }
+                </select>
             </div>
             <div class="col-md-2">
                 <label asp-for="Filtro.FechaDesde" class="form-label">Desde</label>
