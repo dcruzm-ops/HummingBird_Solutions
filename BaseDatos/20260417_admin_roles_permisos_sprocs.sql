@@ -33,14 +33,27 @@ BEGIN
 
     IF (@IdRol IS NULL OR @IdRol <= 0)
     BEGIN
-        THROW 50001, 'El IdRol debe ser mayor a cero.', 1;
+        RAISERROR('El IdRol debe ser mayor a cero.', 16, 1);
+        RETURN;
+    END
+
+    DECLARE @TablaRolPermisos SYSNAME = CASE
+        WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
+        WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
+        ELSE NULL
+    END;
+
+    IF @TablaRolPermisos IS NULL
+    BEGIN
+        RAISERROR('No existe tabla de relación de roles/permisos (RolesPermisos o RolPermisos).', 16, 1);
+        RETURN;
     END
 
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        DELETE FROM dbo.RolesPermisos
-        WHERE IdRol = @IdRol;
+        DECLARE @SqlDelete nvarchar(max) = N'DELETE FROM ' + @TablaRolPermisos + N' WHERE IdRol = @IdRol;';
+        EXEC sp_executesql @SqlDelete, N'@IdRol int', @IdRol = @IdRol;
 
         ;WITH Codigos AS
         (
@@ -48,10 +61,18 @@ BEGIN
             FROM STRING_SPLIT(COALESCE(@CodigosPermisoCsv, ''), ',')
             WHERE LTRIM(RTRIM(value)) <> ''
         )
-        INSERT INTO dbo.RolesPermisos (IdRol, IdPermiso)
-        SELECT @IdRol, p.IdPermiso
-        FROM Codigos c
-        INNER JOIN dbo.Permisos p ON p.Codigo = c.Codigo;
+        SELECT c.Codigo
+        INTO #CodigosPermiso
+        FROM Codigos c;
+
+        DECLARE @SqlInsert nvarchar(max) = N'
+            INSERT INTO ' + @TablaRolPermisos + N' (IdRol, IdPermiso)
+            SELECT @IdRol, p.IdPermiso
+            FROM #CodigosPermiso c
+            INNER JOIN dbo.Permisos p ON p.Codigo = c.Codigo;';
+        EXEC sp_executesql @SqlInsert, N'@IdRol int', @IdRol = @IdRol;
+
+        DROP TABLE #CodigosPermiso;
 
         COMMIT TRANSACTION;
     END TRY
@@ -59,7 +80,10 @@ BEGIN
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
-        THROW;
+        DECLARE @MensajeError NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @SeveridadError INT = ERROR_SEVERITY();
+        DECLARE @EstadoError INT = ERROR_STATE();
+        RAISERROR(@MensajeError, @SeveridadError, @EstadoError);
     END CATCH
 END;
 GO
