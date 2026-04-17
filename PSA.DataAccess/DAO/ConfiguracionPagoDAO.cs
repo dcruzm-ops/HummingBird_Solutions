@@ -431,6 +431,103 @@ VALUES
             command.Parameters.AddWithValue("@PorcentajeAjuste", ajuste.PorcentajeAjuste);
             await command.ExecuteNonQueryAsync();
         }
+
+        const string sql = @"
+INSERT INTO dbo.ConfiguracionPagoDetalle
+(
+    IdConfiguracionPago,
+    TipoFactor,
+    ValorFactor,
+    PorcentajeAjuste
+)
+VALUES
+(
+    @IdConfiguracionPago,
+    @TipoFactor,
+    @ValorFactor,
+    @PorcentajeAjuste
+);";
+
+        foreach (var ajuste in ajustes)
+        {
+            using var command = new SqlCommand(sql, connection, tx);
+            command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
+            command.Parameters.AddWithValue("@TipoFactor", ajuste.TipoFactor ?? string.Empty);
+            command.Parameters.AddWithValue("@ValorFactor", ajuste.ValorFactor ?? string.Empty);
+            command.Parameters.AddWithValue("@PorcentajeAjuste", ajuste.PorcentajeAjuste);
+            await command.ExecuteNonQueryAsync();
+        }
+    }
+
+    private static async Task DesactivarOtrasConfiguracionesAsync(
+        SqlConnection connection,
+        SqlTransaction tx,
+        int idConfiguracionPago,
+        HashSet<string> columnas)
+    {
+        if (columnas.Contains("Estado", StringComparer.OrdinalIgnoreCase))
+        {
+            const string sqlEstado = @"
+UPDATE dbo.ConfiguracionesPago
+SET Estado = CASE WHEN IdConfiguracionPago = @IdConfiguracionPago THEN 'Activa' ELSE 'Inactiva' END
+WHERE Estado IS NOT NULL;";
+            using var command = new SqlCommand(sqlEstado, connection, tx);
+            command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        if (columnas.Contains("Activa", StringComparer.OrdinalIgnoreCase))
+        {
+            const string sqlActiva = @"
+UPDATE dbo.ConfiguracionesPago
+SET Activa = CASE WHEN IdConfiguracionPago = @IdConfiguracionPago THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END;";
+            using var command = new SqlCommand(sqlActiva, connection, tx);
+            command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var raw = reader.GetValue(ordinal.Value);
+        return raw is DateTime dt ? dt : DateTime.TryParse(raw?.ToString(), out var parsed) ? parsed : null;
+    }
+
+    private static bool? GetBool(SqlDataReader reader, string columna)
+    {
+        var ordinal = GetOrdinal(reader, columna);
+        if (!ordinal.HasValue || reader.IsDBNull(ordinal.Value))
+        {
+            return null;
+        }
+
+        var raw = reader.GetValue(ordinal.Value);
+        return raw is bool b ? b : bool.TryParse(raw?.ToString(), out var parsed) ? parsed : null;
+    }
+
+    private static bool EsErrorVersionDuplicada(SqlException ex)
+    {
+        return (ex.Number == 2627 || ex.Number == 2601)
+               && ex.Message.Contains("UQ_ConfiguracionesPago_Version", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task<int> ObtenerSiguienteVersionAsync(SqlConnection connection)
+    {
+        const string sql = @"
+SELECT ISNULL(MAX(Version), 0) + 1
+FROM dbo.ConfiguracionesPago;";
+        using var command = new SqlCommand(sql, connection);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 1);
+    }
+
+    private static async Task<bool> ExisteTablaDetalleAsync(SqlConnection connection, SqlTransaction? tx = null)
+    {
+        const string sql = @"
+SELECT COUNT(1)
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = 'dbo'
+  AND TABLE_NAME = 'ConfiguracionPagoDetalle';";
+        using var command = tx == null ? new SqlCommand(sql, connection) : new SqlCommand(sql, connection, tx);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0) > 0;
     }
 
     private static async Task DesactivarOtrasConfiguracionesAsync(
