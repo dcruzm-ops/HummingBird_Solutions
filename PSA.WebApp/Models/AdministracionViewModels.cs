@@ -28,6 +28,7 @@ namespace PSA.WebApp.Models
     {
         public List<RolPermisoDTO> Roles { get; set; } = new();
         public List<PermisoDTO> PermisosDisponibles { get; set; } = new();
+        public CrearRolDTO NuevoRol { get; set; } = new();
     }
 
     public class ParametrosPagoViewModel

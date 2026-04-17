@@ -186,6 +186,8 @@ ORDER BY p.Codigo;";
             {
                 permisos.Add(MapPermiso(reader));
             }
+
+            await tx.CommitAsync();
         }
 
         return permisos;
@@ -219,6 +221,35 @@ ORDER BY Nombre;";
         }
 
         return roles;
+    }
+
+    public async Task<int> CrearRolAsync(CrearRolDTO dto)
+    {
+        ArgumentNullException.ThrowIfNull(dto);
+        if (string.IsNullOrWhiteSpace(dto.Nombre))
+        {
+            throw new ArgumentException("El nombre del rol es obligatorio.", nameof(dto.Nombre));
+        }
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
+        var sql = $@"
+INSERT INTO dbo.Roles (Nombre, Descripcion{(tieneEstado ? ", Estado" : string.Empty)})
+VALUES (@Nombre, @Descripcion{(tieneEstado ? ", @Estado" : string.Empty)});
+SELECT CAST(SCOPE_IDENTITY() AS int);";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@Nombre", dto.Nombre.Trim());
+        command.Parameters.AddWithValue("@Descripcion", (object?)dto.Descripcion?.Trim() ?? DBNull.Value);
+        if (tieneEstado)
+        {
+            command.Parameters.AddWithValue("@Estado", dto.Activo ? "Activo" : "Inactivo");
+        }
+
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0);
     }
 
     private static async Task<bool> ExisteColumnaEnRolesAsync(SqlConnection connection, string nombreColumna)

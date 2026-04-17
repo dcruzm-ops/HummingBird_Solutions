@@ -93,6 +93,14 @@ namespace PSA.EntidadesDTO.DTOs.Administracion
         public List<string> CodigosPermiso { get; set; } = new();
     }
 
+    public class CrearRolDTO
+    {
+        [Required(ErrorMessage = "El nombre del rol es obligatorio.")]
+        public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
+        public bool Activo { get; set; } = true;
+    }
+
     public class PermisoDTO
     {
         public int IdPermiso { get; set; }

@@ -7,96 +7,12 @@
         <div>
             <span class="eyebrow">Administración</span>
             <h2>Configuración de pagos</h2>
-            <p>Ajuste precio base por hectárea, porcentajes, topes y vigencias.</p>
+            <p>Historial de configuraciones vigentes y consulta de detalle por versión.</p>
         </div>
+        <button type="button" class="boton-primario" data-bs-toggle="modal" data-bs-target="#modalNuevaConfiguracionPago">
+            Crear nueva Configuración de Pagos
+        </button>
     </div>
-
-    @if (Model.ConfiguracionActual != null)
-    {
-        <section class="tarjeta-panel mb-3">
-            <h5>Configuración vigente</h5>
-            <div class="row g-3 mt-1">
-                <div class="col-md-3"><strong>Versión:</strong> @Model.ConfiguracionActual.NombreVersion</div>
-                <div class="col-md-3"><strong>Precio base:</strong> @Model.ConfiguracionActual.PrecioBasePorHectarea.ToString("N2")</div>
-                <div class="col-md-3"><strong>Tope ajuste %:</strong> @Model.ConfiguracionActual.TopePorcentajeAjuste.ToString("N2")</div>
-                <div class="col-md-3"><strong>Desde:</strong> @Model.ConfiguracionActual.FechaVigenciaDesde.ToString("yyyy-MM-dd")</div>
-            </div>
-        </section>
-    }
-
-    <section class="tarjeta-panel">
-        <h5>Nueva configuración</h5>
-        <form asp-action="GuardarConfiguracionPago" method="post" class="mt-3">
-            @Html.AntiForgeryToken()
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label asp-for="NuevaConfiguracion.NombreVersion" class="form-label"></label>
-                    <input asp-for="NuevaConfiguracion.NombreVersion" class="form-control" />
-                    <span asp-validation-for="NuevaConfiguracion.NombreVersion" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="NuevaConfiguracion.PrecioBasePorHectarea" class="form-label"></label>
-                    <input asp-for="NuevaConfiguracion.PrecioBasePorHectarea" class="form-control" />
-                    <span asp-validation-for="NuevaConfiguracion.PrecioBasePorHectarea" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="NuevaConfiguracion.TopePorcentajeAjuste" class="form-label"></label>
-                    <input asp-for="NuevaConfiguracion.TopePorcentajeAjuste" class="form-control" />
-                    <span asp-validation-for="NuevaConfiguracion.TopePorcentajeAjuste" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="NuevaConfiguracion.FechaVigenciaDesde" class="form-label"></label>
-                    <input asp-for="NuevaConfiguracion.FechaVigenciaDesde" type="date" class="form-control" />
-                    <span asp-validation-for="NuevaConfiguracion.FechaVigenciaDesde" class="text-danger"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="NuevaConfiguracion.FechaVigenciaHasta" class="form-label"></label>
-                    <input asp-for="NuevaConfiguracion.FechaVigenciaHasta" type="date" class="form-control" />
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <div class="form-check">
-                        <input asp-for="NuevaConfiguracion.Activa" class="form-check-input" />
-                        <label asp-for="NuevaConfiguracion.Activa" class="form-check-label">Marcar como activa</label>
-                    </div>
-                </div>
-            </div>
-
-            <h6 class="mt-4">Porcentajes de ajuste por parámetro</h6>
-            <div class="tabla-responsive">
-                <table class="tabla-base">
-                    <thead>
-                        <tr>
-                            <th>Tipo factor</th>
-                            <th>Valor factor</th>
-                            <th>% ajuste</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (var i = 0; i < Model.NuevaConfiguracion.Ajustes.Count; i++)
-                        {
-                            <tr>
-                                <td>
-                                    <input asp-for="NuevaConfiguracion.Ajustes[i].TipoFactor" class="form-control" readonly />
-                                </td>
-                                <td>
-                                    <input asp-for="NuevaConfiguracion.Ajustes[i].ValorFactor" class="form-control" readonly />
-                                </td>
-                                <td>
-                                    <input asp-for="NuevaConfiguracion.Ajustes[i].PorcentajeAjuste" class="form-control" />
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="fila-acciones-formulario mt-3">
-                <button type="submit" class="boton-primario">Guardar configuración</button>
-            </div>
-        </form>
-    </section>
 
     <section class="tarjeta-panel mt-3">
         <h5>Historial de configuraciones</h5>
@@ -109,23 +25,33 @@
                         <th>Tope %</th>
                         <th>Vigencia desde</th>
                         <th>Estado</th>
+                        <th>Detalle</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (Model.Historial.Count == 0)
                     {
-                        <tr><td colspan="5" class="text-center text-muted">Sin configuraciones registradas.</td></tr>
+                        <tr><td colspan="6" class="text-center text-muted">Sin configuraciones registradas.</td></tr>
                     }
                     else
                     {
                         @foreach (var item in Model.Historial)
                         {
                             <tr>
-                                <td>@item.NombreVersion</td>
+                                <td><strong>@item.NombreVersion</strong></td>
                                 <td>@item.PrecioBasePorHectarea.ToString("N2")</td>
                                 <td>@item.TopePorcentajeAjuste.ToString("N2")</td>
                                 <td>@item.FechaVigenciaDesde.ToString("yyyy-MM-dd")</td>
                                 <td>@(item.Activa ? "Activa" : "Inactiva")</td>
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary"
+                                            data-detalle-configuracion="@item.IdConfiguracionPago"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalDetalleConfiguracionPago">
+                                        Ver detalle
+                                    </button>
+                                </td>
                             </tr>
                         }
                     }
@@ -135,6 +61,103 @@
     </section>
 </section>
 
+<div class="modal fade" id="modalNuevaConfiguracionPago" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nueva configuración de pagos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="GuardarConfiguracionPago" method="post" class="mt-3">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="NuevaConfiguracion.NombreVersion" class="form-label"></label>
+                            <input asp-for="NuevaConfiguracion.NombreVersion" class="form-control" />
+                            <span asp-validation-for="NuevaConfiguracion.NombreVersion" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="NuevaConfiguracion.PrecioBasePorHectarea" class="form-label"></label>
+                            <input asp-for="NuevaConfiguracion.PrecioBasePorHectarea" class="form-control" />
+                            <span asp-validation-for="NuevaConfiguracion.PrecioBasePorHectarea" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="NuevaConfiguracion.TopePorcentajeAjuste" class="form-label"></label>
+                            <input asp-for="NuevaConfiguracion.TopePorcentajeAjuste" class="form-control" />
+                            <span asp-validation-for="NuevaConfiguracion.TopePorcentajeAjuste" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="NuevaConfiguracion.FechaVigenciaDesde" class="form-label"></label>
+                            <input asp-for="NuevaConfiguracion.FechaVigenciaDesde" type="date" class="form-control" />
+                            <span asp-validation-for="NuevaConfiguracion.FechaVigenciaDesde" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="NuevaConfiguracion.FechaVigenciaHasta" class="form-label"></label>
+                            <input asp-for="NuevaConfiguracion.FechaVigenciaHasta" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="form-check">
+                                <input asp-for="NuevaConfiguracion.Activa" class="form-check-input" checked="checked" />
+                                <label asp-for="NuevaConfiguracion.Activa" class="form-check-label">Marcar como activa</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4">Porcentajes de ajuste por parámetro</h6>
+                    <div class="tabla-responsive">
+                        <table class="tabla-base">
+                            <thead>
+                                <tr>
+                                    <th>Tipo factor</th>
+                                    <th>Valor factor</th>
+                                    <th>% ajuste</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (var i = 0; i < Model.NuevaConfiguracion.Ajustes.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input asp-for="NuevaConfiguracion.Ajustes[i].TipoFactor" class="form-control" readonly />
+                                        </td>
+                                        <td>
+                                            <input asp-for="NuevaConfiguracion.Ajustes[i].ValorFactor" class="form-control" readonly />
+                                        </td>
+                                        <td>
+                                            <input asp-for="NuevaConfiguracion.Ajustes[i].PorcentajeAjuste" class="form-control" />
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="fila-acciones-formulario mt-3">
+                        <button type="submit" class="boton-primario">Guardar configuración</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalDetalleConfiguracionPago" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalle de configuración</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body" id="contenedorDetalleConfiguracionPago">
+                <p class="text-muted mb-0">Cargando detalle...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
@@ -142,6 +165,31 @@
             if (window.psa && typeof window.psa.ocultarTrobberGlobal === "function") {
                 window.psa.ocultarTrobberGlobal();
             }
+
+            const modalCrear = document.getElementById("modalNuevaConfiguracionPago");
+            if (modalCrear && document.querySelector(".validation-summary-errors, .field-validation-error")) {
+                const instance = bootstrap.Modal.getOrCreateInstance(modalCrear);
+                instance.show();
+            }
+
+            document.querySelectorAll("[data-detalle-configuracion]").forEach(function (btn) {
+                btn.addEventListener("click", async function () {
+                    const id = btn.getAttribute("data-detalle-configuracion");
+                    const contenedor = document.getElementById("contenedorDetalleConfiguracionPago");
+                    contenedor.innerHTML = '<p class="text-muted mb-0">Cargando detalle...</p>';
+                    try {
+                        const response = await fetch(`@Url.Action("DetalleConfiguracionPago", "Administracion")?id=${id}`);
+                        if (!response.ok) {
+                            contenedor.innerHTML = '<div class="alert alert-danger">No fue posible cargar el detalle.</div>';
+                            return;
+                        }
+
+                        contenedor.innerHTML = await response.text();
+                    } catch {
+                        contenedor.innerHTML = '<div class="alert alert-danger">No fue posible cargar el detalle.</div>';
+                    }
+                });
+            });
         });
     </script>
 }

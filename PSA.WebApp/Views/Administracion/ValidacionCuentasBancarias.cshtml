@@ -27,7 +27,7 @@
                 <tbody>
                     @if (Model.CuentasPendientes.Count == 0)
                     {
-                        <tr><td colspan="5" class="text-center text-muted">No hay cuentas pendientes de validación.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">No hay cuentas bancarias registradas.</td></tr>
                     }
                     else
                     {
@@ -37,24 +37,31 @@
                                 <td>@cuenta.NombreUsuario</td>
                                 <td>@cuenta.Banco</td>
                                 <td>@cuenta.NumeroCuenta</td>
-                                <td><span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion</span></td>
+                                <td><span class="badge-estado @(cuenta.EstadoValidacion == "Pendiente" ? "badge-pendiente" : "badge-activa")">@cuenta.EstadoValidacion</span></td>
                                 <td>
-                                    <div class="d-flex flex-wrap gap-2">
-                                        <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
-                                            <input type="hidden" name="Aprobada" value="true" />
-                                            <input type="hidden" name="IdAdministrador" value="1" />
-                                            <button type="submit" class="boton-link border-0 bg-transparent p-0">Aprobar</button>
-                                        </form>
-                                        <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
-                                            <input type="hidden" name="Aprobada" value="false" />
-                                            <input type="hidden" name="IdAdministrador" value="1" />
-                                            <button type="submit" class="boton-link border-0 bg-transparent p-0 text-danger">Rechazar</button>
-                                        </form>
-                                    </div>
+                                    @if (cuenta.EstadoValidacion == "Pendiente")
+                                    {
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
+                                                <input type="hidden" name="Aprobada" value="true" />
+                                                <input type="hidden" name="IdAdministrador" value="1" />
+                                                <button type="submit" class="boton-link border-0 bg-transparent p-0">Aprobar</button>
+                                            </form>
+                                            <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
+                                                <input type="hidden" name="Aprobada" value="false" />
+                                                <input type="hidden" name="IdAdministrador" value="1" />
+                                                <button type="submit" class="boton-link border-0 bg-transparent p-0 text-danger">Rechazar</button>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Validación completada</span>
+                                    }
                                 </td>
                             </tr>
                         }

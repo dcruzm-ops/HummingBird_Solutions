@@ -151,6 +151,9 @@ public class AdministracionManager
     public Task<List<RolDTO>> ObtenerRolesAsync()
         => _rolPermisoDao.ObtenerRolesAsync();
 
+    public Task<int> CrearRolAsync(CrearRolDTO dto)
+        => _rolPermisoDao.CrearRolAsync(dto);
+
     public Task<List<RolPermisoDTO>> ObtenerRolesConPermisosAsync()
         => _rolPermisoDao.ObtenerRolesConPermisosAsync();
 
@@ -176,6 +179,9 @@ public class AdministracionManager
 
     public Task<List<ConfiguracionPagoAdminDTO>> ObtenerHistorialConfiguracionesAsync()
         => _configuracionPagoDao.ObtenerHistorialAsync();
+
+    public Task<ConfiguracionPagoAdminDTO?> ObtenerConfiguracionDetalleAsync(int idConfiguracionPago)
+        => _configuracionPagoDao.ObtenerConfiguracionDetalleAsync(idConfiguracionPago);
 
     public async Task CrearConfiguracionPagoAsync(ConfiguracionPagoAdminDTO model, int idAdmin, string? ip)
     {

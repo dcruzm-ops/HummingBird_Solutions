@@ -9,6 +9,7 @@
             <h2 class="mb-0">Configuración de roles y permisos</h2>
             <small class="text-muted">Asigne permisos funcionales a cada rol del sistema.</small>
         </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearRol">Crear rol</button>
     </div>
 
     @if (Model.Roles.Count == 0)
@@ -60,4 +61,36 @@
             </div>
         </div>
     }
+</div>
+
+<div class="modal fade" id="modalCrearRol" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="CrearRol" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title">Crear nuevo rol</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label asp-for="NuevoRol.Nombre" class="form-label"></label>
+                        <input asp-for="NuevoRol.Nombre" class="form-control" />
+                        <span asp-validation-for="NuevoRol.Nombre" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="NuevoRol.Descripcion" class="form-label"></label>
+                        <textarea asp-for="NuevoRol.Descripcion" class="form-control"></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input asp-for="NuevoRol.Activo" class="form-check-input" />
+                        <label asp-for="NuevoRol.Activo" class="form-check-label">Rol activo</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Crear rol</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

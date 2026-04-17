@@ -31,8 +31,7 @@ SELECT
     cb.FechaCreacion
 FROM dbo.CuentasBancarias cb
 INNER JOIN dbo.Usuarios u ON u.IdUsuario = cb.IdUsuario
-WHERE cb.EstadoValidacion = 'Pendiente'
-ORDER BY cb.FechaCreacion ASC;";
+ORDER BY cb.FechaCreacion DESC;";
 
         var resultado = new List<CuentaBancariaPendienteDTO>();
 

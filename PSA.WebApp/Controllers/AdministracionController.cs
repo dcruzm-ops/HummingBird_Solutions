@@ -163,10 +163,29 @@ namespace PSA.WebApp.Controllers
                         .GroupBy(x => x.IdPermiso)
                         .Select(x => x.First())
                         .OrderBy(x => x.Codigo)
-                        .ToList()
+                        .ToList(),
+                NuevoRol = new CrearRolDTO()
             };
 
             return View("RolesPermisosSimple", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearRol(CrearRolDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Debe indicar un nombre válido para el nuevo rol.";
+                return RedirectToAction(nameof(RolesPermisos));
+            }
+
+            var idRol = await _httpClientService.PostAsync<CrearRolDTO, int>("api/Administracion/roles", model);
+            TempData[idRol > 0 ? "Exito" : "Error"] = idRol > 0
+                ? "Rol creado correctamente."
+                : "No se pudo crear el rol.";
+
+            return RedirectToAction(nameof(RolesPermisos));
         }
 
         [HttpPost]
@@ -214,6 +233,18 @@ namespace PSA.WebApp.Controllers
 
             TempData["Exito"] = "Configuración de pago guardada correctamente.";
             return RedirectToAction(nameof(ParametrosPago));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DetalleConfiguracionPago(int id)
+        {
+            var detalle = await _httpClientService.GetAsync<ConfiguracionPagoAdminDTO>($"api/Administracion/configuracion-pago/{id}");
+            if (detalle == null)
+            {
+                return NotFound();
+            }
+
+            return PartialView("_DetalleConfiguracionPago", detalle);
         }
 
         [HttpGet]

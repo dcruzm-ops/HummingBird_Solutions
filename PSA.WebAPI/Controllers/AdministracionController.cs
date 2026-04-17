@@ -93,6 +93,13 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [HttpPost("roles")]
+        public async Task<ActionResult<int>> CrearRol([FromBody] CrearRolDTO model)
+        {
+            var idRol = await _administracionManager.CrearRolAsync(model);
+            return Ok(idRol);
+        }
+
         [HttpGet("roles-permisos")]
         public async Task<ActionResult<List<RolPermisoDTO>>> ObtenerRolesPermisos()
         {
@@ -157,6 +164,13 @@ namespace PSA.WebAPI.Controllers
         {
             var historial = await _administracionManager.ObtenerHistorialConfiguracionesAsync();
             return Ok(historial);
+        }
+
+        [HttpGet("configuracion-pago/{idConfiguracionPago:int}")]
+        public async Task<ActionResult<ConfiguracionPagoAdminDTO>> ObtenerDetalleConfiguracionPago(int idConfiguracionPago)
+        {
+            var detalle = await _administracionManager.ObtenerConfiguracionDetalleAsync(idConfiguracionPago);
+            return detalle == null ? NotFound() : Ok(detalle);
         }
 
         [HttpPost("configuracion-pago")]
