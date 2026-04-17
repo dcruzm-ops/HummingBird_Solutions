@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PSA.WebApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6fd1402ca79f21a3ed4a91231268869b4c2a78a9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fb77fdd3d242d2117d7aca7263dc2ad76b942d7a")]
 [assembly: System.Reflection.AssemblyProductAttribute("PSA.WebApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PSA.WebApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

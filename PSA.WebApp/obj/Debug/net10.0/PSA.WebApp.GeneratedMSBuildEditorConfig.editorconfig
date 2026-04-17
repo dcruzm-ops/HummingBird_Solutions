@@ -126,6 +126,22 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcm9kdWN0by5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/MiPerfil/CambiarContrasena.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWlQZXJmaWxcQ2FtYmlhckNvbnRyYXNlbmEuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/MiPerfil/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWlQZXJmaWxcRWRpdGFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/MiPerfil/InactivarCuenta.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWlQZXJmaWxcSW5hY3RpdmFyQ3VlbnRhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/MiPerfil/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTWlQZXJmaWxcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Proyectos/psa-costa-rica/PSA.WebApp/Views/Notificaciones/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTm90aWZpY2FjaW9uZXNcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 

@@ -225,6 +225,7 @@ C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\Humming
 C:\Users\jamen\OneDrive\Desktop\HummingBird_Solutions-yohel-feature-devp\HummingBird_Solutions-jared-feature-dev real\PSA-Costa-Rica\PSA.WebAPI\obj\Debug\net10.0\ref\PSA.WebAPI.dll
 C:\Proyectos\psa-costa-rica\PSA.WebAPI\bin\Debug\net10.0\appsettings.Development.json
 C:\Proyectos\psa-costa-rica\PSA.WebAPI\bin\Debug\net10.0\appsettings.json
+C:\Proyectos\psa-costa-rica\PSA.WebAPI\bin\Debug\net10.0\PSA.WebAPI.staticwebassets.runtime.json
 C:\Proyectos\psa-costa-rica\PSA.WebAPI\bin\Debug\net10.0\PSA.WebAPI.staticwebassets.endpoints.json
 C:\Proyectos\psa-costa-rica\PSA.WebAPI\bin\Debug\net10.0\PSA.WebAPI.exe
 C:\Proyectos\psa-costa-rica\PSA.WebAPI\bin\Debug\net10.0\PSA.WebAPI.deps.json

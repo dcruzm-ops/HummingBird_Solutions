@@ -67,6 +67,37 @@
         }
       }
     },
+    "/api/Autenticacion/asignar-rol": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarRolUsuarioDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarRolUsuarioDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarRolUsuarioDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Dashboard/dueno-resumen/{idUsuario}": {
       "get": {
         "tags": [
@@ -343,6 +374,78 @@
         }
       }
     },
+    "/api/FincaEvidencias/subir": {
+      "post": {
+        "tags": [
+          "FincaEvidencias"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "idFinca": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "cargadoPor": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "archivos": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "idFinca": {
+                  "style": "form"
+                },
+                "cargadoPor": {
+                  "style": "form"
+                },
+                "archivos": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/FincaEvidencias/por-finca/{idFinca}": {
+      "get": {
+        "tags": [
+          "FincaEvidencias"
+        ],
+        "parameters": [
+          {
+            "name": "idFinca",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Fincas/mis-fincas": {
       "get": {
         "tags": [
@@ -503,6 +606,93 @@
         "tags": [
           "Health"
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Landing/equipo": {
+      "get": {
+        "tags": [
+          "Landing"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Landing/producto": {
+      "get": {
+        "tags": [
+          "Landing"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Perfil/mi-perfil/{idUsuario}": {
+      "get": {
+        "tags": [
+          "Perfil"
+        ],
+        "parameters": [
+          {
+            "name": "idUsuario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Perfil"
+        ],
+        "parameters": [
+          {
+            "name": "idUsuario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarMiPerfilRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarMiPerfilRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarMiPerfilRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -972,10 +1162,38 @@
         },
         "additionalProperties": false
       },
+      "ActualizarMiPerfilRequest": {
+        "type": "object",
+        "properties": {
+          "nombreCompleto": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "AsignarEvaluacionDTO": {
         "type": "object",
         "properties": {
           "idIngeniero": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AsignarRolUsuarioDTO": {
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idRol": {
             "type": "integer",
             "format": "int32"
           }
@@ -1273,10 +1491,19 @@
       "name": "EvaluacionesTecnicas"
     },
     {
+      "name": "FincaEvidencias"
+    },
+    {
       "name": "Fincas"
     },
     {
       "name": "Health"
+    },
+    {
+      "name": "Landing"
+    },
+    {
+      "name": "Perfil"
     },
     {
       "name": "PSA.WebAPI"
