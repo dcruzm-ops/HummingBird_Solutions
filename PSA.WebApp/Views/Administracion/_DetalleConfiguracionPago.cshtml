@@ -1,0 +1,42 @@
+@model PSA.EntidadesDTO.DTOs.Administracion.ConfiguracionPagoAdminDTO
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3"><strong>Versión:</strong> @Model.NombreVersion</div>
+    <div class="col-md-3"><strong>Precio base:</strong> @Model.PrecioBasePorHectarea.ToString("N2")</div>
+    <div class="col-md-3"><strong>Tope ajuste %:</strong> @Model.TopePorcentajeAjuste.ToString("N2")</div>
+    <div class="col-md-3"><strong>Estado:</strong> @(Model.Activa ? "Activa" : "Inactiva")</div>
+    <div class="col-md-3"><strong>Vigencia desde:</strong> @Model.FechaVigenciaDesde.ToString("yyyy-MM-dd")</div>
+    <div class="col-md-3"><strong>Vigencia hasta:</strong> @(Model.FechaVigenciaHasta?.ToString("yyyy-MM-dd") ?? "Sin fecha")</div>
+    <div class="col-md-3"><strong>Creado por:</strong> @Model.CreadoPor</div>
+    <div class="col-md-3"><strong>Fecha creación:</strong> @Model.FechaCreacion.ToString("yyyy-MM-dd HH:mm")</div>
+</div>
+
+<h6>Detalle de factores de ajuste</h6>
+<div class="tabla-responsive">
+    <table class="tabla-base">
+        <thead>
+            <tr>
+                <th>Tipo factor</th>
+                <th>Valor factor</th>
+                <th>% ajuste</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Ajustes.Count == 0)
+            {
+                <tr><td colspan="3" class="text-center text-muted">No hay detalles registrados para esta configuración.</td></tr>
+            }
+            else
+            {
+                @foreach (var ajuste in Model.Ajustes)
+                {
+                    <tr>
+                        <td>@ajuste.TipoFactor</td>
+                        <td>@ajuste.ValorFactor</td>
+                        <td>@ajuste.PorcentajeAjuste.ToString("N2")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
