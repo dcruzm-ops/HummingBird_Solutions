@@ -4,6 +4,21 @@
 }
 
 <div class="container-fluid py-3">
+    @if (TempData["Exito"] is string mensajeExito && !string.IsNullOrWhiteSpace(mensajeExito))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="status">
+            @mensajeExito
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+    @if (TempData["Error"] is string mensajeError && !string.IsNullOrWhiteSpace(mensajeError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @mensajeError
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+        </div>
+    }
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h2 class="mb-0">Configuración de roles y permisos</h2>
@@ -66,7 +81,7 @@
 <div class="modal fade" id="modalCrearRol" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form asp-action="CrearRol" method="post">
+            <form asp-action="CrearRol" method="post" id="formCrearRol">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title">Crear nuevo rol</h5>
@@ -88,9 +103,31 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Crear rol</button>
+                    <button type="submit" class="btn btn-primary" id="btnCrearRol">
+                        <span class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true" id="spinnerCrearRol"></span>
+                        <span id="textoBtnCrearRol">Crear rol</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const formCrearRol = document.getElementById('formCrearRol');
+            const btnCrearRol = document.getElementById('btnCrearRol');
+            const spinnerCrearRol = document.getElementById('spinnerCrearRol');
+            const textoBtnCrearRol = document.getElementById('textoBtnCrearRol');
+
+            if (!formCrearRol || !btnCrearRol || !spinnerCrearRol || !textoBtnCrearRol) return;
+
+            formCrearRol.addEventListener('submit', function () {
+                btnCrearRol.disabled = true;
+                spinnerCrearRol.classList.remove('d-none');
+                textoBtnCrearRol.textContent = 'Guardando...';
+            });
+        })();
+    </script>
+}

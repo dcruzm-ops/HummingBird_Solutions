@@ -178,6 +178,7 @@ ORDER BY p.Codigo;";
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
+<<<<<<< HEAD
         var metadataEstado = await ObtenerMetadataColumnaAsync(connection, "Roles", "Estado");
         var metadataActivo = await ObtenerMetadataColumnaAsync(connection, "Roles", "Activo");
         var expresionActivo = ObtenerExpresionActivo("dbo.Roles", metadataEstado, metadataActivo);
@@ -185,6 +186,11 @@ ORDER BY p.Codigo;";
 SELECT IdRol, Nombre, Descripcion
 FROM dbo.Roles
 WHERE {expresionActivo} = CAST(1 AS bit)
+=======
+        const string sql = @"
+SELECT IdRol, Nombre, Descripcion
+FROM dbo.Roles
+>>>>>>> origin/codex/fix-compilation-errors-in-rolpermisodao-ipmjam
 ORDER BY Nombre;";
 
         var roles = new List<RolDTO>();
