@@ -1,5 +1,7 @@
 using Microsoft.Data.SqlClient;
+using System.Text;
 using PSA.EntidadesDTO.Entidades;
+using PSA.EntidadesDTO.DTOs.Administracion;
 using PSA.EntidadesDTO.DTOs.Usuarios;
 
 using PSA.DataAccess;
@@ -213,6 +215,159 @@ namespace PSA.DataAccess.DAO
             {
                 throw new InvalidOperationException("No se pudo asignar el rol al usuario indicado.");
             }
+        }
+
+        public async Task<List<UsuarioAdminListadoDTO>> ObtenerUsuariosAdminAsync(int? idRol = null)
+        {
+            var sql = new StringBuilder(@"
+SELECT
+    u.IdUsuario,
+    u.NombreCompleto,
+    u.Email,
+    u.IdRol,
+    r.Nombre AS NombreRol,
+    u.Estado,
+    u.FechaCreacion,
+    u.UltimoAcceso,
+    (SELECT COUNT(1) FROM dbo.Fincas f WHERE f.IdPropietario = u.IdUsuario) AS CantidadFincas,
+    (SELECT COUNT(1)
+     FROM dbo.EvaluacionesTecnicas e
+     INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+     WHERE f.IdPropietario = u.IdUsuario
+       AND e.EstadoEvaluacion IN ('Pendiente', 'En Proceso')) AS CantidadEvaluacionesActivas
+FROM dbo.Usuarios u
+INNER JOIN dbo.Roles r ON r.IdRol = u.IdRol");
+
+            if (idRol.HasValue)
+            {
+                sql.Append(" WHERE u.IdRol = @IdRol");
+            }
+
+            sql.Append(" ORDER BY u.Estado, u.NombreCompleto;");
+
+            var resultado = new List<UsuarioAdminListadoDTO>();
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql.ToString(), connection);
+            if (idRol.HasValue)
+            {
+                command.Parameters.AddWithValue("@IdRol", idRol.Value);
+            }
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                resultado.Add(new UsuarioAdminListadoDTO
+                {
+                    IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                    NombreCompleto = reader["NombreCompleto"]?.ToString() ?? string.Empty,
+                    Email = reader["Email"]?.ToString() ?? string.Empty,
+                    IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
+                    NombreRol = reader["NombreRol"]?.ToString() ?? string.Empty,
+                    Estado = reader["Estado"]?.ToString() ?? string.Empty,
+                    FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
+                    UltimoAcceso = reader["UltimoAcceso"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("UltimoAcceso")),
+                    CantidadFincas = reader.GetInt32(reader.GetOrdinal("CantidadFincas")),
+                    CantidadEvaluacionesActivas = reader.GetInt32(reader.GetOrdinal("CantidadEvaluacionesActivas"))
+                });
+            }
+
+            return resultado;
+        }
+
+        public async Task<UsuarioAdminEdicionDTO?> ObtenerUsuarioAdminPorIdAsync(int idUsuario)
+        {
+            const string sql = @"
+SELECT
+    IdUsuario,
+    NombreCompleto,
+    Email,
+    IdRol,
+    Estado
+FROM dbo.Usuarios
+WHERE IdUsuario = @IdUsuario;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            return new UsuarioAdminEdicionDTO
+            {
+                IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                NombreCompleto = reader["NombreCompleto"]?.ToString() ?? string.Empty,
+                Email = reader["Email"]?.ToString() ?? string.Empty,
+                IdRol = reader.GetInt32(reader.GetOrdinal("IdRol")),
+                Estado = reader["Estado"]?.ToString() ?? "Activo"
+            };
+        }
+
+        public async Task<int> ActualizarUsuarioAdminAsync(UsuarioAdminEdicionDTO dto, string? nuevoPasswordHash = null)
+        {
+            const string sql = @"
+UPDATE dbo.Usuarios
+SET
+    NombreCompleto = @NombreCompleto,
+    Email = @Email,
+    IdRol = @IdRol,
+    Estado = @Estado,
+    PasswordHash = COALESCE(@PasswordHash, PasswordHash)
+WHERE IdUsuario = @IdUsuario;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+
+            command.Parameters.AddWithValue("@IdUsuario", dto.IdUsuario);
+            command.Parameters.AddWithValue("@NombreCompleto", dto.NombreCompleto.Trim());
+            command.Parameters.AddWithValue("@Email", dto.Email.Trim());
+            command.Parameters.AddWithValue("@IdRol", dto.IdRol);
+            command.Parameters.AddWithValue("@Estado", dto.Estado.Trim());
+            command.Parameters.AddWithValue("@PasswordHash", (object?)nuevoPasswordHash ?? DBNull.Value);
+
+            await connection.OpenAsync();
+            return await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task<int> EliminarUsuarioAdminAsync(int idUsuario)
+        {
+            const string sql = @"
+UPDATE dbo.Usuarios
+SET Estado = 'Inactivo'
+WHERE IdUsuario = @IdUsuario;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+            await connection.OpenAsync();
+            return await command.ExecuteNonQueryAsync();
+        }
+
+        public async Task<int> ReasignarClientesAIngenieroAsync(int idPropietario, int idIngenieroDestino)
+        {
+            const string sql = @"
+UPDATE e
+SET e.IdIngeniero = @IdIngenieroDestino
+FROM dbo.EvaluacionesTecnicas e
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+WHERE f.IdPropietario = @IdPropietario;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdPropietario", idPropietario);
+            command.Parameters.AddWithValue("@IdIngenieroDestino", idIngenieroDestino);
+
+            await connection.OpenAsync();
+            return await command.ExecuteNonQueryAsync();
         }
     }
 }

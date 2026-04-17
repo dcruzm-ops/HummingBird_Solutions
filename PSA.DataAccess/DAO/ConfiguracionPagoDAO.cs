@@ -1,156 +1,145 @@
-using PSA.DataAccess.BaseDatos;
-using PSA.EntidadesDTO.DTOs.Administracion;
 using Microsoft.Data.SqlClient;
-using System.Data;
+using PSA.DataAccess;
+using PSA.EntidadesDTO.DTOs.Administracion;
 
-namespace PSA.DataAccess.DAO
+namespace PSA.DataAccess.DAO;
+
+public class ConfiguracionPagoDAO
 {
-    public class ConfiguracionPagoDAO
+    private readonly IDbConnectionFactory _connectionFactory;
+
+    public ConfiguracionPagoDAO(IDbConnectionFactory connectionFactory)
     {
-        private readonly DbContextHelper _dbContext;
+        _connectionFactory = connectionFactory;
+    }
 
-        public ConfiguracionPagoDAO(DbContextHelper dbContext)
+    public async Task<int> CrearConfiguracionAsync(ConfiguracionPagoAdminDTO dto)
+    {
+        const string sql = @"
+INSERT INTO dbo.ConfiguracionesPago
+(
+    Version,
+    NombreVersion,
+    PrecioBasePorHectarea,
+    PorcentajeTopeAjuste,
+    FechaVigenciaDesde,
+    FechaVigenciaHasta,
+    Estado,
+    IdAdministrador,
+    FechaCreacion
+)
+VALUES
+(
+    @Version,
+    @NombreVersion,
+    @PrecioBasePorHectarea,
+    @PorcentajeTopeAjuste,
+    @FechaVigenciaDesde,
+    @FechaVigenciaHasta,
+    CASE WHEN @Activa = 1 THEN 'Activa' ELSE 'Inactiva' END,
+    @IdAdministrador,
+    SYSUTCDATETIME()
+);
+SELECT CAST(SCOPE_IDENTITY() AS int);";
+
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+
+        command.Parameters.AddWithValue("@Version", dto.Version <= 0 ? 1 : dto.Version);
+        command.Parameters.AddWithValue("@NombreVersion", dto.NombreVersion);
+        command.Parameters.AddWithValue("@PrecioBasePorHectarea", dto.PrecioBasePorHectarea);
+        command.Parameters.AddWithValue("@PorcentajeTopeAjuste", dto.TopePorcentajeAjuste);
+        command.Parameters.AddWithValue("@FechaVigenciaDesde", dto.FechaVigenciaDesde);
+        command.Parameters.AddWithValue("@FechaVigenciaHasta", (object?)dto.FechaVigenciaHasta ?? DBNull.Value);
+        command.Parameters.AddWithValue("@Activa", dto.Activa);
+        command.Parameters.AddWithValue("@IdAdministrador", dto.CreadoPor);
+
+        await connection.OpenAsync();
+        return Convert.ToInt32(await command.ExecuteScalarAsync());
+    }
+
+    public async Task<ConfiguracionPagoAdminDTO?> ObtenerConfiguracionVigenteAsync()
+    {
+        const string sql = @"
+SELECT TOP 1
+    IdConfiguracionPago,
+    Version,
+    NombreVersion,
+    PrecioBasePorHectarea,
+    PorcentajeTopeAjuste,
+    FechaVigenciaDesde,
+    FechaVigenciaHasta,
+    Estado,
+    IdAdministrador,
+    FechaCreacion
+FROM dbo.ConfiguracionesPago
+WHERE Estado = 'Activa'
+ORDER BY FechaVigenciaDesde DESC, IdConfiguracionPago DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+
+        if (!await reader.ReadAsync())
         {
-            _dbContext = dbContext;
+            return null;
         }
 
-        public async Task<int> CrearConfiguracionAsync(ConfiguracionPagoAdminDTO dto)
+        return MapConfiguracion(reader);
+    }
+
+    public async Task<List<ConfiguracionPagoAdminDTO>> ObtenerHistorialAsync()
+    {
+        const string sql = @"
+SELECT
+    IdConfiguracionPago,
+    Version,
+    NombreVersion,
+    PrecioBasePorHectarea,
+    PorcentajeTopeAjuste,
+    FechaVigenciaDesde,
+    FechaVigenciaHasta,
+    Estado,
+    IdAdministrador,
+    FechaCreacion
+FROM dbo.ConfiguracionesPago
+ORDER BY FechaVigenciaDesde DESC, IdConfiguracionPago DESC;";
+
+        var resultado = new List<ConfiguracionPagoAdminDTO>();
+
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
         {
-            using var conn = _dbContext.CrearConexion();
-            await conn.OpenAsync();
-
-            using var tx = conn.BeginTransaction();
-            try
-            {
-                var cmd = conn.CreateCommand();
-                cmd.Transaction = tx;
-                cmd.CommandType = CommandType.StoredProcedure;
-                cmd.CommandText = "SP_CREAR_CONFIGURACION_PAGO";
-
-                cmd.Parameters.AddWithValue("@PrecioBasePorHectarea", dto.PrecioBasePorHectarea);
-                cmd.Parameters.AddWithValue("@PorcentajeTopeAjuste", dto.PorcentajeTopeAjuste);
-                cmd.Parameters.AddWithValue("@FechaVigenciaDesde", dto.FechaVigenciaDesde);
-                cmd.Parameters.AddWithValue("@Observaciones", (object?)dto.Observaciones ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@IdAdministrador", dto.IdAdministradorCreador ?? (object)DBNull.Value);
-
-                var idConfiguracion = Convert.ToInt32(await cmd.ExecuteScalarAsync());
-
-                if (dto.Ajustes != null)
-                {
-                    foreach (var ajuste in dto.Ajustes)
-                    {
-                        var cmdDetalle = conn.CreateCommand();
-                        cmdDetalle.Transaction = tx;
-                        cmdDetalle.CommandType = CommandType.StoredProcedure;
-                        cmdDetalle.CommandText = "SP_CREAR_CONFIGURACION_PAGO_AJUSTE";
-
-                        cmdDetalle.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracion);
-                        cmdDetalle.Parameters.AddWithValue("@TipoFactor", ajuste.TipoFactor);
-                        cmdDetalle.Parameters.AddWithValue("@ValorFactor", ajuste.ValorFactor);
-                        cmdDetalle.Parameters.AddWithValue("@PorcentajeAjuste", ajuste.PorcentajeAjuste);
-                        cmdDetalle.Parameters.AddWithValue("@Activo", ajuste.Activo);
-
-                        await cmdDetalle.ExecuteNonQueryAsync();
-                    }
-                }
-
-                tx.Commit();
-                return idConfiguracion;
-            }
-            catch
-            {
-                tx.Rollback();
-                throw;
-            }
+            resultado.Add(MapConfiguracion(reader));
         }
 
-        public async Task<ConfiguracionPagoAdminDTO?> ObtenerConfiguracionVigenteAsync()
+        return resultado;
+    }
+
+    private static ConfiguracionPagoAdminDTO MapConfiguracion(SqlDataReader reader)
+    {
+        var estado = reader["Estado"]?.ToString() ?? string.Empty;
+
+        return new ConfiguracionPagoAdminDTO
         {
-            using var conn = _dbContext.CrearConexion();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandText = "SP_OBTENER_CONFIGURACION_PAGO_VIGENTE";
-
-            await conn.OpenAsync();
-            using var reader = await cmd.ExecuteReaderAsync();
-
-            ConfiguracionPagoAdminDTO? configuracion = null;
-            while (await reader.ReadAsync())
-            {
-                if (configuracion == null)
-                {
-                    configuracion = new ConfiguracionPagoAdminDTO
-                    {
-                        IdConfiguracionPago = reader.GetInt32(reader.GetOrdinal("IdConfiguracionPago")),
-                        PrecioBasePorHectarea = reader.GetDecimal(reader.GetOrdinal("PrecioBasePorHectarea")),
-                        PorcentajeTopeAjuste = reader.GetDecimal(reader.GetOrdinal("PorcentajeTopeAjuste")),
-                        FechaVigenciaDesde = reader.GetDateTime(reader.GetOrdinal("FechaVigenciaDesde")),
-                        FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
-                        Observaciones = reader.IsDBNull(reader.GetOrdinal("Observaciones")) ? null : reader.GetString(reader.GetOrdinal("Observaciones")),
-                        Ajustes = new List<ConfiguracionPagoAjusteDTO>()
-                    };
-                }
-
-                if (!reader.IsDBNull(reader.GetOrdinal("IdConfiguracionPagoAjuste")))
-                {
-                    configuracion.Ajustes.Add(new ConfiguracionPagoAjusteDTO
-                    {
-                        IdConfiguracionPagoAjuste = reader.GetInt32(reader.GetOrdinal("IdConfiguracionPagoAjuste")),
-                        TipoFactor = reader.GetString(reader.GetOrdinal("TipoFactor")),
-                        ValorFactor = reader.GetString(reader.GetOrdinal("ValorFactor")),
-                        PorcentajeAjuste = reader.GetDecimal(reader.GetOrdinal("PorcentajeAjuste")),
-                        Activo = reader.GetBoolean(reader.GetOrdinal("Activo"))
-                    });
-                }
-            }
-
-            return configuracion;
-        }
-
-        public async Task<List<ConfiguracionPagoAdminDTO>> ObtenerHistorialAsync()
-        {
-            using var conn = _dbContext.CrearConexion();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandText = "SP_OBTENER_HISTORIAL_CONFIGURACION_PAGO";
-
-            await conn.OpenAsync();
-            using var reader = await cmd.ExecuteReaderAsync();
-
-            var configuraciones = new Dictionary<int, ConfiguracionPagoAdminDTO>();
-
-            while (await reader.ReadAsync())
-            {
-                var idConfiguracion = reader.GetInt32(reader.GetOrdinal("IdConfiguracionPago"));
-                if (!configuraciones.TryGetValue(idConfiguracion, out var configuracion))
-                {
-                    configuracion = new ConfiguracionPagoAdminDTO
-                    {
-                        IdConfiguracionPago = idConfiguracion,
-                        PrecioBasePorHectarea = reader.GetDecimal(reader.GetOrdinal("PrecioBasePorHectarea")),
-                        PorcentajeTopeAjuste = reader.GetDecimal(reader.GetOrdinal("PorcentajeTopeAjuste")),
-                        FechaVigenciaDesde = reader.GetDateTime(reader.GetOrdinal("FechaVigenciaDesde")),
-                        FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
-                        Observaciones = reader.IsDBNull(reader.GetOrdinal("Observaciones")) ? null : reader.GetString(reader.GetOrdinal("Observaciones")),
-                        Ajustes = new List<ConfiguracionPagoAjusteDTO>()
-                    };
-                    configuraciones[idConfiguracion] = configuracion;
-                }
-
-                if (!reader.IsDBNull(reader.GetOrdinal("IdConfiguracionPagoAjuste")))
-                {
-                    configuracion.Ajustes.Add(new ConfiguracionPagoAjusteDTO
-                    {
-                        IdConfiguracionPagoAjuste = reader.GetInt32(reader.GetOrdinal("IdConfiguracionPagoAjuste")),
-                        TipoFactor = reader.GetString(reader.GetOrdinal("TipoFactor")),
-                        ValorFactor = reader.GetString(reader.GetOrdinal("ValorFactor")),
-                        PorcentajeAjuste = reader.GetDecimal(reader.GetOrdinal("PorcentajeAjuste")),
-                        Activo = reader.GetBoolean(reader.GetOrdinal("Activo"))
-                    });
-                }
-            }
-
-            return configuraciones.Values.OrderByDescending(x => x.FechaVigenciaDesde).ToList();
-        }
+            IdConfiguracionPago = reader.GetInt32(reader.GetOrdinal("IdConfiguracionPago")),
+            Version = reader["Version"] == DBNull.Value ? 1 : reader.GetInt32(reader.GetOrdinal("Version")),
+            NombreVersion = reader["NombreVersion"]?.ToString() ?? string.Empty,
+            PrecioBasePorHectarea = reader.GetDecimal(reader.GetOrdinal("PrecioBasePorHectarea")),
+            TopePorcentajeAjuste = reader.GetDecimal(reader.GetOrdinal("PorcentajeTopeAjuste")),
+            FechaVigenciaDesde = reader.GetDateTime(reader.GetOrdinal("FechaVigenciaDesde")),
+            FechaVigenciaHasta = reader["FechaVigenciaHasta"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVigenciaHasta")),
+            Activa = string.Equals(estado, "Activa", StringComparison.OrdinalIgnoreCase),
+            CreadoPor = reader["IdAdministrador"] == DBNull.Value ? 0 : reader.GetInt32(reader.GetOrdinal("IdAdministrador")),
+            FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
+            Ajustes = new List<ConfiguracionPagoAjusteDTO>()
+        };
     }
 }

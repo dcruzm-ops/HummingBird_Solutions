@@ -18,6 +18,7 @@
     <Compile Include="Controllers\FincasController.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Controllers\LandingController.cs" />
+    <Compile Include="Controllers\AdministracionController.cs" />
     <Compile Include="Controllers\ReportesController.cs" />
     <Compile Include="Controllers\PerfilController.cs" />
     <Compile Include="Controllers\Middleware\ExceptionMiddleware.cs" />
