@@ -1,0 +1,51 @@
+@model PSA.EntidadesDTO.DTOs.Administracion.ReasignacionClienteDTO
+@using PSA.EntidadesDTO.DTOs.Usuarios
+@{
+    ViewData["Title"] = "Reasignar cliente";
+    var propietarios = ViewBag.Propietarios as List<UsuarioAdminListadoDTO> ?? new();
+    var ingenieros = ViewBag.Ingenieros as List<UsuarioAdminListadoDTO> ?? new();
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">Reasignar cliente</h2>
+            <small class="text-muted">Mueva clientes a otro asesor/ingeniero forestal.</small>
+        </div>
+        <a asp-action="GestionUsuarios" class="btn btn-outline-secondary">Volver</a>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="ReasignarCliente" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="IdPropietario" class="form-label">Cliente / Propietario</label>
+                        <select asp-for="IdPropietario" class="form-select" asp-items="@(new SelectList(propietarios, "IdUsuario", "NombreCompleto"))">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="IdPropietario" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="IdIngenieroDestino" class="form-label">Nuevo asesor / Ingeniero</label>
+                        <select asp-for="IdIngenieroDestino" class="form-select" asp-items="@(new SelectList(ingenieros, "IdUsuario", "NombreCompleto"))">
+                            <option value="">Seleccione...</option>
+                        </select>
+                        <span asp-validation-for="IdIngenieroDestino" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a asp-action="GestionUsuarios" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
