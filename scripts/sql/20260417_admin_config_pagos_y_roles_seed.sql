@@ -182,7 +182,7 @@ BEGIN
     VALUES
         ('Propietario', 'ADMIN_USUARIOS_VER');
 
-    INSERT INTO dbo.RolesPermisos (IdRol, IdPermiso)
+    INSERT INTO dbo.RolPermisos (IdRol, IdPermiso)
     SELECT r.IdRol, p.IdPermiso
     FROM @Asignaciones a
     INNER JOIN dbo.Roles r
@@ -191,7 +191,7 @@ BEGIN
         ON p.Codigo = a.CodigoPermiso
     WHERE NOT EXISTS (
         SELECT 1
-        FROM dbo.RolesPermisos rp
+        FROM dbo.RolPermisos rp
         WHERE rp.IdRol = r.IdRol
           AND rp.IdPermiso = p.IdPermiso
     );
