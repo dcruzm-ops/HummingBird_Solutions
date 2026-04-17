@@ -15,12 +15,16 @@ public class RolPermisoDAO
 
     public async Task<List<RolPermisoDTO>> ObtenerRolesConPermisosAsync()
     {
-        const string sql = @"
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
+        var sql = $@"
 SELECT
     r.IdRol,
     r.Nombre AS NombreRol,
     r.Descripcion AS DescripcionRol,
-    CAST(CASE WHEN r.Estado = 'Activo' THEN 1 ELSE 0 END AS bit) AS Activo,
+    {(tieneEstado ? "CAST(CASE WHEN r.Estado = 'Activo' THEN 1 ELSE 0 END AS bit)" : "CAST(1 AS bit)")} AS Activo,
     p.Codigo AS CodigoPermisoAsignado,
     p.IdPermiso,
     p.Nombre,
@@ -32,10 +36,7 @@ ORDER BY r.Nombre, p.Codigo;";
 
         var roles = new Dictionary<int, RolPermisoDTO>();
 
-        using var connection = _connectionFactory.CreateConnection();
         using var command = new SqlCommand(sql, connection);
-
-        await connection.OpenAsync();
         using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
@@ -134,6 +135,51 @@ WHERE p.Codigo = @CodigoPermiso;";
             await tx.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>> ObtenerRolesAsync()
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
+        var sql = $@"
+SELECT IdRol, Nombre, Descripcion
+FROM dbo.Roles
+{(tieneEstado ? "WHERE Estado = 'Activo'" : string.Empty)}
+ORDER BY Nombre;";
+
+        var roles = new List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>();
+
+        using var command = new SqlCommand(sql, connection);
+        using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            roles.Add(new PSA.EntidadesDTO.DTOs.Usuarios.RolDTO
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("IdRol")),
+                Nombre = reader["Nombre"]?.ToString() ?? string.Empty,
+                Descripcion = reader["Descripcion"] == DBNull.Value ? null : reader["Descripcion"]?.ToString()
+            });
+        }
+
+        return roles;
+    }
+
+    private static async Task<bool> ExisteColumnaEnRolesAsync(SqlConnection connection, string nombreColumna)
+    {
+        const string sql = @"
+SELECT COUNT(1)
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'dbo'
+  AND TABLE_NAME = 'Roles'
+  AND COLUMN_NAME = @NombreColumna;";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@NombreColumna", nombreColumna);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0) > 0;
     }
 
     public async Task<List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>> ObtenerRolesAsync()
