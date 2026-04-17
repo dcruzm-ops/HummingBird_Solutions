@@ -13,13 +13,15 @@ public class RolPermisoDAO(IDbConnectionFactory connectionFactory)
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
+        var metadataEstado = await ObtenerMetadataColumnaAsync(connection, "Roles", "Estado");
+        var metadataActivo = await ObtenerMetadataColumnaAsync(connection, "Roles", "Activo");
+        var expresionActivo = ObtenerExpresionActivo("r", metadataEstado, metadataActivo);
         var sql = $@"
 SELECT
     r.IdRol,
     r.Nombre AS NombreRol,
     r.Descripcion AS DescripcionRol,
-    {(tieneEstado ? "CAST(CASE WHEN r.Estado = 'Activo' THEN 1 ELSE 0 END AS bit)" : "CAST(1 AS bit)")} AS Activo,
+    {expresionActivo} AS Activo,
     p.Codigo AS CodigoPermisoAsignado,
     p.IdPermiso,
     p.Nombre,
@@ -149,11 +151,6 @@ WHERE p.Codigo = @CodigoPermiso;";
             await tx.RollbackAsync();
             throw;
         }
-        catch
-        {
-            await tx.RollbackAsync();
-            throw;
-        }
     }
 
     public async Task<List<PermisoDTO>> ObtenerPermisosAsync()
@@ -183,15 +180,11 @@ SELECT p.IdPermiso, p.Codigo, p.Nombre, p.Descripcion
 FROM dbo.Permisos p
 ORDER BY p.Codigo;";
 
-        using (var command = new SqlCommand(sql, connection))
-        using (var reader = await command.ExecuteReaderAsync())
+        using var fallbackCommand = new SqlCommand(sql, connection);
+        using var fallbackReader = await fallbackCommand.ExecuteReaderAsync();
+        while (await fallbackReader.ReadAsync())
         {
-            while (await reader.ReadAsync())
-            {
-                permisos.Add(MapPermiso(reader));
-            }
-
-            await tx.CommitAsync();
+            permisos.Add(MapPermiso(fallbackReader));
         }
 
         return permisos;
@@ -202,11 +195,13 @@ ORDER BY p.Codigo;";
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
+        var metadataEstado = await ObtenerMetadataColumnaAsync(connection, "Roles", "Estado");
+        var metadataActivo = await ObtenerMetadataColumnaAsync(connection, "Roles", "Activo");
+        var expresionActivo = ObtenerExpresionActivo("dbo.Roles", metadataEstado, metadataActivo);
         var sql = $@"
 SELECT IdRol, Nombre, Descripcion
 FROM dbo.Roles
-{(tieneEstado ? "WHERE Estado = 'Activo'" : string.Empty)}
+WHERE {expresionActivo} = CAST(1 AS bit)
 ORDER BY Nombre;";
 
         var roles = new List<RolDTO>();
@@ -238,37 +233,69 @@ ORDER BY Nombre;";
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
+        var metadataEstado = await ObtenerMetadataColumnaAsync(connection, "Roles", "Estado");
+        var metadataActivo = await ObtenerMetadataColumnaAsync(connection, "Roles", "Activo");
+
+        var columnas = new List<string> { "Nombre", "Descripcion" };
+        var valores = new List<string> { "@Nombre", "@Descripcion" };
+
+        var usaEstado = metadataEstado.Exists;
+        var usaActivo = !usaEstado && metadataActivo.Exists;
+        if (usaEstado)
+        {
+            columnas.Add("Estado");
+            valores.Add("@Estado");
+        }
+        else if (usaActivo)
+        {
+            columnas.Add("Activo");
+            valores.Add("@Activo");
+        }
+
         var sql = $@"
-INSERT INTO dbo.Roles (Nombre, Descripcion{(tieneEstado ? ", Estado" : string.Empty)})
-VALUES (@Nombre, @Descripcion{(tieneEstado ? ", @Estado" : string.Empty)});
+INSERT INTO dbo.Roles ({string.Join(", ", columnas)})
+VALUES ({string.Join(", ", valores)});
 SELECT CAST(SCOPE_IDENTITY() AS int);";
 
         using var command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@Nombre", dto.Nombre.Trim());
         command.Parameters.AddWithValue("@Descripcion", (object?)dto.Descripcion?.Trim() ?? DBNull.Value);
-        if (tieneEstado)
+        if (usaEstado)
         {
-            command.Parameters.AddWithValue("@Estado", dto.Activo ? "Activo" : "Inactivo");
+            command.Parameters.AddWithValue("@Estado", ConvertirEstadoParametro(metadataEstado, dto.Activo));
+        }
+        else if (usaActivo)
+        {
+            command.Parameters.AddWithValue("@Activo", dto.Activo);
         }
 
         var result = await command.ExecuteScalarAsync();
         return Convert.ToInt32(result ?? 0);
     }
 
-    private static async Task<bool> ExisteColumnaEnRolesAsync(SqlConnection connection, string nombreColumna)
+    private static async Task<(bool Exists, string? SqlType)> ObtenerMetadataColumnaAsync(
+        SqlConnection connection,
+        string nombreTabla,
+        string nombreColumna)
     {
         const string sql = @"
-SELECT COUNT(1)
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_SCHEMA = 'dbo'
-  AND TABLE_NAME = 'Roles'
-  AND COLUMN_NAME = @NombreColumna;";
+SELECT TOP 1 c.DATA_TYPE
+FROM INFORMATION_SCHEMA.COLUMNS c
+WHERE c.TABLE_SCHEMA = 'dbo'
+  AND c.TABLE_NAME = @NombreTabla
+  AND c.COLUMN_NAME = @NombreColumna;";
 
         using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@NombreTabla", nombreTabla);
         command.Parameters.AddWithValue("@NombreColumna", nombreColumna);
+
         var result = await command.ExecuteScalarAsync();
-        return Convert.ToInt32(result ?? 0) > 0;
+        if (result is null || result is DBNull)
+        {
+            return (false, null);
+        }
+
+        return (true, result.ToString());
     }
 
     private static async Task<bool> ExisteStoredProcedureAsync(SqlConnection connection, string nombreProcedimiento)
@@ -296,138 +323,34 @@ WHERE schema_id = SCHEMA_ID('dbo')
         };
     }
 
-    public async Task<List<PermisoDTO>> ObtenerPermisosAsync()
+    private static string ObtenerExpresionActivo(
+        string aliasTabla,
+        (bool Exists, string? SqlType) metadataEstado,
+        (bool Exists, string? SqlType) metadataActivo)
     {
-        using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        var permisos = new List<PermisoDTO>();
-
-        if (await ExisteStoredProcedureAsync(connection, "usp_Admin_ObtenerPermisos"))
+        if (metadataEstado.Exists)
         {
-            using var sp = new SqlCommand("dbo.usp_Admin_ObtenerPermisos", connection)
+            if (EsTipoBooleano(metadataEstado.SqlType))
             {
-                CommandType = System.Data.CommandType.StoredProcedure
-            };
-            using var reader = await sp.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
-            {
-                permisos.Add(MapPermiso(reader));
+                return $"CAST(ISNULL({aliasTabla}.Estado, 0) AS bit)";
             }
 
-            return permisos;
+            return $"CAST(CASE WHEN {aliasTabla}.Estado = 'Activo' THEN 1 ELSE 0 END AS bit)";
         }
 
-        const string sql = @"
-SELECT p.IdPermiso, p.Codigo, p.Nombre, p.Descripcion
-FROM dbo.Permisos p
-ORDER BY p.Codigo;";
-
-        using var command = new SqlCommand(sql, connection);
-        using var dataReader = await command.ExecuteReaderAsync();
-        while (await dataReader.ReadAsync())
+        if (metadataActivo.Exists)
         {
-            permisos.Add(MapPermiso(dataReader));
+            return $"CAST(ISNULL({aliasTabla}.Activo, 1) AS bit)";
         }
 
-        return permisos;
+        return "CAST(1 AS bit)";
     }
 
-    public async Task<List<RolDTO>> ObtenerRolesAsync()
-    {
-        using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
+    private static object ConvertirEstadoParametro((bool Exists, string? SqlType) metadataEstado, bool activo)
+        => EsTipoBooleano(metadataEstado.SqlType)
+            ? activo
+            : activo ? "Activo" : "Inactivo";
 
-        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
-        var sql = $@"
-SELECT IdRol, Nombre, Descripcion
-FROM dbo.Roles
-{(tieneEstado ? "WHERE Estado = 'Activo'" : string.Empty)}
-ORDER BY Nombre;";
-
-        var roles = new List<RolDTO>();
-        using var command = new SqlCommand(sql, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            roles.Add(new RolDTO
-            {
-                Id = reader.GetInt32(reader.GetOrdinal("IdRol")),
-                Nombre = reader["Nombre"]?.ToString() ?? string.Empty,
-                Descripcion = reader["Descripcion"] == DBNull.Value ? null : reader["Descripcion"]?.ToString()
-            });
-        }
-
-        return roles;
-    }
-
-    public async Task<int> CrearRolAsync(CrearRolDTO dto)
-    {
-        ArgumentNullException.ThrowIfNull(dto);
-        if (string.IsNullOrWhiteSpace(dto.Nombre))
-        {
-            throw new ArgumentException("El nombre del rol es obligatorio.", nameof(dto.Nombre));
-        }
-
-        using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        var tieneEstado = await ExisteColumnaEnRolesAsync(connection, "Estado");
-        var sql = $@"
-INSERT INTO dbo.Roles (Nombre, Descripcion{(tieneEstado ? ", Estado" : string.Empty)})
-VALUES (@Nombre, @Descripcion{(tieneEstado ? ", @Estado" : string.Empty)});
-SELECT CAST(SCOPE_IDENTITY() AS int);";
-
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@Nombre", dto.Nombre.Trim());
-        command.Parameters.AddWithValue("@Descripcion", (object?)dto.Descripcion?.Trim() ?? DBNull.Value);
-        if (tieneEstado)
-        {
-            command.Parameters.AddWithValue("@Estado", dto.Activo ? "Activo" : "Inactivo");
-        }
-
-        var result = await command.ExecuteScalarAsync();
-        return Convert.ToInt32(result ?? 0);
-    }
-
-    private static async Task<bool> ExisteColumnaEnRolesAsync(SqlConnection connection, string nombreColumna)
-    {
-        const string sql = @"
-SELECT COUNT(1)
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_SCHEMA = 'dbo'
-  AND TABLE_NAME = 'Roles'
-  AND COLUMN_NAME = @NombreColumna;";
-
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@NombreColumna", nombreColumna);
-        var result = await command.ExecuteScalarAsync();
-        return Convert.ToInt32(result ?? 0) > 0;
-    }
-
-    private static async Task<bool> ExisteStoredProcedureAsync(SqlConnection connection, string nombreProcedimiento)
-    {
-        const string sql = @"
-SELECT COUNT(1)
-FROM sys.procedures
-WHERE schema_id = SCHEMA_ID('dbo')
-  AND name = @NombreProcedimiento;";
-
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@NombreProcedimiento", nombreProcedimiento);
-        var result = await command.ExecuteScalarAsync();
-        return Convert.ToInt32(result ?? 0) > 0;
-    }
-
-    private static PermisoDTO MapPermiso(SqlDataReader reader)
-    {
-        return new PermisoDTO
-        {
-            IdPermiso = reader.GetInt32(reader.GetOrdinal("IdPermiso")),
-            Codigo = reader["Codigo"]?.ToString() ?? string.Empty,
-            Nombre = reader["Nombre"]?.ToString() ?? string.Empty,
-            Descripcion = reader["Descripcion"] == DBNull.Value ? null : reader["Descripcion"]?.ToString()
-        };
-    }
+    private static bool EsTipoBooleano(string? sqlType)
+        => string.Equals(sqlType, "bit", StringComparison.OrdinalIgnoreCase);
 }
