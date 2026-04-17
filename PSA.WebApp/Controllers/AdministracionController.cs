@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using PSA.EntidadesDTO.DTOs.Administracion;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.WebApp.Models;
 using PSA.WebApp.Services;
 
 namespace PSA.WebApp.Controllers
 {
+    [Authorize(Roles = "1")]
     public class AdministracionController : Controller
     {
         private readonly HttpClientService _httpClientService;
@@ -150,10 +153,17 @@ namespace PSA.WebApp.Controllers
         public async Task<IActionResult> RolesPermisos()
         {
             var roles = await _httpClientService.GetAsync<List<RolPermisoDTO>>("api/Administracion/roles-permisos") ?? new();
+            var permisos = await _httpClientService.GetAsync<List<PermisoDTO>>("api/Administracion/permisos") ?? new();
             var model = new RolesPermisosViewModel
             {
                 Roles = roles,
-                PermisosDisponibles = roles.FirstOrDefault()?.PermisosDisponibles ?? new()
+                PermisosDisponibles = permisos.Count > 0
+                    ? permisos
+                    : roles.SelectMany(x => x.PermisosDisponibles)
+                        .GroupBy(x => x.IdPermiso)
+                        .Select(x => x.First())
+                        .OrderBy(x => x.Codigo)
+                        .ToList()
             };
 
             return View("RolesPermisosSimple", model);
@@ -176,53 +186,33 @@ namespace PSA.WebApp.Controllers
         {
             var configuracionActual = await _httpClientService.GetAsync<ConfiguracionPagoAdminDTO>("api/Administracion/configuracion-pago/actual");
             var historial = await _httpClientService.GetAsync<List<ConfiguracionPagoAdminDTO>>("api/Administracion/configuracion-pago/historial") ?? new();
-
-            var model = new ParametrosPagoViewModel
-            {
-                ConfiguracionActual = configuracionActual,
-                Historial = historial,
-                NuevaConfiguracion = new ConfiguracionPagoAdminDTO
-                {
-                    FechaVigenciaDesde = DateTime.Today,
-                    Ajustes = new List<ConfiguracionPagoAjusteDTO>
-                    {
-                        new() { TipoFactor = "Vegetacion", ValorFactor = "Bosque primario" },
-                        new() { TipoFactor = "Vegetacion", ValorFactor = "Bosque secundario" },
-                        new() { TipoFactor = "Vegetacion", ValorFactor = "Plantación" },
-                        new() { TipoFactor = "Vegetacion", ValorFactor = "Pasto" },
-                        new() { TipoFactor = "RecursosHidricos", ValorFactor = "Con recursos" },
-                        new() { TipoFactor = "Pendiente", ValorFactor = "Plana" },
-                        new() { TipoFactor = "Pendiente", ValorFactor = "Inclinada" },
-                        new() { TipoFactor = "Pendiente", ValorFactor = "Muy inclinada" }
-                    }
-                }
-            };
-
-            return View(model);
+            return View(CrearViewModelParametrosPago(configuracionActual, historial, null));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> GuardarConfiguracionPago(ConfiguracionPagoAdminDTO model)
+        public async Task<IActionResult> GuardarConfiguracionPago([Bind(Prefix = "NuevaConfiguracion")] ConfiguracionPagoAdminDTO model)
         {
+            model.Ajustes ??= CrearAjustesBase();
+
             if (!ModelState.IsValid)
             {
                 var configuracionActual = await _httpClientService.GetAsync<ConfiguracionPagoAdminDTO>("api/Administracion/configuracion-pago/actual");
                 var historial = await _httpClientService.GetAsync<List<ConfiguracionPagoAdminDTO>>("api/Administracion/configuracion-pago/historial") ?? new();
 
-                return View("ParametrosPago", new ParametrosPagoViewModel
-                {
-                    ConfiguracionActual = configuracionActual,
-                    Historial = historial,
-                    NuevaConfiguracion = model
-                });
+                return View("ParametrosPago", CrearViewModelParametrosPago(configuracionActual, historial, model));
             }
 
             var respuesta = await _httpClientService.PostAsync<ConfiguracionPagoAdminDTO, bool>("api/Administracion/configuracion-pago", model);
-            TempData[respuesta ? "Exito" : "Error"] = respuesta
-                ? "Configuración de pago guardada correctamente."
-                : "No se pudo guardar la configuración de pago.";
+            if (!respuesta)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo guardar la configuración de pago. Verifica datos e inténtalo nuevamente.");
+                var configuracionActual = await _httpClientService.GetAsync<ConfiguracionPagoAdminDTO>("api/Administracion/configuracion-pago/actual");
+                var historial = await _httpClientService.GetAsync<List<ConfiguracionPagoAdminDTO>>("api/Administracion/configuracion-pago/historial") ?? new();
+                return View("ParametrosPago", CrearViewModelParametrosPago(configuracionActual, historial, model));
+            }
 
+            TempData["Exito"] = "Configuración de pago guardada correctamente.";
             return RedirectToAction(nameof(ParametrosPago));
         }
 
@@ -267,6 +257,9 @@ namespace PSA.WebApp.Controllers
             }
 
             var eventos = await _httpClientService.GetAsync<List<AuditoriaEventoDTO>>(endpoint) ?? new();
+            var opcionesFiltro = await _httpClientService.GetAsync<AuditoriaOpcionesFiltroDTO>(
+                $"api/Administracion/auditoria/opciones-filtro{(string.IsNullOrWhiteSpace(modulo) ? string.Empty : $"?modulo={Uri.EscapeDataString(modulo)}")}")
+                ?? new AuditoriaOpcionesFiltroDTO();
 
             var model = new AuditoriaLogsViewModel
             {
@@ -278,10 +271,50 @@ namespace PSA.WebApp.Controllers
                     FechaHasta = fechaHasta,
                     MaximoRegistros = maximoRegistros
                 },
+                OpcionesFiltro = opcionesFiltro,
                 Eventos = eventos
             };
 
             return View(model);
+        }
+
+        private static ParametrosPagoViewModel CrearViewModelParametrosPago(
+            ConfiguracionPagoAdminDTO? configuracionActual,
+            List<ConfiguracionPagoAdminDTO> historial,
+            ConfiguracionPagoAdminDTO? configuracionEnEdicion)
+        {
+            var nuevaConfiguracion = configuracionEnEdicion ?? new ConfiguracionPagoAdminDTO
+            {
+                FechaVigenciaDesde = DateTime.Today
+            };
+
+            nuevaConfiguracion.Ajustes ??= CrearAjustesBase();
+            if (nuevaConfiguracion.Ajustes.Count == 0)
+            {
+                nuevaConfiguracion.Ajustes = CrearAjustesBase();
+            }
+
+            return new ParametrosPagoViewModel
+            {
+                ConfiguracionActual = configuracionActual,
+                Historial = historial,
+                NuevaConfiguracion = nuevaConfiguracion
+            };
+        }
+
+        private static List<ConfiguracionPagoAjusteDTO> CrearAjustesBase()
+        {
+            return
+            [
+                new() { TipoFactor = "Vegetacion", ValorFactor = "Bosque primario" },
+                new() { TipoFactor = "Vegetacion", ValorFactor = "Bosque secundario" },
+                new() { TipoFactor = "Vegetacion", ValorFactor = "Plantación" },
+                new() { TipoFactor = "Vegetacion", ValorFactor = "Pasto" },
+                new() { TipoFactor = "RecursosHidricos", ValorFactor = "Con recursos" },
+                new() { TipoFactor = "Pendiente", ValorFactor = "Plana" },
+                new() { TipoFactor = "Pendiente", ValorFactor = "Inclinada" },
+                new() { TipoFactor = "Pendiente", ValorFactor = "Muy inclinada" }
+            ];
         }
     }
 }

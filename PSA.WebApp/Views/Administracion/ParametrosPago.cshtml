@@ -1,34 +1,147 @@
+@model PSA.WebApp.Models.ParametrosPagoViewModel
 @{
-    ViewData["Title"] = "Parámetros de pago";
+    ViewData["Title"] = "Configuración de pagos";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Configuración versionada</span>
-            <h2>Parámetros de pago</h2>
-            <p>Base para precio por hectárea, porcentajes y topes de ajuste.</p>
+            <span class="eyebrow">Administración</span>
+            <h2>Configuración de pagos</h2>
+            <p>Ajuste precio base por hectárea, porcentajes, topes y vigencias.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesPago">Ir a planes de pago</a>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioParametrosPago" method="get" asp-controller="Administracion" asp-action="AuditoriaLogs">
-        <div class="grid-tres-columnas">
-            <div class="campo-formulario">
-                <label for="precioBase">Precio base por hectárea</label>
-                <input id="precioBase" type="number" step="0.01" value="12000" />
+    @if (Model.ConfiguracionActual != null)
+    {
+        <section class="tarjeta-panel mb-3">
+            <h5>Configuración vigente</h5>
+            <div class="row g-3 mt-1">
+                <div class="col-md-3"><strong>Versión:</strong> @Model.ConfiguracionActual.NombreVersion</div>
+                <div class="col-md-3"><strong>Precio base:</strong> @Model.ConfiguracionActual.PrecioBasePorHectarea.ToString("N2")</div>
+                <div class="col-md-3"><strong>Tope ajuste %:</strong> @Model.ConfiguracionActual.TopePorcentajeAjuste.ToString("N2")</div>
+                <div class="col-md-3"><strong>Desde:</strong> @Model.ConfiguracionActual.FechaVigenciaDesde.ToString("yyyy-MM-dd")</div>
             </div>
-            <div class="campo-formulario">
-                <label for="ajustePorcentaje">Ajuste porcentual</label>
-                <input id="ajustePorcentaje" type="number" step="0.01" value="5" />
-            </div>
-            <div class="campo-formulario">
-                <label for="topeAjuste">Tope de ajuste</label>
-                <input id="topeAjuste" type="number" step="0.01" value="15" />
-            </div>
-        </div>
+        </section>
+    }
 
-        <div class="fila-acciones-formulario">
-            <button type="submit" class="boton-primario">Guardar parámetros</button>
+    <section class="tarjeta-panel">
+        <h5>Nueva configuración</h5>
+        <form asp-action="GuardarConfiguracionPago" method="post" class="mt-3">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="NuevaConfiguracion.NombreVersion" class="form-label"></label>
+                    <input asp-for="NuevaConfiguracion.NombreVersion" class="form-control" />
+                    <span asp-validation-for="NuevaConfiguracion.NombreVersion" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NuevaConfiguracion.PrecioBasePorHectarea" class="form-label"></label>
+                    <input asp-for="NuevaConfiguracion.PrecioBasePorHectarea" class="form-control" />
+                    <span asp-validation-for="NuevaConfiguracion.PrecioBasePorHectarea" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NuevaConfiguracion.TopePorcentajeAjuste" class="form-label"></label>
+                    <input asp-for="NuevaConfiguracion.TopePorcentajeAjuste" class="form-control" />
+                    <span asp-validation-for="NuevaConfiguracion.TopePorcentajeAjuste" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NuevaConfiguracion.FechaVigenciaDesde" class="form-label"></label>
+                    <input asp-for="NuevaConfiguracion.FechaVigenciaDesde" type="date" class="form-control" />
+                    <span asp-validation-for="NuevaConfiguracion.FechaVigenciaDesde" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="NuevaConfiguracion.FechaVigenciaHasta" class="form-label"></label>
+                    <input asp-for="NuevaConfiguracion.FechaVigenciaHasta" type="date" class="form-control" />
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check">
+                        <input asp-for="NuevaConfiguracion.Activa" class="form-check-input" />
+                        <label asp-for="NuevaConfiguracion.Activa" class="form-check-label">Marcar como activa</label>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="mt-4">Porcentajes de ajuste por parámetro</h6>
+            <div class="tabla-responsive">
+                <table class="tabla-base">
+                    <thead>
+                        <tr>
+                            <th>Tipo factor</th>
+                            <th>Valor factor</th>
+                            <th>% ajuste</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model.NuevaConfiguracion.Ajustes.Count; i++)
+                        {
+                            <tr>
+                                <td>
+                                    <input asp-for="NuevaConfiguracion.Ajustes[i].TipoFactor" class="form-control" readonly />
+                                </td>
+                                <td>
+                                    <input asp-for="NuevaConfiguracion.Ajustes[i].ValorFactor" class="form-control" readonly />
+                                </td>
+                                <td>
+                                    <input asp-for="NuevaConfiguracion.Ajustes[i].PorcentajeAjuste" class="form-control" />
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="fila-acciones-formulario mt-3">
+                <button type="submit" class="boton-primario">Guardar configuración</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="tarjeta-panel mt-3">
+        <h5>Historial de configuraciones</h5>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Versión</th>
+                        <th>Precio base</th>
+                        <th>Tope %</th>
+                        <th>Vigencia desde</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Historial.Count == 0)
+                    {
+                        <tr><td colspan="5" class="text-center text-muted">Sin configuraciones registradas.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model.Historial)
+                        {
+                            <tr>
+                                <td>@item.NombreVersion</td>
+                                <td>@item.PrecioBasePorHectarea.ToString("N2")</td>
+                                <td>@item.TopePorcentajeAjuste.ToString("N2")</td>
+                                <td>@item.FechaVigenciaDesde.ToString("yyyy-MM-dd")</td>
+                                <td>@(item.Activa ? "Activa" : "Inactiva")</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
-    </form>
+    </section>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.psa && typeof window.psa.ocultarTrobberGlobal === "function") {
+                window.psa.ocultarTrobberGlobal();
+            }
+        });
+    </script>
+}

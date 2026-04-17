@@ -78,15 +78,55 @@ namespace PSA.WebAPI.Controllers
         [HttpGet("roles-basicos")]
         public async Task<ActionResult<List<RolDTO>>> ObtenerRolesBasicos()
         {
-            var roles = await _administracionManager.ObtenerRolesAsync();
-            return Ok(roles);
+            try
+            {
+                var roles = await _administracionManager.ObtenerRolesAsync();
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    mensaje = "No fue posible obtener los roles básicos.",
+                    detalle = ex.Message
+                });
+            }
         }
 
         [HttpGet("roles-permisos")]
         public async Task<ActionResult<List<RolPermisoDTO>>> ObtenerRolesPermisos()
         {
-            var roles = await _administracionManager.ObtenerRolesConPermisosAsync();
-            return Ok(roles);
+            try
+            {
+                var roles = await _administracionManager.ObtenerRolesConPermisosAsync();
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    mensaje = "No fue posible obtener roles y permisos.",
+                    detalle = ex.Message
+                });
+            }
+        }
+
+        [HttpGet("permisos")]
+        public async Task<ActionResult<List<PermisoDTO>>> ObtenerPermisos()
+        {
+            try
+            {
+                var permisos = await _administracionManager.ObtenerPermisosAsync();
+                return Ok(permisos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    mensaje = "No fue posible obtener el catálogo de permisos.",
+                    detalle = ex.Message
+                });
+            }
         }
 
         [HttpPost("roles-permisos")]
@@ -154,6 +194,13 @@ namespace PSA.WebAPI.Controllers
                 MaximoRegistros = maximoRegistros
             });
             return Ok(eventos);
+        }
+
+        [HttpGet("auditoria/opciones-filtro")]
+        public async Task<ActionResult<AuditoriaOpcionesFiltroDTO>> ObtenerOpcionesFiltroAuditoria([FromQuery] string? modulo)
+        {
+            var opciones = await _administracionManager.ObtenerOpcionesFiltroAuditoriaAsync(modulo);
+            return Ok(opciones);
         }
     }
 }

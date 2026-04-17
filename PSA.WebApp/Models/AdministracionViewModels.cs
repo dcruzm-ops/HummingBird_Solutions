@@ -12,6 +12,7 @@ namespace PSA.WebApp.Models
     {
         public UsuarioAdminEdicionDTO Usuario { get; set; } = new();
         public List<RolDTO> Roles { get; set; } = new();
+        public bool EsEdicion => Usuario?.IdUsuario > 0;
         public string TituloFormulario { get; set; } = string.Empty;
         public string TextoAccion { get; set; } = string.Empty;
     }
@@ -26,6 +27,7 @@ namespace PSA.WebApp.Models
     public class RolesPermisosViewModel
     {
         public List<RolPermisoDTO> Roles { get; set; } = new();
+        public List<PermisoDTO> PermisosDisponibles { get; set; } = new();
     }
 
     public class ParametrosPagoViewModel
@@ -43,6 +45,7 @@ namespace PSA.WebApp.Models
     public class AuditoriaLogsViewModel
     {
         public AuditoriaFiltroDTO Filtro { get; set; } = new();
+        public AuditoriaOpcionesFiltroDTO OpcionesFiltro { get; set; } = new();
         public List<AuditoriaEventoDTO> Eventos { get; set; } = new();
     }
 }
