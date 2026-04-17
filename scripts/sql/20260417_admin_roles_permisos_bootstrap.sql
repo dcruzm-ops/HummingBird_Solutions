@@ -86,7 +86,10 @@ BEGIN
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
-        THROW;
+        DECLARE @MensajeError NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @SeveridadError INT = ERROR_SEVERITY();
+        DECLARE @EstadoError INT = ERROR_STATE();
+        RAISERROR(@MensajeError, @SeveridadError, @EstadoError);
     END CATCH;
 END;
 GO

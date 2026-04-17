@@ -33,7 +33,20 @@ BEGIN
 
     IF (@IdRol IS NULL OR @IdRol <= 0)
     BEGIN
-        THROW 50001, 'El IdRol debe ser mayor a cero.', 1;
+        RAISERROR('El IdRol debe ser mayor a cero.', 16, 1);
+        RETURN;
+    END
+
+    DECLARE @TablaRolPermisos SYSNAME = CASE
+        WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
+        WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
+        ELSE NULL
+    END;
+
+    IF @TablaRolPermisos IS NULL
+    BEGIN
+        RAISERROR('No existe tabla de relación de roles/permisos (RolesPermisos o RolPermisos).', 16, 1);
+        RETURN;
     END
 
     DECLARE @TablaRolPermisos SYSNAME = CASE
@@ -78,7 +91,10 @@ BEGIN
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
 
-        THROW;
+        DECLARE @MensajeError NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @SeveridadError INT = ERROR_SEVERITY();
+        DECLARE @EstadoError INT = ERROR_STATE();
+        RAISERROR(@MensajeError, @SeveridadError, @EstadoError);
     END CATCH
 END;
 GO
