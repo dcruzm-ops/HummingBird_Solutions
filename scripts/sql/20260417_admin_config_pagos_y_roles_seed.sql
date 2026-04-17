@@ -160,18 +160,32 @@ END
 GO
 
 /* 4) Asignación inicial por rol */
-IF OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL
-   AND OBJECT_ID('dbo.Roles', 'U') IS NOT NULL
+IF OBJECT_ID('dbo.Roles', 'U') IS NOT NULL
    AND OBJECT_ID('dbo.Permisos', 'U') IS NOT NULL
 BEGIN
-    DECLARE @Asignaciones TABLE
+    DECLARE @TablaRolPermisos SYSNAME = CASE
+        WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
+        WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
+        ELSE NULL
+    END;
+
+    IF @TablaRolPermisos IS NULL
+    BEGIN
+        PRINT 'No existe tabla de relación de roles/permisos (RolesPermisos o RolPermisos).';
+        RETURN;
+    END
+
+    IF OBJECT_ID('tempdb..#Asignaciones') IS NOT NULL
+        DROP TABLE #Asignaciones;
+
+    CREATE TABLE #Asignaciones
     (
         NombreRol NVARCHAR(50) NOT NULL,
         CodigoPermiso NVARCHAR(100) NOT NULL
     );
 
     /* Administrador: todos los permisos */
-    INSERT INTO @Asignaciones (NombreRol, CodigoPermiso)
+    INSERT INTO #Asignaciones (NombreRol, CodigoPermiso)
     VALUES
         ('Administrador', 'ADMIN_USUARIOS_VER'),
         ('Administrador', 'ADMIN_USUARIOS_CREAR'),
@@ -183,28 +197,33 @@ BEGIN
         ('Administrador', 'ADMIN_AUDITORIA_CONSULTAR');
 
     /* Ingeniero: lectura de usuarios y consulta de auditoría */
-    INSERT INTO @Asignaciones (NombreRol, CodigoPermiso)
+    INSERT INTO #Asignaciones (NombreRol, CodigoPermiso)
     VALUES
         ('Ingeniero', 'ADMIN_USUARIOS_VER'),
         ('Ingeniero', 'ADMIN_AUDITORIA_CONSULTAR');
 
     /* Propietario: lectura de usuarios (mínimo para poblar pantalla) */
-    INSERT INTO @Asignaciones (NombreRol, CodigoPermiso)
+    INSERT INTO #Asignaciones (NombreRol, CodigoPermiso)
     VALUES
         ('Propietario', 'ADMIN_USUARIOS_VER');
 
-    INSERT INTO dbo.RolesPermisos (IdRol, IdPermiso)
-    SELECT r.IdRol, p.IdPermiso
-    FROM @Asignaciones a
-    INNER JOIN dbo.Roles r
-        ON r.Nombre = a.NombreRol
-    INNER JOIN dbo.Permisos p
-        ON p.Codigo = a.CodigoPermiso
-    WHERE NOT EXISTS (
-        SELECT 1
-        FROM dbo.RolesPermisos rp
-        WHERE rp.IdRol = r.IdRol
-          AND rp.IdPermiso = p.IdPermiso
-    );
+    DECLARE @SqlAsignacion NVARCHAR(MAX) = N'
+        INSERT INTO ' + @TablaRolPermisos + N' (IdRol, IdPermiso)
+        SELECT r.IdRol, p.IdPermiso
+        FROM #Asignaciones a
+        INNER JOIN dbo.Roles r
+            ON r.Nombre = a.NombreRol
+        INNER JOIN dbo.Permisos p
+            ON p.Codigo = a.CodigoPermiso
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM ' + @TablaRolPermisos + N' rp
+            WHERE rp.IdRol = r.IdRol
+              AND rp.IdPermiso = p.IdPermiso
+        );';
+
+    EXEC sp_executesql @SqlAsignacion;
+
+    DROP TABLE #Asignaciones;
 END
 GO

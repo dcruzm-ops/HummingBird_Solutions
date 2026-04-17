@@ -13,6 +13,7 @@ public class RolPermisoDAO(IDbConnectionFactory connectionFactory)
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
+        var tablaRolPermisos = await ObtenerTablaRolPermisosAsync(connection);
         var metadataEstado = await ObtenerMetadataColumnaAsync(connection, "Roles", "Estado");
         var metadataActivo = await ObtenerMetadataColumnaAsync(connection, "Roles", "Activo");
         var expresionActivo = ObtenerExpresionActivo("r", metadataEstado, metadataActivo);
@@ -27,7 +28,7 @@ SELECT
     p.Nombre,
     p.Descripcion
 FROM dbo.Roles r
-LEFT JOIN dbo.RolesPermisos rp ON rp.IdRol = r.IdRol
+LEFT JOIN {tablaRolPermisos} rp ON rp.IdRol = r.IdRol
 LEFT JOIN dbo.Permisos p ON p.IdPermiso = rp.IdPermiso
 ORDER BY r.Nombre, p.Codigo;";
 
@@ -100,28 +101,10 @@ ORDER BY r.Nombre, p.Codigo;";
 
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
-
-        if (await ExisteStoredProcedureAsync(connection, "usp_Admin_GuardarPermisosRol"))
-        {
-            using var sp = new SqlCommand("dbo.usp_Admin_GuardarPermisosRol", connection)
-            {
-                CommandType = System.Data.CommandType.StoredProcedure
-            };
-            sp.Parameters.AddWithValue("@IdRol", dto.IdRol);
-            sp.Parameters.AddWithValue(
-                "@CodigosPermisoCsv",
-                string.Join(",", dto.CodigosPermiso
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .Select(x => x.Trim())
-                    .Distinct(StringComparer.OrdinalIgnoreCase)));
-
-            await sp.ExecuteNonQueryAsync();
-            return;
-        }
-
-        const string sqlDelete = "DELETE FROM dbo.RolesPermisos WHERE IdRol = @IdRol;";
-        const string sqlInsert = @"
-INSERT INTO dbo.RolesPermisos (IdRol, IdPermiso)
+        var tablaRolPermisos = await ObtenerTablaRolPermisosAsync(connection);
+        var sqlDelete = $"DELETE FROM {tablaRolPermisos} WHERE IdRol = @IdRol;";
+        var sqlInsert = $@"
+INSERT INTO {tablaRolPermisos} (IdRol, IdPermiso)
 SELECT @IdRol, p.IdPermiso
 FROM dbo.Permisos p
 WHERE p.Codigo = @CodigoPermiso;";
@@ -353,4 +336,34 @@ WHERE schema_id = SCHEMA_ID('dbo')
 
     private static bool EsTipoBooleano(string? sqlType)
         => string.Equals(sqlType, "bit", StringComparison.OrdinalIgnoreCase);
+
+    private static async Task<string> ObtenerTablaRolPermisosAsync(SqlConnection connection)
+    {
+        if (await ExisteTablaAsync(connection, "RolesPermisos"))
+        {
+            return "dbo.RolesPermisos";
+        }
+
+        if (await ExisteTablaAsync(connection, "RolPermisos"))
+        {
+            return "dbo.RolPermisos";
+        }
+
+        throw new InvalidOperationException("No se encontró la tabla de relación de roles/permisos (RolesPermisos o RolPermisos).");
+    }
+
+    private static async Task<bool> ExisteTablaAsync(SqlConnection connection, string nombreTabla)
+    {
+        const string sql = @"
+SELECT COUNT(1)
+FROM sys.tables t
+INNER JOIN sys.schemas s ON s.schema_id = t.schema_id
+WHERE s.name = 'dbo'
+  AND t.name = @NombreTabla;";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@NombreTabla", nombreTabla);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0) > 0;
+    }
 }
