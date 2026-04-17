@@ -1,6 +1,6 @@
 /*
     Script:
-    - Garantiza una sola configuración de pago activa
+    - Garantiza una sola configuración de pago activa (columna Activa BIT)
     - Crea catálogo mínimo de permisos administrativos
     - Crea roles base si no existen
 */
@@ -9,23 +9,31 @@ SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
 
-/* 1) Restricción de una sola configuración activa */
-IF COL_LENGTH('dbo.ConfiguracionesPago', 'Estado') IS NOT NULL
+/* 1) Restricción de una sola configuración activa (según esquema real) */
+IF OBJECT_ID('dbo.ConfiguracionesPago', 'U') IS NOT NULL
+   AND COL_LENGTH('dbo.ConfiguracionesPago', 'Activa') IS NOT NULL
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM sys.indexes
-        WHERE object_id = OBJECT_ID('dbo.ConfiguracionesPago')
-          AND name = 'UX_ConfiguracionesPago_EstadoActiva')
-    BEGIN
-        CREATE UNIQUE INDEX UX_ConfiguracionesPago_EstadoActiva
-            ON dbo.ConfiguracionesPago(Estado)
-            WHERE Estado = 'Activa';
-    END
-END
-GO
+    /* 1.1) Si existen múltiples activas, conservar solo la más reciente */
+    ;WITH ConfiguracionesActivas AS
+    (
+        SELECT
+            cp.IdConfiguracionPago,
+            ROW_NUMBER() OVER (
+                ORDER BY
+                    ISNULL(cp.Version, 0) DESC,
+                    cp.IdConfiguracionPago DESC
+            ) AS Orden
+        FROM dbo.ConfiguracionesPago cp
+        WHERE cp.Activa = 1
+    )
+    UPDATE cp
+    SET Activa = 0
+    FROM dbo.ConfiguracionesPago cp
+    INNER JOIN ConfiguracionesActivas ca
+        ON ca.IdConfiguracionPago = cp.IdConfiguracionPago
+    WHERE ca.Orden > 1;
 
-IF COL_LENGTH('dbo.ConfiguracionesPago', 'Activa') IS NOT NULL
-BEGIN
+    /* 1.2) Índice filtrado para impedir más de una activa */
     IF NOT EXISTS (
         SELECT 1 FROM sys.indexes
         WHERE object_id = OBJECT_ID('dbo.ConfiguracionesPago')
@@ -34,6 +42,41 @@ BEGIN
         CREATE UNIQUE INDEX UX_ConfiguracionesPago_Activa
             ON dbo.ConfiguracionesPago(Activa)
             WHERE Activa = 1;
+    END
+
+    /* 1.3) Seed mínimo de configuración de pago si la tabla está vacía */
+    IF NOT EXISTS (SELECT 1 FROM dbo.ConfiguracionesPago)
+    BEGIN
+        DECLARE @IdUsuarioCreador INT;
+        SELECT TOP 1 @IdUsuarioCreador = u.IdUsuario
+        FROM dbo.Usuarios u
+        ORDER BY u.IdUsuario;
+
+        IF @IdUsuarioCreador IS NOT NULL
+        BEGIN
+            INSERT INTO dbo.ConfiguracionesPago
+            (
+                Version,
+                NombreVersion,
+                PrecioBasePorHectarea,
+                TopePorcentajeAjuste,
+                FechaVigenciaDesde,
+                FechaVigenciaHasta,
+                Activa,
+                CreadoPor
+            )
+            VALUES
+            (
+                1,
+                'Configuración Base',
+                25000.00,
+                30.00,
+                CAST(GETDATE() AS date),
+                NULL,
+                1,
+                @IdUsuarioCreador
+            );
+        END
     END
 END
 GO
