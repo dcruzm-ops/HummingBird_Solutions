@@ -36,22 +36,11 @@ BEGIN
         THROW 50001, 'El IdRol debe ser mayor a cero.', 1;
     END
 
-    DECLARE @TablaRolPermisos SYSNAME = CASE
-        WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
-        WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
-        ELSE NULL
-    END;
-
-    IF @TablaRolPermisos IS NULL
-    BEGIN
-        THROW 50002, 'No existe tabla de relación de roles/permisos (RolesPermisos o RolPermisos).', 1;
-    END
-
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        DECLARE @SqlDelete nvarchar(max) = N'DELETE FROM ' + @TablaRolPermisos + N' WHERE IdRol = @IdRol;';
-        EXEC sp_executesql @SqlDelete, N'@IdRol int', @IdRol = @IdRol;
+        DELETE FROM dbo.RolPermisos
+        WHERE IdRol = @IdRol;
 
         ;WITH Codigos AS
         (
@@ -59,18 +48,10 @@ BEGIN
             FROM STRING_SPLIT(COALESCE(@CodigosPermisoCsv, ''), ',')
             WHERE LTRIM(RTRIM(value)) <> ''
         )
-        SELECT c.Codigo
-        INTO #CodigosPermiso
-        FROM Codigos c;
-
-        DECLARE @SqlInsert nvarchar(max) = N'
-            INSERT INTO ' + @TablaRolPermisos + N' (IdRol, IdPermiso)
-            SELECT @IdRol, p.IdPermiso
-            FROM #CodigosPermiso c
-            INNER JOIN dbo.Permisos p ON p.Codigo = c.Codigo;';
-        EXEC sp_executesql @SqlInsert, N'@IdRol int', @IdRol = @IdRol;
-
-        DROP TABLE #CodigosPermiso;
+        INSERT INTO dbo.RolPermisos (IdRol, IdPermiso)
+        SELECT @IdRol, p.IdPermiso
+        FROM Codigos c
+        INNER JOIN dbo.Permisos p ON p.Codigo = c.Codigo;
 
         COMMIT TRANSACTION;
     END TRY
