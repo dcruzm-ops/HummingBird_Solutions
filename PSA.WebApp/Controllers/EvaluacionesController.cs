@@ -71,7 +71,8 @@ namespace PSA.WebApp.Controllers
                 return View(model);
             }
 
-            var totalEvidencias = model.Evidencias?.Count(e => e != null && e.Length > 0) ?? 0;
+            var evidenciasAdjuntas = model.Evidencias?.Where(e => e != null && e.Length > 0).ToList() ?? new List<IFormFile>();
+            var totalEvidencias = evidenciasAdjuntas.Count;
             if (totalEvidencias > 0)
             {
                 var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
@@ -80,7 +81,7 @@ namespace PSA.WebApp.Controllers
 
                 if (idFinca > 0 && idUsuario > 0)
                 {
-                    var evidenciaSubida = await SubirEvidenciasAsync(client, idFinca, idUsuario, model.Evidencias);
+                    var evidenciaSubida = await SubirEvidenciasAsync(client, idFinca, idUsuario, evidenciasAdjuntas);
                     if (!evidenciaSubida)
                     {
                         TempData["MensajeError"] = "La evaluación se guardó, pero no fue posible cargar la evidencia adjunta.";
