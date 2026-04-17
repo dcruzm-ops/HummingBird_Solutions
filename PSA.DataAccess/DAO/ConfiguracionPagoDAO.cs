@@ -464,6 +464,37 @@ SET Activa = CASE WHEN IdConfiguracionPago = @IdConfiguracionPago THEN CAST(1 AS
             command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
             await command.ExecuteNonQueryAsync();
         }
+
+        var raw = reader.GetValue(ordinal.Value);
+        return raw is DateTime dt ? dt : DateTime.TryParse(raw?.ToString(), out var parsed) ? parsed : null;
+    }
+
+    private static bool? GetBool(SqlDataReader reader, string columna)
+    {
+        var ordinal = GetOrdinal(reader, columna);
+        if (!ordinal.HasValue || reader.IsDBNull(ordinal.Value))
+        {
+            return null;
+        }
+
+        var raw = reader.GetValue(ordinal.Value);
+        return raw is bool b ? b : bool.TryParse(raw?.ToString(), out var parsed) ? parsed : null;
+    }
+
+    private static bool EsErrorVersionDuplicada(SqlException ex)
+    {
+        return (ex.Number == 2627 || ex.Number == 2601)
+               && ex.Message.Contains("UQ_ConfiguracionesPago_Version", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static async Task<int> ObtenerSiguienteVersionAsync(SqlConnection connection)
+    {
+        const string sql = @"
+SELECT ISNULL(MAX(Version), 0) + 1
+FROM dbo.ConfiguracionesPago;";
+        using var command = new SqlCommand(sql, connection);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 1);
     }
 
     private static async Task<bool> ExisteTablaDetalleAsync(SqlConnection connection, SqlTransaction? tx = null)
