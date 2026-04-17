@@ -33,16 +33,17 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\PSA.WebApp.csproj",
+      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebApp\\PSA.WebApp.csproj",
       "projectName": "PSA.WebApp",
-      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\PSA.WebApp.csproj",
+      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebApp\\PSA.WebApp.csproj",
       "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\obj\\",
+      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
+        "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\NuGet.Config",
         "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -51,15 +52,14 @@
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
-              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
             }
           }
         }

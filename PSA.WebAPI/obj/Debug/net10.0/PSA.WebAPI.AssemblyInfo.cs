@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PSA.WebAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5d1db37d44932b610cc902027aad50cc0d97719")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c4d786d71d2b9714b1b37dfa507c031f8cd751aa")]
 [assembly: System.Reflection.AssemblyProductAttribute("PSA.WebAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PSA.WebAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

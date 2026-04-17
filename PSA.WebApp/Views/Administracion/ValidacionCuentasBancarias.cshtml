@@ -1,15 +1,25 @@
+@model PSA.WebApp.Models.ValidacionCuentasBancariasViewModel
 @{
     ViewData["Title"] = "Validación bancaria";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Revisión administrativa</span>
+            <span class="eyebrow">Administración del sistema</span>
             <h2>Validación de cuentas bancarias</h2>
-            <p>Base para aprobar o rechazar cuentas asociadas a propietarios.</p>
+            <p>Apruebe o rechace cuentas pendientes asociadas a propietarios del sistema.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Administracion" asp-action="GestionUsuarios">Volver a usuarios</a>
+        <a class="boton-secundario" asp-action="GestionUsuarios">Volver a administración</a>
     </div>
+
+    @if (TempData["MensajeExito"] is string exito && !string.IsNullOrWhiteSpace(exito))
+    {
+        <div class="alert alert-success mb-3">@exito</div>
+    }
+    @if (TempData["MensajeError"] is string error && !string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger mb-3">@error</div>
+    }
 
     <section class="tarjeta-panel">
         <div class="tabla-responsive">
@@ -19,18 +29,47 @@
                         <th>Propietario</th>
                         <th>Banco</th>
                         <th>Cuenta</th>
-                        <th>Estado</th>
-                        <th>Acción</th>
+                        <th>Tipo</th>
+                        <th>Titular</th>
+                        <th>Fecha registro</th>
+                        <th>Revisión</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Laura Mora</td>
-                        <td>Banco Nacional</td>
-                        <td>CR12-3456-7890</td>
-                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="AuditoriaLogs">Registrar revisión</a></td>
-                    </tr>
+                    @if (Model.CuentasPendientes.Any())
+                    {
+                        @foreach (var cuenta in Model.CuentasPendientes)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@cuenta.NombreUsuario</strong><br />
+                                    <small>@cuenta.EmailUsuario</small>
+                                </td>
+                                <td>@cuenta.Banco</td>
+                                <td>@cuenta.NumeroCuenta</td>
+                                <td>@cuenta.TipoCuenta</td>
+                                <td>@cuenta.Titular</td>
+                                <td>@cuenta.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <form asp-action="RegistrarRevisionCuenta" method="post" class="formulario-base">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
+                                        <div class="campo-formulario mb-2">
+                                            <textarea name="observaciones" rows="2" placeholder="Observaciones de revisión"></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <button type="submit" class="boton-primario" name="aprobada" value="true">Aprobar</button>
+                                            <button type="submit" class="boton-secundario" name="aprobada" value="false">Rechazar</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="7">No hay cuentas bancarias pendientes de revisión.</td></tr>
+                    }
                 </tbody>
             </table>
         </div>

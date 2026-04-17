@@ -292,13 +292,13 @@
           }
         }
       },
-      "Swashbuckle.AspNetCore/10.0.1": {
+      "Swashbuckle.AspNetCore/10.0.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.Extensions.ApiDescription.Server": "10.0.0",
-          "Swashbuckle.AspNetCore.Swagger": "10.0.1",
-          "Swashbuckle.AspNetCore.SwaggerGen": "10.0.1",
-          "Swashbuckle.AspNetCore.SwaggerUI": "10.0.1"
+          "Swashbuckle.AspNetCore.Swagger": "10.0.0",
+          "Swashbuckle.AspNetCore.SwaggerGen": "10.0.0",
+          "Swashbuckle.AspNetCore.SwaggerUI": "10.0.0"
         },
         "build": {
           "build/Swashbuckle.AspNetCore.props": {}
@@ -307,7 +307,7 @@
           "buildMultiTargeting/Swashbuckle.AspNetCore.props": {}
         }
       },
-      "Swashbuckle.AspNetCore.Swagger/10.0.1": {
+      "Swashbuckle.AspNetCore.Swagger/10.0.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.OpenApi": "2.3.0"
@@ -326,10 +326,10 @@
           "Microsoft.AspNetCore.App"
         ]
       },
-      "Swashbuckle.AspNetCore.SwaggerGen/10.0.1": {
+      "Swashbuckle.AspNetCore.SwaggerGen/10.0.0": {
         "type": "package",
         "dependencies": {
-          "Swashbuckle.AspNetCore.Swagger": "10.0.1"
+          "Swashbuckle.AspNetCore.Swagger": "10.0.0"
         },
         "compile": {
           "lib/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll": {
@@ -342,7 +342,7 @@
           }
         }
       },
-      "Swashbuckle.AspNetCore.SwaggerUI/10.0.1": {
+      "Swashbuckle.AspNetCore.SwaggerUI/10.0.0": {
         "type": "package",
         "compile": {
           "lib/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll": {
@@ -1090,24 +1090,24 @@
         "microsoft.sqlserver.server.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore/10.0.1": {
-      "sha512": "177+JNAV5TNvy8gLCdrcWBY9n2jdkxiHQDY4vhaExeqUpKrOqDatCcm/kW3kze60GqfnZ2NobD/IKiAPOL+CEw==",
+    "Swashbuckle.AspNetCore/10.0.0": {
+      "sha512": "ciYIKYWeB1486X8CgUqrUgahqV8xAdzVPuxN2buW9VvmYcfwtziE2G5f+gE3QSVv+iKE01U7WKXyS1GadQjyuQ==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore/10.0.1",
+      "path": "swashbuckle.aspnetcore/10.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "build/Swashbuckle.AspNetCore.props",
         "buildMultiTargeting/Swashbuckle.AspNetCore.props",
         "docs/package-readme.md",
-        "swashbuckle.aspnetcore.10.0.1.nupkg.sha512",
+        "swashbuckle.aspnetcore.10.0.0.nupkg.sha512",
         "swashbuckle.aspnetcore.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore.Swagger/10.0.1": {
-      "sha512": "HJYFSP18YF1Z6LCwunL+v8wuZUzzvcjarB8AJna/NVVIpq11FH9BW/D/6abwigu7SsKRbisStmk8xu2mTsxxHg==",
+    "Swashbuckle.AspNetCore.Swagger/10.0.0": {
+      "sha512": "X1GSq/Eh4FX58Jf7fjUyJLUoMh10jXv4VmT/BUqDAgKIkpo+UuL/SwGOZI+U8XiLFOxpAv4lGR0kFLVPs0wUIA==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore.swagger/10.0.1",
+      "path": "swashbuckle.aspnetcore.swagger/10.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1121,14 +1121,14 @@
         "lib/net9.0/Swashbuckle.AspNetCore.Swagger.pdb",
         "lib/net9.0/Swashbuckle.AspNetCore.Swagger.xml",
         "package-readme.md",
-        "swashbuckle.aspnetcore.swagger.10.0.1.nupkg.sha512",
+        "swashbuckle.aspnetcore.swagger.10.0.0.nupkg.sha512",
         "swashbuckle.aspnetcore.swagger.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore.SwaggerGen/10.0.1": {
-      "sha512": "vMMBDiTC53KclPs1aiedRZnXkoI2ZgF5/JFr3Dqr8KT7wvIbA/MwD+ormQ4qf25gN5xCrJbmz/9/Z3RrpSofMA==",
+    "Swashbuckle.AspNetCore.SwaggerGen/10.0.0": {
+      "sha512": "B8C0JC1Iknubtslov37ZvDW9w53X9IQ05UFxXxJB41ZH8cwmzWTZnAXyvqeToJ/yZNfjdCOtKdwTSGiNkQvVuA==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore.swaggergen/10.0.1",
+      "path": "swashbuckle.aspnetcore.swaggergen/10.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1142,14 +1142,14 @@
         "lib/net9.0/Swashbuckle.AspNetCore.SwaggerGen.pdb",
         "lib/net9.0/Swashbuckle.AspNetCore.SwaggerGen.xml",
         "package-readme.md",
-        "swashbuckle.aspnetcore.swaggergen.10.0.1.nupkg.sha512",
+        "swashbuckle.aspnetcore.swaggergen.10.0.0.nupkg.sha512",
         "swashbuckle.aspnetcore.swaggergen.nuspec"
       ]
     },
-    "Swashbuckle.AspNetCore.SwaggerUI/10.0.1": {
-      "sha512": "a2eLI/fCxJ3WH+H1hr7Q2T82ZBk20FfqYBEZ9hOr3f+426ZUfGU2LxYWzOJrf5/4y6EKShmWpjJG01h3Rc+l6Q==",
+    "Swashbuckle.AspNetCore.SwaggerUI/10.0.0": {
+      "sha512": "KfOQg2fFUBrKNRZKeXDKB6qnyRnAMhv7hKUXYdDuL3tPndwBZEh9K4w5gj+FJBvCpR24J7Z9nt1zVZ+J0ZVe2g==",
       "type": "package",
-      "path": "swashbuckle.aspnetcore.swaggerui/10.0.1",
+      "path": "swashbuckle.aspnetcore.swaggerui/10.0.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
@@ -1163,7 +1163,7 @@
         "lib/net9.0/Swashbuckle.AspNetCore.SwaggerUI.pdb",
         "lib/net9.0/Swashbuckle.AspNetCore.SwaggerUI.xml",
         "package-readme.md",
-        "swashbuckle.aspnetcore.swaggerui.10.0.1.nupkg.sha512",
+        "swashbuckle.aspnetcore.swaggerui.10.0.0.nupkg.sha512",
         "swashbuckle.aspnetcore.swaggerui.nuspec"
       ]
     },
@@ -1290,13 +1290,13 @@
     },
     "PSA.AppCore/1.0.0": {
       "type": "project",
-      "path": "../AppCore/PSA.AppCore.csproj",
-      "msbuildProject": "../AppCore/PSA.AppCore.csproj"
+      "path": "../PSA.AppCore/PSA.AppCore.csproj",
+      "msbuildProject": "../PSA.AppCore/PSA.AppCore.csproj"
     },
     "PSA.DataAccess/1.0.0": {
       "type": "project",
-      "path": "../DataAccess/PSA.DataAccess.csproj",
-      "msbuildProject": "../DataAccess/PSA.DataAccess.csproj"
+      "path": "../PSA.DataAccess/PSA.DataAccess.csproj",
+      "msbuildProject": "../PSA.DataAccess/PSA.DataAccess.csproj"
     },
     "PSA.EntidadesDTO/1.0.0": {
       "type": "project",
@@ -1310,7 +1310,7 @@
       "PSA.AppCore >= 1.0.0",
       "PSA.DataAccess >= 1.0.0",
       "PSA.EntidadesDTO >= 1.0.0",
-      "Swashbuckle.AspNetCore >= 10.0.1"
+      "Swashbuckle.AspNetCore >= 10.0.0"
     ]
   },
   "packageFolders": {
@@ -1320,16 +1320,17 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
+      "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\PSA.WebAPI.csproj",
       "projectName": "PSA.WebAPI",
-      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
+      "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\PSA.WebAPI.csproj",
       "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\obj\\",
+      "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
+        "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\NuGet.Config",
         "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -1338,21 +1339,20 @@
         "net10.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj": {
-              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj"
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\PSA.AppCore.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\PSA.AppCore.csproj"
             },
-            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj": {
-              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj"
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj"
             },
-            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
-              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+            "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+              "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
             }
           }
         }
@@ -1379,7 +1379,7 @@
           },
           "Swashbuckle.AspNetCore": {
             "target": "Package",
-            "version": "[10.0.1, )"
+            "version": "[10.0.0, )"
           }
         },
         "imports": [

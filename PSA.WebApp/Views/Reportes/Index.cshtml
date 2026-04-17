@@ -2,8 +2,8 @@
 @{
     ViewData["Title"] = "Reportes";
     var rolId = User.FindFirstValue(ClaimTypes.Role);
-    var esDueno = rolId == "1";
-    var esAdmin = rolId == "2";
+    var esAdmin = rolId == "1";
+    var esDueno = rolId == "2";
     var esIngeniero = rolId == "3";
 }
 <section class="seccion-pagina">

@@ -23,7 +23,7 @@ namespace PSA.WebApp.Controllers
             var rolId = User.FindFirstValue(ClaimTypes.Role);
             return rolId switch
             {
-                "2" => "Administrador",
+                "1" => "Administrador",
                 "3" => "Ingeniero",
                 _ => "Dueno"
             };

@@ -1,0 +1,11 @@
+@{
+    ViewData["Title"] = "Acceso denegado";
+}
+
+<section class="container py-5">
+    <div class="alert alert-warning" role="alert">
+        <h2 class="h4 mb-2">Acceso denegado</h2>
+        <p class="mb-0">Su sesión está activa, pero su rol actual no tiene permisos para acceder a esta pantalla.</p>
+    </div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Volver al inicio</a>
+</section>

@@ -201,3 +201,194 @@ main {
         padding: var(--espacio-4);
     }
 }
+/* =========================
+   FIX MODO OSCURO SIN CAMBIAR PALETA
+   ========================= */
+
+/* Puente entre ambos sistemas de variables */
+:root {
+    --bg-color: var(--color-fondo);
+    --surface-color: var(--color-superficie);
+    --surface-soft: var(--color-superficie-secundaria);
+    --text-color: var(--color-texto-principal);
+    --text-muted: var(--color-texto-secundario);
+    --border-color: var(--color-borde-suave);
+    --sidebar-bg: var(--color-superficie);
+    --topbar-bg: var(--color-superficie);
+    --primary-color: var(--color-primario);
+    --primary-hover: var(--color-accion);
+    --danger-color: var(--color-error);
+    --shadow-soft: var(--sombra-sm);
+}
+
+/* Soporta ambos atributos de tema usando TU misma paleta oscura */
+html[data-tema="oscuro"],
+html[data-theme="dark"] {
+    --color-fondo: #07140B;
+    --color-superficie: #0E1F12;
+    --color-superficie-secundaria: #122818;
+    --color-borde-suave: #1E3A24;
+    --color-texto-principal: #EAF2EA;
+    --color-texto-secundario: #A9B5A9;
+    --color-primario: #2E9739;
+    --color-accion: #39A845;
+    --sombra-sm: 0 8px 18px rgba(0, 0, 0, 0.25);
+    --sombra-md: 0 14px 34px rgba(0, 0, 0, 0.35);
+    --bg-color: var(--color-fondo);
+    --surface-color: var(--color-superficie);
+    --surface-soft: var(--color-superficie-secundaria);
+    --text-color: var(--color-texto-principal);
+    --text-muted: var(--color-texto-secundario);
+    --border-color: var(--color-borde-suave);
+    --sidebar-bg: var(--color-superficie);
+    --topbar-bg: var(--color-superficie);
+    --primary-color: var(--color-primario);
+    --primary-hover: var(--color-accion);
+    --danger-color: var(--color-error);
+    --shadow-soft: var(--sombra-sm);
+}
+
+    /* Color base garantizado */
+    html[data-tema="oscuro"] body,
+    html[data-theme="dark"] body,
+    html[data-tema="oscuro"] main,
+    html[data-theme="dark"] main {
+        background: var(--color-fondo);
+        color: var(--color-texto-principal);
+    }
+
+    /* Títulos y texto principal */
+    html[data-tema="oscuro"] h1,
+    html[data-tema="oscuro"] h2,
+    html[data-tema="oscuro"] h3,
+    html[data-tema="oscuro"] h4,
+    html[data-tema="oscuro"] h5,
+    html[data-tema="oscuro"] h6,
+    html[data-theme="dark"] h1,
+    html[data-theme="dark"] h2,
+    html[data-theme="dark"] h3,
+    html[data-theme="dark"] h4,
+    html[data-theme="dark"] h5,
+    html[data-theme="dark"] h6,
+    html[data-tema="oscuro"] .titulo-encabezado,
+    html[data-theme="dark"] .titulo-encabezado,
+    html[data-tema="oscuro"] .barra-lateral__marca a,
+    html[data-theme="dark"] .barra-lateral__marca a,
+    html[data-tema="oscuro"] .cabecera-pagina h2,
+    html[data-theme="dark"] .cabecera-pagina h2,
+    html[data-tema="oscuro"] .cabecera-formulario h2,
+    html[data-theme="dark"] .cabecera-formulario h2 {
+        color: var(--color-texto-principal);
+    }
+
+    html[data-tema="oscuro"] .cabecera-pagina p,
+    html[data-theme="dark"] .cabecera-pagina p,
+    html[data-tema="oscuro"] .cabecera-formulario p,
+    html[data-theme="dark"] .cabecera-formulario p,
+    html[data-tema="oscuro"] .texto-ayuda,
+    html[data-theme="dark"] .texto-ayuda,
+    html[data-tema="oscuro"] .pie-formulario,
+    html[data-theme="dark"] .pie-formulario,
+    html[data-tema="oscuro"] .menu-lateral__seccion,
+    html[data-theme="dark"] .menu-lateral__seccion,
+    html[data-tema="oscuro"] .pie-pagina,
+    html[data-theme="dark"] .pie-pagina,
+    html[data-tema="oscuro"] .lista-timeline,
+    html[data-theme="dark"] .lista-timeline,
+    html[data-tema="oscuro"] .lista-detalle dt,
+    html[data-theme="dark"] .lista-detalle dt {
+        color: var(--color-texto-secundario);
+    }
+
+    /* Tarjetas, paneles y bloques */
+    html[data-tema="oscuro"] .tarjeta-panel,
+    html[data-theme="dark"] .tarjeta-panel,
+    html[data-tema="oscuro"] .tarjeta-autenticacion,
+    html[data-theme="dark"] .tarjeta-autenticacion,
+    html[data-tema="oscuro"] .tarjeta-kpi,
+    html[data-theme="dark"] .tarjeta-kpi,
+    html[data-tema="oscuro"] .formulario-modulo,
+    html[data-theme="dark"] .formulario-modulo,
+    html[data-tema="oscuro"] .alerta,
+    html[data-theme="dark"] .alerta,
+    html[data-tema="oscuro"] .estado-vacio,
+    html[data-theme="dark"] .estado-vacio,
+    html[data-tema="oscuro"] .encabezado-sistema,
+    html[data-theme="dark"] .encabezado-sistema,
+    html[data-tema="oscuro"] .barra-lateral,
+    html[data-theme="dark"] .barra-lateral,
+    html[data-tema="oscuro"] .pie-pagina,
+    html[data-theme="dark"] .pie-pagina {
+        color: var(--color-texto-principal);
+    }
+
+    /* Tablas */
+    html[data-tema="oscuro"] .tabla-base,
+    html[data-theme="dark"] .tabla-base,
+    html[data-tema="oscuro"] .tabla-base td,
+    html[data-theme="dark"] .tabla-base td {
+        color: var(--color-texto-principal);
+    }
+
+        html[data-tema="oscuro"] .tabla-base th,
+        html[data-theme="dark"] .tabla-base th {
+            color: var(--color-texto-secundario);
+            background: var(--color-superficie-secundaria);
+        }
+
+    /* Formularios */
+    html[data-tema="oscuro"] .campo-formulario label,
+    html[data-theme="dark"] .campo-formulario label,
+    html[data-tema="oscuro"] label,
+    html[data-theme="dark"] label,
+    html[data-tema="oscuro"] legend,
+    html[data-theme="dark"] legend {
+        color: var(--color-texto-principal);
+    }
+
+    html[data-tema="oscuro"] input,
+    html[data-theme="dark"] input,
+    html[data-tema="oscuro"] select,
+    html[data-theme="dark"] select,
+    html[data-tema="oscuro"] textarea,
+    html[data-theme="dark"] textarea {
+        background: var(--color-superficie);
+        color: var(--color-texto-principal);
+        border-color: var(--color-borde-suave);
+    }
+
+        html[data-tema="oscuro"] input::placeholder,
+        html[data-theme="dark"] input::placeholder,
+        html[data-tema="oscuro"] textarea::placeholder,
+        html[data-theme="dark"] textarea::placeholder {
+            color: var(--color-texto-secundario);
+            opacity: 1;
+        }
+
+        html[data-tema="oscuro"] select option,
+        html[data-theme="dark"] select option {
+            background: var(--color-superficie);
+            color: var(--color-texto-principal);
+        }
+
+    /* Navegación lateral y accesos */
+    html[data-tema="oscuro"] .item-menu,
+    html[data-theme="dark"] .item-menu,
+    html[data-tema="oscuro"] .acceso-rapido,
+    html[data-theme="dark"] .acceso-rapido,
+    html[data-tema="oscuro"] .migas-pan .actual,
+    html[data-theme="dark"] .migas-pan .actual,
+    html[data-tema="oscuro"] .lista-detalle dd,
+    html[data-theme="dark"] .lista-detalle dd {
+        color: var(--color-texto-principal);
+    }
+
+    /* Enlaces dentro de tarjetas/alertas */
+    html[data-tema="oscuro"] .tarjeta-panel a,
+    html[data-theme="dark"] .tarjeta-panel a,
+    html[data-tema="oscuro"] .tarjeta-autenticacion a,
+    html[data-theme="dark"] .tarjeta-autenticacion a,
+    html[data-tema="oscuro"] .alerta a,
+    html[data-theme="dark"] .alerta a {
+        color: var(--color-primario);
+    }

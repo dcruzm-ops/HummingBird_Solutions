@@ -1,15 +1,17 @@
 ﻿using Microsoft.Data.SqlClient;
 using PSA.EntidadesDTO.Entidades.Evaluaciones;
 
+using PSA.DataAccess;
+
 namespace PSA.DataAccess.DAO
 {
     public class EvaluacionDAO
     {
-        private readonly string _connectionString;
+        private readonly IDbConnectionFactory _connectionFactory;
 
-        public EvaluacionDAO(string connectionString)
+        public EvaluacionDAO(IDbConnectionFactory connectionFactory)
         {
-            _connectionString = connectionString;
+            _connectionFactory = connectionFactory;
         }
 
         public async Task<int> CrearEvaluacionAsync(EvaluacionTecnica evaluacion)
@@ -35,7 +37,7 @@ namespace PSA.DataAccess.DAO
                 );
                 SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("@IdFinca", evaluacion.FincaId);
@@ -58,7 +60,7 @@ namespace PSA.DataAccess.DAO
                 FROM EvaluacionesTecnicas
                 WHERE IdEvaluacion = @IdEvaluacion";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
             command.Parameters.AddWithValue("@IdEvaluacion", id);
 
@@ -81,7 +83,7 @@ namespace PSA.DataAccess.DAO
                     FechaDecision = @FechaDecision
                 WHERE IdEvaluacion = @IdEvaluacion";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
 
             command.Parameters.AddWithValue("@IdEvaluacion", evaluacion.Id);

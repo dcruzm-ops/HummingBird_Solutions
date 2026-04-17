@@ -1,62 +1,46 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\",
+  "WorkspaceRootPath": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\controllers\\fincaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\controllers\\fincaviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\global.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\global.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0809F3B2-0284-82F1-4862-E44CAE75A2EA}|PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.entidadesdto\\dtos\\fincas\\fincadto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0809F3B2-0284-82F1-4862-E44CAE75A2EA}|PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj|solutionrelative:psa.entidadesdto\\dtos\\fincas\\fincadto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\variables.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\variables.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\views\\fincas\\registrarfinca.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\views\\fincas\\registrarfinca.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\services\\fincaapiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\services\\fincaapiservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\propietario.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\propietario.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4FBB2054-C2E3-6895-F6BE-4F8B172B940B}|PSA.WebAPI\\PSA.WebAPI.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapi\\controllers\\fincacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4FBB2054-C2E3-6895-F6BE-4F8B172B940B}|PSA.WebAPI\\PSA.WebAPI.csproj|solutionrelative:psa.webapi\\controllers\\fincacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\producto-landing.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\producto-landing.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\controllers\\fincascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\controllers\\fincascontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\landing.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\landing.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{712FFD87-5B90-35AE-EC42-FB20A6654BDB}|AppCore\\PSA.AppCore.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\appcore\\fincaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{712FFD87-5B90-35AE-EC42-FB20A6654BDB}|AppCore\\PSA.AppCore.csproj|solutionrelative:appcore\\fincaservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\ingeniero.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\ingeniero.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\componentes.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\componentes.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4FBB2054-C2E3-6895-F6BE-4F8B172B940B}|PSA.WebAPI\\PSA.WebAPI.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{4FBB2054-C2E3-6895-F6BE-4F8B172B940B}|PSA.WebAPI\\PSA.WebAPI.csproj|solutionrelative:psa.webapi\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\autenticacion.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\autenticacion.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\views\\fincas\\misfincas.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\views\\fincas\\misfincas.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{35F40976-49C0-E081-21F3-DCB1A6B3EC08}|DataAccess\\PSA.DataAccess.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\dataaccess\\dao\\fincadao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{35F40976-49C0-E081-21F3-DCB1A6B3EC08}|DataAccess\\PSA.DataAccess.csproj|solutionrelative:dataaccess\\dao\\fincadao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\views\\fincas\\detallefinca.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\views\\fincas\\detallefinca.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\jamen\\onedrive\\desktop\\hummingbird_solutions-yohel-feature-devp\\hummingbird_solutions-jared-feature-dev real\\psa-costa-rica\\psa.webapp\\views\\evaluaciones\\nuevaevaluacion.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
-      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\views\\evaluaciones\\nuevaevaluacion.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+      "AbsoluteMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|c:\\users\\administrator\\source\\repos\\hummingbird_solutions\\psa.webapp\\wwwroot\\css\\administrador.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{2EA2E9BE-0883-940A-5A93-051FA70C8CF1}|PSA.WebApp\\PSA.WebApp.csproj|solutionrelative:psa.webapp\\wwwroot\\css\\administrador.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
     }
   ],
   "DocumentGroupContainers": [
@@ -69,173 +53,146 @@
           "SelectedChildIndex": 9,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "FincaController.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\Controllers\\FincaController.cs",
-              "RelativeDocumentMoniker": "PSA.WebAPI\\Controllers\\FincaController.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\Controllers\\FincaController.cs",
-              "RelativeToolTip": "PSA.WebAPI\\Controllers\\FincaController.cs",
-              "ViewState": "AgIAAPMAAAAAAAAAAAAAAPMAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-28T01:59:27.022Z"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c64b9c2-e352-428e-a56d-0ace190b99a6}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RegistrarFinca.cshtml",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Fincas\\RegistrarFinca.cshtml",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Views\\Fincas\\RegistrarFinca.cshtml",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Fincas\\RegistrarFinca.cshtml",
-              "RelativeToolTip": "PSA.WebApp\\Views\\Fincas\\RegistrarFinca.cshtml",
-              "ViewState": "AgIAAOcAAAAAAAAAAADwvwABAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-28T01:58:21.71Z"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Program.cs",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Program.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Program.cs",
-              "RelativeToolTip": "PSA.WebApp\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-28T01:26:28.806Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "MisFincas.cshtml",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Fincas\\MisFincas.cshtml",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Views\\Fincas\\MisFincas.cshtml",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Fincas\\MisFincas.cshtml",
-              "RelativeToolTip": "PSA.WebApp\\Views\\Fincas\\MisFincas.cshtml",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAAGwAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-28T01:17:04.74Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "FincaDAO.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\DAO\\FincaDAO.cs",
-              "RelativeDocumentMoniker": "DataAccess\\DAO\\FincaDAO.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\DAO\\FincaDAO.cs",
-              "RelativeToolTip": "DataAccess\\DAO\\FincaDAO.cs",
-              "ViewState": "AgIAALgAAAAAAAAAAAAcwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-27T23:42:49.296Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "FincasController.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Controllers\\FincasController.cs",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Controllers\\FincasController.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Controllers\\FincasController.cs",
-              "RelativeToolTip": "PSA.WebApp\\Controllers\\FincasController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-27T22:59:51.26Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "FincaApiService.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Services\\FincaApiService.cs",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Services\\FincaApiService.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Services\\FincaApiService.cs",
-              "RelativeToolTip": "PSA.WebApp\\Services\\FincaApiService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-27T03:43:23.161Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "FincaService.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\FincaService.cs",
-              "RelativeDocumentMoniker": "AppCore\\FincaService.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\FincaService.cs",
-              "RelativeToolTip": "AppCore\\FincaService.cs",
-              "ViewState": "AgIAADYAAAAAAAAAAAAAAGEAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-27T23:31:29.853Z"
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "FincaDTO.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\DTOs\\Fincas\\FincaDTO.cs",
-              "RelativeDocumentMoniker": "PSA.EntidadesDTO\\DTOs\\Fincas\\FincaDTO.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\DTOs\\Fincas\\FincaDTO.cs",
-              "RelativeToolTip": "PSA.EntidadesDTO\\DTOs\\Fincas\\FincaDTO.cs",
-              "ViewState": "AgIAABQAAAAAAAAAAAAIwCEAAABdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-27T23:30:50.589Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "FincaViewModel.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Controllers\\FincaViewModel.cs",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Controllers\\FincaViewModel.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Controllers\\FincaViewModel.cs",
-              "RelativeToolTip": "PSA.WebApp\\Controllers\\FincaViewModel.cs",
-              "ViewState": "AgIAABcAAAAAAAAAAAAqwCUAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-27T23:19:54.534Z",
+              "Title": "variables.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\variables.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\variables.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\variables.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\variables.css",
+              "ViewState": "AgIAABgAAAAAAAAAAAAAACwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:11:51.611Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\appsettings.json",
-              "RelativeDocumentMoniker": "PSA.WebApp\\appsettings.json",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\appsettings.json",
-              "RelativeToolTip": "PSA.WebApp\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-03-27T23:18:20.43Z"
+              "DocumentIndex": 2,
+              "Title": "site.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\site.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\site.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\site.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\site.css",
+              "ViewState": "AgIAAPQAAAAAAAAAAAAAABIBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:11:30.389Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "DetalleFinca.cshtml",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Fincas\\DetalleFinca.cshtml",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Views\\Fincas\\DetalleFinca.cshtml",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Fincas\\DetalleFinca.cshtml",
-              "RelativeToolTip": "PSA.WebApp\\Views\\Fincas\\DetalleFinca.cshtml",
-              "ViewState": "AgIAACsAAAAAAAAAAAAWwEMAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-27T23:15:12.823Z"
+              "DocumentIndex": 3,
+              "Title": "propietario.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\propietario.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\propietario.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\propietario.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\propietario.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:11:23.079Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "producto-landing.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\producto-landing.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\producto-landing.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\producto-landing.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\producto-landing.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAANAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:09:43.595Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "landing.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\landing.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\landing.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\landing.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\landing.css",
+              "ViewState": "AgIAAC8BAAAAAAAAAAAAAEoBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:09:27.487Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "ingeniero.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\ingeniero.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\ingeniero.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\ingeniero.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\ingeniero.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:09:20.978Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "global.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\global.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\global.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\global.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\global.css",
+              "ViewState": "AgIAAHgBAAAAAAAAAAAwwBoBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:09:01.994Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 8,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\Program.cs",
-              "RelativeDocumentMoniker": "PSA.WebAPI\\Program.cs",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\Program.cs",
-              "RelativeToolTip": "PSA.WebAPI\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-03-27T04:35:55.041Z"
+              "Title": "autenticacion.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\autenticacion.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\autenticacion.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\autenticacion.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\autenticacion.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:08:26.163Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "NuevaEvaluacion.cshtml",
-              "DocumentMoniker": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Evaluaciones\\NuevaEvaluacion.cshtml",
-              "RelativeDocumentMoniker": "PSA.WebApp\\Views\\Evaluaciones\\NuevaEvaluacion.cshtml",
-              "ToolTip": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebApp\\Views\\Evaluaciones\\NuevaEvaluacion.cshtml",
-              "RelativeToolTip": "PSA.WebApp\\Views\\Evaluaciones\\NuevaEvaluacion.cshtml",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAWAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
-              "WhenOpened": "2026-03-27T04:20:56.126Z"
+              "DocumentIndex": 7,
+              "Title": "componentes.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\componentes.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\componentes.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\componentes.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\componentes.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:08:25.623Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "administrador.css",
+              "DocumentMoniker": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\administrador.css",
+              "RelativeDocumentMoniker": "PSA.WebApp\\wwwroot\\css\\administrador.css",
+              "ToolTip": "C:\\Users\\Administrator\\source\\repos\\HummingBird_Solutions\\PSA.WebApp\\wwwroot\\css\\administrador.css",
+              "RelativeToolTip": "PSA.WebApp\\wwwroot\\css\\administrador.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-15T03:08:17.085Z",
+              "EditorCaption": ""
             }
           ]
         }

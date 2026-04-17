@@ -5,10 +5,202 @@
     "version": "1.0"
   },
   "paths": {
-    "/api/Finca/RetrieveAll": {
+    "/api/Administracion/usuarios": {
       "get": {
         "tags": [
-          "Finca"
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "idRol",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioAdminListadoDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioAdminListadoDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioAdminListadoDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "idAdministrador",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Administracion/usuarios/{idUsuario}": {
+      "get": {
+        "tags": [
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "idUsuario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "idUsuario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idAdministrador",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsuarioAdminEdicionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "idUsuario",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idAdministrador",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -17,14 +209,498 @@
         }
       }
     },
-    "/api/Finca/RetrieveById/{id}": {
-      "get": {
+    "/api/Administracion/usuarios/reasignacion-cliente": {
+      "post": {
         "tags": [
-          "Finca"
+          "Administracion"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "idAdministrador",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasignacionClienteDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasignacionClienteDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasignacionClienteDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Administracion/roles": {
+      "get": {
+        "tags": [
+          "Administracion"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Administracion/roles-permisos": {
+      "get": {
+        "tags": [
+          "Administracion"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolPermisoDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolPermisoDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RolPermisoDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Administracion/roles-permisos/{idRol}": {
+      "put": {
+        "tags": [
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "idRol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idAdministrador",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardarPermisosRolDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardarPermisosRolDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GuardarPermisosRolDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Administracion/configuraciones-pago/vigente": {
+      "get": {
+        "tags": [
+          "Administracion"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Administracion/configuraciones-pago/historial": {
+      "get": {
+        "tags": [
+          "Administracion"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Administracion/configuraciones-pago": {
+      "post": {
+        "tags": [
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "idAdministrador",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfiguracionPagoAdminDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Administracion/cuentas-bancarias/pendientes": {
+      "get": {
+        "tags": [
+          "Administracion"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CuentaBancariaPendienteDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CuentaBancariaPendienteDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CuentaBancariaPendienteDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Administracion/cuentas-bancarias/validacion": {
+      "post": {
+        "tags": [
+          "Administracion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidacionCuentaBancariaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidacionCuentaBancariaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidacionCuentaBancariaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Administracion/auditoria": {
+      "get": {
+        "tags": [
+          "Administracion"
+        ],
+        "parameters": [
+          {
+            "name": "Modulo",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Accion",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "FechaDesde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "FechaHasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "MaximoRegistros",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditoriaEventoDTO"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditoriaEventoDTO"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditoriaEventoDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Autenticacion/registrar": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarUsuarioDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarUsuarioDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarUsuarioDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Autenticacion/iniciar-sesion": {
+      "post": {
+        "tags": [
+          "Autenticacion"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InicioSesionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InicioSesionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/InicioSesionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/dueno-resumen/{idUsuario}": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "parameters": [
+          {
+            "name": "idUsuario",
             "in": "path",
             "required": true,
             "schema": {
@@ -40,78 +716,401 @@
         }
       }
     },
-    "/api/Finca/Create": {
-      "post": {
+    "/api/Dashboard/ingeniero-resumen/{idUsuario}": {
+      "get": {
         "tags": [
-          "Finca"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Finca/Update": {
-      "put": {
-        "tags": [
-          "Finca"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/FincaDTO"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/api/Finca/Delete/{id}": {
-      "delete": {
-        "tags": [
-          "Finca"
+          "Dashboard"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "idUsuario",
             "in": "path",
             "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Dashboard/administrador-resumen": {
+      "get": {
+        "tags": [
+          "Dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenDashboardAdministradorDTO"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenDashboardAdministradorDTO"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumenDashboardAdministradorDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/bandeja-pendientes": {
+      "get": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/detalle": {
+      "get": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/asignar": {
+      "put": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarEvaluacionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarEvaluacionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarEvaluacionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/resultado": {
+      "put": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarResultadoEvaluacionDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarResultadoEvaluacionDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarResultadoEvaluacionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/{idEvaluacion}/estado": {
+      "put": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "idEvaluacion",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/EvaluacionesTecnicas/reportes": {
+      "get": {
+        "tags": [
+          "EvaluacionesTecnicas"
+        ],
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mes",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "estadoEvaluacion",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "decisionTecnica",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idIngeniero",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas/mis-fincas": {
+      "get": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idPropietario",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas/{idFinca}/detalle": {
+      "get": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idFinca",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idPropietario",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas": {
+      "post": {
+        "tags": [
+          "Fincas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Fincas/{idFinca}": {
+      "put": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idFinca",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegistrarFincaDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Fincas"
+        ],
+        "parameters": [
+          {
+            "name": "idFinca",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idPropietario",
+            "in": "query",
             "schema": {
               "type": "integer",
               "format": "int32"
@@ -129,6 +1128,18 @@
       "get": {
         "tags": [
           "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/openapi/v1.json": {
+      "get": {
+        "tags": [
+          "PSA.WebAPI"
         ],
         "responses": {
           "200": {
@@ -233,12 +1244,335 @@
   },
   "components": {
     "schemas": {
-      "FincaDTO": {
+      "ActividadAuditoriaDTO": {
+        "type": "object",
+        "properties": {
+          "modulo": {
+            "type": "string",
+            "nullable": true
+          },
+          "accion": {
+            "type": "string",
+            "nullable": true
+          },
+          "detalle": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaAccion": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AsignarEvaluacionDTO": {
+        "type": "object",
+        "properties": {
+          "idIngeniero": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "AuditoriaEventoDTO": {
+        "type": "object",
+        "properties": {
+          "idLog": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "nombreUsuario": {
+            "type": "string",
+            "nullable": true
+          },
+          "modulo": {
+            "type": "string",
+            "nullable": true
+          },
+          "tablaAfectada": {
+            "type": "string",
+            "nullable": true
+          },
+          "idRegistroAfectado": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "accion": {
+            "type": "string",
+            "nullable": true
+          },
+          "detalle": {
+            "type": "string",
+            "nullable": true
+          },
+          "ipOrigen": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaAccion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valorAnterior": {
+            "type": "string",
+            "nullable": true
+          },
+          "valorNuevo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfiguracionPagoAdminDTO": {
+        "required": [
+          "fechaVigenciaDesde",
+          "nombreVersion"
+        ],
+        "type": "object",
+        "properties": {
+          "idConfiguracionPago": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "version": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombreVersion": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "precioBasePorHectarea": {
+            "maximum": 1.7976931348623157E+308,
+            "minimum": 0,
+            "type": "number",
+            "format": "double"
+          },
+          "topePorcentajeAjuste": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "number",
+            "format": "double"
+          },
+          "fechaVigenciaDesde": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaVigenciaHasta": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "activa": {
+            "type": "boolean"
+          },
+          "creadoPor": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ajustes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfiguracionPagoAjusteDTO"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConfiguracionPagoAjusteDTO": {
+        "type": "object",
+        "properties": {
+          "idDetalleConfiguracion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tipoFactor": {
+            "type": "string",
+            "nullable": true
+          },
+          "valorFactor": {
+            "type": "string",
+            "nullable": true
+          },
+          "porcentajeAjuste": {
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CuentaBancariaPendienteDTO": {
+        "type": "object",
+        "properties": {
+          "idCuentaBancaria": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idUsuario": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombreUsuario": {
+            "type": "string",
+            "nullable": true
+          },
+          "emailUsuario": {
+            "type": "string",
+            "nullable": true
+          },
+          "banco": {
+            "type": "string",
+            "nullable": true
+          },
+          "numeroCuenta": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipoCuenta": {
+            "type": "string",
+            "nullable": true
+          },
+          "titular": {
+            "type": "string",
+            "nullable": true
+          },
+          "estadoValidacion": {
+            "type": "string",
+            "nullable": true
+          },
+          "observacionesValidacion": {
+            "type": "string",
+            "nullable": true
+          },
+          "activa": {
+            "type": "boolean"
+          },
+          "fechaRegistro": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GuardarPermisosRolDTO": {
+        "type": "object",
+        "properties": {
+          "idRol": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "codigosPermiso": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "InicioSesionDTO": {
+        "required": [
+          "contrasena",
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "contrasena": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PermisoDTO": {
+        "type": "object",
+        "properties": {
+          "idPermiso": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "codigo": {
+            "type": "string",
+            "nullable": true
+          },
+          "nombre": {
+            "type": "string",
+            "nullable": true
+          },
+          "descripcion": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReasignacionClienteDTO": {
+        "type": "object",
+        "properties": {
+          "idPropietario": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "idIngenieroDestino": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecuperarContrasenaDTO": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "correo": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RegistrarFincaDTO": {
         "required": [
           "canton",
           "distrito",
-          "estadoFinca",
-          "idPropietario",
+          "hectareas",
+          "latitud",
+          "longitud",
           "nombreFinca",
           "pendiente",
           "provincia",
@@ -247,34 +1581,33 @@
         ],
         "type": "object",
         "properties": {
-          "idFinca": {
-            "type": "integer",
-            "format": "int32"
-          },
           "idPropietario": {
-            "maximum": 2147483647,
-            "minimum": 1,
             "type": "integer",
             "format": "int32"
           },
           "nombreFinca": {
-            "maxLength": 100,
+            "maxLength": 150,
             "minLength": 0,
             "type": "string"
           },
           "provincia": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "canton": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "distrito": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "direccionExacta": {
+            "maxLength": 250,
+            "minLength": 0,
             "type": "string",
             "nullable": true
           },
@@ -291,65 +1624,343 @@
             "format": "double"
           },
           "hectareas": {
-            "maximum": 1.7976931348623157E+308,
+            "maximum": 100000,
             "minimum": 0.01,
             "type": "number",
             "format": "double"
           },
           "vegetacion": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "tieneRecursosHidricos": {
             "type": "boolean"
           },
+          "tieneRiosOQuebradas": {
+            "type": "boolean"
+          },
+          "tieneNacientes": {
+            "type": "boolean"
+          },
+          "cantidadNacientes": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32"
+          },
           "usoSuelo": {
-            "minLength": 1,
+            "maxLength": 100,
+            "minLength": 0,
             "type": "string"
           },
           "pendiente": {
-            "minLength": 1,
+            "maxLength": 50,
+            "minLength": 0,
             "type": "string"
-          },
-          "estadoFinca": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "fechaRegistro": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "fechaActualizacion": {
-            "type": "string",
-            "format": "date-time"
           }
         },
         "additionalProperties": false
       },
-      "RecuperarContrasenaDTO": {
+      "RegistrarResultadoEvaluacionDTO": {
         "type": "object",
         "properties": {
-          "correo": {
+          "fechaVisita": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "observaciones": {
             "type": "string",
             "nullable": true
+          },
+          "decisionTecnica": {
+            "type": "string",
+            "nullable": true
+          },
+          "hectareasAjustadas": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "vegetacionAjustada": {
+            "type": "string",
+            "nullable": true
+          },
+          "recursosHidricosAjustado": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "usoSueloAjustado": {
+            "type": "string",
+            "nullable": true
+          },
+          "pendienteAjustada": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RegistrarUsuarioDTO": {
+        "required": [
+          "confirmacionContrasena",
+          "contrasena",
+          "email",
+          "nombreCompleto"
+        ],
+        "type": "object",
+        "properties": {
+          "nombreCompleto": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "contrasena": {
+            "minLength": 8,
+            "type": "string"
+          },
+          "confirmacionContrasena": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "idRol": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
       },
       "RestablecerContrasenaDTO": {
+        "required": [
+          "confirmarContrasena",
+          "nuevaContrasena",
+          "token"
+        ],
         "type": "object",
         "properties": {
           "token": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "nuevaContrasena": {
+            "minLength": 8,
+            "type": "string"
+          },
+          "confirmarContrasena": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResumenDashboardAdministradorDTO": {
+        "type": "object",
+        "properties": {
+          "usuariosActivos": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "usuariosNuevosHoy": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "usuariosPendientesAprobacion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cuentasPorValidar": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "eventosAuditoria24h": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "alertas": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "actividadAuditoria": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActividadAuditoriaDTO"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RolDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombre": {
             "type": "string",
             "nullable": true
           },
-          "confirmarContrasena": {
+          "descripcion": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RolPermisoDTO": {
+        "type": "object",
+        "properties": {
+          "idRol": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombreRol": {
+            "type": "string",
+            "nullable": true
+          },
+          "descripcionRol": {
+            "type": "string",
+            "nullable": true
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "codigosPermisoAsignados": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "permisosDisponibles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PermisoDTO"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsuarioAdminEdicionDTO": {
+        "required": [
+          "email",
+          "estado",
+          "nombreCompleto"
+        ],
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombreCompleto": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "idRol": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "estado": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "contrasena": {
+            "minLength": 8,
+            "type": "string",
+            "nullable": true
+          },
+          "confirmacionContrasena": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UsuarioAdminListadoDTO": {
+        "type": "object",
+        "properties": {
+          "idUsuario": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombreCompleto": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "idRol": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "nombreRol": {
+            "type": "string",
+            "nullable": true
+          },
+          "estado": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaCreacion": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ultimoAcceso": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cantidadFincas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cantidadEvaluacionesActivas": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValidacionCuentaBancariaDTO": {
+        "type": "object",
+        "properties": {
+          "idCuentaBancaria": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          },
+          "aprobada": {
+            "type": "boolean"
+          },
+          "observaciones": {
+            "type": "string",
+            "nullable": true
+          },
+          "idAdministrador": {
+            "maximum": 2147483647,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -368,10 +1979,25 @@
   },
   "tags": [
     {
-      "name": "Finca"
+      "name": "Administracion"
+    },
+    {
+      "name": "Autenticacion"
+    },
+    {
+      "name": "Dashboard"
+    },
+    {
+      "name": "EvaluacionesTecnicas"
+    },
+    {
+      "name": "Fincas"
     },
     {
       "name": "Health"
+    },
+    {
+      "name": "PSA.WebAPI"
     },
     {
       "name": "RecuperacionContrasena"

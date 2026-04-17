@@ -1,34 +1,213 @@
+@model PSA.WebApp.Models.ParametrosPagoViewModel
 @{
     ViewData["Title"] = "Parámetros de pago";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Configuración versionada</span>
+            <span class="eyebrow">Administración del sistema</span>
             <h2>Parámetros de pago</h2>
-            <p>Base para precio por hectárea, porcentajes y topes de ajuste.</p>
+            <p>Versione precio por hectárea, tope de ajustes y reglas porcentuales para pagos.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesPago">Ir a planes de pago</a>
+        <a class="boton-secundario" asp-action="RolesPermisos">Ver roles y permisos</a>
     </div>
 
-    <form class="formulario-base formulario-modulo" id="formularioParametrosPago" method="get" asp-controller="Administracion" asp-action="AuditoriaLogs">
-        <div class="grid-tres-columnas">
-            <div class="campo-formulario">
-                <label for="precioBase">Precio base por hectárea</label>
-                <input id="precioBase" type="number" step="0.01" value="12000" />
-            </div>
-            <div class="campo-formulario">
-                <label for="ajustePorcentaje">Ajuste porcentual</label>
-                <input id="ajustePorcentaje" type="number" step="0.01" value="5" />
-            </div>
-            <div class="campo-formulario">
-                <label for="topeAjuste">Tope de ajuste</label>
-                <input id="topeAjuste" type="number" step="0.01" value="15" />
-            </div>
-        </div>
+    @if (TempData["MensajeExito"] is string exito && !string.IsNullOrWhiteSpace(exito))
+    {
+        <div class="alert alert-success mb-3">@exito</div>
+    }
+    @if (TempData["MensajeError"] is string error && !string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger mb-3">@error</div>
+    }
 
-        <div class="fila-acciones-formulario">
-            <button type="submit" class="boton-primario">Guardar parámetros</button>
-        </div>
-    </form>
+    <div class="d-flex flex-column gap-3">
+        <section class="tarjeta-panel">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h3 class="mb-1">Configuración vigente</h3>
+                    <p class="mb-0">Resumen de la versión actualmente activa para el cálculo de pagos.</p>
+                </div>
+            </div>
+
+            @if (Model.ConfiguracionActual != null)
+            {
+                <div class="grid-tres-columnas mt-3">
+                    <div>
+                        <strong>Versión</strong>
+                        <p>@Model.ConfiguracionActual.Version - @Model.ConfiguracionActual.NombreVersion</p>
+                    </div>
+                    <div>
+                        <strong>Precio base por hectárea</strong>
+                        <p>@Model.ConfiguracionActual.PrecioBasePorHectarea.ToString("N2")</p>
+                    </div>
+                    <div>
+                        <strong>Tope de ajuste</strong>
+                        <p>@Model.ConfiguracionActual.TopePorcentajeAjuste.ToString("N2")%</p>
+                    </div>
+                    <div>
+                        <strong>Vigencia desde</strong>
+                        <p>@Model.ConfiguracionActual.FechaVigenciaDesde.ToString("dd/MM/yyyy")</p>
+                    </div>
+                    <div>
+                        <strong>Vigencia hasta</strong>
+                        <p>@(Model.ConfiguracionActual.FechaVigenciaHasta?.ToString("dd/MM/yyyy") ?? "Abierta")</p>
+                    </div>
+                    <div>
+                        <strong>Ajustes configurados</strong>
+                        <p>@Model.ConfiguracionActual.Ajustes.Count</p>
+                    </div>
+                </div>
+
+                @if (Model.ConfiguracionActual.Ajustes.Any())
+                {
+                    <div class="tabla-responsive mt-3">
+                        <table class="tabla-base">
+                            <thead>
+                                <tr>
+                                    <th>Tipo de factor</th>
+                                    <th>Valor</th>
+                                    <th>% ajuste</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ajuste in Model.ConfiguracionActual.Ajustes)
+                                {
+                                    <tr>
+                                        <td>@ajuste.TipoFactor</td>
+                                        <td>@ajuste.ValorFactor</td>
+                                        <td>@ajuste.PorcentajeAjuste.ToString("N2")%</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="mt-3">Aún no existe una configuración de pago activa.</p>
+            }
+        </section>
+
+        <section class="tarjeta-panel">
+            <div>
+                <h3 class="mb-1">Registrar nueva configuración</h3>
+                <p class="mb-0">Cada registro crea una nueva versión y desactiva la configuración vigente anterior.</p>
+            </div>
+
+            <form asp-action="ParametrosPago" method="post" class="formulario-base formulario-modulo mt-3">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="grid-tres-columnas">
+                    <div class="campo-formulario">
+                        <label asp-for="NuevaConfiguracion.Version"></label>
+                        <input asp-for="NuevaConfiguracion.Version" />
+                        <span asp-validation-for="NuevaConfiguracion.Version" class="text-danger"></span>
+                    </div>
+                    <div class="campo-formulario">
+                        <label asp-for="NuevaConfiguracion.NombreVersion"></label>
+                        <input asp-for="NuevaConfiguracion.NombreVersion" />
+                        <span asp-validation-for="NuevaConfiguracion.NombreVersion" class="text-danger"></span>
+                    </div>
+                    <div class="campo-formulario">
+                        <label asp-for="NuevaConfiguracion.PrecioBasePorHectarea"></label>
+                        <input asp-for="NuevaConfiguracion.PrecioBasePorHectarea" type="number" step="0.01" />
+                        <span asp-validation-for="NuevaConfiguracion.PrecioBasePorHectarea" class="text-danger"></span>
+                    </div>
+                    <div class="campo-formulario">
+                        <label asp-for="NuevaConfiguracion.TopePorcentajeAjuste"></label>
+                        <input asp-for="NuevaConfiguracion.TopePorcentajeAjuste" type="number" step="0.01" />
+                        <span asp-validation-for="NuevaConfiguracion.TopePorcentajeAjuste" class="text-danger"></span>
+                    </div>
+                    <div class="campo-formulario">
+                        <label asp-for="NuevaConfiguracion.FechaVigenciaDesde"></label>
+                        <input asp-for="NuevaConfiguracion.FechaVigenciaDesde" type="date" />
+                        <span asp-validation-for="NuevaConfiguracion.FechaVigenciaDesde" class="text-danger"></span>
+                    </div>
+                    <div class="campo-formulario">
+                        <label asp-for="NuevaConfiguracion.FechaVigenciaHasta"></label>
+                        <input asp-for="NuevaConfiguracion.FechaVigenciaHasta" type="date" />
+                        <span asp-validation-for="NuevaConfiguracion.FechaVigenciaHasta" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <h4 class="mt-4">Ajustes porcentuales</h4>
+                <div class="tabla-responsive">
+                    <table class="tabla-base">
+                        <thead>
+                            <tr>
+                                <th>Tipo de factor</th>
+                                <th>Valor factor</th>
+                                <th>% ajuste</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (var i = 0; i < Model.NuevaConfiguracion.Ajustes.Count; i++)
+                            {
+                                <tr>
+                                    <td>
+                                        <select asp-for="NuevaConfiguracion.Ajustes[@i].TipoFactor">
+                                            <option value="">Seleccione</option>
+                                            <option value="Vegetacion">Vegetación</option>
+                                            <option value="RecursosHidricos">Recursos hídricos</option>
+                                            <option value="Pendiente">Pendiente</option>
+                                            <option value="UsoSuelo">Uso del suelo</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input asp-for="NuevaConfiguracion.Ajustes[@i].ValorFactor" />
+                                    </td>
+                                    <td>
+                                        <input asp-for="NuevaConfiguracion.Ajustes[@i].PorcentajeAjuste" type="number" step="0.01" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="fila-acciones-formulario mt-3">
+                    <button type="submit" class="boton-primario">Guardar configuración</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="tarjeta-panel">
+            <h3 class="mb-3">Historial de configuraciones</h3>
+            <div class="tabla-responsive">
+                <table class="tabla-base">
+                    <thead>
+                        <tr>
+                            <th>Versión</th>
+                            <th>Precio base</th>
+                            <th>Tope ajuste</th>
+                            <th>Vigencia</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Historial.Any())
+                        {
+                            @foreach (var item in Model.Historial)
+                            {
+                                <tr>
+                                    <td>@item.Version - @item.NombreVersion</td>
+                                    <td>@item.PrecioBasePorHectarea.ToString("N2")</td>
+                                    <td>@item.TopePorcentajeAjuste.ToString("N2")%</td>
+                                    <td>@item.FechaVigenciaDesde.ToString("dd/MM/yyyy") - @(item.FechaVigenciaHasta?.ToString("dd/MM/yyyy") ?? "Abierta")</td>
+                                    <td><span class="badge-estado @(item.Activa ? "badge-exito" : "badge-pendiente")">@(item.Activa ? "Activa" : "Histórica")</span></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="5">No hay configuraciones registradas.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
 </section>

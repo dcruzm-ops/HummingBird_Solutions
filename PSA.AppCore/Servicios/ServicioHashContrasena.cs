@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using PSA.EntidadesDTO.Entidades;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace PSA.AppCore.Servicios
 {
@@ -26,15 +28,24 @@ namespace PSA.AppCore.Servicios
             }
 
             var usuarioTemporal = new Usuario();
+            var resultado = _passwordHasher.VerifyHashedPassword(usuarioTemporal, hashAlmacenado, contrasenaIngresada);
 
-            var resultado = _passwordHasher.VerifyHashedPassword(
-                usuarioTemporal,
-                hashAlmacenado,
-                contrasenaIngresada
-            );
+            if (resultado == PasswordVerificationResult.Success || resultado == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                return true;
+            }
 
-            return resultado == PasswordVerificationResult.Success
-                || resultado == PasswordVerificationResult.SuccessRehashNeeded;
+            return EsHashSha256Hex(hashAlmacenado)
+                && string.Equals(hashAlmacenado, CalcularSha256Hex(contrasenaIngresada), StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool EsHashSha256Hex(string valor)
+            => valor.Length == 64 && valor.All(Uri.IsHexDigit);
+
+        private static string CalcularSha256Hex(string texto)
+        {
+            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(texto));
+            return Convert.ToHexString(bytes);
         }
     }
 }

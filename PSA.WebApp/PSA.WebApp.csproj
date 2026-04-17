@@ -12,7 +12,6 @@
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
     <Compile Include="Controllers\AdministracionController.cs" />
     <Compile Include="Controllers\AutenticacionController.cs" />
-    <Compile Include="Controllers\AuthController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
     <Compile Include="Controllers\EvaluacionesController.cs" />
     <Compile Include="Controllers\FincasController.cs" />
@@ -20,15 +19,12 @@
     <Compile Include="Controllers\NotificacionesController.cs" />
     <Compile Include="Controllers\PagosController.cs" />
     <Compile Include="Controllers\ReportesController.cs" />
+    <Compile Include="Models\AdministracionViewModels.cs" />
     <Compile Include="Models\DashboardViewModels.cs" />
     <Compile Include="Models\EvaluacionesViewModels.cs" />
     <Compile Include="Models\RecuperarContrasenaViewModel.cs" />
     <Compile Include="Models\RestablecerContrasenaViewModel.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Servicios\IServicioCorreo.cs" />
-    <Compile Include="Servicios\ServicioCorreoSmtp.cs" />
-    <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
-    <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
   </ItemGroup>
 

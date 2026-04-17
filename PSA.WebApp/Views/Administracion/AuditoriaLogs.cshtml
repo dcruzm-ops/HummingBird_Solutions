@@ -1,24 +1,91 @@
+@model PSA.WebApp.Models.AuditoriaLogsViewModel
 @{
     ViewData["Title"] = "Auditoría y logs";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Trazabilidad</span>
+            <span class="eyebrow">Administración del sistema</span>
             <h2>Auditoría y logs</h2>
-            <p>Base visual para consultar eventos y acciones críticas.</p>
+            <p>Monitoree actividad, cambios críticos y trazabilidad operativa del sistema.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Reportes" asp-action="Index">Ver reportes</a>
+        <a class="boton-secundario" asp-action="GestionUsuarios">Volver a administración</a>
     </div>
 
     <section class="tarjeta-panel">
-        <ul class="lista-timeline">
-            <li><a asp-controller="Administracion" asp-action="ParametrosPago">26/03/2026 08:20 - Usuario Dennis Cruz modificó parámetros de pago.</a></li>
-            <li><a asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">26/03/2026 09:05 - Cuenta bancaria de Laura Mora enviada a validación.</a></li>
-            <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">26/03/2026 10:12 - Evaluación técnica de Río Verde marcada como finalizada.</a></li>
-        </ul>
+        <form method="get" asp-action="AuditoriaLogs" class="formulario-base formulario-modulo">
+            <div class="grid-cuatro-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Filtro.Modulo"></label>
+                    <input asp-for="Filtro.Modulo" />
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Filtro.Accion"></label>
+                    <input asp-for="Filtro.Accion" />
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Filtro.FechaDesde"></label>
+                    <input asp-for="Filtro.FechaDesde" type="date" />
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Filtro.FechaHasta"></label>
+                    <input asp-for="Filtro.FechaHasta" type="date" />
+                </div>
+            </div>
+            <div class="grid-dos-columnas mt-3">
+                <div class="campo-formulario">
+                    <label asp-for="Filtro.MaximoRegistros"></label>
+                    <input asp-for="Filtro.MaximoRegistros" type="number" min="1" max="200" />
+                </div>
+            </div>
+            <div class="fila-acciones-formulario mt-3">
+                <button type="submit" class="boton-primario">Aplicar filtros</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                        <th>Módulo</th>
+                        <th>Acción</th>
+                        <th>Tabla</th>
+                        <th>Registro</th>
+                        <th>Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Eventos.Any())
+                    {
+                        @foreach (var evento in Model.Eventos)
+                        {
+                            <tr>
+                                <td>@evento.FechaAccion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(string.IsNullOrWhiteSpace(evento.NombreUsuario) ? "Sistema" : evento.NombreUsuario)</td>
+                                <td>@evento.Modulo</td>
+                                <td>@evento.Accion</td>
+                                <td>@evento.TablaAfectada</td>
+                                <td>@(evento.IdRegistroAfectado?.ToString() ?? "-")</td>
+                                <td>
+                                    <div>@(string.IsNullOrWhiteSpace(evento.Detalle) ? "Sin detalle adicional" : evento.Detalle)</div>
+                                    @if (!string.IsNullOrWhiteSpace(evento.IpOrigen))
+                                    {
+                                        <small>IP: @evento.IpOrigen</small>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="7">No hay eventos que coincidan con los filtros seleccionados.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </section>
 </section>
-@section Scripts{
-    <script src="~/js/auditoria.js" asp-append-version="true"></script>
-}

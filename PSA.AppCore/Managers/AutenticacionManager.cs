@@ -102,6 +102,20 @@ namespace PSA.AppCore.Managers
                 throw new Exception("Credenciales inválidas.");
             }
 
+            if (!string.Equals(usuario.Estado, "Activo", StringComparison.OrdinalIgnoreCase))
+            {
+                await _auditoriaLogDAO.RegistrarEventoAsync(
+                    idUsuario: usuario.IdUsuario,
+                    modulo: "Autenticacion",
+                    tablaAfectada: "Usuarios",
+                    idRegistroAfectado: usuario.IdUsuario,
+                    accion: "LOGIN_DENEGADO_ESTADO",
+                    detalle: $"Intento de acceso para usuario con estado {usuario.Estado}: {usuario.Email}"
+                );
+
+                throw new Exception("Su usuario no está activo. Contacte al administrador del sistema.");
+            }
+
             var fechaAcceso = DateTime.Now;
             await _usuarioDAO.ActualizarUltimoAccesoAsync(usuario.IdUsuario, fechaAcceso);
 

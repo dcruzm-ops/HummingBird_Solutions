@@ -14,6 +14,18 @@
     <Compile Include="Base\IAuditable.cs" />
     <Compile Include="Base\IBaseEntity.cs" />
     <Compile Include="DTOs\Auditoria\AuditoriaLogDTO.cs" />
+    <Compile Include="DTOs\Administracion\AuditoriaEventoDTO.cs" />
+    <Compile Include="DTOs\Administracion\AuditoriaFiltroDTO.cs" />
+    <Compile Include="DTOs\Administracion\ConfiguracionPagoAdminDTO.cs" />
+    <Compile Include="DTOs\Administracion\ConfiguracionPagoAjusteDTO.cs" />
+    <Compile Include="DTOs\Administracion\CuentaBancariaPendienteDTO.cs" />
+    <Compile Include="DTOs\Administracion\GuardarPermisosRolDTO.cs" />
+    <Compile Include="DTOs\Administracion\PermisoDTO.cs" />
+    <Compile Include="DTOs\Administracion\ReasignacionClienteDTO.cs" />
+    <Compile Include="DTOs\Administracion\RolPermisoDTO.cs" />
+    <Compile Include="DTOs\Administracion\UsuarioAdminEdicionDTO.cs" />
+    <Compile Include="DTOs\Administracion\UsuarioAdminListadoDTO.cs" />
+    <Compile Include="DTOs\Administracion\ValidacionCuentaBancariaDTO.cs" />
     <Compile Include="DTOs\Dashboard\ResumenDashboardAdministradorDTO.cs" />
     <Compile Include="DTOs\Evaluaciones\EvaluacionEvidenciaDTO.cs" />
     <Compile Include="DTOs\Evaluaciones\EvaluacionFlujoDTOs.cs" />
@@ -55,9 +67,6 @@
     <Compile Include="Entidades\Rol.cs" />
     <Compile Include="Entidades\TokenRecuperacion.cs" />
     <Compile Include="Entidades\Usuario.cs" />
-    <Compile Include="Entidades\Usuarios\Rol.cs" />
-    <Compile Include="Entidades\Usuarios\TokenRecuperacion.cs" />
-    <Compile Include="Entidades\Usuarios\Usuario.cs" />
   </ItemGroup>
 
 </Project>

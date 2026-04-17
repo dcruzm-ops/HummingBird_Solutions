@@ -1,14 +1,18 @@
+@model PSA.WebApp.Models.GestionUsuariosViewModel
 @{
     ViewData["Title"] = "Gestión de usuarios";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Administración</span>
+            <span class="eyebrow">Administración del sistema</span>
             <h2>Gestión de usuarios</h2>
-            <p>Base para administración de usuarios, roles y estados.</p>
+            <p>Administre altas, modificaciones, bajas y reasignaciones operativas del sistema.</p>
         </div>
-        <a class="boton-primario" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear usuario</a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a class="boton-secundario" asp-action="ReasignarCliente">Mover cliente a otro asesor</a>
+            <a class="boton-primario" asp-action="CrearUsuario">Crear usuario</a>
+        </div>
     </div>
 
     <section class="tarjeta-panel">
@@ -20,24 +24,44 @@
                         <th>Correo</th>
                         <th>Rol</th>
                         <th>Estado</th>
-                        <th>Acción</th>
+                        <th>Fincas</th>
+                        <th>Eval. activas</th>
+                        <th>Último acceso</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Dennis Cruz</td>
-                        <td>dennis@psa.cr</td>
-                        <td>Administrador</td>
-                        <td><span class="badge-estado badge-exito">Activo</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ParametrosPago">Ver permisos</a></td>
-                    </tr>
-                    <tr>
-                        <td>Laura Mora</td>
-                        <td>laura@psa.cr</td>
-                        <td>Dueño</td>
-                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validar cuenta</a></td>
-                    </tr>
+                    @if (Model.Usuarios.Any())
+                    {
+                        @foreach (var usuario in Model.Usuarios)
+                        {
+                            <tr>
+                                <td>@usuario.NombreCompleto</td>
+                                <td>@usuario.Email</td>
+                                <td>@usuario.NombreRol</td>
+                                <td>
+                                    <span class="badge-estado @(usuario.Estado == "Activo" ? "badge-exito" : usuario.Estado == "Bloqueado" ? "badge-alerta" : "badge-pendiente")">@usuario.Estado</span>
+                                </td>
+                                <td>@usuario.CantidadFincas</td>
+                                <td>@usuario.CantidadEvaluacionesActivas</td>
+                                <td>@(usuario.UltimoAcceso?.ToString("dd/MM/yyyy HH:mm") ?? "Sin registros")</td>
+                                <td>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <a class="boton-link" asp-action="EditarUsuario" asp-route-id="@usuario.IdUsuario">Editar</a>
+                                        <form asp-action="EliminarUsuario" method="post" class="d-inline" onsubmit="return confirm('¿Desea eliminar este usuario?');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@usuario.IdUsuario" />
+                                            <button type="submit" class="boton-link">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="8">No hay usuarios registrados para mostrar.</td></tr>
+                    }
                 </tbody>
             </table>
         </div>

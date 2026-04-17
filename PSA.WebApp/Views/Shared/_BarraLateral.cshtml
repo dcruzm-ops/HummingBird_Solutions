@@ -1,6 +1,14 @@
+@using System.Security.Claims
 @{
     var moduloActivo = (ViewBag.ModuloActivo as string ?? string.Empty).ToLowerInvariant();
-    var rolActivo = (ViewBag.RolActivo as string ?? "Dueno").ToLowerInvariant();
+    var rolClaim = User.FindFirstValue(ClaimTypes.Role);
+    var rolActivo = rolClaim switch
+    {
+        "1" => "administrador",
+        "3" => "ingeniero",
+        _ => "dueno"
+    };
+
     var accionDashboard = rolActivo switch
     {
         "administrador" => "Administrador",
@@ -29,14 +37,12 @@
         else if (rolActivo == "administrador")
         {
             <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Dashboard</a>
-            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Administración</a>
-            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Pagos</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Gestión de usuarios</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="RolesPermisos">Roles y permisos</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="ParametrosPago">Parámetros de pago</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validación bancaria</a>
+            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="AuditoriaLogs">Auditoría</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
-
-            <p class="menu-lateral__seccion">Próximamente</p>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Roles y permisos</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Catálogos</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Auditoría</a>
         }
         else
         {

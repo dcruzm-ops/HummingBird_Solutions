@@ -1,30 +1,416 @@
 [
   {
-    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
-    "Method": "Create",
-    "RelativePath": "api/Finca/Create",
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerAuditoriaAsync",
+    "RelativePath": "api/Administracion/auditoria",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Modulo",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Accion",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "FechaDesde",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "FechaHasta",
+        "Type": "System.Nullable\u00601[[System.DateTime, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "MaximoRegistros",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[PSA.EntidadesDTO.DTOs.Administracion.AuditoriaEventoDTO, PSA.EntidadesDTO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "CrearConfiguracionPagoAsync",
+    "RelativePath": "api/Administracion/configuraciones-pago",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "finca",
-        "Type": "PSA.EntidadesDTO.DTOs.Fincas.FincaDTO",
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.ConfiguracionPagoAdminDTO",
+        "IsRequired": true
+      },
+      {
+        "Name": "idAdministrador",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerHistorialConfiguracionesAsync",
+    "RelativePath": "api/Administracion/configuraciones-pago/historial",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[PSA.EntidadesDTO.DTOs.Administracion.ConfiguracionPagoAdminDTO, PSA.EntidadesDTO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerConfiguracionVigenteAsync",
+    "RelativePath": "api/Administracion/configuraciones-pago/vigente",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.ConfiguracionPagoAdminDTO",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerCuentasPendientesAsync",
+    "RelativePath": "api/Administracion/cuentas-bancarias/pendientes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[PSA.EntidadesDTO.DTOs.Administracion.CuentaBancariaPendienteDTO, PSA.EntidadesDTO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ValidarCuentaAsync",
+    "RelativePath": "api/Administracion/cuentas-bancarias/validacion",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.ValidacionCuentaBancariaDTO",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
-    "Method": "Delete",
-    "RelativePath": "api/Finca/Delete/{id}",
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerRolesAsync",
+    "RelativePath": "api/Administracion/roles",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[PSA.EntidadesDTO.DTOs.Usuarios.RolDTO, PSA.EntidadesDTO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerRolesConPermisosAsync",
+    "RelativePath": "api/Administracion/roles-permisos",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[PSA.EntidadesDTO.DTOs.Administracion.RolPermisoDTO, PSA.EntidadesDTO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "GuardarPermisosRolAsync",
+    "RelativePath": "api/Administracion/roles-permisos/{idRol}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idRol",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.GuardarPermisosRolDTO",
+        "IsRequired": true
+      },
+      {
+        "Name": "idAdministrador",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerUsuariosAsync",
+    "RelativePath": "api/Administracion/usuarios",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idRol",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[PSA.EntidadesDTO.DTOs.Administracion.UsuarioAdminListadoDTO, PSA.EntidadesDTO, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "CrearUsuarioAsync",
+    "RelativePath": "api/Administracion/usuarios",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.UsuarioAdminEdicionDTO",
+        "IsRequired": true
+      },
+      {
+        "Name": "idAdministrador",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ObtenerUsuarioAsync",
+    "RelativePath": "api/Administracion/usuarios/{idUsuario}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idUsuario",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.UsuarioAdminEdicionDTO",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ActualizarUsuarioAsync",
+    "RelativePath": "api/Administracion/usuarios/{idUsuario}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idUsuario",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.UsuarioAdminEdicionDTO",
+        "IsRequired": true
+      },
+      {
+        "Name": "idAdministrador",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "EliminarUsuarioAsync",
+    "RelativePath": "api/Administracion/usuarios/{idUsuario}",
     "HttpMethod": "DELETE",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "id",
+        "Name": "idUsuario",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "idAdministrador",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AdministracionController",
+    "Method": "ReasignarClienteAsync",
+    "RelativePath": "api/Administracion/usuarios/reasignacion-cliente",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Administracion.ReasignacionClienteDTO",
+        "IsRequired": true
+      },
+      {
+        "Name": "idAdministrador",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AutenticacionController",
+    "Method": "IniciarSesion",
+    "RelativePath": "api/Autenticacion/iniciar-sesion",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.InicioSesionDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.AutenticacionController",
+    "Method": "Registrar",
+    "RelativePath": "api/Autenticacion/registrar",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.RegistrarUsuarioDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.DashboardController",
+    "Method": "ObtenerResumenAdministradorAsync",
+    "RelativePath": "api/Dashboard/administrador-resumen",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "PSA.EntidadesDTO.DTOs.Dashboard.ResumenDashboardAdministradorDTO",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.DashboardController",
+    "Method": "ObtenerResumenDuenoAsync",
+    "RelativePath": "api/Dashboard/dueno-resumen/{idUsuario}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idUsuario",
         "Type": "System.Int32",
         "IsRequired": true
       }
@@ -32,9 +418,104 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
-    "Method": "RetrieveAll",
-    "RelativePath": "api/Finca/RetrieveAll",
+    "ContainingType": "PSA.WebAPI.Controllers.DashboardController",
+    "Method": "ObtenerResumenIngenieroAsync",
+    "RelativePath": "api/Dashboard/ingeniero-resumen/{idUsuario}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idUsuario",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.EvaluacionesTecnicasController",
+    "Method": "AsignarIngeniero",
+    "RelativePath": "api/EvaluacionesTecnicas/{idEvaluacion}/asignar",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idEvaluacion",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Evaluaciones.AsignarEvaluacionDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.EvaluacionesTecnicasController",
+    "Method": "ObtenerDetalle",
+    "RelativePath": "api/EvaluacionesTecnicas/{idEvaluacion}/detalle",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idEvaluacion",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.EvaluacionesTecnicasController",
+    "Method": "AvanzarEstado",
+    "RelativePath": "api/EvaluacionesTecnicas/{idEvaluacion}/estado",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idEvaluacion",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "estado",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.EvaluacionesTecnicasController",
+    "Method": "RegistrarResultado",
+    "RelativePath": "api/EvaluacionesTecnicas/{idEvaluacion}/resultado",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idEvaluacion",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.Evaluaciones.RegistrarResultadoEvaluacionDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.EvaluacionesTecnicasController",
+    "Method": "ObtenerBandejaPendientes",
+    "RelativePath": "api/EvaluacionesTecnicas/bandeja-pendientes",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
@@ -42,33 +523,132 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
-    "Method": "RetrieveById",
-    "RelativePath": "api/Finca/RetrieveById/{id}",
+    "ContainingType": "PSA.WebAPI.Controllers.EvaluacionesTecnicasController",
+    "Method": "ObtenerReporte",
+    "RelativePath": "api/EvaluacionesTecnicas/reportes",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "id",
-        "Type": "System.Int32",
+        "Name": "anio",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "mes",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "estadoEvaluacion",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "decisionTecnica",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "idIngeniero",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincasController",
+    "Method": "RegistrarFinca",
+    "RelativePath": "api/Fincas",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.RegistrarFincaDTO",
         "IsRequired": true
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PSA.WebAPI.Controllers.FincaController",
-    "Method": "Update",
-    "RelativePath": "api/Finca/Update",
+    "ContainingType": "PSA.WebAPI.Controllers.FincasController",
+    "Method": "ActualizarFinca",
+    "RelativePath": "api/Fincas/{idFinca}",
     "HttpMethod": "PUT",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "finca",
-        "Type": "PSA.EntidadesDTO.DTOs.Fincas.FincaDTO",
+        "Name": "idFinca",
+        "Type": "System.Int32",
         "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "PSA.EntidadesDTO.DTOs.RegistrarFincaDTO",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincasController",
+    "Method": "EliminarFinca",
+    "RelativePath": "api/Fincas/{idFinca}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idFinca",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "idPropietario",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincasController",
+    "Method": "ObtenerDetalle",
+    "RelativePath": "api/Fincas/{idFinca}/detalle",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idFinca",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "idPropietario",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PSA.WebAPI.Controllers.FincasController",
+    "Method": "ObtenerMisFincas",
+    "RelativePath": "api/Fincas/mis-fincas",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "idPropietario",
+        "Type": "System.Int32",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -130,5 +710,21 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_3",
+    "RelativePath": "openapi/v1.json",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ]
   }
 ]

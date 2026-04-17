@@ -1,22 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj": {}
+    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\PSA.WebAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj": {
+    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\PSA.AppCore.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj",
+        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\PSA.AppCore.csproj",
         "projectName": "PSA.AppCore",
-        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj",
+        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\PSA.AppCore.csproj",
         "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\obj\\",
+        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
+          "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\NuGet.Config",
           "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -25,18 +26,17 @@
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj": {
-                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj"
+              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj": {
+                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj"
               },
-              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
-                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
               }
             }
           }
@@ -56,6 +56,12 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
+          "dependencies": {
+            "Microsoft.Extensions.Identity.Core": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
@@ -350,19 +356,20 @@
         }
       }
     },
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj": {
+    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj",
+        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj",
         "projectName": "PSA.DataAccess",
-        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj",
+        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj",
         "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\obj\\",
+        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
+          "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\NuGet.Config",
           "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -371,15 +378,14 @@
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
-                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
               }
             }
           }
@@ -699,19 +705,20 @@
         }
       }
     },
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
+        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
         "projectName": "PSA.EntidadesDTO",
-        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
+        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj",
         "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\obj\\",
+        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
+          "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\NuGet.Config",
           "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -720,7 +727,6 @@
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -1038,19 +1044,20 @@
         }
       }
     },
-    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj": {
+    "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\PSA.WebAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
+        "projectUniqueName": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\PSA.WebAPI.csproj",
         "projectName": "PSA.WebAPI",
-        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\PSA.WebAPI.csproj",
+        "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\PSA.WebAPI.csproj",
         "packagesPath": "C:\\Users\\jamen\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.WebAPI\\obj\\",
+        "outputPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.WebAPI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
+          "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\NuGet.Config",
           "C:\\Users\\jamen\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
@@ -1059,21 +1066,20 @@
           "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj": {
-                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\AppCore\\PSA.AppCore.csproj"
+              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\PSA.AppCore.csproj": {
+                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.AppCore\\PSA.AppCore.csproj"
               },
-              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj": {
-                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\DataAccess\\PSA.DataAccess.csproj"
+              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj": {
+                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.DataAccess\\PSA.DataAccess.csproj"
               },
-              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
-                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions-yohel-feature-devp\\HummingBird_Solutions-jared-feature-dev real\\PSA-Costa-Rica\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
+              "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj": {
+                "projectPath": "C:\\Users\\jamen\\OneDrive\\Desktop\\HummingBird_Solutions joel\\PSA.EntidadesDTO\\PSA.EntidadesDTO.csproj"
               }
             }
           }
@@ -1100,7 +1106,7 @@
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[10.0.1, )"
+              "version": "[10.0.0, )"
             }
           },
           "imports": [
