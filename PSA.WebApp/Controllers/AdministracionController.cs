@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using PSA.EntidadesDTO.DTOs.Administracion;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.WebApp.Models;
 using PSA.WebApp.Services;
 
 namespace PSA.WebApp.Controllers
 {
+    [Authorize(Roles = "1")]
     public class AdministracionController : Controller
     {
         private readonly HttpClientService _httpClientService;

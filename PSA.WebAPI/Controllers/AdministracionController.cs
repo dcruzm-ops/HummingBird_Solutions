@@ -78,15 +78,37 @@ namespace PSA.WebAPI.Controllers
         [HttpGet("roles-basicos")]
         public async Task<ActionResult<List<RolDTO>>> ObtenerRolesBasicos()
         {
-            var roles = await _administracionManager.ObtenerRolesAsync();
-            return Ok(roles);
+            try
+            {
+                var roles = await _administracionManager.ObtenerRolesAsync();
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    mensaje = "No fue posible obtener los roles básicos.",
+                    detalle = ex.Message
+                });
+            }
         }
 
         [HttpGet("roles-permisos")]
         public async Task<ActionResult<List<RolPermisoDTO>>> ObtenerRolesPermisos()
         {
-            var roles = await _administracionManager.ObtenerRolesConPermisosAsync();
-            return Ok(roles);
+            try
+            {
+                var roles = await _administracionManager.ObtenerRolesConPermisosAsync();
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    mensaje = "No fue posible obtener roles y permisos.",
+                    detalle = ex.Message
+                });
+            }
         }
 
         [HttpPost("roles-permisos")]

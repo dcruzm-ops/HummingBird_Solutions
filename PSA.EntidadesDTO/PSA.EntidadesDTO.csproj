@@ -14,6 +14,7 @@
     <Compile Include="Base\IAuditable.cs" />
     <Compile Include="Base\IBaseEntity.cs" />
     <Compile Include="DTOs\Auditoria\AuditoriaLogDTO.cs" />
+    <Compile Include="DTOs\Administracion\AdministracionDTOs.cs" />
     <Compile Include="DTOs\Dashboard\ResumenDashboardAdministradorDTO.cs" />
     <Compile Include="DTOs\Evaluaciones\EvaluacionEvidenciaDTO.cs" />
     <Compile Include="DTOs\Evaluaciones\EvaluacionFlujoDTOs.cs" />

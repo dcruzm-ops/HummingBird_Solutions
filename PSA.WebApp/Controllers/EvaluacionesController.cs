@@ -80,7 +80,7 @@ namespace PSA.WebApp.Controllers
 
                 if (idFinca > 0 && idUsuario > 0)
                 {
-                    var evidenciaSubida = await SubirEvidenciasAsync(client, idFinca, idUsuario, model.Evidencias);
+                    var evidenciaSubida = await SubirEvidenciasAsync(client, idFinca, idUsuario, model.Evidencias ?? new List<IFormFile>());
                     if (!evidenciaSubida)
                     {
                         TempData["MensajeError"] = "La evaluación se guardó, pero no fue posible cargar la evidencia adjunta.";
