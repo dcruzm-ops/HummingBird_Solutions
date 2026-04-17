@@ -41,17 +41,38 @@ GO
 /* 2) Roles base */
 IF OBJECT_ID('dbo.Roles', 'U') IS NOT NULL
 BEGIN
+    DECLARE @RolesTieneEstado BIT = CASE WHEN COL_LENGTH('dbo.Roles', 'Estado') IS NOT NULL THEN 1 ELSE 0 END;
+    DECLARE @RolesTieneActivo BIT = CASE WHEN COL_LENGTH('dbo.Roles', 'Activo') IS NOT NULL THEN 1 ELSE 0 END;
+
     IF NOT EXISTS (SELECT 1 FROM dbo.Roles WHERE Nombre = 'Administrador')
-        INSERT INTO dbo.Roles (Nombre, Descripcion, Estado)
-        VALUES ('Administrador', 'Acceso total al sistema', 'Activo');
+    BEGIN
+        IF @RolesTieneEstado = 1
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado) VALUES ('Administrador', 'Acceso total al sistema', 'Activo');
+        ELSE IF @RolesTieneActivo = 1
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Activo) VALUES ('Administrador', 'Acceso total al sistema', 1);
+        ELSE
+            INSERT INTO dbo.Roles (Nombre, Descripcion) VALUES ('Administrador', 'Acceso total al sistema');
+    END
 
     IF NOT EXISTS (SELECT 1 FROM dbo.Roles WHERE Nombre = 'Ingeniero')
-        INSERT INTO dbo.Roles (Nombre, Descripcion, Estado)
-        VALUES ('Ingeniero', 'Operación técnica de campo', 'Activo');
+    BEGIN
+        IF @RolesTieneEstado = 1
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado) VALUES ('Ingeniero', 'Operación técnica de campo', 'Activo');
+        ELSE IF @RolesTieneActivo = 1
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Activo) VALUES ('Ingeniero', 'Operación técnica de campo', 1);
+        ELSE
+            INSERT INTO dbo.Roles (Nombre, Descripcion) VALUES ('Ingeniero', 'Operación técnica de campo');
+    END
 
     IF NOT EXISTS (SELECT 1 FROM dbo.Roles WHERE Nombre = 'Propietario')
-        INSERT INTO dbo.Roles (Nombre, Descripcion, Estado)
-        VALUES ('Propietario', 'Consulta y gestión de sus fincas', 'Activo');
+    BEGIN
+        IF @RolesTieneEstado = 1
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado) VALUES ('Propietario', 'Consulta y gestión de sus fincas', 'Activo');
+        ELSE IF @RolesTieneActivo = 1
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Activo) VALUES ('Propietario', 'Consulta y gestión de sus fincas', 1);
+        ELSE
+            INSERT INTO dbo.Roles (Nombre, Descripcion) VALUES ('Propietario', 'Consulta y gestión de sus fincas');
+    END
 END
 GO
 
@@ -84,34 +105,52 @@ BEGIN
 END
 GO
 
-/* 4) Asignación inicial para Administrador */
+/* 4) Asignación inicial por rol */
 IF OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL
    AND OBJECT_ID('dbo.Roles', 'U') IS NOT NULL
    AND OBJECT_ID('dbo.Permisos', 'U') IS NOT NULL
 BEGIN
-    DECLARE @IdRolAdmin int;
-    SELECT TOP 1 @IdRolAdmin = IdRol FROM dbo.Roles WHERE Nombre = 'Administrador';
+    DECLARE @Asignaciones TABLE
+    (
+        NombreRol NVARCHAR(50) NOT NULL,
+        CodigoPermiso NVARCHAR(100) NOT NULL
+    );
 
-    IF @IdRolAdmin IS NOT NULL
-    BEGIN
-        INSERT INTO dbo.RolesPermisos (IdRol, IdPermiso)
-        SELECT @IdRolAdmin, p.IdPermiso
-        FROM dbo.Permisos p
-        WHERE p.Codigo IN (
-            'ADMIN_USUARIOS_VER',
-            'ADMIN_USUARIOS_CREAR',
-            'ADMIN_USUARIOS_EDITAR',
-            'ADMIN_USUARIOS_ELIMINAR',
-            'ADMIN_CLIENTES_REASIGNAR',
-            'ADMIN_PAGOS_CONFIGURAR',
-            'ADMIN_CUENTAS_VALIDAR',
-            'ADMIN_AUDITORIA_CONSULTAR'
-        )
-        AND NOT EXISTS (
-            SELECT 1 FROM dbo.RolesPermisos rp
-            WHERE rp.IdRol = @IdRolAdmin
-              AND rp.IdPermiso = p.IdPermiso
-        );
-    END
+    /* Administrador: todos los permisos */
+    INSERT INTO @Asignaciones (NombreRol, CodigoPermiso)
+    VALUES
+        ('Administrador', 'ADMIN_USUARIOS_VER'),
+        ('Administrador', 'ADMIN_USUARIOS_CREAR'),
+        ('Administrador', 'ADMIN_USUARIOS_EDITAR'),
+        ('Administrador', 'ADMIN_USUARIOS_ELIMINAR'),
+        ('Administrador', 'ADMIN_CLIENTES_REASIGNAR'),
+        ('Administrador', 'ADMIN_PAGOS_CONFIGURAR'),
+        ('Administrador', 'ADMIN_CUENTAS_VALIDAR'),
+        ('Administrador', 'ADMIN_AUDITORIA_CONSULTAR');
+
+    /* Ingeniero: lectura de usuarios y consulta de auditoría */
+    INSERT INTO @Asignaciones (NombreRol, CodigoPermiso)
+    VALUES
+        ('Ingeniero', 'ADMIN_USUARIOS_VER'),
+        ('Ingeniero', 'ADMIN_AUDITORIA_CONSULTAR');
+
+    /* Propietario: lectura de usuarios (mínimo para poblar pantalla) */
+    INSERT INTO @Asignaciones (NombreRol, CodigoPermiso)
+    VALUES
+        ('Propietario', 'ADMIN_USUARIOS_VER');
+
+    INSERT INTO dbo.RolesPermisos (IdRol, IdPermiso)
+    SELECT r.IdRol, p.IdPermiso
+    FROM @Asignaciones a
+    INNER JOIN dbo.Roles r
+        ON r.Nombre = a.NombreRol
+    INNER JOIN dbo.Permisos p
+        ON p.Codigo = a.CodigoPermiso
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM dbo.RolesPermisos rp
+        WHERE rp.IdRol = r.IdRol
+          AND rp.IdPermiso = p.IdPermiso
+    );
 END
 GO
