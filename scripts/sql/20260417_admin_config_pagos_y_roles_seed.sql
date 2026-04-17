@@ -86,36 +86,47 @@ IF OBJECT_ID('dbo.Roles', 'U') IS NOT NULL
 BEGIN
     DECLARE @RolesTieneEstado BIT = CASE WHEN COL_LENGTH('dbo.Roles', 'Estado') IS NOT NULL THEN 1 ELSE 0 END;
     DECLARE @RolesTieneActivo BIT = CASE WHEN COL_LENGTH('dbo.Roles', 'Activo') IS NOT NULL THEN 1 ELSE 0 END;
+    DECLARE @SqlInsertRol NVARCHAR(MAX);
+
+    /*
+      IMPORTANTE:
+      Evitamos referencias directas a columnas opcionales (Estado/Activo) porque
+      SQL Server valida nombres de columnas en tiempo de compilación del batch.
+      Por eso usamos SQL dinámico para los INSERT de Roles.
+    */
+    IF @RolesTieneEstado = 1
+        SET @SqlInsertRol = N'
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado)
+            VALUES (@Nombre, @Descripcion, ''Activo'');';
+    ELSE IF @RolesTieneActivo = 1
+        SET @SqlInsertRol = N'
+            INSERT INTO dbo.Roles (Nombre, Descripcion, Activo)
+            VALUES (@Nombre, @Descripcion, 1);';
+    ELSE
+        SET @SqlInsertRol = N'
+            INSERT INTO dbo.Roles (Nombre, Descripcion)
+            VALUES (@Nombre, @Descripcion);';
 
     IF NOT EXISTS (SELECT 1 FROM dbo.Roles WHERE Nombre = 'Administrador')
-    BEGIN
-        IF @RolesTieneEstado = 1
-            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado) VALUES ('Administrador', 'Acceso total al sistema', 'Activo');
-        ELSE IF @RolesTieneActivo = 1
-            INSERT INTO dbo.Roles (Nombre, Descripcion, Activo) VALUES ('Administrador', 'Acceso total al sistema', 1);
-        ELSE
-            INSERT INTO dbo.Roles (Nombre, Descripcion) VALUES ('Administrador', 'Acceso total al sistema');
-    END
+        EXEC sp_executesql
+            @SqlInsertRol,
+            N'@Nombre VARCHAR(50), @Descripcion VARCHAR(150)',
+            @Nombre = 'Administrador',
+            @Descripcion = 'Acceso total al sistema';
 
     IF NOT EXISTS (SELECT 1 FROM dbo.Roles WHERE Nombre = 'Ingeniero')
-    BEGIN
-        IF @RolesTieneEstado = 1
-            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado) VALUES ('Ingeniero', 'Operación técnica de campo', 'Activo');
-        ELSE IF @RolesTieneActivo = 1
-            INSERT INTO dbo.Roles (Nombre, Descripcion, Activo) VALUES ('Ingeniero', 'Operación técnica de campo', 1);
-        ELSE
-            INSERT INTO dbo.Roles (Nombre, Descripcion) VALUES ('Ingeniero', 'Operación técnica de campo');
-    END
+        EXEC sp_executesql
+            @SqlInsertRol,
+            N'@Nombre VARCHAR(50), @Descripcion VARCHAR(150)',
+            @Nombre = 'Ingeniero',
+            @Descripcion = 'Operación técnica de campo';
 
     IF NOT EXISTS (SELECT 1 FROM dbo.Roles WHERE Nombre = 'Propietario')
-    BEGIN
-        IF @RolesTieneEstado = 1
-            INSERT INTO dbo.Roles (Nombre, Descripcion, Estado) VALUES ('Propietario', 'Consulta y gestión de sus fincas', 'Activo');
-        ELSE IF @RolesTieneActivo = 1
-            INSERT INTO dbo.Roles (Nombre, Descripcion, Activo) VALUES ('Propietario', 'Consulta y gestión de sus fincas', 1);
-        ELSE
-            INSERT INTO dbo.Roles (Nombre, Descripcion) VALUES ('Propietario', 'Consulta y gestión de sus fincas');
-    END
+        EXEC sp_executesql
+            @SqlInsertRol,
+            N'@Nombre VARCHAR(50), @Descripcion VARCHAR(150)',
+            @Nombre = 'Propietario',
+            @Descripcion = 'Consulta y gestión de sus fincas';
 END
 GO
 
@@ -182,7 +193,7 @@ BEGIN
     VALUES
         ('Propietario', 'ADMIN_USUARIOS_VER');
 
-    INSERT INTO dbo.RolPermisos (IdRol, IdPermiso)
+    INSERT INTO dbo.RolesPermisos (IdRol, IdPermiso)
     SELECT r.IdRol, p.IdPermiso
     FROM @Asignaciones a
     INNER JOIN dbo.Roles r
@@ -191,7 +202,7 @@ BEGIN
         ON p.Codigo = a.CodigoPermiso
     WHERE NOT EXISTS (
         SELECT 1
-        FROM dbo.RolPermisos rp
+        FROM dbo.RolesPermisos rp
         WHERE rp.IdRol = r.IdRol
           AND rp.IdPermiso = p.IdPermiso
     );
