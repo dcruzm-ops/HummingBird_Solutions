@@ -30,10 +30,11 @@
                         @foreach (var permiso in rol.PermisosDisponibles)
                         {
                             var checkedPermiso = rol.CodigosPermisoAsignados.Contains(permiso.Codigo);
+                            var controlId = $"permiso_{rol.IdRol}_{permiso.IdPermiso}";
                             <div class="col">
                                 <div class="form-check border rounded p-3 h-100">
-                                    <input class="form-check-input" type="checkbox" name="CodigosPermiso" value="@permiso.Codigo" checked="@(checkedPermiso ? "checked" : null)" id="permiso_@rol.IdRol_@permiso.IdPermiso" />
-                                    <label class="form-check-label ms-1" for="permiso_@rol.IdRol_@permiso.IdPermiso">
+                                    <input class="form-check-input" type="checkbox" name="CodigosPermiso" value="@permiso.Codigo" checked="@(checkedPermiso ? "checked" : null)" id="@controlId" />
+                                    <label class="form-check-label ms-1" for="@controlId">
                                         <strong>@permiso.Nombre</strong><br />
                                         <span class="text-muted small">@permiso.Descripcion</span>
                                     </label>
