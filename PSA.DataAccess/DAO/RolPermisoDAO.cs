@@ -1,17 +1,12 @@
 using Microsoft.Data.SqlClient;
-using PSA.DataAccess;
 using PSA.EntidadesDTO.DTOs.Administracion;
+using RolDTO = PSA.EntidadesDTO.DTOs.Usuarios.RolDTO;
 
 namespace PSA.DataAccess.DAO;
 
-public class RolPermisoDAO
+public class RolPermisoDAO(IDbConnectionFactory connectionFactory)
 {
-    private readonly IDbConnectionFactory _connectionFactory;
-
-    public RolPermisoDAO(IDbConnectionFactory connectionFactory)
-    {
-        _connectionFactory = connectionFactory;
-    }
+    private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
 
     public async Task<List<RolPermisoDTO>> ObtenerRolesConPermisosAsync()
     {
@@ -95,9 +90,11 @@ ORDER BY r.Nombre, p.Codigo;";
 
     public async Task GuardarPermisosRolAsync(GuardarPermisosRolDTO dto)
     {
+        ArgumentNullException.ThrowIfNull(dto);
+
         if (dto.IdRol <= 0)
         {
-            throw new ArgumentException("Debe indicar un rol válido.", nameof(dto.IdRol));
+            throw new ArgumentOutOfRangeException(nameof(dto.IdRol), dto.IdRol, "Debe indicar un rol válido.");
         }
 
         const string sqlDelete = "DELETE FROM dbo.RolesPermisos WHERE IdRol = @IdRol;";
@@ -137,7 +134,7 @@ WHERE p.Codigo = @CodigoPermiso;";
         }
     }
 
-    public async Task<List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>> ObtenerRolesAsync()
+    public async Task<List<RolDTO>> ObtenerRolesAsync()
     {
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -149,14 +146,14 @@ FROM dbo.Roles
 {(tieneEstado ? "WHERE Estado = 'Activo'" : string.Empty)}
 ORDER BY Nombre;";
 
-        var roles = new List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>();
+        var roles = new List<RolDTO>();
 
         using var command = new SqlCommand(sql, connection);
         using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
         {
-            roles.Add(new PSA.EntidadesDTO.DTOs.Usuarios.RolDTO
+            roles.Add(new RolDTO
             {
                 Id = reader.GetInt32(reader.GetOrdinal("IdRol")),
                 Nombre = reader["Nombre"]?.ToString() ?? string.Empty,
@@ -180,34 +177,5 @@ WHERE TABLE_SCHEMA = 'dbo'
         command.Parameters.AddWithValue("@NombreColumna", nombreColumna);
         var result = await command.ExecuteScalarAsync();
         return Convert.ToInt32(result ?? 0) > 0;
-    }
-
-    public async Task<List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>> ObtenerRolesAsync()
-    {
-        const string sql = @"
-SELECT IdRol, Nombre, Descripcion
-FROM dbo.Roles
-WHERE Estado = 'Activo'
-ORDER BY Nombre;";
-
-        var roles = new List<PSA.EntidadesDTO.DTOs.Usuarios.RolDTO>();
-
-        using var connection = _connectionFactory.CreateConnection();
-        using var command = new SqlCommand(sql, connection);
-
-        await connection.OpenAsync();
-        using var reader = await command.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-        {
-            roles.Add(new PSA.EntidadesDTO.DTOs.Usuarios.RolDTO
-            {
-                Id = reader.GetInt32(reader.GetOrdinal("IdRol")),
-                Nombre = reader["Nombre"]?.ToString() ?? string.Empty,
-                Descripcion = reader["Descripcion"] == DBNull.Value ? null : reader["Descripcion"]?.ToString()
-            });
-        }
-
-        return roles;
     }
 }
