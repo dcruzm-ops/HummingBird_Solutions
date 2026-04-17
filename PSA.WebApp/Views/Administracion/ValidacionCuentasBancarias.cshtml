@@ -1,12 +1,13 @@
+@model PSA.WebApp.Models.ValidacionCuentasBancariasViewModel
 @{
     ViewData["Title"] = "Validación bancaria";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Revisión administrativa</span>
+            <span class="eyebrow">Administración</span>
             <h2>Validación de cuentas bancarias</h2>
-            <p>Base para aprobar o rechazar cuentas asociadas a propietarios.</p>
+            <p>Apruebe o rechace cuentas pendientes de validación.</p>
         </div>
         <a class="boton-secundario" asp-controller="Administracion" asp-action="GestionUsuarios">Volver a usuarios</a>
     </div>
@@ -24,13 +25,40 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Laura Mora</td>
-                        <td>Banco Nacional</td>
-                        <td>CR12-3456-7890</td>
-                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="AuditoriaLogs">Registrar revisión</a></td>
-                    </tr>
+                    @if (Model.CuentasPendientes.Count == 0)
+                    {
+                        <tr><td colspan="5" class="text-center text-muted">No hay cuentas pendientes de validación.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var cuenta in Model.CuentasPendientes)
+                        {
+                            <tr>
+                                <td>@cuenta.NombreUsuario</td>
+                                <td>@cuenta.Banco</td>
+                                <td>@cuenta.NumeroCuenta</td>
+                                <td><span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion</span></td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
+                                            <input type="hidden" name="Aprobada" value="true" />
+                                            <input type="hidden" name="IdAdministrador" value="1" />
+                                            <button type="submit" class="boton-link border-0 bg-transparent p-0">Aprobar</button>
+                                        </form>
+                                        <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
+                                            <input type="hidden" name="Aprobada" value="false" />
+                                            <input type="hidden" name="IdAdministrador" value="1" />
+                                            <button type="submit" class="boton-link border-0 bg-transparent p-0 text-danger">Rechazar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>
