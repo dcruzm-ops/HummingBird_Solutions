@@ -1,63 +1,86 @@
-using PSA.DataAccess.BaseDatos;
-using PSA.EntidadesDTO.DTOs.Administracion;
 using Microsoft.Data.SqlClient;
-using System.Data;
+using PSA.DataAccess;
+using PSA.EntidadesDTO.DTOs.Administracion;
 
-namespace PSA.DataAccess.DAO
+namespace PSA.DataAccess.DAO;
+
+public class CuentaBancariaDAO
 {
-    public class CuentaBancariaDAO
+    private readonly IDbConnectionFactory _connectionFactory;
+
+    public CuentaBancariaDAO(IDbConnectionFactory connectionFactory)
     {
-        private readonly DbContextHelper _dbContext;
+        _connectionFactory = connectionFactory;
+    }
 
-        public CuentaBancariaDAO(DbContextHelper dbContext)
+    public async Task<List<CuentaBancariaPendienteDTO>> ObtenerPendientesValidacionAsync()
+    {
+        const string sql = @"
+SELECT
+    cb.IdCuentaBancaria,
+    cb.IdUsuario,
+    u.NombreCompleto AS NombreUsuario,
+    u.Email AS EmailUsuario,
+    cb.Banco,
+    cb.NumeroCuenta,
+    cb.TipoCuenta,
+    cb.Titular,
+    cb.EstadoValidacion,
+    cb.ObservacionesValidacion,
+    cb.Estado AS EstadoCuenta,
+    cb.FechaCreacion
+FROM dbo.CuentasBancarias cb
+INNER JOIN dbo.Usuarios u ON u.IdUsuario = cb.IdUsuario
+ORDER BY cb.FechaCreacion DESC;";
+
+        var resultado = new List<CuentaBancariaPendienteDTO>();
+
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+
+        await connection.OpenAsync();
+        using var reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
         {
-            _dbContext = dbContext;
-        }
-
-        public async Task<List<CuentaBancariaPendienteDTO>> ObtenerPendientesValidacionAsync()
-        {
-            using var conn = _dbContext.CrearConexion();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandText = "SP_OBTENER_CUENTAS_BANCARIAS_PENDIENTES";
-
-            await conn.OpenAsync();
-            using var reader = await cmd.ExecuteReaderAsync();
-            var lista = new List<CuentaBancariaPendienteDTO>();
-
-            while (await reader.ReadAsync())
+            resultado.Add(new CuentaBancariaPendienteDTO
             {
-                lista.Add(new CuentaBancariaPendienteDTO
-                {
-                    IdCuentaBancaria = reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria")),
-                    IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
-                    NombreUsuario = reader.GetString(reader.GetOrdinal("NombreUsuario")),
-                    CorreoUsuario = reader.GetString(reader.GetOrdinal("CorreoUsuario")),
-                    Banco = reader.GetString(reader.GetOrdinal("Banco")),
-                    NumeroCuenta = reader.GetString(reader.GetOrdinal("NumeroCuenta")),
-                    TipoCuenta = reader.GetString(reader.GetOrdinal("TipoCuenta")),
-                    CuentaIBAN = reader.IsDBNull(reader.GetOrdinal("CuentaIBAN")) ? null : reader.GetString(reader.GetOrdinal("CuentaIBAN")),
-                    FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaRegistro"))
-                });
-            }
-
-            return lista;
+                IdCuentaBancaria = reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria")),
+                IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                NombreUsuario = reader["NombreUsuario"]?.ToString() ?? string.Empty,
+                EmailUsuario = reader["EmailUsuario"]?.ToString() ?? string.Empty,
+                Banco = reader["Banco"]?.ToString() ?? string.Empty,
+                NumeroCuenta = reader["NumeroCuenta"]?.ToString() ?? string.Empty,
+                TipoCuenta = reader["TipoCuenta"]?.ToString() ?? string.Empty,
+                Titular = reader["Titular"]?.ToString() ?? string.Empty,
+                EstadoValidacion = reader["EstadoValidacion"]?.ToString() ?? string.Empty,
+                ObservacionesValidacion = reader["ObservacionesValidacion"] == DBNull.Value ? null : reader["ObservacionesValidacion"]?.ToString(),
+                Activa = string.Equals(reader["EstadoCuenta"]?.ToString(), "Activa", StringComparison.OrdinalIgnoreCase),
+                FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaCreacion"))
+            });
         }
 
-        public async Task ValidarCuentaAsync(ValidacionCuentaBancariaDTO dto)
-        {
-            using var conn = _dbContext.CrearConexion();
-            using var cmd = conn.CreateCommand();
-            cmd.CommandType = CommandType.StoredProcedure;
-            cmd.CommandText = "SP_VALIDAR_CUENTA_BANCARIA";
+        return resultado;
+    }
 
-            cmd.Parameters.AddWithValue("@IdCuentaBancaria", dto.IdCuentaBancaria);
-            cmd.Parameters.AddWithValue("@IdAdministrador", dto.IdAdministrador);
-            cmd.Parameters.AddWithValue("@EstadoValidacion", dto.EstadoValidacion);
-            cmd.Parameters.AddWithValue("@Observaciones", (object?)dto.Observaciones ?? DBNull.Value);
+    public async Task ValidarCuentaAsync(ValidacionCuentaBancariaDTO dto)
+    {
+        const string sql = @"
+UPDATE dbo.CuentasBancarias
+SET
+    EstadoValidacion = @EstadoValidacion,
+    ObservacionesValidacion = @Observaciones,
+    FechaActualizacion = SYSUTCDATETIME()
+WHERE IdCuentaBancaria = @IdCuentaBancaria;";
 
-            await conn.OpenAsync();
-            await cmd.ExecuteNonQueryAsync();
-        }
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+
+        command.Parameters.AddWithValue("@IdCuentaBancaria", dto.IdCuentaBancaria);
+        command.Parameters.AddWithValue("@EstadoValidacion", dto.Aprobada ? "Aprobada" : "Rechazada");
+        command.Parameters.AddWithValue("@Observaciones", (object?)dto.Observaciones ?? DBNull.Value);
+
+        await connection.OpenAsync();
+        await command.ExecuteNonQueryAsync();
     }
 }
