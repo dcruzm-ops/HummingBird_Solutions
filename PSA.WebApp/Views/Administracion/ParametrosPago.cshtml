@@ -137,4 +137,11 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.psa && typeof window.psa.ocultarTrobberGlobal === "function") {
+                window.psa.ocultarTrobberGlobal();
+            }
+        });
+    </script>
 }

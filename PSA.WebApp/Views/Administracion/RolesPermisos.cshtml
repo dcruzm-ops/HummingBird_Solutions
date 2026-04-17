@@ -11,6 +11,16 @@
         </div>
     </div>
 
+    @if (Model.Roles.Count == 0)
+    {
+        <div class="alert alert-warning">No hay roles disponibles para configurar.</div>
+    }
+
+    @if (Model.PermisosDisponibles.Count == 0)
+    {
+        <div class="alert alert-info">No hay permisos registrados en el catálogo. Ejecuta el script de base de datos de administración para cargar permisos.</div>
+    }
+
     @for (var i = 0; i < Model.Roles.Count; i++)
     {
         var rol = Model.Roles[i];

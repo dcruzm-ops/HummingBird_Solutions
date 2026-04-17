@@ -154,6 +154,9 @@ public class AdministracionManager
     public Task<List<RolPermisoDTO>> ObtenerRolesConPermisosAsync()
         => _rolPermisoDao.ObtenerRolesConPermisosAsync();
 
+    public Task<List<PermisoDTO>> ObtenerPermisosAsync()
+        => _rolPermisoDao.ObtenerPermisosAsync();
+
     public async Task GuardarPermisosRolAsync(GuardarPermisosRolDTO model, int idAdmin, string? ip)
     {
         await _rolPermisoDao.GuardarPermisosRolAsync(model);

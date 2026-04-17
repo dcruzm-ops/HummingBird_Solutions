@@ -107,6 +107,24 @@ WHERE p.Codigo = @CodigoPermiso;";
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
+        if (await ExisteStoredProcedureAsync(connection, "usp_Admin_GuardarPermisosRol"))
+        {
+            using var procedureCommand = new SqlCommand("dbo.usp_Admin_GuardarPermisosRol", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+            procedureCommand.Parameters.AddWithValue("@IdRol", dto.IdRol);
+            procedureCommand.Parameters.AddWithValue(
+                "@CodigosPermisoCsv",
+                string.Join(",", dto.CodigosPermiso
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)));
+
+            await procedureCommand.ExecuteNonQueryAsync();
+            return;
+        }
+
         using var tx = connection.BeginTransaction();
 
         try
@@ -132,6 +150,45 @@ WHERE p.Codigo = @CodigoPermiso;";
             await tx.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<List<PermisoDTO>> ObtenerPermisosAsync()
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        var permisos = new List<PermisoDTO>();
+
+        if (await ExisteStoredProcedureAsync(connection, "usp_Admin_ObtenerPermisos"))
+        {
+            using var command = new SqlCommand("dbo.usp_Admin_ObtenerPermisos", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                permisos.Add(MapPermiso(reader));
+            }
+
+            return permisos;
+        }
+
+        const string sql = @"
+SELECT p.IdPermiso, p.Codigo, p.Nombre, p.Descripcion
+FROM dbo.Permisos p
+ORDER BY p.Codigo;";
+
+        using (var command = new SqlCommand(sql, connection))
+        using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                permisos.Add(MapPermiso(reader));
+            }
+        }
+
+        return permisos;
     }
 
     public async Task<List<RolDTO>> ObtenerRolesAsync()
@@ -177,5 +234,30 @@ WHERE TABLE_SCHEMA = 'dbo'
         command.Parameters.AddWithValue("@NombreColumna", nombreColumna);
         var result = await command.ExecuteScalarAsync();
         return Convert.ToInt32(result ?? 0) > 0;
+    }
+
+    private static async Task<bool> ExisteStoredProcedureAsync(SqlConnection connection, string nombreProcedimiento)
+    {
+        const string sql = @"
+SELECT COUNT(1)
+FROM sys.procedures
+WHERE schema_id = SCHEMA_ID('dbo')
+  AND name = @NombreProcedimiento;";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@NombreProcedimiento", nombreProcedimiento);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0) > 0;
+    }
+
+    private static PermisoDTO MapPermiso(SqlDataReader reader)
+    {
+        return new PermisoDTO
+        {
+            IdPermiso = reader.GetInt32(reader.GetOrdinal("IdPermiso")),
+            Codigo = reader["Codigo"]?.ToString() ?? string.Empty,
+            Nombre = reader["Nombre"]?.ToString() ?? string.Empty,
+            Descripcion = reader["Descripcion"] == DBNull.Value ? null : reader["Descripcion"]?.ToString()
+        };
     }
 }

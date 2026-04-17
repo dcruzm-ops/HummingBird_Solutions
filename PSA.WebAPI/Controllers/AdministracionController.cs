@@ -111,6 +111,24 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [HttpGet("permisos")]
+        public async Task<ActionResult<List<PermisoDTO>>> ObtenerPermisos()
+        {
+            try
+            {
+                var permisos = await _administracionManager.ObtenerPermisosAsync();
+                return Ok(permisos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    mensaje = "No fue posible obtener el catálogo de permisos.",
+                    detalle = ex.Message
+                });
+            }
+        }
+
         [HttpPost("roles-permisos")]
         public async Task<ActionResult<bool>> GuardarPermisosRolPost([FromBody] GuardarPermisosRolDTO model)
         {
