@@ -1,0 +1,67 @@
+@model PSA.WebApp.Models.FormularioUsuarioAdminViewModel
+@{
+    ViewData["Title"] = Model.TituloFormulario;
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Administración del sistema</span>
+            <h2>@Model.TituloFormulario</h2>
+            <p>Complete la información operativa del usuario.</p>
+        </div>
+        <a class="boton-secundario" asp-action="GestionUsuarios">Volver a usuarios</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <form class="formulario-base formulario-modulo" method="post">
+            @Html.AntiForgeryToken()
+            <input asp-for="Usuario.IdUsuario" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Usuario.NombreCompleto"></label>
+                    <input asp-for="Usuario.NombreCompleto" />
+                    <span asp-validation-for="Usuario.NombreCompleto" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Usuario.Email"></label>
+                    <input asp-for="Usuario.Email" />
+                    <span asp-validation-for="Usuario.Email" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Usuario.IdRol">Rol</label>
+                    <select asp-for="Usuario.IdRol">
+                        <option value="">Seleccione</option>
+                        @foreach (var rol in Model.Roles)
+                        {
+                            <option value="@rol.Id">@rol.Nombre</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Usuario.IdRol" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Usuario.Estado"></label>
+                    <select asp-for="Usuario.Estado">
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                        <option value="Bloqueado">Bloqueado</option>
+                    </select>
+                    <span asp-validation-for="Usuario.Estado" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Usuario.Contrasena">Contraseña</label>
+                    <input asp-for="Usuario.Contrasena" type="password" />
+                    <span asp-validation-for="Usuario.Contrasena" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Usuario.ConfirmacionContrasena">Confirmar contraseña</label>
+                    <input asp-for="Usuario.ConfirmacionContrasena" type="password" />
+                    <span asp-validation-for="Usuario.ConfirmacionContrasena" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="fila-acciones-formulario">
+                <button type="submit" class="boton-primario">@Model.TextoAccion</button>
+            </div>
+        </form>
+    </section>
+</section>

@@ -1,0 +1,48 @@
+@model PSA.WebApp.Models.ReasignacionClienteViewModel
+@{
+    ViewData["Title"] = "Reasignar cliente";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Administración del sistema</span>
+            <h2>Reasignar cliente a otro asesor</h2>
+            <p>Mueve las evaluaciones activas del propietario seleccionado al asesor destino.</p>
+        </div>
+        <a class="boton-secundario" asp-action="GestionUsuarios">Volver a usuarios</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <form class="formulario-base formulario-modulo" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="grid-dos-columnas">
+                <div class="campo-formulario">
+                    <label asp-for="Reasignacion.IdPropietario">Cliente</label>
+                    <select asp-for="Reasignacion.IdPropietario">
+                        <option value="">Seleccione</option>
+                        @foreach (var propietario in Model.Propietarios)
+                        {
+                            <option value="@propietario.IdUsuario">@propietario.NombreCompleto (@propietario.Email)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Reasignacion.IdPropietario" class="text-danger"></span>
+                </div>
+                <div class="campo-formulario">
+                    <label asp-for="Reasignacion.IdIngenieroDestino">Asesor destino</label>
+                    <select asp-for="Reasignacion.IdIngenieroDestino">
+                        <option value="">Seleccione</option>
+                        @foreach (var ingeniero in Model.Ingenieros)
+                        {
+                            <option value="@ingeniero.IdUsuario">@ingeniero.NombreCompleto (@ingeniero.Email)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Reasignacion.IdIngenieroDestino" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="fila-acciones-formulario">
+                <button type="submit" class="boton-primario">Reasignar cliente</button>
+            </div>
+        </form>
+    </section>
+</section>

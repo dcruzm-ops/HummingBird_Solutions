@@ -1,0 +1,70 @@
+@model PSA.WebApp.Models.RolesPermisosViewModel
+@{
+    ViewData["Title"] = "Roles y permisos";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Administración del sistema</span>
+            <h2>Roles y permisos</h2>
+            <p>Configure las capacidades habilitadas por rol sin quemar lógica en la interfaz.</p>
+        </div>
+        <a class="boton-secundario" asp-action="GestionUsuarios">Volver a administración</a>
+    </div>
+
+    @if (TempData["MensajeExito"] is string exito && !string.IsNullOrWhiteSpace(exito))
+    {
+        <div class="alert alert-success mb-3">@exito</div>
+    }
+    @if (TempData["MensajeError"] is string error && !string.IsNullOrWhiteSpace(error))
+    {
+        <div class="alert alert-danger mb-3">@error</div>
+    }
+
+    @if (!Model.Roles.Any())
+    {
+        <section class="tarjeta-panel">
+            <p>No se encontraron roles activos para administrar.</p>
+        </section>
+    }
+    else
+    {
+        <div class="d-flex flex-column gap-3">
+            @foreach (var rol in Model.Roles)
+            {
+                <section class="tarjeta-panel">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                        <div>
+                            <h3 class="mb-1">@rol.NombreRol</h3>
+                            <p class="mb-1">@(string.IsNullOrWhiteSpace(rol.DescripcionRol) ? "Rol operativo del sistema." : rol.DescripcionRol)</p>
+                            <small>Estado: @(rol.Activo ? "Activo" : "Inactivo")</small>
+                        </div>
+                    </div>
+
+                    <form asp-action="GuardarPermisosRol" method="post" class="formulario-base formulario-modulo">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="IdRol" value="@rol.IdRol" />
+
+                        <div class="grid-dos-columnas">
+                            @foreach (var permiso in rol.PermisosDisponibles.OrderBy(p => p.Nombre))
+                            {
+                                var marcado = rol.CodigosPermisoAsignados.Any(x => string.Equals(x, permiso.Codigo, StringComparison.OrdinalIgnoreCase));
+                                <label class="campo-formulario d-flex gap-2 align-items-start">
+                                    <input type="checkbox" name="CodigosPermiso" value="@permiso.Codigo" @(marcado ? "checked" : null) />
+                                    <span>
+                                        <strong>@permiso.Nombre</strong><br />
+                                        <small>@(string.IsNullOrWhiteSpace(permiso.Descripcion) ? permiso.Codigo : permiso.Descripcion)</small>
+                                    </span>
+                                </label>
+                            }
+                        </div>
+
+                        <div class="fila-acciones-formulario mt-3">
+                            <button type="submit" class="boton-primario">Guardar permisos</button>
+                        </div>
+                    </form>
+                </section>
+            }
+        </div>
+    }
+</section>
