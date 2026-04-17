@@ -1,3 +1,4 @@
+@model PSA.WebApp.Models.GestionUsuariosViewModel
 @{
     ViewData["Title"] = "Gestión de usuarios";
 }
@@ -6,9 +7,12 @@
         <div>
             <span class="eyebrow">Administración</span>
             <h2>Gestión de usuarios</h2>
-            <p>Base para administración de usuarios, roles y estados.</p>
+            <p>Gestione usuarios, roles y estados desde dentro de la aplicación.</p>
         </div>
-        <a class="boton-primario" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear usuario</a>
+        <div class="d-flex gap-2">
+            <a class="boton-secundario" asp-controller="Administracion" asp-action="ReasignarCliente">Reasignar cliente</a>
+            <a class="boton-primario" asp-controller="Administracion" asp-action="CrearUsuario">Crear usuario</a>
+        </div>
     </div>
 
     <section class="tarjeta-panel">
@@ -20,24 +24,42 @@
                         <th>Correo</th>
                         <th>Rol</th>
                         <th>Estado</th>
-                        <th>Acción</th>
+                        <th>Último acceso</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Dennis Cruz</td>
-                        <td>dennis@psa.cr</td>
-                        <td>Administrador</td>
-                        <td><span class="badge-estado badge-exito">Activo</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ParametrosPago">Ver permisos</a></td>
-                    </tr>
-                    <tr>
-                        <td>Laura Mora</td>
-                        <td>laura@psa.cr</td>
-                        <td>Dueño</td>
-                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validar cuenta</a></td>
-                    </tr>
+                    @if (Model.Usuarios.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No hay usuarios disponibles.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var usuario in Model.Usuarios)
+                        {
+                            var activo = string.Equals(usuario.Estado, "Activo", System.StringComparison.OrdinalIgnoreCase);
+                            <tr>
+                                <td>@usuario.NombreCompleto</td>
+                                <td>@usuario.Email</td>
+                                <td>@usuario.NombreRol</td>
+                                <td>
+                                    <span class="badge-estado @(activo ? "badge-exito" : "badge-pendiente")">@usuario.Estado</span>
+                                </td>
+                                <td>@(usuario.UltimoAcceso?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a class="boton-link" asp-action="EditarUsuario" asp-route-id="@usuario.IdUsuario">Editar</a>
+                                        <form asp-action="EliminarUsuario" asp-route-id="@usuario.IdUsuario" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="boton-link border-0 bg-transparent p-0">@(activo ? "Inactivar" : "Activar / Inactivar")</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>

@@ -1,24 +1,90 @@
+@model PSA.WebApp.Models.AuditoriaLogsViewModel
 @{
-    ViewData["Title"] = "Auditoría y logs";
+    ViewData["Title"] = "Auditoría";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Trazabilidad</span>
-            <h2>Auditoría y logs</h2>
-            <p>Base visual para consultar eventos y acciones críticas.</p>
+            <span class="eyebrow">Administración</span>
+            <h2>Auditoría del sistema</h2>
+            <p>Monitoree accesos y cambios críticos del sistema por módulo y fecha.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Reportes" asp-action="Index">Ver reportes</a>
     </div>
 
+    <section class="tarjeta-panel mb-3">
+        <form method="get" asp-action="AuditoriaLogs" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label asp-for="Filtro.Modulo" class="form-label">Módulo</label>
+                <select asp-for="Filtro.Modulo" name="modulo" class="form-select">
+                    <option value="">Todos</option>
+                    @foreach (var modulo in Model.OpcionesFiltro.Modulos)
+                    {
+                        <option value="@modulo">@modulo</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label asp-for="Filtro.Accion" class="form-label">Acción</label>
+                <select asp-for="Filtro.Accion" name="accion" class="form-select">
+                    <option value="">Todas</option>
+                    @foreach (var accion in Model.OpcionesFiltro.Acciones)
+                    {
+                        <option value="@accion">@accion</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtro.FechaDesde" class="form-label">Desde</label>
+                <input asp-for="Filtro.FechaDesde" name="fechaDesde" type="date" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtro.FechaHasta" class="form-label">Hasta</label>
+                <input asp-for="Filtro.FechaHasta" name="fechaHasta" type="date" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label asp-for="Filtro.MaximoRegistros" class="form-label">Máx. registros</label>
+                <input asp-for="Filtro.MaximoRegistros" name="maximoRegistros" class="form-control" min="1" max="500" />
+            </div>
+            <div class="col-12">
+                <button type="submit" class="boton-primario">Filtrar auditoría</button>
+            </div>
+        </form>
+    </section>
+
     <section class="tarjeta-panel">
-        <ul class="lista-timeline">
-            <li><a asp-controller="Administracion" asp-action="ParametrosPago">26/03/2026 08:20 - Usuario Dennis Cruz modificó parámetros de pago.</a></li>
-            <li><a asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">26/03/2026 09:05 - Cuenta bancaria de Laura Mora enviada a validación.</a></li>
-            <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">26/03/2026 10:12 - Evaluación técnica de Río Verde marcada como finalizada.</a></li>
-        </ul>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Módulo</th>
+                        <th>Acción</th>
+                        <th>Usuario</th>
+                        <th>Detalle</th>
+                        <th>IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Eventos.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-muted">No hay eventos con el filtro actual.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var evento in Model.Eventos)
+                        {
+                            <tr>
+                                <td>@evento.FechaAccion.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@evento.Modulo</td>
+                                <td>@evento.Accion</td>
+                                <td>@(evento.NombreUsuario ?? "Sistema")</td>
+                                <td>@evento.Detalle</td>
+                                <td>@evento.IpOrigen</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
     </section>
 </section>
-@section Scripts{
-    <script src="~/js/auditoria.js" asp-append-version="true"></script>
-}

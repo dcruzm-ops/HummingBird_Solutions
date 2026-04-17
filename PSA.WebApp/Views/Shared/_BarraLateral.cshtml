@@ -1,6 +1,8 @@
 @using System.Security.Claims
 @{
     var moduloActivo = (ViewBag.ModuloActivo as string ?? string.Empty).ToLowerInvariant();
+    var controllerActual = (ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty).ToLowerInvariant();
+    var accionActual = (ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty).ToLowerInvariant();
     var rolClaim = User.FindFirstValue(ClaimTypes.Role);
     var rolActivo = rolClaim switch
     {
@@ -34,14 +36,14 @@
         }
         else if (rolActivo == "administrador")
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Inicio</a>
-            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Usuarios</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Roles y permisos</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Fincas</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Evaluaciones</a>
-            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Configuración de pagos</a>
-            <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
-            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="AuditoriaLogs">Auditoría</a>
+            <a class="item-menu @((controllerActual == "dashboard" && accionActual == "administrador") ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Inicio</a>
+            <a class="item-menu @((controllerActual == "administracion" && (accionActual == "gestionusuarios" || accionActual == "crearusuario" || accionActual == "editarusuario" || accionActual == "reasignarcliente")) ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Usuarios</a>
+            <a class="item-menu @((controllerActual == "administracion" && accionActual == "rolespermisos") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="RolesPermisos">Roles y permisos</a>
+            <a class="item-menu @((controllerActual == "reportes" && accionActual == "adminfincasestado") ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="AdminFincasEstado">Fincas</a>
+            <a class="item-menu @((controllerActual == "reportes" && accionActual == "adminevaluaciones") ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="AdminEvaluaciones">Evaluaciones</a>
+            <a class="item-menu @((controllerActual == "administracion" && accionActual == "parametrospago") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="ParametrosPago">Configuración de pagos</a>
+            <a class="item-menu @(moduloActivo == "reportes" || controllerActual == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
+            <a class="item-menu @((controllerActual == "administracion" && accionActual == "auditorialogs") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="AuditoriaLogs">Auditoría</a>
             <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Notificaciones</a>
             <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
         }
