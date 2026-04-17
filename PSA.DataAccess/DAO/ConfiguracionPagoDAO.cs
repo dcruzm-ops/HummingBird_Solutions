@@ -4,14 +4,9 @@ using PSA.EntidadesDTO.DTOs.Administracion;
 
 namespace PSA.DataAccess.DAO;
 
-public class ConfiguracionPagoDAO
+public class ConfiguracionPagoDAO(IDbConnectionFactory connectionFactory)
 {
-    private readonly IDbConnectionFactory _connectionFactory;
-
-    public ConfiguracionPagoDAO(IDbConnectionFactory connectionFactory)
-    {
-        _connectionFactory = connectionFactory;
-    }
+    private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
 
     public async Task<int> CrearConfiguracionAsync(ConfiguracionPagoAdminDTO dto)
     {
@@ -145,7 +140,7 @@ SELECT CAST(SCOPE_IDENTITY() AS int);";
         var columnas = await ObtenerColumnasConfiguracionPagoAsync(connection);
         if (columnas.Count == 0)
         {
-            return new List<ConfiguracionPagoAdminDTO>();
+            return [];
         }
 
         var columnasSelect = string.Join(", ", columnas.OrderBy(x => x));
@@ -255,7 +250,7 @@ SELECT CAST(SCOPE_IDENTITY() AS int);";
             Activa = activa,
             CreadoPor = creadoPor,
             FechaCreacion = fechaCreacion,
-            Ajustes = new List<ConfiguracionPagoAjusteDTO>()
+            Ajustes = []
         };
     }
 
@@ -364,7 +359,7 @@ FROM dbo.ConfiguracionesPago WITH (UPDLOCK, HOLDLOCK);";
     {
         if (!await ExisteTablaDetalleAsync(connection))
         {
-            return new List<ConfiguracionPagoAjusteDTO>();
+            return [];
         }
 
         const string sql = @"
@@ -409,6 +404,32 @@ ORDER BY d.TipoFactor, d.ValorFactor;";
         if (!await ExisteTablaDetalleAsync(connection, tx))
         {
             return;
+        }
+
+        const string sql = @"
+INSERT INTO dbo.ConfiguracionPagoDetalle
+(
+    IdConfiguracionPago,
+    TipoFactor,
+    ValorFactor,
+    PorcentajeAjuste
+)
+VALUES
+(
+    @IdConfiguracionPago,
+    @TipoFactor,
+    @ValorFactor,
+    @PorcentajeAjuste
+);";
+
+        foreach (var ajuste in ajustes)
+        {
+            using var command = new SqlCommand(sql, connection, tx);
+            command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
+            command.Parameters.AddWithValue("@TipoFactor", ajuste.TipoFactor ?? string.Empty);
+            command.Parameters.AddWithValue("@ValorFactor", ajuste.ValorFactor ?? string.Empty);
+            command.Parameters.AddWithValue("@PorcentajeAjuste", ajuste.PorcentajeAjuste);
+            await command.ExecuteNonQueryAsync();
         }
 
         const string sql = @"
@@ -495,6 +516,46 @@ FROM dbo.ConfiguracionesPago;";
         using var command = new SqlCommand(sql, connection);
         var result = await command.ExecuteScalarAsync();
         return Convert.ToInt32(result ?? 1);
+    }
+
+    private static async Task<bool> ExisteTablaDetalleAsync(SqlConnection connection, SqlTransaction? tx = null)
+    {
+        const string sql = @"
+SELECT COUNT(1)
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_SCHEMA = 'dbo'
+  AND TABLE_NAME = 'ConfiguracionPagoDetalle';";
+        using var command = tx == null ? new SqlCommand(sql, connection) : new SqlCommand(sql, connection, tx);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0) > 0;
+    }
+
+    private static async Task DesactivarOtrasConfiguracionesAsync(
+        SqlConnection connection,
+        SqlTransaction tx,
+        int idConfiguracionPago,
+        HashSet<string> columnas)
+    {
+        if (columnas.Contains("Estado", StringComparer.OrdinalIgnoreCase))
+        {
+            const string sqlEstado = @"
+UPDATE dbo.ConfiguracionesPago
+SET Estado = CASE WHEN IdConfiguracionPago = @IdConfiguracionPago THEN 'Activa' ELSE 'Inactiva' END
+WHERE Estado IS NOT NULL;";
+            using var command = new SqlCommand(sqlEstado, connection, tx);
+            command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        if (columnas.Contains("Activa", StringComparer.OrdinalIgnoreCase))
+        {
+            const string sqlActiva = @"
+UPDATE dbo.ConfiguracionesPago
+SET Activa = CASE WHEN IdConfiguracionPago = @IdConfiguracionPago THEN CAST(1 AS bit) ELSE CAST(0 AS bit) END;";
+            using var command = new SqlCommand(sqlActiva, connection, tx);
+            command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
+            await command.ExecuteNonQueryAsync();
+        }
     }
 
     private static async Task<bool> ExisteTablaDetalleAsync(SqlConnection connection, SqlTransaction? tx = null)
