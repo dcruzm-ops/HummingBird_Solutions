@@ -6,21 +6,32 @@
         <div>
             <span class="eyebrow">Administración</span>
             <h2>Gestión de usuarios</h2>
-            <p>Base para administración de usuarios, roles y estados.</p>
+            <p>Gestione cuentas, asignaciones de clientes, roles y permisos del sistema.</p>
         </div>
         <a class="boton-primario" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear usuario</a>
     </div>
 
+    <section class="tarjeta-panel panel-resumen-admin">
+        <h3>Alcance administrativo</h3>
+        <ul class="lista-capacidades-admin">
+            <li><strong>Crear, modificar y eliminar usuarios</strong> según políticas internas.</li>
+            <li><strong>Mover clientes entre asesores</strong> para balance de cartera y continuidad operativa.</li>
+            <li><strong>Configurar roles y permisos</strong> con visibilidad por módulos críticos.</li>
+            <li><strong>Monitorear actividad</strong> desde auditoría y bitácoras del sistema.</li>
+        </ul>
+    </section>
+
     <section class="tarjeta-panel">
         <div class="tabla-responsive">
-            <table class="tabla-base">
+            <table class="tabla-base tabla-usuarios-admin">
                 <thead>
                     <tr>
                         <th>Nombre</th>
                         <th>Correo</th>
                         <th>Rol</th>
                         <th>Estado</th>
-                        <th>Acción</th>
+                        <th>Clientes asignados</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,14 +40,28 @@
                         <td>dennis@psa.cr</td>
                         <td>Administrador</td>
                         <td><span class="badge-estado badge-exito">Activo</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ParametrosPago">Ver permisos</a></td>
+                        <td>12</td>
+                        <td>
+                            <div class="grupo-acciones-tabla">
+                                <a class="boton-link" asp-controller="Administracion" asp-action="ParametrosPago">Permisos</a>
+                                <a class="boton-link" asp-controller="Administracion" asp-action="AuditoriaLogs">Editar</a>
+                                <a class="boton-link" asp-controller="Administracion" asp-action="AuditoriaLogs">Eliminar</a>
+                            </div>
+                        </td>
                     </tr>
                     <tr>
                         <td>Laura Mora</td>
                         <td>laura@psa.cr</td>
-                        <td>Dueño</td>
+                        <td>Asesor</td>
                         <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
-                        <td><a class="boton-link" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validar cuenta</a></td>
+                        <td>26</td>
+                        <td>
+                            <div class="grupo-acciones-tabla">
+                                <a class="boton-link" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Validar cuenta</a>
+                                <a class="boton-link" asp-controller="Administracion" asp-action="AuditoriaLogs">Mover clientes</a>
+                                <a class="boton-link" asp-controller="Administracion" asp-action="ParametrosPago">Roles</a>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
             </table>

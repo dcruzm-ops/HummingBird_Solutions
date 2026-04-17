@@ -32,11 +32,11 @@
 
 html[data-tema="oscuro"] {
     --color-fondo: #07140B;
-    --color-superficie: #0E1F12;
-    --color-superficie-secundaria: #122818;
-    --color-borde-suave: #1E3A24;
+    --color-superficie: #14251A;
+    --color-superficie-secundaria: #1A3022;
+    --color-borde-suave: #31533A;
     --color-texto-principal: #EAF2EA;
-    --color-texto-secundario: #A9B5A9;
+    --color-texto-secundario: #C6D5C6;
     --color-primario: #2E9739;
     --color-accion: #39A845;
     --sombra-sm: 0 8px 18px rgba(0, 0, 0, 0.25);
