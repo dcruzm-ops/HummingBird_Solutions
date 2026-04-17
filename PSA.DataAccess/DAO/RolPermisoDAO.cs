@@ -186,6 +186,8 @@ ORDER BY p.Codigo;";
             {
                 permisos.Add(MapPermiso(reader));
             }
+
+            await tx.CommitAsync();
         }
 
         return permisos;
