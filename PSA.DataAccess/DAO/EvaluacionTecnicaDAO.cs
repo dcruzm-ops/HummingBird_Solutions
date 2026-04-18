@@ -315,6 +315,7 @@ WHERE IdEvaluacion = @IdEvaluacion;";
 SELECT
     e.IdEvaluacion,
     e.IdFinca,
+    CASE WHEN pp.IdPlanPago IS NULL THEN CAST(0 AS bit) ELSE CAST(1 AS bit) END AS TienePlanPago,
     f.NombreFinca,
     e.EstadoEvaluacion,
     e.DecisionTecnica,
@@ -325,6 +326,12 @@ SELECT
     f.Distrito
 FROM EvaluacionesTecnicas e
 INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
+OUTER APPLY (
+    SELECT TOP 1 p.IdPlanPago
+    FROM PlanesPago p
+    WHERE p.IdEvaluacion = e.IdEvaluacion
+    ORDER BY p.IdPlanPago DESC
+) pp
 WHERE 1 = 1");
 
             using var connection = _connectionFactory.CreateConnection();
@@ -373,6 +380,7 @@ WHERE 1 = 1");
                 {
                     IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
                     IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                    TienePlanPago = reader.GetBoolean(reader.GetOrdinal("TienePlanPago")),
                     NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
                     EstadoEvaluacion = reader["EstadoEvaluacion"]?.ToString() ?? string.Empty,
                     DecisionTecnica = reader["DecisionTecnica"] == DBNull.Value ? null : reader["DecisionTecnica"]?.ToString(),

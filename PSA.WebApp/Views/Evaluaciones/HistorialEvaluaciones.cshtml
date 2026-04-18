@@ -154,7 +154,8 @@
                                 <td>
                                     <a class="boton-link" asp-controller="Evaluaciones" asp-action="DetalleEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">Ver detalle</a>
                                     @if (string.Equals(item.EstadoEvaluacion, "Evaluada – Califica", StringComparison.OrdinalIgnoreCase)
-                                            && string.Equals(item.DecisionTecnica, "Califica", StringComparison.OrdinalIgnoreCase))
+                                            && string.Equals(item.DecisionTecnica, "Califica", StringComparison.OrdinalIgnoreCase)
+                                            && !item.TienePlanPago)
                                     {
                                         <form method="post" asp-controller="Evaluaciones" asp-action="GenerarPlanManual" class="mt-2">
                                             @Html.AntiForgeryToken()
