@@ -31,6 +31,7 @@ SELECT
     cb.FechaCreacion
 FROM dbo.CuentasBancarias cb
 INNER JOIN dbo.Usuarios u ON u.IdUsuario = cb.IdUsuario
+WHERE cb.EstadoValidacion = 'Pendiente'
 ORDER BY cb.FechaCreacion DESC;";
 
         var resultado = new List<CuentaBancariaPendienteDTO>();
@@ -77,7 +78,7 @@ WHERE IdCuentaBancaria = @IdCuentaBancaria;";
         using var command = new SqlCommand(sql, connection);
 
         command.Parameters.AddWithValue("@IdCuentaBancaria", dto.IdCuentaBancaria);
-        command.Parameters.AddWithValue("@EstadoValidacion", dto.Aprobada ? "Aprobada" : "Rechazada");
+        command.Parameters.AddWithValue("@EstadoValidacion", dto.Aprobada ? "Validada" : "Rechazada");
         command.Parameters.AddWithValue("@Observaciones", (object?)dto.Observaciones ?? DBNull.Value);
 
         await connection.OpenAsync();
