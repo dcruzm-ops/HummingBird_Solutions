@@ -64,13 +64,11 @@ BEGIN
               FROM dbo.CuentasBancarias cb
               WHERE cb.IdUsuario = f.IdPropietario
                 AND cb.EstadoValidacion = 'Validada'
-                AND cb.Activa = 1
           )
           AND EXISTS (
               SELECT 1
               FROM dbo.ConfiguracionesPago cp
-              WHERE cp.Activa = 1
-                AND cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
+              WHERE cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
                 AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1))
           );
 
@@ -123,8 +121,7 @@ BEGIN
           AND EXISTS (
               SELECT 1
               FROM dbo.ConfiguracionesPago cp
-              WHERE cp.Activa = 1
-                AND cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
+              WHERE cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
                 AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1))
           );
 
