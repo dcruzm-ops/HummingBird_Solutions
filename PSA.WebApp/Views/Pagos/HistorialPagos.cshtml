@@ -1,3 +1,4 @@
+@model List<PSA.EntidadesDTO.DTOs.Pagos.CuotaPlanPagoDTO>
 @{
     ViewData["Title"] = "Historial de pagos";
 }
@@ -24,20 +25,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Río Verde</td>
-                        <td>Enero 2026</td>
-                        <td>₡104 166</td>
-                        <td><span class="badge-estado badge-exito">Confirmado</span></td>
-                        <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="1">Ver plan</a></td>
-                    </tr>
-                    <tr>
-                        <td>Río Verde</td>
-                        <td>Febrero 2026</td>
-                        <td>₡104 166</td>
-                        <td><span class="badge-estado badge-pendiente">Pendiente</span></td>
-                        <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="1">Ver plan</a></td>
-                    </tr>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay cuotas de pago registradas para sus fincas.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var cuota in Model)
+                        {
+                            var periodo = $"{cuota.FechaProgramada:MMMM yyyy}";
+                            var estadoCss = cuota.EstadoCuota == "Pagada" ? "badge-exito" : "badge-pendiente";
+                            <tr>
+                                <td>@cuota.NombreFinca</td>
+                                <td>@periodo</td>
+                                <td>₡@cuota.MontoProgramado.ToString("N2")</td>
+                                <td><span class="badge-estado @estadoCss">@cuota.EstadoCuota</span></td>
+                                <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@cuota.IdPlanPago">Ver plan</a></td>
+                            </tr>
+                        }
+                    }
                 </tbody>
             </table>
         </div>

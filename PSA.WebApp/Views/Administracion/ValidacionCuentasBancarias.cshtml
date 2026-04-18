@@ -7,9 +7,9 @@
         <div>
             <span class="eyebrow">Administración</span>
             <h2>Validación de cuentas bancarias</h2>
-            <p>Apruebe o rechace cuentas pendientes de validación.</p>
+            <p>Revise y confirme las cuentas pendientes de validación administrativa.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Administracion" asp-action="GestionUsuarios">Volver a usuarios</a>
+        <a class="boton-secundario" asp-controller="Administracion" asp-action="GestionUsuarios">Volver a administración</a>
     </div>
 
     <section class="tarjeta-panel">
@@ -27,7 +27,7 @@
                 <tbody>
                     @if (Model.CuentasPendientes.Count == 0)
                     {
-                        <tr><td colspan="5" class="text-center text-muted">No hay cuentas bancarias registradas.</td></tr>
+                        <tr><td colspan="5" class="text-center text-muted">No hay cuentas bancarias pendientes de revisión.</td></tr>
                     }
                     else
                     {
@@ -41,22 +41,14 @@
                                 <td>
                                     @if (cuenta.EstadoValidacion == "Pendiente")
                                     {
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
-                                                <input type="hidden" name="Aprobada" value="true" />
-                                                <input type="hidden" name="IdAdministrador" value="1" />
-                                                <button type="submit" class="boton-link border-0 bg-transparent p-0">Aprobar</button>
-                                            </form>
-                                            <form asp-action="ValidarCuentaBancaria" method="post" class="d-inline">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="IdCuentaBancaria" value="@cuenta.IdCuentaBancaria" />
-                                                <input type="hidden" name="Aprobada" value="false" />
-                                                <input type="hidden" name="IdAdministrador" value="1" />
-                                                <button type="submit" class="boton-link border-0 bg-transparent p-0 text-danger">Rechazar</button>
-                                            </form>
-                                        </div>
+                                        <button type="button"
+                                                class="boton-link border-0 bg-transparent p-0"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalValidarCuenta"
+                                                data-id-cuenta="@cuenta.IdCuentaBancaria"
+                                                data-resumen-cuenta="@($"{cuenta.Banco} · {cuenta.NumeroCuenta} · {cuenta.NombreUsuario}")">
+                                            Validar
+                                        </button>
                                     }
                                     else
                                     {
@@ -71,3 +63,48 @@
         </div>
     </section>
 </section>
+
+<div class="modal fade" id="modalValidarCuenta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ValidarCuentaBancaria" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="IdCuentaBancaria" id="idCuentaBancariaSeleccionada" />
+                <input type="hidden" name="Aprobada" value="true" />
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar validación</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">¿Desea marcar como <strong>Validada</strong> la cuenta seleccionada?</p>
+                    <small class="text-muted d-block mt-2" id="resumenCuentaSeleccionada"></small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="boton-secundario" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Confirmar validación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const modal = document.getElementById('modalValidarCuenta');
+            const idInput = document.getElementById('idCuentaBancariaSeleccionada');
+            const resumen = document.getElementById('resumenCuentaSeleccionada');
+            if (!modal || !idInput || !resumen) return;
+
+            modal.addEventListener('show.bs.modal', function (event) {
+                const trigger = event.relatedTarget;
+                if (!trigger) return;
+
+                const idCuenta = trigger.getAttribute('data-id-cuenta') || '';
+                const resumenCuenta = trigger.getAttribute('data-resumen-cuenta') || '';
+                idInput.value = idCuenta;
+                resumen.textContent = resumenCuenta;
+            });
+        })();
+    </script>
+}
