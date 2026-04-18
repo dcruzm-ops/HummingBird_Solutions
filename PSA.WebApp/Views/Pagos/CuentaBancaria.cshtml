@@ -1,0 +1,77 @@
+@model List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO>
+@{
+    ViewData["Title"] = "Cuenta bancaria";
+    var cuentaNueva = ViewBag.CuentaNueva as PSA.EntidadesDTO.DTOs.Pagos.RegistrarCuentaBancariaDTO ?? new();
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Consulta del propietario</span>
+            <h2>Cuenta bancaria</h2>
+            <p>Registre cuentas para habilitar pagos y consulte su estado de validación.</p>
+        </div>
+        <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesDueno">Ver planes</a>
+    </div>
+
+    <section class="tarjeta-panel mb-4">
+        <h3 class="h5 mb-3">Registrar nueva cuenta</h3>
+        <form asp-action="RegistrarCuentaBancaria" method="post" class="row g-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="IdUsuario" value="@cuentaNueva.IdUsuario" />
+            <div class="col-md-6">
+                <label class="form-label">Banco</label>
+                <input class="form-control" name="Banco" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Número de cuenta</label>
+                <input class="form-control" name="NumeroCuenta" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Tipo de cuenta</label>
+                <input class="form-control" name="TipoCuenta" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Titular</label>
+                <input class="form-control" name="Titular" required />
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Registrar cuenta</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Banco</th>
+                        <th>Cuenta</th>
+                        <th>Tipo</th>
+                        <th>Titular</th>
+                        <th>Estado validación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-muted">No tiene cuentas bancarias registradas.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var cuenta in Model)
+                        {
+                            <tr>
+                                <td>@cuenta.Banco</td>
+                                <td>@cuenta.NumeroCuenta</td>
+                                <td>@cuenta.TipoCuenta</td>
+                                <td>@cuenta.Titular</td>
+                                <td><span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion</span></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

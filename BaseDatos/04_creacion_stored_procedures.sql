@@ -1139,3 +1139,96 @@ BEGIN
     ORDER BY pp.Anio DESC, cp.Mes DESC, cp.IdCuotaPago DESC;
 END;
 GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_ObtenerPlanesDueno
+    @IdPropietario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        pp.IdPlanPago,
+        pp.IdFinca,
+        f.NombreFinca,
+        pp.Anio,
+        pp.MontoMensualCalculado,
+        CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnualEstimado,
+        pp.EstadoPlan,
+        pp.IdCuentaBancaria
+    FROM dbo.PlanesPago pp
+    INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+    WHERE f.IdPropietario = @IdPropietario
+    ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_ObtenerCuentasBancariasDueno
+    @IdUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        cb.IdCuentaBancaria,
+        cb.Banco,
+        cb.NumeroCuenta,
+        cb.TipoCuenta,
+        cb.Titular,
+        cb.EstadoValidacion,
+        cb.Activa,
+        cb.FechaRegistro
+    FROM dbo.CuentasBancarias cb
+    WHERE cb.IdUsuario = @IdUsuario
+    ORDER BY cb.FechaRegistro DESC, cb.IdCuentaBancaria DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_RegistrarCuentaBancariaDueno
+    @IdUsuario INT,
+    @Banco VARCHAR(100),
+    @NumeroCuenta VARCHAR(50),
+    @TipoCuenta VARCHAR(30),
+    @Titular VARCHAR(150)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @IdUsuario <= 0
+        THROW 57006, 'Debe indicar un usuario válido.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@Banco, ''))) = ''
+        THROW 57007, 'Debe indicar el banco.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@NumeroCuenta, ''))) = ''
+        THROW 57008, 'Debe indicar el número de cuenta.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@TipoCuenta, ''))) = ''
+        THROW 57009, 'Debe indicar el tipo de cuenta.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@Titular, ''))) = ''
+        THROW 57010, 'Debe indicar el titular de la cuenta.', 1;
+
+    INSERT INTO dbo.CuentasBancarias
+    (
+        IdUsuario,
+        Banco,
+        NumeroCuenta,
+        TipoCuenta,
+        Titular,
+        EstadoValidacion,
+        Activa
+    )
+    VALUES
+    (
+        @IdUsuario,
+        @Banco,
+        @NumeroCuenta,
+        @TipoCuenta,
+        @Titular,
+        'Pendiente',
+        0
+    );
+
+    SELECT CAST(SCOPE_IDENTITY() AS INT) AS IdCuentaBancaria;
+END;
+GO

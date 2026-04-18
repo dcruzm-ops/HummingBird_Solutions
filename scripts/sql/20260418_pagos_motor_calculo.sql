@@ -31,4 +31,4 @@ BEGIN
 END;
 GO
 
-PRINT 'Ejecute también BaseDatos/04_creacion_stored_procedures.sql para crear/actualizar los SP de pagos: SP_Pagos_GenerarPlanPago y SP_Pagos_ObtenerHistorialDueno.';
+PRINT 'Ejecute también BaseDatos/04_creacion_stored_procedures.sql (SP de pagos) y BaseDatos/05_creacion_triggers.sql (autogeneración por evaluación/cuenta validada).';

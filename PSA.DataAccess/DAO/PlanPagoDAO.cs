@@ -64,6 +64,87 @@ public class PlanPagoDAO(IDbConnectionFactory connectionFactory)
         return resultado;
     }
 
+    public async Task<List<PlanPagoResumenDTO>> ObtenerPlanesDuenoAsync(int idPropietario)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("dbo.SP_Pagos_ObtenerPlanesDueno", connection)
+        {
+            CommandType = System.Data.CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@IdPropietario", idPropietario);
+
+        using var reader = await command.ExecuteReaderAsync();
+        var resultado = new List<PlanPagoResumenDTO>();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new PlanPagoResumenDTO
+            {
+                IdPlanPago = reader.GetInt32(reader.GetOrdinal("IdPlanPago")),
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
+                MontoMensualCalculado = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
+                MontoAnualEstimado = reader.GetDecimal(reader.GetOrdinal("MontoAnualEstimado")),
+                EstadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty,
+                IdCuentaBancaria = reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria"))
+            });
+        }
+
+        return resultado;
+    }
+
+    public async Task<List<CuentaBancariaDuenoDTO>> ObtenerCuentasBancariasDuenoAsync(int idUsuario)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("dbo.SP_Pagos_ObtenerCuentasBancariasDueno", connection)
+        {
+            CommandType = System.Data.CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+        using var reader = await command.ExecuteReaderAsync();
+        var resultado = new List<CuentaBancariaDuenoDTO>();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new CuentaBancariaDuenoDTO
+            {
+                IdCuentaBancaria = reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria")),
+                Banco = reader["Banco"]?.ToString() ?? string.Empty,
+                NumeroCuenta = reader["NumeroCuenta"]?.ToString() ?? string.Empty,
+                TipoCuenta = reader["TipoCuenta"]?.ToString() ?? string.Empty,
+                Titular = reader["Titular"]?.ToString() ?? string.Empty,
+                EstadoValidacion = reader["EstadoValidacion"]?.ToString() ?? string.Empty,
+                Activa = reader.GetBoolean(reader.GetOrdinal("Activa")),
+                FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaRegistro"))
+            });
+        }
+
+        return resultado;
+    }
+
+    public async Task<int> RegistrarCuentaBancariaDuenoAsync(RegistrarCuentaBancariaDTO dto)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("dbo.SP_Pagos_RegistrarCuentaBancariaDueno", connection)
+        {
+            CommandType = System.Data.CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@IdUsuario", dto.IdUsuario);
+        command.Parameters.AddWithValue("@Banco", dto.Banco.Trim());
+        command.Parameters.AddWithValue("@NumeroCuenta", dto.NumeroCuenta.Trim());
+        command.Parameters.AddWithValue("@TipoCuenta", dto.TipoCuenta.Trim());
+        command.Parameters.AddWithValue("@Titular", dto.Titular.Trim());
+
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0);
+    }
+
     private static PlanPagoDTO MapPlanPago(SqlDataReader reader)
     {
         return new PlanPagoDTO

@@ -45,4 +45,42 @@ public class PagosManager(PlanPagoDAO planPagoDao, AuditoriaLogDAO auditoriaLogD
 
         return _planPagoDao.ObtenerHistorialCuotasDuenoAsync(idPropietario);
     }
+
+    public Task<List<PlanPagoResumenDTO>> ObtenerPlanesDuenoAsync(int idPropietario)
+    {
+        if (idPropietario <= 0)
+        {
+            throw new InvalidOperationException("Debe indicar un propietario válido.");
+        }
+
+        return _planPagoDao.ObtenerPlanesDuenoAsync(idPropietario);
+    }
+
+    public Task<List<CuentaBancariaDuenoDTO>> ObtenerCuentasBancariasDuenoAsync(int idUsuario)
+    {
+        if (idUsuario <= 0)
+        {
+            throw new InvalidOperationException("Debe indicar un usuario válido.");
+        }
+
+        return _planPagoDao.ObtenerCuentasBancariasDuenoAsync(idUsuario);
+    }
+
+    public Task<int> RegistrarCuentaBancariaDuenoAsync(RegistrarCuentaBancariaDTO dto)
+    {
+        if (dto.IdUsuario <= 0)
+        {
+            throw new InvalidOperationException("Debe indicar un usuario válido.");
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.Banco)
+            || string.IsNullOrWhiteSpace(dto.NumeroCuenta)
+            || string.IsNullOrWhiteSpace(dto.TipoCuenta)
+            || string.IsNullOrWhiteSpace(dto.Titular))
+        {
+            throw new InvalidOperationException("Debe completar todos los datos de la cuenta bancaria.");
+        }
+
+        return _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
+    }
 }

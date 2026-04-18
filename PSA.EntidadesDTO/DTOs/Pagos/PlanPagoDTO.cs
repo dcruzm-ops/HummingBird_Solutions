@@ -57,4 +57,37 @@
         public int Anio { get; set; } = DateTime.UtcNow.Year + 1;
         public bool Simular { get; set; }
     }
+
+    public class PlanPagoResumenDTO
+    {
+        public int IdPlanPago { get; set; }
+        public int IdFinca { get; set; }
+        public string NombreFinca { get; set; } = string.Empty;
+        public int Anio { get; set; }
+        public decimal MontoMensualCalculado { get; set; }
+        public decimal MontoAnualEstimado { get; set; }
+        public string EstadoPlan { get; set; } = string.Empty;
+        public int IdCuentaBancaria { get; set; }
+    }
+
+    public class CuentaBancariaDuenoDTO
+    {
+        public int IdCuentaBancaria { get; set; }
+        public string Banco { get; set; } = string.Empty;
+        public string NumeroCuenta { get; set; } = string.Empty;
+        public string TipoCuenta { get; set; } = string.Empty;
+        public string Titular { get; set; } = string.Empty;
+        public string EstadoValidacion { get; set; } = string.Empty;
+        public bool Activa { get; set; }
+        public DateTime FechaRegistro { get; set; }
+    }
+
+    public class RegistrarCuentaBancariaDTO
+    {
+        public int IdUsuario { get; set; }
+        public string Banco { get; set; } = string.Empty;
+        public string NumeroCuenta { get; set; } = string.Empty;
+        public string TipoCuenta { get; set; } = string.Empty;
+        public string Titular { get; set; } = string.Empty;
+    }
 }

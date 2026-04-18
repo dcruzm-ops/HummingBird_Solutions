@@ -45,6 +45,24 @@ namespace PSA.WebApp.Controllers
 
         [HttpGet]
         [Authorize(Roles = "2")]
+        public async Task<IActionResult> PlanesDueno()
+        {
+            ViewBag.ModuloActivo = "pagos";
+            ViewBag.RolActivo = "Dueno";
+            ViewBag.TituloPagina = "Planes de pago";
+            ViewBag.SubtituloPagina = "Consulte sus planes de pago por finca.";
+            ViewBag.BreadcrumbActual = "Planes de pago";
+
+            var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+            var planes = idUsuario > 0
+                ? await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/dueno/{idUsuario}/planes") ?? new()
+                : new List<PlanPagoResumenDTO>();
+
+            return View(planes);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "2")]
         public async Task<IActionResult> HistorialPagos()
         {
             ViewBag.ModuloActivo = "pagos";
@@ -59,6 +77,38 @@ namespace PSA.WebApp.Controllers
                 : new List<CuotaPlanPagoDTO>();
 
             return View(historial);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> CuentaBancaria()
+        {
+            ViewBag.ModuloActivo = "pagos";
+            ViewBag.RolActivo = "Dueno";
+            ViewBag.TituloPagina = "Cuenta bancaria";
+            ViewBag.SubtituloPagina = "Registre y consulte el estado de validación de sus cuentas.";
+            ViewBag.BreadcrumbActual = "Cuenta bancaria";
+
+            var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+            var cuentas = idUsuario > 0
+                ? await _httpClientService.GetAsync<List<CuentaBancariaDuenoDTO>>($"api/Pagos/dueno/{idUsuario}/cuentas-bancarias") ?? new()
+                : new List<CuentaBancariaDuenoDTO>();
+
+            ViewBag.CuentaNueva = new RegistrarCuentaBancariaDTO { IdUsuario = idUsuario };
+            return View(cuentas);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "2")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RegistrarCuentaBancaria(RegistrarCuentaBancariaDTO model)
+        {
+            var idCuenta = await _httpClientService.PostAsync<RegistrarCuentaBancariaDTO, int>("api/Pagos/dueno/cuentas-bancarias", model);
+            TempData[idCuenta > 0 ? "Exito" : "Error"] = idCuenta > 0
+                ? "Cuenta bancaria registrada. Queda pendiente de validación por administración."
+                : "No fue posible registrar la cuenta bancaria.";
+
+            return RedirectToAction(nameof(CuentaBancaria));
         }
     }
 }

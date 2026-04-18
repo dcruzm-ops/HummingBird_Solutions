@@ -50,7 +50,8 @@
         {
             <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Dueno">Inicio</a>
             <a class="item-menu @(moduloActivo == "fincas" ? "activo" : string.Empty)" asp-controller="Fincas" asp-action="MisFincas">Mis fincas</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Cuenta bancaria</a>
+            <a class="item-menu @((controllerActual == "pagos" && accionActual == "cuentabancaria") ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="CuentaBancaria">Cuenta bancaria</a>
+            <a class="item-menu @((controllerActual == "pagos" && accionActual == "planesdueno") ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesDueno">Planes de pago</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
             <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
             <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>

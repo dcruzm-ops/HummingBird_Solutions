@@ -46,4 +46,46 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
             return BadRequest(new { Mensaje = ex.Message });
         }
     }
+
+    [HttpGet("dueno/{idPropietario:int}/planes")]
+    public async Task<ActionResult<List<PlanPagoResumenDTO>>> ObtenerPlanesDueno([FromRoute] int idPropietario)
+    {
+        try
+        {
+            var planes = await _pagosManager.ObtenerPlanesDuenoAsync(idPropietario);
+            return Ok(planes);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
+    [HttpGet("dueno/{idUsuario:int}/cuentas-bancarias")]
+    public async Task<ActionResult<List<CuentaBancariaDuenoDTO>>> ObtenerCuentasBancariasDueno([FromRoute] int idUsuario)
+    {
+        try
+        {
+            var cuentas = await _pagosManager.ObtenerCuentasBancariasDuenoAsync(idUsuario);
+            return Ok(cuentas);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
+    [HttpPost("dueno/cuentas-bancarias")]
+    public async Task<ActionResult<int>> RegistrarCuentaBancariaDueno([FromBody] RegistrarCuentaBancariaDTO model)
+    {
+        try
+        {
+            var idCuenta = await _pagosManager.RegistrarCuentaBancariaDuenoAsync(model);
+            return Ok(idCuenta);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
 }
