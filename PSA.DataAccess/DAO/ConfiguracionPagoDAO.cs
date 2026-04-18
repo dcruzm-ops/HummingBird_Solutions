@@ -16,6 +16,7 @@ public class ConfiguracionPagoDAO(IDbConnectionFactory connectionFactory)
         var columnas = await ObtenerColumnasConfiguracionPagoAsync(connection);
         var autogenerarVersion = columnas.Contains("Version", StringComparer.OrdinalIgnoreCase) && dto.Version <= 0;
         var versionCalculada = dto.Version;
+        var requiereActivacionPosterior = dto.Activa && columnas.Contains("Activa", StringComparer.OrdinalIgnoreCase);
 
         using var tx = connection.BeginTransaction();
 
@@ -37,8 +38,8 @@ public class ConfiguracionPagoDAO(IDbConnectionFactory connectionFactory)
             AgregarColumnaSiExiste("TopePorcentajeAjuste", dto.TopePorcentajeAjuste);
             AgregarColumnaSiExiste("FechaVigenciaDesde", dto.FechaVigenciaDesde);
             AgregarColumnaSiExiste("FechaVigenciaHasta", dto.FechaVigenciaHasta);
-            AgregarColumnaSiExiste("Estado", dto.Activa ? "Activa" : "Inactiva");
-            AgregarColumnaSiExiste("Activa", dto.Activa);
+            AgregarColumnaSiExiste("Estado", dto.Activa && !requiereActivacionPosterior ? "Activa" : "Inactiva");
+            AgregarColumnaSiExiste("Activa", requiereActivacionPosterior ? false : dto.Activa);
             AgregarColumnaSiExiste("IdAdministrador", dto.CreadoPor);
             AgregarColumnaSiExiste("CreadoPor", dto.CreadoPor);
 
