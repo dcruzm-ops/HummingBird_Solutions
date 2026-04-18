@@ -168,12 +168,15 @@
         public string DecisionTecnica { get; set; } = string.Empty;
         public bool GeneroPlan { get; set; }
         public int? IdPlanPago { get; set; }
+        public string EstadoPlan { get; set; } = string.Empty;
         public string EstadoContinuidad { get; set; } = string.Empty;
         public decimal? MontoMensualReferencial { get; set; }
         public decimal? MontoAnualReferencial { get; set; }
         public string EstadoCuentaBancaria { get; set; } = "Pendiente";
         public bool CuentaRegistrada { get; set; }
         public bool CuentaValidada { get; set; }
+        public bool PuedeAprobarFinal => IdPlanPago.HasValue
+            && string.Equals(EstadoPlan, EstadosPlanPago.PendienteAprobacionFinal, StringComparison.OrdinalIgnoreCase);
     }
 
     public class AdminPaymentPlanFilterDto

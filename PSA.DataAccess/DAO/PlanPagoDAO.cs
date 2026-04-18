@@ -628,6 +628,7 @@ WHERE e.IdEvaluacion = @IdEvaluacion
             DecisionTecnica = decision,
             GeneroPlan = idPlan.HasValue,
             IdPlanPago = idPlan,
+            EstadoPlan = estadoPlan,
             EstadoContinuidad = ResolverEstadoContinuidad(decision, idPlan.HasValue, estadoPlan, estadoCuenta),
             MontoMensualReferencial = reader["MontoMensualCalculado"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
             MontoAnualReferencial = reader["MontoAnual"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("MontoAnual")),
