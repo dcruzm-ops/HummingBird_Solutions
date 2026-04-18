@@ -61,6 +61,20 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
         }
     }
 
+    [HttpGet("ingeniero/{idIngeniero:int}/planes-pendientes")]
+    public async Task<ActionResult<List<PlanPagoResumenDTO>>> ObtenerPlanesPendientesIngeniero([FromRoute] int idIngeniero)
+    {
+        try
+        {
+            var planes = await _pagosManager.ObtenerPlanesPendientesIngenieroAsync(idIngeniero);
+            return Ok(planes);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
     [HttpGet("dueno/{idUsuario:int}/cuentas-bancarias")]
     public async Task<ActionResult<List<CuentaBancariaDuenoDTO>>> ObtenerCuentasBancariasDueno([FromRoute] int idUsuario)
     {

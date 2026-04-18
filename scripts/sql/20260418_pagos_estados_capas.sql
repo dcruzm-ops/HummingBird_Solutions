@@ -1,6 +1,10 @@
 USE PSA_CostaRica;
 GO
 
+ALTER TABLE dbo.PlanesPago
+ALTER COLUMN EstadoPlan VARCHAR(40) NOT NULL;
+GO
+
 IF EXISTS (SELECT 1 FROM sys.check_constraints WHERE name = 'CK_PlanesPago_Estado' AND parent_object_id = OBJECT_ID('dbo.PlanesPago'))
 BEGIN
     ALTER TABLE dbo.PlanesPago DROP CONSTRAINT CK_PlanesPago_Estado;

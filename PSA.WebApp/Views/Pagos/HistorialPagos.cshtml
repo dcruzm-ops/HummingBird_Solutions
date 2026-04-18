@@ -36,7 +36,7 @@
                         @foreach (var cuota in Model)
                         {
                             var periodo = $"{cuota.FechaProgramada:MMMM yyyy}";
-                            var estadoCss = cuota.EstadoCuota == "Pagada" ? "badge-exito" : "badge-pendiente";
+                            var estadoCss = cuota.EstadoCuota == "Ejecutada" ? "badge-exito" : "badge-pendiente";
                             <tr>
                                 <td>@cuota.NombreFinca</td>
                                 <td>@periodo</td>

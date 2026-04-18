@@ -335,6 +335,54 @@ SELECT @@ROWCOUNT;";
         return resultado;
     }
 
+    public async Task<List<PlanPagoResumenDTO>> ObtenerPlanesPendientesAprobacionIngenieroAsync(int idIngeniero)
+    {
+        const string sql = @"
+SELECT
+    pp.IdPlanPago,
+    pp.IdFinca,
+    f.NombreFinca,
+    pp.Anio,
+    pp.MontoMensualCalculado,
+    CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnualEstimado,
+    pp.EstadoPlan,
+    pp.IdCuentaBancaria
+FROM dbo.PlanesPago pp
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+INNER JOIN dbo.EvaluacionesTecnicas e ON e.IdEvaluacion = pp.IdEvaluacion
+WHERE e.IdIngeniero = @IdIngeniero
+  AND pp.EstadoPlan = @EstadoPendienteAprobacion
+ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
+        command.Parameters.AddWithValue("@EstadoPendienteAprobacion", EstadosPlanPago.PendienteAprobacionFinal);
+
+        using var reader = await command.ExecuteReaderAsync();
+        var resultado = new List<PlanPagoResumenDTO>();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new PlanPagoResumenDTO
+            {
+                IdPlanPago = reader.GetInt32(reader.GetOrdinal("IdPlanPago")),
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
+                MontoMensualCalculado = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
+                MontoAnualEstimado = reader.GetDecimal(reader.GetOrdinal("MontoAnualEstimado")),
+                EstadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty,
+                IdCuentaBancaria = reader["IdCuentaBancaria"] == DBNull.Value
+                    ? null
+                    : reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria"))
+            });
+        }
+
+        return resultado;
+    }
+
     public async Task<List<CuentaBancariaDuenoDTO>> ObtenerCuentasBancariasDuenoAsync(int idUsuario)
     {
         using var connection = _connectionFactory.CreateConnection();

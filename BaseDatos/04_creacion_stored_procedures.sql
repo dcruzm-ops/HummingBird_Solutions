@@ -956,7 +956,6 @@ BEGIN
         FROM dbo.PlanesPago p
         WHERE p.IdFinca = @IdFinca
           AND p.Anio = @Anio
-          AND p.EstadoPlan = 'Activo'
         ORDER BY p.IdPlanPago DESC;
 
         IF @IdPlanPago IS NULL
@@ -983,7 +982,7 @@ BEGIN
                 @MontoBaseMensual,
                 @PorcentajeTotalAplicado,
                 @MontoFinalMensual,
-                'Activo'
+                'PendienteDatosBancarios'
             );
 
             SET @IdPlanPago = CAST(SCOPE_IDENTITY() AS INT);
@@ -1085,7 +1084,7 @@ BEGIN
                 DATEFROMPARTS(@Anio, @Mes, 1),
                 @MontoFinalMensual,
                 @MontoFinalMensual,
-                'Programada'
+                'Pendiente'
             );
 
             SET @Mes = @Mes + 1;
@@ -1102,7 +1101,7 @@ BEGIN
         @MontoBaseMensual AS MontoBaseMensual,
         @PorcentajeTotalAplicado AS PorcentajeAjusteTotal,
         @MontoFinalMensual AS MontoMensualCalculado,
-        CAST(CASE WHEN @Simular = 1 THEN 'Simulado' ELSE 'Activo' END AS VARCHAR(20)) AS EstadoPlan,
+        CAST(CASE WHEN @Simular = 1 THEN 'Simulado' ELSE 'PendienteDatosBancarios' END AS VARCHAR(40)) AS EstadoPlan,
         SYSDATETIME() AS FechaGeneracion,
         @HectareasAprobadas AS HectareasAprobadas,
         @PrecioBasePorHectarea AS PrecioBasePorHectarea,
@@ -1271,11 +1270,12 @@ BEGIN
         THROW 57014, 'La cuenta bancaria no pertenece al dueño o no está validada/activa.', 1;
 
     UPDATE pp
-    SET pp.IdCuentaBancaria = @IdCuentaBancaria
+    SET pp.IdCuentaBancaria = @IdCuentaBancaria,
+        pp.EstadoPlan = 'PendienteAprobacionFinal'
     FROM dbo.PlanesPago pp
     INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
     WHERE pp.IdPlanPago = @IdPlanPago
-      AND pp.EstadoPlan = 'Activo'
+      AND pp.EstadoPlan IN ('PendienteDatosBancarios', 'BorradorGenerado', 'PendienteAprobacionFinal')
       AND f.IdPropietario = @IdUsuario;
 
     SELECT @@ROWCOUNT AS FilasAfectadas;
