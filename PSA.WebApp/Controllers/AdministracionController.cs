@@ -172,7 +172,7 @@ namespace PSA.WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CrearRol(CrearRolDTO model)
+        public async Task<IActionResult> CrearRol([Bind(Prefix = "NuevoRol")] CrearRolDTO model)
         {
             if (!ModelState.IsValid)
             {
@@ -250,11 +250,16 @@ namespace PSA.WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> ValidacionCuentasBancarias()
         {
-            var cuentas = await _httpClientService.GetAsync<List<CuentaBancariaPendienteDTO>>("api/Administracion/cuentas-bancarias/pendientes") ?? new();
-            var model = new ValidacionCuentasBancariasViewModel
+            var model = new ValidacionCuentasBancariasViewModel();
+
+            try
             {
-                CuentasPendientes = cuentas
-            };
+                model.CuentasPendientes = await _httpClientService.GetAsync<List<CuentaBancariaPendienteDTO>>("api/Administracion/cuentas-bancarias/pendientes") ?? new();
+            }
+            catch
+            {
+                TempData["Error"] = "No fue posible cargar las cuentas bancarias pendientes en este momento.";
+            }
 
             return View(model);
         }
@@ -263,10 +268,17 @@ namespace PSA.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ValidarCuentaBancaria(ValidacionCuentaBancariaDTO model)
         {
-            var respuesta = await _httpClientService.PostAsync<ValidacionCuentaBancariaDTO, bool>("api/Administracion/cuentas-bancarias/validar", model);
-            TempData[respuesta ? "Exito" : "Error"] = respuesta
-                ? "Validación procesada correctamente."
-                : "No se pudo procesar la validación.";
+            try
+            {
+                var respuesta = await _httpClientService.PostAsync<ValidacionCuentaBancariaDTO, bool>("api/Administracion/cuentas-bancarias/validar", model);
+                TempData[respuesta ? "Exito" : "Error"] = respuesta
+                    ? "Validación procesada correctamente."
+                    : "No se pudo procesar la validación.";
+            }
+            catch
+            {
+                TempData["Error"] = "Ocurrió un error inesperado al validar la cuenta bancaria.";
+            }
 
             return RedirectToAction(nameof(ValidacionCuentasBancarias));
         }

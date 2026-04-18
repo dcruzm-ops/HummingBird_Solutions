@@ -821,3 +821,414 @@ BEGIN
     SELECT @@ROWCOUNT AS FilasAfectadas;
 END;
 GO
+
+/* =========================================
+   Pagos - Simulación/generación de plan e historial del dueño
+   ========================================= */
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_GenerarPlanPago
+    @IdFinca INT,
+    @Anio INT,
+    @Simular BIT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @IdFinca <= 0
+        THROW 57001, 'La finca es obligatoria para generar el plan.', 1;
+
+    IF @Anio < YEAR(SYSDATETIME())
+        THROW 57002, 'El año del plan debe ser actual o futuro.', 1;
+
+    DECLARE
+        @IdEvaluacion INT,
+        @IdPropietario INT,
+        @IdConfiguracionPago INT,
+        @IdCuentaBancaria INT,
+        @HectareasAprobadas DECIMAL(12,2),
+        @VegetacionFinal VARCHAR(100),
+        @TieneRecursosHidricosFinal BIT,
+        @CantidadNacientesFinal INT,
+        @PendienteFinal VARCHAR(50),
+        @PrecioBasePorHectarea DECIMAL(10,2),
+        @TopePorcentajeAjuste DECIMAL(5,2),
+        @PorcentajeVegetacion DECIMAL(5,2) = 0,
+        @PorcentajeHidrico DECIMAL(5,2) = 0,
+        @PorcentajeNacientes DECIMAL(5,2) = 0,
+        @PorcentajePendiente DECIMAL(5,2) = 0,
+        @PorcentajePorNaciente DECIMAL(5,2) = 0,
+        @PorcentajeTotalAntesTope DECIMAL(8,2) = 0,
+        @PorcentajeTotalAplicado DECIMAL(8,2) = 0,
+        @MontoBaseMensual DECIMAL(12,2) = 0,
+        @MontoAjusteMensual DECIMAL(12,2) = 0,
+        @MontoFinalMensual DECIMAL(12,2) = 0,
+        @IdPlanPago INT = NULL,
+        @Mes INT = 1;
+
+    SELECT TOP 1
+        @IdPropietario = f.IdPropietario,
+        @IdEvaluacion = e.IdEvaluacion,
+        @HectareasAprobadas = COALESCE(e.HectareasAjustadas, f.Hectareas),
+        @VegetacionFinal = COALESCE(NULLIF(e.VegetacionAjustada, ''), f.Vegetacion),
+        @TieneRecursosHidricosFinal = COALESCE(e.RecursosHidricosAjustado, f.TieneRecursosHidricos),
+        @CantidadNacientesFinal = COALESCE(f.CantidadNacientes, 0),
+        @PendienteFinal = COALESCE(NULLIF(e.PendienteAjustada, ''), f.Pendiente)
+    FROM dbo.Fincas f
+    INNER JOIN dbo.EvaluacionesTecnicas e ON e.IdFinca = f.IdFinca
+    WHERE f.IdFinca = @IdFinca
+      AND f.EstadoFinca = 'Aprobada'
+      AND e.DecisionTecnica = 'Califica'
+      AND e.EstadoEvaluacion = 'Evaluada – Califica'
+    ORDER BY e.IdEvaluacion DESC;
+
+    IF @IdEvaluacion IS NULL
+        THROW 57003, 'La finca debe estar aprobada y calificada para generar plan de pago.', 1;
+
+    SELECT TOP 1
+        @IdCuentaBancaria = cb.IdCuentaBancaria
+    FROM dbo.CuentasBancarias cb
+    WHERE cb.IdUsuario = @IdPropietario
+      AND cb.EstadoValidacion = 'Validada'
+      AND cb.Activa = 1
+    ORDER BY cb.FechaRegistro DESC, cb.IdCuentaBancaria DESC;
+
+    IF @IdCuentaBancaria IS NULL
+        THROW 57004, 'No existe una cuenta bancaria validada y activa para el propietario.', 1;
+
+    SELECT TOP 1
+        @IdConfiguracionPago = cp.IdConfiguracionPago,
+        @PrecioBasePorHectarea = cp.PrecioBasePorHectarea,
+        @TopePorcentajeAjuste = cp.TopePorcentajeAjuste
+    FROM dbo.ConfiguracionesPago cp
+    WHERE cp.Activa = 1
+      AND cp.FechaVigenciaDesde <= DATEFROMPARTS(@Anio, 1, 1)
+      AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(@Anio, 1, 1))
+    ORDER BY cp.FechaVigenciaDesde DESC, cp.IdConfiguracionPago DESC;
+
+    IF @IdConfiguracionPago IS NULL
+        THROW 57005, 'No existe configuración de pago activa para el año solicitado.', 1;
+
+    SELECT @PorcentajeVegetacion = COALESCE(d.PorcentajeAjuste, 0)
+    FROM dbo.ConfiguracionPagoDetalle d
+    WHERE d.IdConfiguracionPago = @IdConfiguracionPago
+      AND d.TipoFactor = 'Vegetacion'
+      AND d.ValorFactor = @VegetacionFinal;
+
+    SELECT @PorcentajeHidrico = CASE WHEN @TieneRecursosHidricosFinal = 1 THEN COALESCE(d.PorcentajeAjuste, 0) ELSE 0 END
+    FROM dbo.ConfiguracionPagoDetalle d
+    WHERE d.IdConfiguracionPago = @IdConfiguracionPago
+      AND d.TipoFactor = 'RecursosHidricos'
+      AND d.ValorFactor = 'Si';
+
+    SELECT @PorcentajePorNaciente = COALESCE(d.PorcentajeAjuste, 0)
+    FROM dbo.ConfiguracionPagoDetalle d
+    WHERE d.IdConfiguracionPago = @IdConfiguracionPago
+      AND d.TipoFactor = 'RecursosHidricos'
+      AND d.ValorFactor = 'Naciente';
+
+    SELECT @PorcentajePendiente = COALESCE(d.PorcentajeAjuste, 0)
+    FROM dbo.ConfiguracionPagoDetalle d
+    WHERE d.IdConfiguracionPago = @IdConfiguracionPago
+      AND d.TipoFactor = 'Pendiente'
+      AND d.ValorFactor = @PendienteFinal;
+
+    SET @PorcentajeNacientes = COALESCE(@CantidadNacientesFinal, 0) * COALESCE(@PorcentajePorNaciente, 0);
+    SET @PorcentajeTotalAntesTope = COALESCE(@PorcentajeVegetacion, 0) + COALESCE(@PorcentajeHidrico, 0) + COALESCE(@PorcentajeNacientes, 0) + COALESCE(@PorcentajePendiente, 0);
+    SET @PorcentajeTotalAplicado = CASE WHEN @PorcentajeTotalAntesTope > @TopePorcentajeAjuste THEN @TopePorcentajeAjuste ELSE @PorcentajeTotalAntesTope END;
+
+    SET @MontoBaseMensual = ROUND(COALESCE(@HectareasAprobadas, 0) * COALESCE(@PrecioBasePorHectarea, 0), 2);
+    SET @MontoAjusteMensual = ROUND(@MontoBaseMensual * (@PorcentajeTotalAplicado / 100.0), 2);
+    SET @MontoFinalMensual = ROUND(@MontoBaseMensual + @MontoAjusteMensual, 2);
+
+    IF @Simular = 0
+    BEGIN
+        SELECT TOP 1
+            @IdPlanPago = p.IdPlanPago
+        FROM dbo.PlanesPago p
+        WHERE p.IdFinca = @IdFinca
+          AND p.Anio = @Anio
+          AND p.EstadoPlan = 'Activo'
+        ORDER BY p.IdPlanPago DESC;
+
+        IF @IdPlanPago IS NULL
+        BEGIN
+            INSERT INTO dbo.PlanesPago
+            (
+                IdFinca,
+                IdEvaluacion,
+                IdConfiguracionPago,
+                IdCuentaBancaria,
+                Anio,
+                MontoBaseMensual,
+                PorcentajeAjusteTotal,
+                MontoMensualCalculado,
+                EstadoPlan
+            )
+            VALUES
+            (
+                @IdFinca,
+                @IdEvaluacion,
+                @IdConfiguracionPago,
+                @IdCuentaBancaria,
+                @Anio,
+                @MontoBaseMensual,
+                @PorcentajeTotalAplicado,
+                @MontoFinalMensual,
+                'Activo'
+            );
+
+            SET @IdPlanPago = CAST(SCOPE_IDENTITY() AS INT);
+        END
+        ELSE
+        BEGIN
+            UPDATE dbo.PlanesPago
+            SET IdEvaluacion = @IdEvaluacion,
+                IdConfiguracionPago = @IdConfiguracionPago,
+                IdCuentaBancaria = @IdCuentaBancaria,
+                MontoBaseMensual = @MontoBaseMensual,
+                PorcentajeAjusteTotal = @PorcentajeTotalAplicado,
+                MontoMensualCalculado = @MontoFinalMensual
+            WHERE IdPlanPago = @IdPlanPago;
+        END
+
+        IF EXISTS (SELECT 1 FROM dbo.PlanesPagoDetalleCalculo WHERE IdPlanPago = @IdPlanPago)
+        BEGIN
+            UPDATE dbo.PlanesPagoDetalleCalculo
+            SET HectareasAprobadas = @HectareasAprobadas,
+                PrecioBasePorHectarea = @PrecioBasePorHectarea,
+                PorcentajeVegetacion = @PorcentajeVegetacion,
+                PorcentajeHidrico = @PorcentajeHidrico,
+                PorcentajeNacientes = @PorcentajeNacientes,
+                PorcentajePendiente = @PorcentajePendiente,
+                PorcentajeTotalAntesTope = @PorcentajeTotalAntesTope,
+                PorcentajeTopeAplicado = @TopePorcentajeAjuste,
+                PorcentajeTotalAplicado = @PorcentajeTotalAplicado,
+                MontoBaseMensual = @MontoBaseMensual,
+                MontoAjusteMensual = @MontoAjusteMensual,
+                MontoFinalMensual = @MontoFinalMensual,
+                VegetacionFinal = @VegetacionFinal,
+                TieneRecursosHidricosFinal = @TieneRecursosHidricosFinal,
+                CantidadNacientesFinal = @CantidadNacientesFinal,
+                PendienteFinal = @PendienteFinal
+            WHERE IdPlanPago = @IdPlanPago;
+        END
+        ELSE
+        BEGIN
+            INSERT INTO dbo.PlanesPagoDetalleCalculo
+            (
+                IdPlanPago,
+                HectareasAprobadas,
+                PrecioBasePorHectarea,
+                PorcentajeVegetacion,
+                PorcentajeHidrico,
+                PorcentajeNacientes,
+                PorcentajePendiente,
+                PorcentajeTotalAntesTope,
+                PorcentajeTopeAplicado,
+                PorcentajeTotalAplicado,
+                MontoBaseMensual,
+                MontoAjusteMensual,
+                MontoFinalMensual,
+                VegetacionFinal,
+                TieneRecursosHidricosFinal,
+                CantidadNacientesFinal,
+                PendienteFinal
+            )
+            VALUES
+            (
+                @IdPlanPago,
+                @HectareasAprobadas,
+                @PrecioBasePorHectarea,
+                @PorcentajeVegetacion,
+                @PorcentajeHidrico,
+                @PorcentajeNacientes,
+                @PorcentajePendiente,
+                @PorcentajeTotalAntesTope,
+                @TopePorcentajeAjuste,
+                @PorcentajeTotalAplicado,
+                @MontoBaseMensual,
+                @MontoAjusteMensual,
+                @MontoFinalMensual,
+                @VegetacionFinal,
+                @TieneRecursosHidricosFinal,
+                @CantidadNacientesFinal,
+                @PendienteFinal
+            );
+        END
+
+        DELETE FROM dbo.CuotasPago WHERE IdPlanPago = @IdPlanPago;
+
+        WHILE @Mes <= 12
+        BEGIN
+            INSERT INTO dbo.CuotasPago
+            (
+                IdPlanPago,
+                Mes,
+                FechaProgramada,
+                MontoProgramado,
+                MontoPendiente,
+                EstadoCuota
+            )
+            VALUES
+            (
+                @IdPlanPago,
+                @Mes,
+                DATEFROMPARTS(@Anio, @Mes, 1),
+                @MontoFinalMensual,
+                @MontoFinalMensual,
+                'Programada'
+            );
+
+            SET @Mes = @Mes + 1;
+        END
+    END
+
+    SELECT
+        ISNULL(@IdPlanPago, 0) AS IdPlanPago,
+        @IdFinca AS IdFinca,
+        f.NombreFinca,
+        @Anio AS Anio,
+        @IdConfiguracionPago AS IdConfiguracionPago,
+        @IdCuentaBancaria AS IdCuentaBancaria,
+        @MontoBaseMensual AS MontoBaseMensual,
+        @PorcentajeTotalAplicado AS PorcentajeAjusteTotal,
+        @MontoFinalMensual AS MontoMensualCalculado,
+        CAST(CASE WHEN @Simular = 1 THEN 'Simulado' ELSE 'Activo' END AS VARCHAR(20)) AS EstadoPlan,
+        SYSDATETIME() AS FechaGeneracion,
+        @HectareasAprobadas AS HectareasAprobadas,
+        @PrecioBasePorHectarea AS PrecioBasePorHectarea,
+        @PorcentajeVegetacion AS PorcentajeVegetacion,
+        @PorcentajeHidrico AS PorcentajeHidrico,
+        @PorcentajeNacientes AS PorcentajeNacientes,
+        @PorcentajePendiente AS PorcentajePendiente,
+        @PorcentajeTotalAntesTope AS PorcentajeTotalAntesTope,
+        @TopePorcentajeAjuste AS PorcentajeTopeAplicado,
+        @PorcentajeTotalAplicado AS PorcentajeTotalAplicado,
+        @MontoAjusteMensual AS MontoAjusteMensual,
+        @MontoFinalMensual AS MontoFinalMensual,
+        @VegetacionFinal AS VegetacionFinal,
+        @TieneRecursosHidricosFinal AS TieneRecursosHidricosFinal,
+        @CantidadNacientesFinal AS CantidadNacientesFinal,
+        @PendienteFinal AS PendienteFinal
+    FROM dbo.Fincas f
+    WHERE f.IdFinca = @IdFinca;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_ObtenerHistorialDueno
+    @IdPropietario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        pp.IdPlanPago,
+        cp.IdCuotaPago,
+        pp.IdFinca,
+        f.NombreFinca,
+        pp.Anio,
+        cp.Mes,
+        cp.FechaProgramada,
+        cp.MontoProgramado,
+        cp.MontoPendiente,
+        cp.EstadoCuota,
+        cp.FechaPago
+    FROM dbo.PlanesPago pp
+    INNER JOIN dbo.CuotasPago cp ON cp.IdPlanPago = pp.IdPlanPago
+    INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+    WHERE f.IdPropietario = @IdPropietario
+    ORDER BY pp.Anio DESC, cp.Mes DESC, cp.IdCuotaPago DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_ObtenerPlanesDueno
+    @IdPropietario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        pp.IdPlanPago,
+        pp.IdFinca,
+        f.NombreFinca,
+        pp.Anio,
+        pp.MontoMensualCalculado,
+        CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnualEstimado,
+        pp.EstadoPlan,
+        pp.IdCuentaBancaria
+    FROM dbo.PlanesPago pp
+    INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+    WHERE f.IdPropietario = @IdPropietario
+    ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_ObtenerCuentasBancariasDueno
+    @IdUsuario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        cb.IdCuentaBancaria,
+        cb.Banco,
+        cb.NumeroCuenta,
+        cb.TipoCuenta,
+        cb.Titular,
+        cb.EstadoValidacion,
+        cb.Activa,
+        cb.FechaRegistro
+    FROM dbo.CuentasBancarias cb
+    WHERE cb.IdUsuario = @IdUsuario
+    ORDER BY cb.FechaRegistro DESC, cb.IdCuentaBancaria DESC;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_RegistrarCuentaBancariaDueno
+    @IdUsuario INT,
+    @Banco VARCHAR(100),
+    @NumeroCuenta VARCHAR(50),
+    @TipoCuenta VARCHAR(30),
+    @Titular VARCHAR(150)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @IdUsuario <= 0
+        THROW 57006, 'Debe indicar un usuario válido.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@Banco, ''))) = ''
+        THROW 57007, 'Debe indicar el banco.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@NumeroCuenta, ''))) = ''
+        THROW 57008, 'Debe indicar el número de cuenta.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@TipoCuenta, ''))) = ''
+        THROW 57009, 'Debe indicar el tipo de cuenta.', 1;
+
+    IF LTRIM(RTRIM(ISNULL(@Titular, ''))) = ''
+        THROW 57010, 'Debe indicar el titular de la cuenta.', 1;
+
+    INSERT INTO dbo.CuentasBancarias
+    (
+        IdUsuario,
+        Banco,
+        NumeroCuenta,
+        TipoCuenta,
+        Titular,
+        EstadoValidacion,
+        Activa
+    )
+    VALUES
+    (
+        @IdUsuario,
+        @Banco,
+        @NumeroCuenta,
+        @TipoCuenta,
+        @Titular,
+        'Pendiente',
+        0
+    );
+
+    SELECT CAST(SCOPE_IDENTITY() AS INT) AS IdCuentaBancaria;
+END;
+GO

@@ -210,7 +210,7 @@ public class AdministracionManager
             modulo: "Administracion",
             tablaAfectada: "CuentasBancarias",
             accion: "VALIDAR_CUENTA_BANCARIA",
-            detalle: $"Cuenta {model.IdCuentaBancaria} validada con resultado: {(model.Aprobada ? "Aprobada" : "Rechazada")}",
+            detalle: $"Cuenta {model.IdCuentaBancaria} validada con resultado: {(model.Aprobada ? "Validada" : "Rechazada")}",
             idRegistroAfectado: model.IdCuentaBancaria,
             ipOrigen: ip);
     }
