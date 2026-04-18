@@ -103,6 +103,8 @@ namespace PSA.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RegistrarCuentaBancaria(RegistrarCuentaBancariaDTO model)
         {
+            var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+            model.IdUsuario = idUsuario;
             var idCuenta = await _httpClientService.PostAsync<RegistrarCuentaBancariaDTO, int>("api/Pagos/dueno/cuentas-bancarias", model);
             TempData[idCuenta > 0 ? "Exito" : "Error"] = idCuenta > 0
                 ? "Cuenta bancaria registrada. Queda pendiente de validación por administración."

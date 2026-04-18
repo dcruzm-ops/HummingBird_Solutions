@@ -65,7 +65,7 @@ BEGIN
     WHILE @@FETCH_STATUS = 0
     BEGIN
         BEGIN TRY
-            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
+            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0, @Silencioso = 1;
         END TRY
         BEGIN CATCH
             -- Si falta cuenta validada o configuración activa, no se cae la transacción principal.
@@ -112,7 +112,7 @@ BEGIN
     WHILE @@FETCH_STATUS = 0
     BEGIN
         BEGIN TRY
-            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
+            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0, @Silencioso = 1;
         END TRY
         BEGIN CATCH
             PRINT CONCAT('TR_CuentasBancarias_GenerarPlanPagoPendiente omitido para finca ', @IdFinca, ': ', ERROR_MESSAGE());

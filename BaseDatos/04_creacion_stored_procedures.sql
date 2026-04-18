@@ -828,16 +828,23 @@ GO
 CREATE OR ALTER PROCEDURE dbo.SP_Pagos_GenerarPlanPago
     @IdFinca INT,
     @Anio INT,
-    @Simular BIT = 0
+    @Simular BIT = 0,
+    @Silencioso BIT = 0
 AS
 BEGIN
     SET NOCOUNT ON;
 
     IF @IdFinca <= 0
+    BEGIN
+        IF @Silencioso = 1 RETURN;
         THROW 57001, 'La finca es obligatoria para generar el plan.', 1;
+    END
 
     IF @Anio < YEAR(SYSDATETIME())
+    BEGIN
+        IF @Silencioso = 1 RETURN;
         THROW 57002, 'El año del plan debe ser actual o futuro.', 1;
+    END
 
     DECLARE
         @IdEvaluacion INT,
@@ -881,7 +888,10 @@ BEGIN
     ORDER BY e.IdEvaluacion DESC;
 
     IF @IdEvaluacion IS NULL
+    BEGIN
+        IF @Silencioso = 1 RETURN;
         THROW 57003, 'La finca debe estar aprobada y calificada para generar plan de pago.', 1;
+    END
 
     SELECT TOP 1
         @IdCuentaBancaria = cb.IdCuentaBancaria
@@ -892,7 +902,10 @@ BEGIN
     ORDER BY cb.FechaRegistro DESC, cb.IdCuentaBancaria DESC;
 
     IF @IdCuentaBancaria IS NULL
+    BEGIN
+        IF @Silencioso = 1 RETURN;
         THROW 57004, 'No existe una cuenta bancaria validada y activa para el propietario.', 1;
+    END
 
     SELECT TOP 1
         @IdConfiguracionPago = cp.IdConfiguracionPago,
@@ -905,7 +918,10 @@ BEGIN
     ORDER BY cp.FechaVigenciaDesde DESC, cp.IdConfiguracionPago DESC;
 
     IF @IdConfiguracionPago IS NULL
+    BEGIN
+        IF @Silencioso = 1 RETURN;
         THROW 57005, 'No existe configuración de pago activa para el año solicitado.', 1;
+    END
 
     SELECT @PorcentajeVegetacion = COALESCE(d.PorcentajeAjuste, 0)
     FROM dbo.ConfiguracionPagoDetalle d
