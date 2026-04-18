@@ -120,6 +120,16 @@
         public int IdIngeniero { get; set; }
     }
 
+    public class FiltroPlanesPagoDTO
+    {
+        public int? Anio { get; set; }
+        public int? IdFinca { get; set; }
+        public int? IdPropietario { get; set; }
+        public int? IdIngeniero { get; set; }
+        public string? EstadoPlan { get; set; }
+        public bool SoloPendientes { get; set; }
+    }
+
     public class PlanPagoGenerationContextDTO
     {
         public int IdFinca { get; set; }

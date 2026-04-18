@@ -75,6 +75,35 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
         }
     }
 
+    [HttpGet("planes")]
+    public async Task<ActionResult<List<PlanPagoResumenDTO>>> ObtenerPlanesConFiltros(
+        [FromQuery] int? anio = null,
+        [FromQuery] int? idFinca = null,
+        [FromQuery] int? idPropietario = null,
+        [FromQuery] int? idIngeniero = null,
+        [FromQuery] string? estadoPlan = null,
+        [FromQuery] bool soloPendientes = false)
+    {
+        try
+        {
+            var planes = await _pagosManager.ObtenerPlanesConFiltrosAsync(new FiltroPlanesPagoDTO
+            {
+                Anio = anio,
+                IdFinca = idFinca,
+                IdPropietario = idPropietario,
+                IdIngeniero = idIngeniero,
+                EstadoPlan = estadoPlan,
+                SoloPendientes = soloPendientes
+            });
+
+            return Ok(planes);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
     [HttpGet("dueno/{idUsuario:int}/cuentas-bancarias")]
     public async Task<ActionResult<List<CuentaBancariaDuenoDTO>>> ObtenerCuentasBancariasDueno([FromRoute] int idUsuario)
     {

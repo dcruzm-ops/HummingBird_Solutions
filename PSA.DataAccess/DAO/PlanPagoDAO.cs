@@ -349,7 +349,61 @@ ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
 
     public async Task<List<PlanPagoResumenDTO>> ObtenerPlanesPendientesAprobacionIngenieroAsync(int idIngeniero)
     {
-        const string sql = @"
+        return await ObtenerPlanesConFiltrosAsync(new FiltroPlanesPagoDTO
+        {
+            IdIngeniero = idIngeniero > 0 ? idIngeniero : null,
+            SoloPendientes = true
+        });
+    }
+
+    public async Task<List<PlanPagoResumenDTO>> ObtenerPlanesConFiltrosAsync(FiltroPlanesPagoDTO filtro)
+    {
+        filtro ??= new FiltroPlanesPagoDTO();
+
+        var condiciones = new List<string>();
+        var parametros = new List<SqlParameter>();
+
+        if (filtro.IdPropietario.HasValue && filtro.IdPropietario.Value > 0)
+        {
+            condiciones.Add("f.IdPropietario = @IdPropietario");
+            parametros.Add(new SqlParameter("@IdPropietario", filtro.IdPropietario.Value));
+        }
+
+        if (filtro.IdIngeniero.HasValue && filtro.IdIngeniero.Value > 0)
+        {
+            condiciones.Add("e.IdIngeniero = @IdIngeniero");
+            parametros.Add(new SqlParameter("@IdIngeniero", filtro.IdIngeniero.Value));
+        }
+
+        if (filtro.IdFinca.HasValue && filtro.IdFinca.Value > 0)
+        {
+            condiciones.Add("pp.IdFinca = @IdFinca");
+            parametros.Add(new SqlParameter("@IdFinca", filtro.IdFinca.Value));
+        }
+
+        if (filtro.Anio.HasValue && filtro.Anio.Value >= 2000 && filtro.Anio.Value <= 2100)
+        {
+            condiciones.Add("pp.Anio = @Anio");
+            parametros.Add(new SqlParameter("@Anio", filtro.Anio.Value));
+        }
+
+        if (filtro.SoloPendientes)
+        {
+            condiciones.Add("pp.EstadoPlan IN (@EstadoPendienteDatos, @EstadoPendienteAprobacion)");
+            parametros.Add(new SqlParameter("@EstadoPendienteDatos", EstadosPlanPago.PendienteDatosBancarios));
+            parametros.Add(new SqlParameter("@EstadoPendienteAprobacion", EstadosPlanPago.PendienteAprobacionFinal));
+        }
+        else if (!string.IsNullOrWhiteSpace(filtro.EstadoPlan))
+        {
+            condiciones.Add("pp.EstadoPlan = @EstadoPlan");
+            parametros.Add(new SqlParameter("@EstadoPlan", filtro.EstadoPlan.Trim()));
+        }
+
+        var where = condiciones.Count > 0
+            ? $"WHERE {string.Join(" AND ", condiciones)}"
+            : string.Empty;
+
+        var sql = $@"
 SELECT
     pp.IdPlanPago,
     pp.IdFinca,
@@ -361,17 +415,18 @@ SELECT
     pp.IdCuentaBancaria
 FROM dbo.PlanesPago pp
 INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
-INNER JOIN dbo.EvaluacionesTecnicas e ON e.IdEvaluacion = pp.IdEvaluacion
-WHERE e.IdIngeniero = @IdIngeniero
-  AND pp.EstadoPlan = @EstadoPendienteAprobacion
+LEFT JOIN dbo.EvaluacionesTecnicas e ON e.IdEvaluacion = pp.IdEvaluacion
+{where}
 ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
 
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
         using var command = new SqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
-        command.Parameters.AddWithValue("@EstadoPendienteAprobacion", EstadosPlanPago.PendienteAprobacionFinal);
+        if (parametros.Count > 0)
+        {
+            command.Parameters.AddRange(parametros.ToArray());
+        }
 
         using var reader = await command.ExecuteReaderAsync();
         var resultado = new List<PlanPagoResumenDTO>();

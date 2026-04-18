@@ -62,6 +62,10 @@ namespace PSA.WebApp.Controllers
             var planes = idUsuario > 0
                 ? await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/dueno/{idUsuario}/planes") ?? new()
                 : new List<PlanPagoResumenDTO>();
+            if (idUsuario > 0 && planes.Count == 0)
+            {
+                planes = await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/planes?idPropietario={idUsuario}") ?? new();
+            }
             var cuentas = idUsuario > 0
                 ? await _httpClientService.GetAsync<List<CuentaBancariaDuenoDTO>>($"api/Pagos/dueno/{idUsuario}/cuentas-bancarias") ?? new()
                 : new List<CuentaBancariaDuenoDTO>();
@@ -148,18 +152,33 @@ namespace PSA.WebApp.Controllers
 
         [HttpGet]
         [Authorize(Roles = "3")]
-        public async Task<IActionResult> PlanesIngenieroPendientes()
+        public async Task<IActionResult> PlanesIngenieroPendientes(int? anio = null, string? estadoPlan = null)
         {
             ViewBag.ModuloActivo = "pagos";
             ViewBag.RolActivo = "Ingeniero";
             ViewBag.TituloPagina = "Planes pendientes de aprobación";
             ViewBag.SubtituloPagina = "Aprobación final de planes con cuenta bancaria asociada.";
             ViewBag.BreadcrumbActual = "Planes pendientes";
+            ViewBag.Anio = anio;
+            ViewBag.EstadoPlan = estadoPlan;
 
             var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
-            var planes = idIngeniero > 0
-                ? await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/ingeniero/{idIngeniero}/planes-pendientes") ?? new()
-                : new List<PlanPagoResumenDTO>();
+            var soloPendientes = string.IsNullOrWhiteSpace(estadoPlan);
+            var query = $"?soloPendientes={soloPendientes.ToString().ToLowerInvariant()}";
+            if (idIngeniero > 0)
+            {
+                query += $"&idIngeniero={idIngeniero}";
+            }
+            if (anio.HasValue)
+            {
+                query += $"&anio={anio.Value}";
+            }
+            if (!string.IsNullOrWhiteSpace(estadoPlan))
+            {
+                query += $"&estadoPlan={Uri.EscapeDataString(estadoPlan)}";
+            }
+
+            var planes = await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/planes{query}") ?? new();
 
             return View(planes);
         }

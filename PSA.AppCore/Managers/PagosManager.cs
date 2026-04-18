@@ -53,12 +53,13 @@ public class PagosManager(
 
     public Task<List<PlanPagoResumenDTO>> ObtenerPlanesPendientesIngenieroAsync(int idIngeniero)
     {
-        if (idIngeniero <= 0)
-        {
-            throw new InvalidOperationException("Debe indicar un ingeniero válido.");
-        }
-
         return _planPagoDao.ObtenerPlanesPendientesAprobacionIngenieroAsync(idIngeniero);
+    }
+
+    public Task<List<PlanPagoResumenDTO>> ObtenerPlanesConFiltrosAsync(FiltroPlanesPagoDTO filtro)
+    {
+        filtro ??= new FiltroPlanesPagoDTO();
+        return _planPagoDao.ObtenerPlanesConFiltrosAsync(filtro);
     }
 
     public Task<List<CuentaBancariaDuenoDTO>> ObtenerCuentasBancariasDuenoAsync(int idUsuario)
