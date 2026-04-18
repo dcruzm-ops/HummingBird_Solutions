@@ -1,5 +1,22 @@
 ﻿namespace PSA.EntidadesDTO.DTOs.Pagos
 {
+    public static class EstadosPlanPago
+    {
+        public const string BorradorGenerado = "BorradorGenerado";
+        public const string PendienteDatosBancarios = "PendienteDatosBancarios";
+        public const string PendienteAprobacionFinal = "PendienteAprobacionFinal";
+        public const string Activo = "Activo";
+        public const string Finalizado = "Finalizado";
+        public const string Cancelado = "Cancelado";
+    }
+
+    public static class EstadosCuotaPago
+    {
+        public const string Pendiente = "Pendiente";
+        public const string Ejecutada = "Ejecutada";
+        public const string Notificada = "Notificada";
+    }
+
     public class PlanPagoDTO
     {
         public int IdPlanPago { get; set; }
@@ -11,6 +28,7 @@
         public decimal MontoBaseMensual { get; set; }
         public decimal PorcentajeAjusteTotal { get; set; }
         public decimal MontoMensualCalculado { get; set; }
+        public decimal MontoAnualCalculado => Math.Round(MontoMensualCalculado * 12m, 2);
         public string EstadoPlan { get; set; } = string.Empty;
         public DateTime FechaGeneracion { get; set; }
         public PlanPagoCalculoDetalleDTO? DetalleCalculo { get; set; }
@@ -95,5 +113,49 @@
     {
         public int IdUsuario { get; set; }
         public int IdCuentaBancaria { get; set; }
+    }
+
+    public class AprobarPlanPagoFinalDTO
+    {
+        public int IdIngeniero { get; set; }
+    }
+
+    public class PlanPagoGenerationContextDTO
+    {
+        public int IdFinca { get; set; }
+        public int IdEvaluacion { get; set; }
+        public int IdPropietario { get; set; }
+        public string NombreFinca { get; set; } = string.Empty;
+        public decimal HectareasAprobadas { get; set; }
+        public string VegetacionFinal { get; set; } = string.Empty;
+        public bool TieneRecursosHidricosFinal { get; set; }
+        public int CantidadNacientesFinal { get; set; }
+        public string PendienteFinal { get; set; } = string.Empty;
+    }
+
+    public class PaymentConfigurationVersionDTO
+    {
+        public int IdConfiguracionPago { get; set; }
+        public int Version { get; set; }
+        public decimal PrecioBasePorHectarea { get; set; }
+        public decimal TopePorcentajeAjuste { get; set; }
+        public Dictionary<string, decimal> VegetacionAjustes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, decimal> HidricosAjustes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, decimal> PendienteAjustes { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    }
+
+    public class PaymentCalculationResultDTO
+    {
+        public decimal MontoBaseMensual { get; set; }
+        public decimal MontoAjusteMensual { get; set; }
+        public decimal MontoMensualTotal { get; set; }
+        public decimal MontoAnualTotal { get; set; }
+        public decimal PorcentajeVegetacion { get; set; }
+        public decimal PorcentajeHidrico { get; set; }
+        public decimal PorcentajeNacientes { get; set; }
+        public decimal PorcentajePendiente { get; set; }
+        public decimal PorcentajeAjusteTotalBruto { get; set; }
+        public decimal PorcentajeAjusteAplicado { get; set; }
+        public decimal TopePorcentajeAjuste { get; set; }
     }
 }

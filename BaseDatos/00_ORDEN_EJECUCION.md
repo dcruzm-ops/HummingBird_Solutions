@@ -10,6 +10,7 @@ Ejecutar en este orden:
 6. `06_admin_roles_permisos_sprocs.sql`
 7. `07_admin_config_pagos_y_roles_seed.sql`
 8. `08_admin_roles_permisos_bootstrap.sql` *(opcional para reforzar compatibilidad en ambientes existentes)*
+9. `../scripts/sql/20260418_pagos_estados_capas.sql` *(requerido para estados nuevos y longitud de `EstadoPlan`)*
 
 > Nota: los scripts de administración (06-08) soportan las variantes de tabla
 > `dbo.RolesPermisos` y `dbo.RolPermisos`.

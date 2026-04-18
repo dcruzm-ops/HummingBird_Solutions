@@ -29,16 +29,21 @@ namespace PSA.WebApp.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "1")]
+        [Authorize(Roles = "1,2,3")]
         public IActionResult DetallePlanPago(int? id = null)
         {
             ViewBag.ModuloActivo = "pagos";
-            ViewBag.RolActivo = "Administrador";
+            var rol = User.FindFirstValue(ClaimTypes.Role);
+            ViewBag.RolActivo = rol == "3" ? "Ingeniero" : rol == "2" ? "Dueno" : "Administrador";
             ViewBag.PlanPagoId = id ?? 1;
             ViewBag.TituloPagina = "Detalle del plan de pago";
             ViewBag.SubtituloPagina = "Revise cuotas mensuales, estado de pago y atrasos.";
-            ViewBag.BreadcrumbPadreTexto = "Planes de pago";
-            ViewBag.BreadcrumbPadreUrl = Url.Action("PlanesPago", "Pagos");
+            ViewBag.BreadcrumbPadreTexto = rol == "3" ? "Planes pendientes por aprobación" : "Planes de pago";
+            ViewBag.BreadcrumbPadreUrl = rol == "3"
+                ? Url.Action("PlanesIngenieroPendientes", "Pagos")
+                : rol == "2"
+                    ? Url.Action("PlanesDueno", "Pagos")
+                    : Url.Action("PlanesPago", "Pagos");
             ViewBag.BreadcrumbActual = "Detalle del plan";
             return View();
         }
@@ -135,10 +140,45 @@ namespace PSA.WebApp.Controllers
                 });
 
             TempData[resultado != null ? "Exito" : "Error"] = resultado != null
-                ? "Cuenta bancaria asociada correctamente al plan activo."
+                ? "Cuenta bancaria asociada correctamente. El plan pasó a PendienteAprobacionFinal."
                 : "No fue posible asociar la cuenta bancaria al plan.";
 
             return RedirectToAction(nameof(PlanesDueno));
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "3")]
+        public async Task<IActionResult> PlanesIngenieroPendientes()
+        {
+            ViewBag.ModuloActivo = "pagos";
+            ViewBag.RolActivo = "Ingeniero";
+            ViewBag.TituloPagina = "Planes pendientes de aprobación";
+            ViewBag.SubtituloPagina = "Aprobación final de planes con cuenta bancaria asociada.";
+            ViewBag.BreadcrumbActual = "Planes pendientes";
+
+            var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+            var planes = idIngeniero > 0
+                ? await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/ingeniero/{idIngeniero}/planes-pendientes") ?? new()
+                : new List<PlanPagoResumenDTO>();
+
+            return View(planes);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "3")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AprobarPlanIngeniero(int idPlanPago)
+        {
+            var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+            var resultado = await _httpClientService.PutAsync<AprobarPlanPagoFinalDTO, object>(
+                $"api/Pagos/ingeniero/planes/{idPlanPago}/aprobar-final",
+                new AprobarPlanPagoFinalDTO { IdIngeniero = idIngeniero });
+
+            TempData[resultado != null ? "Exito" : "Error"] = resultado != null
+                ? "Plan aprobado y activado correctamente."
+                : "No fue posible aprobar el plan seleccionado.";
+
+            return RedirectToAction(nameof(PlanesIngenieroPendientes));
         }
     }
 }
