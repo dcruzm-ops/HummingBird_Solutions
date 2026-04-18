@@ -41,6 +41,9 @@ IF OBJECT_ID(N'dbo.CatalogoFincaValores', N'U') IS NOT NULL DROP TABLE dbo.Catal
 IF OBJECT_ID(N'dbo.TransaccionesPago', N'U') IS NOT NULL DROP TABLE dbo.TransaccionesPago;
 IF OBJECT_ID(N'dbo.CuotasPago', N'U') IS NOT NULL DROP TABLE dbo.CuotasPago;
 IF OBJECT_ID(N'dbo.PlanesPago', N'U') IS NOT NULL DROP TABLE dbo.PlanesPago;
+IF OBJECT_ID(N'dbo.RolesPermisos', N'U') IS NOT NULL DROP TABLE dbo.RolesPermisos;
+IF OBJECT_ID(N'dbo.RolPermisos', N'U') IS NOT NULL DROP TABLE dbo.RolPermisos;
+IF OBJECT_ID(N'dbo.Permisos', N'U') IS NOT NULL DROP TABLE dbo.Permisos;
 IF OBJECT_ID(N'dbo.ConfiguracionPagoDetalle', N'U') IS NOT NULL DROP TABLE dbo.ConfiguracionPagoDetalle;
 IF OBJECT_ID(N'dbo.ConfiguracionesPago', N'U') IS NOT NULL DROP TABLE dbo.ConfiguracionesPago;
 IF OBJECT_ID(N'dbo.CuentasBancarias', N'U') IS NOT NULL DROP TABLE dbo.CuentasBancarias;
@@ -83,7 +86,22 @@ CREATE TABLE dbo.Roles
 GO
 
 /* =========================================
-   2. Usuarios
+   2. Permisos
+   ========================================= */
+CREATE TABLE dbo.Permisos
+(
+    IdPermiso       INT IDENTITY(1,1) NOT NULL,
+    Codigo          NVARCHAR(100) NOT NULL,
+    Nombre          NVARCHAR(150) NOT NULL,
+    Descripcion     NVARCHAR(300) NULL,
+    Activo          BIT NOT NULL CONSTRAINT DF_Permisos_Activo DEFAULT (1),
+    CONSTRAINT PK_Permisos PRIMARY KEY (IdPermiso),
+    CONSTRAINT UQ_Permisos_Codigo UNIQUE (Codigo)
+);
+GO
+
+/* =========================================
+   3. Usuarios
    ========================================= */
 CREATE TABLE dbo.Usuarios
 (
@@ -107,7 +125,20 @@ ALTER COLUMN PasswordHash NVARCHAR(500) NULL;
 GO
 
 /* =========================================
-   3. TokensRecuperacion
+   4. RolesPermisos
+   ========================================= */
+CREATE TABLE dbo.RolesPermisos
+(
+    IdRol           INT NOT NULL,
+    IdPermiso       INT NOT NULL,
+    CONSTRAINT PK_RolesPermisos PRIMARY KEY (IdRol, IdPermiso),
+    CONSTRAINT FK_RolesPermisos_Roles FOREIGN KEY (IdRol) REFERENCES dbo.Roles(IdRol),
+    CONSTRAINT FK_RolesPermisos_Permisos FOREIGN KEY (IdPermiso) REFERENCES dbo.Permisos(IdPermiso)
+);
+GO
+
+/* =========================================
+   5. TokensRecuperacion
    ========================================= */
 CREATE TABLE dbo.TokensRecuperacion
 (
