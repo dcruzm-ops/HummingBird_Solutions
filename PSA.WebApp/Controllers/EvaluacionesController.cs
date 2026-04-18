@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
 using PSA.EntidadesDTO.DTOs.Fincas;
+using PSA.EntidadesDTO.DTOs.Pagos;
 using PSA.WebApp.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
@@ -109,6 +110,32 @@ namespace PSA.WebApp.Controllers
             var url = $"api/EvaluacionesTecnicas/reportes?anio={anio}&mes={mes}&estadoEvaluacion={estadoEvaluacion}&decisionTecnica={decisionTecnica}&idIngeniero={idIngeniero}";
             var reporte = await ObtenerSeguroDesdeApiAsync<ReporteEvaluacionesDTO>(client, url, "No fue posible aplicar los filtros del reporte.") ?? new ReporteEvaluacionesDTO();
             return View(new ReporteEvaluacionesViewModel { Anio = anio, Mes = mes, EstadoEvaluacion = estadoEvaluacion, DecisionTecnica = decisionTecnica, Reporte = reporte });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerarPlanManual(int idFinca, int? anio = null)
+        {
+            if (idFinca <= 0)
+            {
+                TempData["MensajeError"] = "No fue posible identificar la finca para generar el plan.";
+                return RedirectToAction(nameof(HistorialEvaluaciones));
+            }
+
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var payload = new GenerarPlanPagoRequestDTO
+            {
+                IdFinca = idFinca,
+                Anio = anio ?? (DateTime.UtcNow.Year + 1),
+                Simular = false
+            };
+
+            var response = await client.PostAsJsonAsync("api/Pagos/generar-plan", payload);
+            TempData[response.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = response.IsSuccessStatusCode
+                ? "Plan de pago generado manualmente para la evaluación calificada."
+                : "No fue posible generar el plan de pago manual.";
+
+            return RedirectToAction(nameof(HistorialEvaluaciones));
         }
 
         [HttpGet]

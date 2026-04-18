@@ -88,4 +88,23 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
             return BadRequest(new { Mensaje = ex.Message });
         }
     }
+
+    [HttpPut("dueno/planes/{idPlanPago:int}/cuenta-bancaria")]
+    public async Task<IActionResult> AsociarCuentaPlan([FromRoute] int idPlanPago, [FromBody] AsociarCuentaPlanDTO model)
+    {
+        try
+        {
+            var actualizado = await _pagosManager.AsociarCuentaPlanAsync(idPlanPago, model);
+            if (!actualizado)
+            {
+                return BadRequest(new { Mensaje = "No fue posible asociar la cuenta al plan seleccionado." });
+            }
+
+            return Ok(new { Mensaje = "Cuenta bancaria asociada correctamente al plan de pago." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
 }

@@ -7,7 +7,7 @@
         public string NombreFinca { get; set; } = string.Empty;
         public int Anio { get; set; }
         public int IdConfiguracionPago { get; set; }
-        public int IdCuentaBancaria { get; set; }
+        public int? IdCuentaBancaria { get; set; }
         public decimal MontoBaseMensual { get; set; }
         public decimal PorcentajeAjusteTotal { get; set; }
         public decimal MontoMensualCalculado { get; set; }
@@ -67,7 +67,7 @@
         public decimal MontoMensualCalculado { get; set; }
         public decimal MontoAnualEstimado { get; set; }
         public string EstadoPlan { get; set; } = string.Empty;
-        public int IdCuentaBancaria { get; set; }
+        public int? IdCuentaBancaria { get; set; }
     }
 
     public class CuentaBancariaDuenoDTO
@@ -89,5 +89,11 @@
         public string NumeroCuenta { get; set; } = string.Empty;
         public string TipoCuenta { get; set; } = string.Empty;
         public string Titular { get; set; } = string.Empty;
+    }
+
+    public class AsociarCuentaPlanDTO
+    {
+        public int IdUsuario { get; set; }
+        public int IdCuentaBancaria { get; set; }
     }
 }

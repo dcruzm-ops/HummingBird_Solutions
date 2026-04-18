@@ -83,4 +83,19 @@ public class PagosManager(PlanPagoDAO planPagoDao, AuditoriaLogDAO auditoriaLogD
 
         return _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
     }
+
+    public Task<bool> AsociarCuentaPlanAsync(int idPlanPago, AsociarCuentaPlanDTO dto)
+    {
+        if (idPlanPago <= 0)
+        {
+            throw new InvalidOperationException("Debe indicar un plan válido.");
+        }
+
+        if (dto.IdUsuario <= 0 || dto.IdCuentaBancaria <= 0)
+        {
+            throw new InvalidOperationException("Debe indicar usuario y cuenta bancaria válidos.");
+        }
+
+        return _planPagoDao.AsociarCuentaPlanAsync(idPlanPago, dto.IdUsuario, dto.IdCuentaBancaria);
+    }
 }

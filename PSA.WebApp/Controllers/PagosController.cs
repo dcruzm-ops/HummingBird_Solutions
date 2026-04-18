@@ -57,6 +57,13 @@ namespace PSA.WebApp.Controllers
             var planes = idUsuario > 0
                 ? await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/dueno/{idUsuario}/planes") ?? new()
                 : new List<PlanPagoResumenDTO>();
+            var cuentas = idUsuario > 0
+                ? await _httpClientService.GetAsync<List<CuentaBancariaDuenoDTO>>($"api/Pagos/dueno/{idUsuario}/cuentas-bancarias") ?? new()
+                : new List<CuentaBancariaDuenoDTO>();
+
+            ViewBag.CuentasValidadasActivas = cuentas
+                .Where(c => string.Equals(c.EstadoValidacion, "Validada", StringComparison.OrdinalIgnoreCase) && c.Activa)
+                .ToList();
 
             return View(planes);
         }
@@ -111,6 +118,27 @@ namespace PSA.WebApp.Controllers
                 : "No fue posible registrar la cuenta bancaria.";
 
             return RedirectToAction(nameof(CuentaBancaria));
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "2")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AsociarCuentaPlan(int idPlanPago, int idCuentaBancaria)
+        {
+            var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+            var resultado = await _httpClientService.PutAsync<AsociarCuentaPlanDTO, object>(
+                $"api/Pagos/dueno/planes/{idPlanPago}/cuenta-bancaria",
+                new AsociarCuentaPlanDTO
+                {
+                    IdUsuario = idUsuario,
+                    IdCuentaBancaria = idCuentaBancaria
+                });
+
+            TempData[resultado != null ? "Exito" : "Error"] = resultado != null
+                ? "Cuenta bancaria asociada correctamente al plan activo."
+                : "No fue posible asociar la cuenta bancaria al plan.";
+
+            return RedirectToAction(nameof(PlanesDueno));
         }
     }
 }

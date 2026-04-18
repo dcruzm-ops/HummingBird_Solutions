@@ -31,4 +31,4 @@ BEGIN
 END;
 GO
 
-PRINT 'Ejecute también BaseDatos/04_creacion_stored_procedures.sql (SP de pagos) y BaseDatos/05_creacion_triggers.sql (autogeneración por evaluación/cuenta validada).';
+PRINT 'Ejecute también BaseDatos/04_creacion_stored_procedures.sql (SP de pagos), BaseDatos/05_creacion_triggers.sql (autogeneración) y scripts/sql/20260418_pagos_plan_sin_cuenta.sql (plan sin cuenta inicial).';

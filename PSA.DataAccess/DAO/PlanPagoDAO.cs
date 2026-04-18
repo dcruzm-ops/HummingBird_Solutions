@@ -88,7 +88,9 @@ public class PlanPagoDAO(IDbConnectionFactory connectionFactory)
                 MontoMensualCalculado = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
                 MontoAnualEstimado = reader.GetDecimal(reader.GetOrdinal("MontoAnualEstimado")),
                 EstadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty,
-                IdCuentaBancaria = reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria"))
+                IdCuentaBancaria = reader["IdCuentaBancaria"] == DBNull.Value
+                    ? null
+                    : reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria"))
             });
         }
 
@@ -145,6 +147,23 @@ public class PlanPagoDAO(IDbConnectionFactory connectionFactory)
         return Convert.ToInt32(result ?? 0);
     }
 
+    public async Task<bool> AsociarCuentaPlanAsync(int idPlanPago, int idUsuario, int idCuentaBancaria)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("dbo.SP_Pagos_AsociarCuentaPlan", connection)
+        {
+            CommandType = System.Data.CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@IdPlanPago", idPlanPago);
+        command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+        command.Parameters.AddWithValue("@IdCuentaBancaria", idCuentaBancaria);
+
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0) > 0;
+    }
+
     private static PlanPagoDTO MapPlanPago(SqlDataReader reader)
     {
         return new PlanPagoDTO
@@ -154,7 +173,9 @@ public class PlanPagoDAO(IDbConnectionFactory connectionFactory)
             NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
             Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
             IdConfiguracionPago = reader.GetInt32(reader.GetOrdinal("IdConfiguracionPago")),
-            IdCuentaBancaria = reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria")),
+            IdCuentaBancaria = reader["IdCuentaBancaria"] == DBNull.Value
+                ? null
+                : reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria")),
             MontoBaseMensual = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")),
             PorcentajeAjusteTotal = reader.GetDecimal(reader.GetOrdinal("PorcentajeAjusteTotal")),
             MontoMensualCalculado = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),

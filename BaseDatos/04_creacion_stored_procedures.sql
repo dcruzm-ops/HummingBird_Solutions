@@ -901,12 +901,6 @@ BEGIN
       AND cb.Activa = 1
     ORDER BY cb.FechaRegistro DESC, cb.IdCuentaBancaria DESC;
 
-    IF @IdCuentaBancaria IS NULL
-    BEGIN
-        IF @Silencioso = 1 RETURN;
-        THROW 57004, 'No existe una cuenta bancaria validada y activa para el propietario.', 1;
-    END
-
     SELECT TOP 1
         @IdConfiguracionPago = cp.IdConfiguracionPago,
         @PrecioBasePorHectarea = cp.PrecioBasePorHectarea,
@@ -1246,5 +1240,44 @@ BEGIN
     );
 
     SELECT CAST(SCOPE_IDENTITY() AS INT) AS IdCuentaBancaria;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_Pagos_AsociarCuentaPlan
+    @IdPlanPago INT,
+    @IdUsuario INT,
+    @IdCuentaBancaria INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @IdPlanPago <= 0
+        THROW 57011, 'Debe indicar un plan de pago válido.', 1;
+
+    IF @IdUsuario <= 0
+        THROW 57012, 'Debe indicar un usuario válido.', 1;
+
+    IF @IdCuentaBancaria <= 0
+        THROW 57013, 'Debe indicar una cuenta bancaria válida.', 1;
+
+    IF NOT EXISTS (
+        SELECT 1
+        FROM dbo.CuentasBancarias cb
+        WHERE cb.IdCuentaBancaria = @IdCuentaBancaria
+          AND cb.IdUsuario = @IdUsuario
+          AND cb.EstadoValidacion = 'Validada'
+          AND cb.Activa = 1
+    )
+        THROW 57014, 'La cuenta bancaria no pertenece al dueño o no está validada/activa.', 1;
+
+    UPDATE pp
+    SET pp.IdCuentaBancaria = @IdCuentaBancaria
+    FROM dbo.PlanesPago pp
+    INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+    WHERE pp.IdPlanPago = @IdPlanPago
+      AND pp.EstadoPlan = 'Activo'
+      AND f.IdPropietario = @IdUsuario;
+
+    SELECT @@ROWCOUNT AS FilasAfectadas;
 END;
 GO

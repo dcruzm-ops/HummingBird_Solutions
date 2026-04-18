@@ -61,12 +61,6 @@ BEGIN
           AND (d.EstadoEvaluacion <> i.EstadoEvaluacion OR ISNULL(d.DecisionTecnica, '') <> ISNULL(i.DecisionTecnica, ''))
           AND EXISTS (
               SELECT 1
-              FROM dbo.CuentasBancarias cb
-              WHERE cb.IdUsuario = f.IdPropietario
-                AND cb.EstadoValidacion = 'Validada'
-          )
-          AND EXISTS (
-              SELECT 1
               FROM dbo.ConfiguracionesPago cp
               WHERE cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
                 AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1))

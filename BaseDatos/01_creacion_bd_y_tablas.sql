@@ -274,7 +274,7 @@ CREATE TABLE dbo.PlanesPago
     IdFinca                     INT NOT NULL,
     IdEvaluacion                INT NOT NULL,
     IdConfiguracionPago         INT NOT NULL,
-    IdCuentaBancaria            INT NOT NULL,
+    IdCuentaBancaria            INT NULL,
     Anio                        INT NOT NULL,
     MontoBaseMensual            DECIMAL(10,2) NOT NULL,
     PorcentajeAjusteTotal       DECIMAL(5,2) NOT NULL,
