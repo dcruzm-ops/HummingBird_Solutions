@@ -20,6 +20,7 @@
 		<Compile Include="DAO\AuditoriaLogDAO.cs" />
 		<Compile Include="DAO\RolPermisoDAO.cs" />
 		<Compile Include="DAO\ConfiguracionPagoDAO.cs" />
+		<Compile Include="DAO\PlanPagoDAO.cs" />
 		<Compile Include="DAO\CuentaBancariaDAO.cs" />
 		<Compile Include="DAO\EvaluacionTecnicaDAO.cs" />
 		<Compile Include="DAO\RecuperacionContrasenaDAO.cs" />
