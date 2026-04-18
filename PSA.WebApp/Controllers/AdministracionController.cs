@@ -172,7 +172,7 @@ namespace PSA.WebApp.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CrearRol(CrearRolDTO model)
+        public async Task<IActionResult> CrearRol([Bind(Prefix = "NuevoRol")] CrearRolDTO model)
         {
             if (!ModelState.IsValid)
             {
