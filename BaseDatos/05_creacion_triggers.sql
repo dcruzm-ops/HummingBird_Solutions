@@ -55,9 +55,24 @@ BEGIN
         SELECT DISTINCT i.IdFinca
         FROM inserted i
         INNER JOIN deleted d ON d.IdEvaluacion = i.IdEvaluacion
+        INNER JOIN dbo.Fincas f ON f.IdFinca = i.IdFinca
         WHERE i.EstadoEvaluacion = 'Evaluada – Califica'
           AND i.DecisionTecnica = 'Califica'
-          AND (d.EstadoEvaluacion <> i.EstadoEvaluacion OR ISNULL(d.DecisionTecnica, '') <> ISNULL(i.DecisionTecnica, ''));
+          AND (d.EstadoEvaluacion <> i.EstadoEvaluacion OR ISNULL(d.DecisionTecnica, '') <> ISNULL(i.DecisionTecnica, ''))
+          AND EXISTS (
+              SELECT 1
+              FROM dbo.CuentasBancarias cb
+              WHERE cb.IdUsuario = f.IdPropietario
+                AND cb.EstadoValidacion = 'Validada'
+                AND cb.Activa = 1
+          )
+          AND EXISTS (
+              SELECT 1
+              FROM dbo.ConfiguracionesPago cp
+              WHERE cp.Activa = 1
+                AND cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
+                AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1))
+          );
 
     OPEN cursorFincas;
     FETCH NEXT FROM cursorFincas INTO @IdFinca;
@@ -104,6 +119,13 @@ BEGIN
               WHERE e.IdFinca = f.IdFinca
                 AND e.EstadoEvaluacion = 'Evaluada – Califica'
                 AND e.DecisionTecnica = 'Califica'
+          )
+          AND EXISTS (
+              SELECT 1
+              FROM dbo.ConfiguracionesPago cp
+              WHERE cp.Activa = 1
+                AND cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
+                AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1))
           );
 
     OPEN cursorFincas;
