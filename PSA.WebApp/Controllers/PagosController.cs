@@ -88,6 +88,14 @@ namespace PSA.WebApp.Controllers
                 ? await _httpClientService.GetAsync<List<OwnerPaymentPlanDto>>($"api/Pagos/dueno/{idUsuario}/planes") ?? new()
                 : new List<OwnerPaymentPlanDto>();
 
+            var cuentas = idUsuario > 0
+                ? await _httpClientService.GetAsync<List<CuentaBancariaDuenoDTO>>($"api/Pagos/dueno/{idUsuario}/cuentas-bancarias") ?? new()
+                : new List<CuentaBancariaDuenoDTO>();
+
+            ViewBag.CuentasValidadasActivas = cuentas
+                .Where(c => string.Equals(c.EstadoValidacion, "Validada", StringComparison.OrdinalIgnoreCase) && c.Activa)
+                .ToList();
+
             return View(planes);
         }
 

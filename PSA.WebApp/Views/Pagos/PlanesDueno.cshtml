@@ -1,6 +1,7 @@
 @model List<PSA.EntidadesDTO.DTOs.Pagos.OwnerPaymentPlanDto>
 @{
     ViewData["Title"] = "Mis pagos";
+    var cuentasValidadasActivas = ViewBag.CuentasValidadasActivas as List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO> ?? new();
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
@@ -45,7 +46,46 @@
                                 <td>₡@plan.MontoMensual.ToString("N2")</td>
                                 <td>₡@plan.MontoAnual.ToString("N2")</td>
                                 <td>@plan.EstadoCuentaBancaria (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
-                                <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a></td>
+                                <td>
+                                    <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>
+                                    @if (string.Equals(plan.EstadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(plan.EstadoPlan, "BorradorGenerado", StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(plan.EstadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        if (!cuentasValidadasActivas.Any())
+                                        {
+                                            <div class="text-danger mt-2">
+                                                No tiene cuentas bancarias validadas activas. Registre/valide una cuenta para continuar.
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-controller="Pagos" asp-action="AsociarCuentaPlan" class="mt-2">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="idPlanPago" value="@plan.IdPlanPago" />
+                                                <select name="idCuentaBancaria" required class="form-select form-select-sm">
+                                                    <option value="">Seleccionar cuenta...</option>
+                                                    @foreach (var cuenta in cuentasValidadasActivas)
+                                                    {
+                                                        var mascara = cuenta.NumeroCuenta.Length <= 4
+                                                            ? $"****{cuenta.NumeroCuenta}"
+                                                            : $"****{cuenta.NumeroCuenta[^4..]}";
+                                                        var textoCuenta = $"{cuenta.Banco} - {mascara}";
+                                                        if (plan.IdCuentaBancaria == cuenta.IdCuentaBancaria)
+                                                        {
+                                                            <option value="@cuenta.IdCuentaBancaria" selected="selected">@textoCuenta</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@cuenta.IdCuentaBancaria">@textoCuenta</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                <button type="submit" class="boton-secundario mt-1">Asociar cuenta</button>
+                                            </form>
+                                        }
+                                    }
+                                </td>
                             </tr>
                         }
                     }

@@ -509,6 +509,7 @@ SELECT
     f.NombreFinca,
     pp.Anio,
     pp.EstadoPlan,
+    pp.IdCuentaBancaria,
     pp.MontoMensualCalculado,
     CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnual,
     cb.EstadoValidacion AS EstadoCuentaBancaria,
@@ -544,6 +545,7 @@ ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
                 NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
                 Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
                 EstadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty,
+                IdCuentaBancaria = reader["IdCuentaBancaria"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria")),
                 MontoMensual = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
                 MontoAnual = reader.GetDecimal(reader.GetOrdinal("MontoAnual")),
                 EstadoCuentaBancaria = reader["EstadoCuentaBancaria"]?.ToString() ?? "Pendiente",
@@ -711,9 +713,9 @@ SELECT
     COALESCE(cb.EstadoValidacion, 'Pendiente') AS EstadoBancario,
     cb.NumeroCuenta,
     cp.Version AS VersionConfiguracion,
-    prop.Nombre + ' ' + prop.Apellido1 AS Propietario,
+    prop.NombreCompleto AS Propietario,
     e.IdIngeniero,
-    COALESCE(ing.Nombre + ' ' + ing.Apellido1, 'Sin asignar') AS Ingeniero
+    COALESCE(ing.NombreCompleto, 'Sin asignar') AS Ingeniero
 FROM dbo.PlanesPago pp
 INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
 INNER JOIN dbo.Usuarios prop ON prop.IdUsuario = f.IdPropietario

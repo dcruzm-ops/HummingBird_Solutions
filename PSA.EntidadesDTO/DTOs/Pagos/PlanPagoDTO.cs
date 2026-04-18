@@ -137,6 +137,7 @@
         public string NombreFinca { get; set; } = string.Empty;
         public int Anio { get; set; }
         public string EstadoPlan { get; set; } = string.Empty;
+        public int? IdCuentaBancaria { get; set; }
         public decimal MontoMensual { get; set; }
         public decimal MontoAnual { get; set; }
         public string EstadoCuentaBancaria { get; set; } = "Pendiente";
