@@ -39,7 +39,41 @@
                 </div>
                 <div class="campo-formulario">
                     <label for="estadoEvaluacion">Estado evaluación</label>
-                    <input type="text" id="estadoEvaluacion" name="estadoEvaluacion" value="@Model.EstadoEvaluacion" placeholder="Ej: En proceso" />
+                    <select id="estadoEvaluacion" name="estadoEvaluacion">
+                        <option value="">Todos</option>
+                        @if (Model.EstadoEvaluacion == "Pendiente")
+                        {
+                            <option value="Pendiente" selected="selected">Pendiente</option>
+                        }
+                        else
+                        {
+                            <option value="Pendiente">Pendiente</option>
+                        }
+                        @if (Model.EstadoEvaluacion == "En proceso")
+                        {
+                            <option value="En proceso" selected="selected">En proceso</option>
+                        }
+                        else
+                        {
+                            <option value="En proceso">En proceso</option>
+                        }
+                        @if (Model.EstadoEvaluacion == "Evaluada – Califica")
+                        {
+                            <option value="Evaluada – Califica" selected="selected">Evaluada – Califica</option>
+                        }
+                        else
+                        {
+                            <option value="Evaluada – Califica">Evaluada – Califica</option>
+                        }
+                        @if (Model.EstadoEvaluacion == "Evaluada – No califica")
+                        {
+                            <option value="Evaluada – No califica" selected="selected">Evaluada – No califica</option>
+                        }
+                        else
+                        {
+                            <option value="Evaluada – No califica">Evaluada – No califica</option>
+                        }
+                    </select>
                 </div>
                 <div class="campo-formulario">
                     <label for="decisionTecnica">Decisión técnica</label>
@@ -117,7 +151,18 @@
                                 <td>@(string.IsNullOrWhiteSpace(item.DecisionTecnica) ? "N/A" : item.DecisionTecnica)</td>
                                 <td>@(item.FechaVisita?.ToString("dd/MM/yyyy") ?? "N/A")</td>
                                 <td>@(item.FechaDecision?.ToString("dd/MM/yyyy") ?? "N/A")</td>
-                                <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="DetalleEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">Ver detalle</a></td>
+                                <td>
+                                    <a class="boton-link" asp-controller="Evaluaciones" asp-action="DetalleEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">Ver detalle</a>
+                                    @if (string.Equals(item.EstadoEvaluacion, "Evaluada – Califica", StringComparison.OrdinalIgnoreCase)
+                                            && string.Equals(item.DecisionTecnica, "Califica", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <form method="post" asp-controller="Evaluaciones" asp-action="GenerarPlanManual" class="mt-2">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="idFinca" value="@item.IdFinca" />
+                                            <button type="submit" class="boton-secundario">Generar plan manual</button>
+                                        </form>
+                                    }
+                                </td>
                             </tr>
                         }
                     }

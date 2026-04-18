@@ -41,6 +41,9 @@ IF OBJECT_ID(N'dbo.CatalogoFincaValores', N'U') IS NOT NULL DROP TABLE dbo.Catal
 IF OBJECT_ID(N'dbo.TransaccionesPago', N'U') IS NOT NULL DROP TABLE dbo.TransaccionesPago;
 IF OBJECT_ID(N'dbo.CuotasPago', N'U') IS NOT NULL DROP TABLE dbo.CuotasPago;
 IF OBJECT_ID(N'dbo.PlanesPago', N'U') IS NOT NULL DROP TABLE dbo.PlanesPago;
+IF OBJECT_ID(N'dbo.RolesPermisos', N'U') IS NOT NULL DROP TABLE dbo.RolesPermisos;
+IF OBJECT_ID(N'dbo.RolPermisos', N'U') IS NOT NULL DROP TABLE dbo.RolPermisos;
+IF OBJECT_ID(N'dbo.Permisos', N'U') IS NOT NULL DROP TABLE dbo.Permisos;
 IF OBJECT_ID(N'dbo.ConfiguracionPagoDetalle', N'U') IS NOT NULL DROP TABLE dbo.ConfiguracionPagoDetalle;
 IF OBJECT_ID(N'dbo.ConfiguracionesPago', N'U') IS NOT NULL DROP TABLE dbo.ConfiguracionesPago;
 IF OBJECT_ID(N'dbo.CuentasBancarias', N'U') IS NOT NULL DROP TABLE dbo.CuentasBancarias;
@@ -83,7 +86,22 @@ CREATE TABLE dbo.Roles
 GO
 
 /* =========================================
-   2. Usuarios
+   2. Permisos
+   ========================================= */
+CREATE TABLE dbo.Permisos
+(
+    IdPermiso       INT IDENTITY(1,1) NOT NULL,
+    Codigo          NVARCHAR(100) NOT NULL,
+    Nombre          NVARCHAR(150) NOT NULL,
+    Descripcion     NVARCHAR(300) NULL,
+    Activo          BIT NOT NULL CONSTRAINT DF_Permisos_Activo DEFAULT (1),
+    CONSTRAINT PK_Permisos PRIMARY KEY (IdPermiso),
+    CONSTRAINT UQ_Permisos_Codigo UNIQUE (Codigo)
+);
+GO
+
+/* =========================================
+   3. Usuarios
    ========================================= */
 CREATE TABLE dbo.Usuarios
 (
@@ -107,7 +125,20 @@ ALTER COLUMN PasswordHash NVARCHAR(500) NULL;
 GO
 
 /* =========================================
-   3. TokensRecuperacion
+   4. RolesPermisos
+   ========================================= */
+CREATE TABLE dbo.RolesPermisos
+(
+    IdRol           INT NOT NULL,
+    IdPermiso       INT NOT NULL,
+    CONSTRAINT PK_RolesPermisos PRIMARY KEY (IdRol, IdPermiso),
+    CONSTRAINT FK_RolesPermisos_Roles FOREIGN KEY (IdRol) REFERENCES dbo.Roles(IdRol),
+    CONSTRAINT FK_RolesPermisos_Permisos FOREIGN KEY (IdPermiso) REFERENCES dbo.Permisos(IdPermiso)
+);
+GO
+
+/* =========================================
+   5. TokensRecuperacion
    ========================================= */
 CREATE TABLE dbo.TokensRecuperacion
 (
@@ -274,7 +305,7 @@ CREATE TABLE dbo.PlanesPago
     IdFinca                     INT NOT NULL,
     IdEvaluacion                INT NOT NULL,
     IdConfiguracionPago         INT NOT NULL,
-    IdCuentaBancaria            INT NOT NULL,
+    IdCuentaBancaria            INT NULL,
     Anio                        INT NOT NULL,
     MontoBaseMensual            DECIMAL(10,2) NOT NULL,
     PorcentajeAjusteTotal       DECIMAL(5,2) NOT NULL,
@@ -293,7 +324,37 @@ CREATE TABLE dbo.PlanesPago
 GO
 
 /* =========================================
-   10. CuotasPago
+   10. PlanesPagoDetalleCalculo
+   ========================================= */
+CREATE TABLE dbo.PlanesPagoDetalleCalculo
+(
+    IdDetalleCalculo            INT IDENTITY(1,1) NOT NULL,
+    IdPlanPago                  INT NOT NULL,
+    HectareasAprobadas          DECIMAL(12,2) NOT NULL,
+    PrecioBasePorHectarea       DECIMAL(10,2) NOT NULL,
+    PorcentajeVegetacion        DECIMAL(5,2) NOT NULL,
+    PorcentajeHidrico           DECIMAL(5,2) NOT NULL,
+    PorcentajeNacientes         DECIMAL(5,2) NOT NULL,
+    PorcentajePendiente         DECIMAL(5,2) NOT NULL,
+    PorcentajeTotalAntesTope    DECIMAL(5,2) NOT NULL,
+    PorcentajeTopeAplicado      DECIMAL(5,2) NOT NULL,
+    PorcentajeTotalAplicado     DECIMAL(5,2) NOT NULL,
+    MontoBaseMensual            DECIMAL(10,2) NOT NULL,
+    MontoAjusteMensual          DECIMAL(10,2) NOT NULL,
+    MontoFinalMensual           DECIMAL(10,2) NOT NULL,
+    VegetacionFinal             VARCHAR(100) NOT NULL,
+    TieneRecursosHidricosFinal  BIT NOT NULL,
+    CantidadNacientesFinal      INT NOT NULL,
+    PendienteFinal              VARCHAR(50) NOT NULL,
+    FechaCalculo                DATETIME2 NOT NULL CONSTRAINT DF_PlanesPagoDetalleCalculo_FechaCalculo DEFAULT (SYSDATETIME()),
+    CONSTRAINT PK_PlanesPagoDetalleCalculo PRIMARY KEY (IdDetalleCalculo),
+    CONSTRAINT FK_PlanesPagoDetalleCalculo_PlanesPago FOREIGN KEY (IdPlanPago) REFERENCES dbo.PlanesPago(IdPlanPago),
+    CONSTRAINT UQ_PlanesPagoDetalleCalculo_IdPlanPago UNIQUE (IdPlanPago)
+);
+GO
+
+/* =========================================
+   11. CuotasPago
    ========================================= */
 CREATE TABLE dbo.CuotasPago
 (
@@ -315,7 +376,7 @@ CREATE TABLE dbo.CuotasPago
 GO
 
 /* =========================================
-   11. TransaccionesPago (opcional para MVP)
+   12. TransaccionesPago (opcional para MVP)
    ========================================= */
 CREATE TABLE dbo.TransaccionesPago
 (
@@ -334,7 +395,7 @@ CREATE TABLE dbo.TransaccionesPago
 GO
 
 /* =========================================
-   12. AuditoriaLog
+   13. AuditoriaLog
    ========================================= */
 CREATE TABLE dbo.AuditoriaLog
 (
@@ -355,7 +416,7 @@ CREATE TABLE dbo.AuditoriaLog
 GO
 
 /* =========================================
-   13. FincaEvidencias
+   14. FincaEvidencias
    ========================================= */
 CREATE TABLE dbo.FincaEvidencias
 (

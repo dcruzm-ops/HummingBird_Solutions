@@ -276,9 +276,22 @@ SELECT CAST(1 AS bit);";
             command.Parameters.AddWithValue("@EstadoPendiente", EstadosEvaluacionTecnica.Pendiente);
             command.Parameters.AddWithValue("@EstadoEnProceso", EstadosEvaluacionTecnica.EnProceso);
 
-            await connection.OpenAsync();
-            var result = await command.ExecuteScalarAsync();
-            return result is bool boolResult && boolResult;
+            try
+            {
+                await connection.OpenAsync();
+                var result = await command.ExecuteScalarAsync();
+                return result is bool boolResult && boolResult;
+            }
+            catch (SqlException ex)
+            {
+                Console.Error.WriteLine($"Error SQL al registrar resultado de evaluación #{idEvaluacion}: {ex.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Error inesperado al registrar resultado de evaluación #{idEvaluacion}: {ex.Message}");
+                return false;
+            }
         }
 
         public async Task<bool> ActualizarEstadoEvaluacionAsync(int idEvaluacion, string nuevoEstado)

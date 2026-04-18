@@ -9,18 +9,64 @@ SET ANSI_NULLS ON;
 SET QUOTED_IDENTIFIER ON;
 GO
 
+/*
+    Bootstrap incremental:
+    En algunos ambientes la BD fue creada sin catálogo de permisos.
+    Este bloque evita que falle el script 06 y deja la base lista para script 07.
+*/
+IF OBJECT_ID('dbo.Permisos', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Permisos
+    (
+        IdPermiso     INT IDENTITY(1,1) NOT NULL,
+        Codigo        NVARCHAR(100) NOT NULL,
+        Nombre        NVARCHAR(150) NOT NULL,
+        Descripcion   NVARCHAR(300) NULL,
+        Activo        BIT NOT NULL CONSTRAINT DF_Permisos_Activo DEFAULT (1),
+        CONSTRAINT PK_Permisos PRIMARY KEY (IdPermiso),
+        CONSTRAINT UQ_Permisos_Codigo UNIQUE (Codigo)
+    );
+END
+GO
+
+IF OBJECT_ID('dbo.RolesPermisos', 'U') IS NULL
+   AND OBJECT_ID('dbo.RolPermisos', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.RolesPermisos
+    (
+        IdRol       INT NOT NULL,
+        IdPermiso   INT NOT NULL,
+        CONSTRAINT PK_RolesPermisos PRIMARY KEY (IdRol, IdPermiso),
+        CONSTRAINT FK_RolesPermisos_Roles FOREIGN KEY (IdRol) REFERENCES dbo.Roles(IdRol),
+        CONSTRAINT FK_RolesPermisos_Permisos FOREIGN KEY (IdPermiso) REFERENCES dbo.Permisos(IdPermiso)
+    );
+END
+GO
+
 CREATE OR ALTER PROCEDURE dbo.usp_Admin_ObtenerPermisos
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT
-        p.IdPermiso,
-        p.Codigo,
-        p.Nombre,
-        p.Descripcion
-    FROM dbo.Permisos p
-    ORDER BY p.Codigo;
+    IF OBJECT_ID('dbo.Permisos', 'U') IS NULL
+    BEGIN
+        SELECT
+            CAST(NULL AS INT) AS IdPermiso,
+            CAST(NULL AS NVARCHAR(100)) AS Codigo,
+            CAST(NULL AS NVARCHAR(150)) AS Nombre,
+            CAST(NULL AS NVARCHAR(300)) AS Descripcion
+        WHERE 1 = 0;
+        RETURN;
+    END
+
+    EXEC sys.sp_executesql N'
+        SELECT
+            p.IdPermiso,
+            p.Codigo,
+            p.Nombre,
+            p.Descripcion
+        FROM dbo.Permisos p
+        ORDER BY p.Codigo;';
 END;
 GO
 
