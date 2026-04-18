@@ -28,7 +28,7 @@ SELECT
      INNER JOIN PlanesPago p ON p.IdPlanPago = c.IdPlanPago
      INNER JOIN Fincas f ON f.IdFinca = p.IdFinca
      WHERE f.IdPropietario = @IdPropietario
-       AND c.EstadoCuota IN ('Programada', 'Atrasada', 'Acumulada')) AS CuotasPorConfirmar;";
+       AND c.EstadoCuota IN ('Pendiente', 'Notificada')) AS CuotasPorConfirmar;";
 
             const string sqlActividad = @"
 SELECT TOP 3 Mensaje, IdEntidadReferencia

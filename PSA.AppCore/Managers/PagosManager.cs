@@ -1,12 +1,15 @@
+using PSA.AppCore.Services;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs.Pagos;
 
 namespace PSA.AppCore.Managers;
 
-public class PagosManager(PlanPagoDAO planPagoDao, AuditoriaLogDAO auditoriaLogDao)
+public class PagosManager(
+    PlanPagoDAO planPagoDao,
+    IPaymentPlanService paymentPlanService)
 {
     private readonly PlanPagoDAO _planPagoDao = planPagoDao;
-    private readonly AuditoriaLogDAO _auditoriaLogDao = auditoriaLogDao;
+    private readonly IPaymentPlanService _paymentPlanService = paymentPlanService;
 
     public async Task<PlanPagoDTO?> GenerarPlanPagoAsync(GenerarPlanPagoRequestDTO request, int idUsuario, string? ip)
     {
@@ -20,20 +23,12 @@ public class PagosManager(PlanPagoDAO planPagoDao, AuditoriaLogDAO auditoriaLogD
             throw new InvalidOperationException("El año del plan no puede ser anterior al año actual.");
         }
 
-        var plan = await _planPagoDao.GenerarPlanPagoAsync(request);
-        if (plan != null && !request.Simular)
+        if (!request.Simular)
         {
-            await _auditoriaLogDao.RegistrarEventoAsync(
-                idUsuario: idUsuario,
-                modulo: "Pagos",
-                tablaAfectada: "PlanesPago",
-                accion: "GENERAR_PLAN_PAGO",
-                detalle: $"Plan {plan.IdPlanPago} generado para finca {plan.IdFinca} año {plan.Anio}.",
-                idRegistroAfectado: plan.IdPlanPago,
-                ipOrigen: ip);
+            return await _planPagoDao.GenerarPlanPagoAsync(request);
         }
 
-        return plan;
+        return await _planPagoDao.GenerarPlanPagoAsync(request);
     }
 
     public Task<List<CuotaPlanPagoDTO>> ObtenerHistorialDuenoAsync(int idPropietario)
@@ -54,6 +49,17 @@ public class PagosManager(PlanPagoDAO planPagoDao, AuditoriaLogDAO auditoriaLogD
         }
 
         return _planPagoDao.ObtenerPlanesDuenoAsync(idPropietario);
+    }
+
+    public Task<List<PlanPagoResumenDTO>> ObtenerPlanesPendientesIngenieroAsync(int idIngeniero)
+    {
+        return _planPagoDao.ObtenerPlanesPendientesAprobacionIngenieroAsync(idIngeniero);
+    }
+
+    public Task<List<PlanPagoResumenDTO>> ObtenerPlanesConFiltrosAsync(FiltroPlanesPagoDTO filtro)
+    {
+        filtro ??= new FiltroPlanesPagoDTO();
+        return _planPagoDao.ObtenerPlanesConFiltrosAsync(filtro);
     }
 
     public Task<List<CuentaBancariaDuenoDTO>> ObtenerCuentasBancariasDuenoAsync(int idUsuario)
@@ -84,7 +90,7 @@ public class PagosManager(PlanPagoDAO planPagoDao, AuditoriaLogDAO auditoriaLogD
         return _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
     }
 
-    public Task<bool> AsociarCuentaPlanAsync(int idPlanPago, AsociarCuentaPlanDTO dto)
+    public Task<bool> AsociarCuentaPlanAsync(int idPlanPago, AsociarCuentaPlanDTO dto, string? ip)
     {
         if (idPlanPago <= 0)
         {
@@ -96,6 +102,16 @@ public class PagosManager(PlanPagoDAO planPagoDao, AuditoriaLogDAO auditoriaLogD
             throw new InvalidOperationException("Debe indicar usuario y cuenta bancaria válidos.");
         }
 
-        return _planPagoDao.AsociarCuentaPlanAsync(idPlanPago, dto.IdUsuario, dto.IdCuentaBancaria);
+        return _paymentPlanService.AttachBankAccountAsync(idPlanPago, dto.IdUsuario, dto.IdCuentaBancaria, ip);
+    }
+
+    public Task<bool> AprobarPlanFinalAsync(int idPlanPago, AprobarPlanPagoFinalDTO dto, string? ip)
+    {
+        if (idPlanPago <= 0 || dto.IdIngeniero <= 0)
+        {
+            throw new InvalidOperationException("Plan o ingeniero inválido.");
+        }
+
+        return _paymentPlanService.ApproveFinalActivationAsync(idPlanPago, dto.IdIngeniero, ip);
     }
 }

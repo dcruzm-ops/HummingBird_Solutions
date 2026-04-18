@@ -30,6 +30,7 @@
             <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Inicio</a>
             <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Visitas técnicas pendientes</a>
             <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Resultados de visitas técnicas</a>
+            <a class="item-menu @((controllerActual == "pagos" && accionActual == "planesingenieropendientes") ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesIngenieroPendientes">Pagos por aprobar</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
             <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Notificaciones</a>
             <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
