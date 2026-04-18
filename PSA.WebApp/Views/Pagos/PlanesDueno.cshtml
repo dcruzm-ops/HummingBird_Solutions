@@ -54,7 +54,9 @@
                                 </td>
                                 <td>
                                     <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>
-                                    @if (string.Equals(plan.EstadoPlan, "Activo", StringComparison.OrdinalIgnoreCase))
+                                    @if (string.Equals(plan.EstadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(plan.EstadoPlan, "BorradorGenerado", StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(plan.EstadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase))
                                     {
                                         <form method="post" asp-controller="Pagos" asp-action="AsociarCuentaPlan" class="mt-2">
                                             @Html.AntiForgeryToken()
@@ -73,7 +75,7 @@
                                                     }
                                                 }
                                             </select>
-                                            <button type="submit" class="boton-secundario mt-1">Guardar cuenta</button>
+                                            <button type="submit" class="boton-secundario mt-1">Asignar cuenta</button>
                                         </form>
                                     }
                                 </td>
