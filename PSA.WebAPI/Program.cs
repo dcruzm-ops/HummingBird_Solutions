@@ -47,6 +47,7 @@ builder.Services.AddScoped<EvaluacionDAO>();
 builder.Services.AddScoped<AuditoriaLogDAO>();
 builder.Services.AddScoped<RolPermisoDAO>();
 builder.Services.AddScoped<ConfiguracionPagoDAO>();
+builder.Services.AddScoped<PlanPagoDAO>();
 builder.Services.AddScoped<CuentaBancariaDAO>();
 builder.Services.AddScoped<DashboardDAO>();
 builder.Services.AddScoped<ReportesDAO>();
@@ -60,6 +61,7 @@ builder.Services.AddScoped<RecuperacionContrasenaManager>();
 builder.Services.AddScoped<EvaluacionTecnicaManager>();
 builder.Services.AddScoped<FincaManager>();
 builder.Services.AddScoped<AdministracionManager>();
+builder.Services.AddScoped<PagosManager>();
 builder.Services.AddScoped<ReportesManager>();
 builder.Services.AddScoped<LandingManager>();
 
