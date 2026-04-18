@@ -1,0 +1,59 @@
+@model List<PSA.EntidadesDTO.DTOs.Pagos.PlanPagoResumenDTO>
+@{
+    ViewData["Title"] = "Planes pendientes de aprobación";
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Flujo de pagos</span>
+            <h2>Planes pendientes de aprobación final</h2>
+            <p>Solo se listan planes en estado <strong>PendienteAprobacionFinal</strong>.</p>
+        </div>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Finca</th>
+                        <th>Año</th>
+                        <th>Monto mensual</th>
+                        <th>Monto anual</th>
+                        <th>Estado</th>
+                        <th>Cuenta</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="7" class="text-center text-muted">No hay planes pendientes de aprobación.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var plan in Model)
+                        {
+                            <tr>
+                                <td>@plan.NombreFinca</td>
+                                <td>@plan.Anio</td>
+                                <td>₡@plan.MontoMensualCalculado.ToString("N2")</td>
+                                <td>₡@plan.MontoAnualEstimado.ToString("N2")</td>
+                                <td><span class="badge-estado badge-pendiente">@plan.EstadoPlan</span></td>
+                                <td>@(plan.IdCuentaBancaria.HasValue ? $"#{plan.IdCuentaBancaria}" : "Sin cuenta")</td>
+                                <td>
+                                    <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>
+                                    <form method="post" asp-controller="Pagos" asp-action="AprobarPlanIngeniero" class="mt-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idPlanPago" value="@plan.IdPlanPago" />
+                                        <button type="submit" class="boton-secundario">Aprobar y activar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

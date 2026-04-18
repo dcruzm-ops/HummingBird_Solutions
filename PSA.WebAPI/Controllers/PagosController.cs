@@ -61,6 +61,20 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
         }
     }
 
+    [HttpGet("ingeniero/{idIngeniero:int}/planes-pendientes")]
+    public async Task<ActionResult<List<PlanPagoResumenDTO>>> ObtenerPlanesPendientesIngeniero([FromRoute] int idIngeniero)
+    {
+        try
+        {
+            var planes = await _pagosManager.ObtenerPlanesPendientesIngenieroAsync(idIngeniero);
+            return Ok(planes);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
     [HttpGet("dueno/{idUsuario:int}/cuentas-bancarias")]
     public async Task<ActionResult<List<CuentaBancariaDuenoDTO>>> ObtenerCuentasBancariasDueno([FromRoute] int idUsuario)
     {
@@ -94,13 +108,32 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
     {
         try
         {
-            var actualizado = await _pagosManager.AsociarCuentaPlanAsync(idPlanPago, model);
+            var actualizado = await _pagosManager.AsociarCuentaPlanAsync(idPlanPago, model, HttpContext.Connection.RemoteIpAddress?.ToString());
             if (!actualizado)
             {
                 return BadRequest(new { Mensaje = "No fue posible asociar la cuenta al plan seleccionado." });
             }
 
-            return Ok(new { Mensaje = "Cuenta bancaria asociada correctamente al plan de pago." });
+            return Ok(new { Mensaje = "Cuenta bancaria asociada correctamente al plan de pago. Estado: PendienteAprobacionFinal." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
+    [HttpPut("ingeniero/planes/{idPlanPago:int}/aprobar-final")]
+    public async Task<IActionResult> AprobarPlanFinal([FromRoute] int idPlanPago, [FromBody] AprobarPlanPagoFinalDTO model)
+    {
+        try
+        {
+            var aprobado = await _pagosManager.AprobarPlanFinalAsync(idPlanPago, model, HttpContext.Connection.RemoteIpAddress?.ToString());
+            if (!aprobado)
+            {
+                return BadRequest(new { Mensaje = "No fue posible activar el plan. Verifique estado pendiente de aprobación y cuenta bancaria válida." });
+            }
+
+            return Ok(new { Mensaje = "Plan de pago activado correctamente." });
         }
         catch (InvalidOperationException ex)
         {

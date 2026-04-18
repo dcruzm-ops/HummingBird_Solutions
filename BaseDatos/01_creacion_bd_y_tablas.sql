@@ -310,7 +310,7 @@ CREATE TABLE dbo.PlanesPago
     MontoBaseMensual            DECIMAL(10,2) NOT NULL,
     PorcentajeAjusteTotal       DECIMAL(5,2) NOT NULL,
     MontoMensualCalculado       DECIMAL(10,2) NOT NULL,
-    EstadoPlan                  VARCHAR(20) NOT NULL CONSTRAINT DF_PlanesPago_EstadoPlan DEFAULT ('Activo'),
+    EstadoPlan                  VARCHAR(40) NOT NULL CONSTRAINT DF_PlanesPago_EstadoPlan DEFAULT ('PendienteDatosBancarios'),
     FechaGeneracion             DATETIME2 NOT NULL CONSTRAINT DF_PlanesPago_FechaGeneracion DEFAULT (SYSDATETIME()),
     CONSTRAINT PK_PlanesPago PRIMARY KEY (IdPlanPago),
     CONSTRAINT FK_PlanesPago_Fincas FOREIGN KEY (IdFinca) REFERENCES dbo.Fincas(IdFinca),
@@ -319,7 +319,7 @@ CREATE TABLE dbo.PlanesPago
     CONSTRAINT FK_PlanesPago_CuentasBancarias FOREIGN KEY (IdCuentaBancaria) REFERENCES dbo.CuentasBancarias(IdCuentaBancaria),
     CONSTRAINT CK_PlanesPago_Anio CHECK (Anio BETWEEN 2000 AND 2100),
     CONSTRAINT CK_PlanesPago_Montos CHECK (MontoBaseMensual >= 0 AND MontoMensualCalculado >= 0),
-    CONSTRAINT CK_PlanesPago_Estado CHECK (EstadoPlan IN ('Activo', 'Suspendido', 'Finalizado', 'Cancelado'))
+    CONSTRAINT CK_PlanesPago_Estado CHECK (EstadoPlan IN ('BorradorGenerado', 'PendienteDatosBancarios', 'PendienteAprobacionFinal', 'Activo', 'Finalizado', 'Cancelado'))
 );
 GO
 
@@ -364,14 +364,14 @@ CREATE TABLE dbo.CuotasPago
     FechaProgramada         DATE NOT NULL,
     MontoProgramado         DECIMAL(10,2) NOT NULL,
     MontoPendiente          DECIMAL(10,2) NOT NULL,
-    EstadoCuota             VARCHAR(20) NOT NULL CONSTRAINT DF_CuotasPago_EstadoCuota DEFAULT ('Programada'),
+    EstadoCuota             VARCHAR(20) NOT NULL CONSTRAINT DF_CuotasPago_EstadoCuota DEFAULT ('Pendiente'),
     FechaPago               DATE NULL,
     CONSTRAINT PK_CuotasPago PRIMARY KEY (IdCuotaPago),
     CONSTRAINT FK_CuotasPago_PlanesPago FOREIGN KEY (IdPlanPago) REFERENCES dbo.PlanesPago(IdPlanPago),
     CONSTRAINT UQ_CuotasPago_Plan_Mes UNIQUE (IdPlanPago, Mes),
     CONSTRAINT CK_CuotasPago_Mes CHECK (Mes BETWEEN 1 AND 12),
     CONSTRAINT CK_CuotasPago_Montos CHECK (MontoProgramado >= 0 AND MontoPendiente >= 0),
-    CONSTRAINT CK_CuotasPago_Estado CHECK (EstadoCuota IN ('Programada', 'Pagada', 'Atrasada', 'Acumulada'))
+    CONSTRAINT CK_CuotasPago_Estado CHECK (EstadoCuota IN ('Pendiente', 'Ejecutada', 'Notificada'))
 );
 GO
 
