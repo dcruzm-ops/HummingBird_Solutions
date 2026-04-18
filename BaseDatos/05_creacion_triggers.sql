@@ -65,19 +65,7 @@ BEGIN
     WHILE @@FETCH_STATUS = 0
     BEGIN
         BEGIN TRY
-            IF EXISTS (
-                SELECT 1
-                FROM sys.parameters p
-                WHERE p.object_id = OBJECT_ID(N'dbo.SP_Pagos_GenerarPlanPago')
-                  AND p.name = N'@Silencioso'
-            )
-            BEGIN
-                EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0, @Silencioso = 1;
-            END
-            ELSE
-            BEGIN
-                EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
-            END
+            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
         END TRY
         BEGIN CATCH
             -- Si falta cuenta validada o configuración activa, no se cae la transacción principal.
@@ -124,19 +112,7 @@ BEGIN
     WHILE @@FETCH_STATUS = 0
     BEGIN
         BEGIN TRY
-            IF EXISTS (
-                SELECT 1
-                FROM sys.parameters p
-                WHERE p.object_id = OBJECT_ID(N'dbo.SP_Pagos_GenerarPlanPago')
-                  AND p.name = N'@Silencioso'
-            )
-            BEGIN
-                EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0, @Silencioso = 1;
-            END
-            ELSE
-            BEGIN
-                EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
-            END
+            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
         END TRY
         BEGIN CATCH
             PRINT CONCAT('TR_CuentasBancarias_GenerarPlanPagoPendiente omitido para finca ', @IdFinca, ': ', ERROR_MESSAGE());
