@@ -612,7 +612,9 @@ WHERE e.IdEvaluacion = @IdEvaluacion
         }
 
         var decision = reader["DecisionTecnica"]?.ToString() ?? string.Empty;
-        var idPlan = reader["IdPlanPago"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdPlanPago"));
+        int? idPlan = reader["IdPlanPago"] == DBNull.Value
+            ? null
+            : reader.GetInt32(reader.GetOrdinal("IdPlanPago"));
         var estadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty;
         var estadoCuenta = reader["EstadoCuentaBancaria"]?.ToString() ?? "Pendiente";
 
