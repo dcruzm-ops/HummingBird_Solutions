@@ -1,11 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using PSA.EntidadesDTO.DTOs.Pagos;
+using PSA.WebApp.Services;
+using System.Security.Claims;
 
 namespace PSA.WebApp.Controllers
 {
     [Authorize]
     public class PagosController : Controller
     {
+        private readonly HttpClientService _httpClientService;
+
+        public PagosController(HttpClientService httpClientService)
+        {
+            _httpClientService = httpClientService;
+        }
+
         [HttpGet]
         [Authorize(Roles = "1")]
         public IActionResult PlanesPago()
@@ -35,14 +45,20 @@ namespace PSA.WebApp.Controllers
 
         [HttpGet]
         [Authorize(Roles = "2")]
-        public IActionResult HistorialPagos()
+        public async Task<IActionResult> HistorialPagos()
         {
             ViewBag.ModuloActivo = "pagos";
             ViewBag.RolActivo = "Dueno";
             ViewBag.TituloPagina = "Historial de pagos";
             ViewBag.SubtituloPagina = "Consulte cuotas históricas y estados de confirmación.";
             ViewBag.BreadcrumbActual = "Historial de pagos";
-            return View();
+
+            var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+            var historial = idUsuario > 0
+                ? await _httpClientService.GetAsync<List<CuotaPlanPagoDTO>>($"api/Pagos/dueno/{idUsuario}/historial") ?? new()
+                : new List<CuotaPlanPagoDTO>();
+
+            return View(historial);
         }
     }
 }
