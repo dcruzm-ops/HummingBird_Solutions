@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using PSA.EntidadesDTO.DTOs.Pagos;
+using PSA.EntidadesDTO.DTOs;
 using PSA.WebApp.Services;
 using System.Security.Claims;
 
@@ -65,6 +66,27 @@ namespace PSA.WebApp.Controllers
             if (idUsuario > 0 && planes.Count == 0)
             {
                 planes = await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/planes?idPropietario={idUsuario}") ?? new();
+            }
+
+            if (idUsuario > 0 && planes.Count == 0)
+            {
+                var fincas = await _httpClientService.GetAsync<List<FincaResumenDTO>>($"api/Fincas/mis-fincas?idPropietario={idUsuario}") ?? new();
+                if (fincas.Count > 0)
+                {
+                    var planesPorFinca = new List<PlanPagoResumenDTO>();
+                    foreach (var finca in fincas)
+                    {
+                        var planesFinca = await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/planes?idFinca={finca.IdFinca}") ?? new();
+                        planesPorFinca.AddRange(planesFinca);
+                    }
+
+                    planes = planesPorFinca
+                        .GroupBy(p => p.IdPlanPago)
+                        .Select(g => g.First())
+                        .OrderByDescending(p => p.Anio)
+                        .ThenByDescending(p => p.IdPlanPago)
+                        .ToList();
+                }
             }
             var cuentas = idUsuario > 0
                 ? await _httpClientService.GetAsync<List<CuentaBancariaDuenoDTO>>($"api/Pagos/dueno/{idUsuario}/cuentas-bancarias") ?? new()
@@ -162,13 +184,8 @@ namespace PSA.WebApp.Controllers
             ViewBag.Anio = anio;
             ViewBag.EstadoPlan = estadoPlan;
 
-            var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
             var soloPendientes = string.IsNullOrWhiteSpace(estadoPlan);
             var query = $"?soloPendientes={soloPendientes.ToString().ToLowerInvariant()}";
-            if (idIngeniero > 0)
-            {
-                query += $"&idIngeniero={idIngeniero}";
-            }
             if (anio.HasValue)
             {
                 query += $"&anio={anio.Value}";
