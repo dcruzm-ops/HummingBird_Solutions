@@ -304,13 +304,25 @@ SELECT @@ROWCOUNT;";
 
     public async Task<List<PlanPagoResumenDTO>> ObtenerPlanesDuenoAsync(int idPropietario)
     {
+        const string sql = @"
+SELECT
+    pp.IdPlanPago,
+    pp.IdFinca,
+    f.NombreFinca,
+    pp.Anio,
+    pp.MontoMensualCalculado,
+    CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnualEstimado,
+    pp.EstadoPlan,
+    pp.IdCuentaBancaria
+FROM dbo.PlanesPago pp
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+WHERE f.IdPropietario = @IdPropietario
+ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
+
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        using var command = new SqlCommand("dbo.SP_Pagos_ObtenerPlanesDueno", connection)
-        {
-            CommandType = CommandType.StoredProcedure
-        };
+        using var command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@IdPropietario", idPropietario);
 
         using var reader = await command.ExecuteReaderAsync();
