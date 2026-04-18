@@ -46,4 +46,40 @@
             <li>Recursos hídricos ajustados: @(Model.RecursosHidricosAjustado.HasValue ? (Model.RecursosHidricosAjustado.Value ? "Sí" : "No") : "Sin ajuste")</li>
         </ul>
     </section>
+
+    <section class="tarjeta-panel">
+        <h3>Impacto en Plan de Pago</h3>
+        @{
+            var impacto = ViewBag.ImpactoPago as PSA.EntidadesDTO.DTOs.Pagos.EngineerPaymentImpactDto;
+        }
+        @if (impacto == null)
+        {
+            <p class="text-muted">No hay información de impacto de pago para esta evaluación.</p>
+        }
+        else
+        {
+            <ul class="lista-timeline">
+                <li>Decisión técnica: @impacto.DecisionTecnica</li>
+                <li>¿Generó plan?: @(impacto.GeneroPlan ? "Sí" : "No")</li>
+                <li>Estado de continuidad: @impacto.EstadoContinuidad</li>
+                <li>Cuenta bancaria: @impacto.EstadoCuentaBancaria (solo indicador)</li>
+                <li>Monto mensual referencial: @(impacto.MontoMensualReferencial.HasValue ? $"₡{impacto.MontoMensualReferencial.Value:N2}" : "No aplica")</li>
+                <li>Monto anual referencial: @(impacto.MontoAnualReferencial.HasValue ? $"₡{impacto.MontoAnualReferencial.Value:N2}" : "No aplica")</li>
+            </ul>
+
+            @if (impacto.PuedeAprobarFinal && impacto.IdPlanPago.HasValue)
+            {
+                <form method="post" asp-controller="Evaluaciones" asp-action="AprobarActivacionPlanPago" class="mt-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="idEvaluacion" value="@Model.IdEvaluacion" />
+                    <input type="hidden" name="idPlanPago" value="@impacto.IdPlanPago.Value" />
+                    <button type="submit" class="boton-secundario">Activar plan de pago</button>
+                </form>
+            }
+            else if (string.Equals(impacto.EstadoPlan, PSA.EntidadesDTO.DTOs.Pagos.EstadosPlanPago.Activo, StringComparison.OrdinalIgnoreCase))
+            {
+                <p class="text-success mt-2"><strong>Plan activo.</strong> No hay acciones pendientes.</p>
+            }
+        }
+    </section>
 </section>

@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs.Pagos;
-using PSA.EntidadesDTO.DTOs;
 using PSA.WebApp.Services;
 using System.Security.Claims;
 
@@ -19,34 +18,59 @@ namespace PSA.WebApp.Controllers
 
         [HttpGet]
         [Authorize(Roles = "1")]
-        public IActionResult PlanesPago()
+        public async Task<IActionResult> PlanesPago(int? anio = null, string? estadoPlan = null, string? provincia = null, string? canton = null, string? distrito = null, string? estadoBancario = null)
         {
             ViewBag.ModuloActivo = "pagos";
             ViewBag.RolActivo = "Administrador";
             ViewBag.TituloPagina = "Planes de pago";
-            ViewBag.SubtituloPagina = "Consulte los planes generados y su estado general.";
+            ViewBag.SubtituloPagina = "Listado administrativo completo con filtros operativos.";
             ViewBag.BreadcrumbActual = "Planes de pago";
-            return View();
+            ViewBag.Anio = anio;
+            ViewBag.EstadoPlan = estadoPlan;
+            ViewBag.Provincia = provincia;
+            ViewBag.Canton = canton;
+            ViewBag.Distrito = distrito;
+            ViewBag.EstadoBancario = estadoBancario;
+
+            var query = $"?anio={anio}&estadoPlan={Uri.EscapeDataString(estadoPlan ?? string.Empty)}&provincia={Uri.EscapeDataString(provincia ?? string.Empty)}&canton={Uri.EscapeDataString(canton ?? string.Empty)}&distrito={Uri.EscapeDataString(distrito ?? string.Empty)}&estadoBancario={Uri.EscapeDataString(estadoBancario ?? string.Empty)}";
+            var planes = await _httpClientService.GetAsync<List<AdminPaymentPlanDto>>($"api/Pagos/admin/planes{query}") ?? new();
+            return View(planes);
         }
 
         [HttpGet]
-        [Authorize(Roles = "1,2,3")]
-        public IActionResult DetallePlanPago(int? id = null)
+        [Authorize(Roles = "1,2")]
+        public async Task<IActionResult> DetallePlanPago(int id)
         {
             ViewBag.ModuloActivo = "pagos";
             var rol = User.FindFirstValue(ClaimTypes.Role);
-            ViewBag.RolActivo = rol == "3" ? "Ingeniero" : rol == "2" ? "Dueno" : "Administrador";
-            ViewBag.PlanPagoId = id ?? 1;
-            ViewBag.TituloPagina = "Detalle del plan de pago";
-            ViewBag.SubtituloPagina = "Revise cuotas mensuales, estado de pago y atrasos.";
-            ViewBag.BreadcrumbPadreTexto = rol == "3" ? "Planes pendientes por aprobación" : "Planes de pago";
-            ViewBag.BreadcrumbPadreUrl = rol == "3"
-                ? Url.Action("PlanesIngenieroPendientes", "Pagos")
-                : rol == "2"
-                    ? Url.Action("PlanesDueno", "Pagos")
-                    : Url.Action("PlanesPago", "Pagos");
-            ViewBag.BreadcrumbActual = "Detalle del plan";
-            return View();
+            var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var parsedId) ? parsedId : 0;
+
+            if (rol == "2")
+            {
+                ViewBag.RolActivo = "Dueno";
+                ViewBag.BreadcrumbPadreTexto = "Mis pagos";
+                ViewBag.BreadcrumbPadreUrl = Url.Action(nameof(PlanesDueno));
+                var detalleOwner = await _httpClientService.GetAsync<OwnerPaymentPlanDetailDto>($"api/Pagos/dueno/{idUsuario}/planes/{id}");
+                if (detalleOwner == null)
+                {
+                    TempData["Error"] = "No se encontró el plan solicitado o no pertenece a su usuario.";
+                    return RedirectToAction(nameof(PlanesDueno));
+                }
+
+                return View("DetallePlanPagoDueno", detalleOwner);
+            }
+
+            ViewBag.RolActivo = "Administrador";
+            ViewBag.BreadcrumbPadreTexto = "Planes de pago";
+            ViewBag.BreadcrumbPadreUrl = Url.Action(nameof(PlanesPago));
+            var detalleAdmin = await _httpClientService.GetAsync<AdminPaymentPlanDetailDto>($"api/Pagos/admin/planes/{id}");
+            if (detalleAdmin == null)
+            {
+                TempData["Error"] = "No se encontró el plan solicitado.";
+                return RedirectToAction(nameof(PlanesPago));
+            }
+
+            return View("DetallePlanPagoAdmin", detalleAdmin);
         }
 
         [HttpGet]
@@ -55,39 +79,15 @@ namespace PSA.WebApp.Controllers
         {
             ViewBag.ModuloActivo = "pagos";
             ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Planes de pago";
-            ViewBag.SubtituloPagina = "Consulte sus planes de pago por finca.";
-            ViewBag.BreadcrumbActual = "Planes de pago";
+            ViewBag.TituloPagina = "Mis pagos";
+            ViewBag.SubtituloPagina = "Consulte únicamente los planes de sus fincas aprobadas.";
+            ViewBag.BreadcrumbActual = "Mis pagos";
 
             var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
             var planes = idUsuario > 0
-                ? await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/dueno/{idUsuario}/planes") ?? new()
-                : new List<PlanPagoResumenDTO>();
-            if (idUsuario > 0 && planes.Count == 0)
-            {
-                planes = await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/planes?idPropietario={idUsuario}") ?? new();
-            }
+                ? await _httpClientService.GetAsync<List<OwnerPaymentPlanDto>>($"api/Pagos/dueno/{idUsuario}/planes") ?? new()
+                : new List<OwnerPaymentPlanDto>();
 
-            if (idUsuario > 0 && planes.Count == 0)
-            {
-                var fincas = await _httpClientService.GetAsync<List<FincaResumenDTO>>($"api/Fincas/mis-fincas?idPropietario={idUsuario}") ?? new();
-                if (fincas.Count > 0)
-                {
-                    var planesPorFinca = new List<PlanPagoResumenDTO>();
-                    foreach (var finca in fincas)
-                    {
-                        var planesFinca = await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/planes?idFinca={finca.IdFinca}") ?? new();
-                        planesPorFinca.AddRange(planesFinca);
-                    }
-
-                    planes = planesPorFinca
-                        .GroupBy(p => p.IdPlanPago)
-                        .Select(g => g.First())
-                        .OrderByDescending(p => p.Anio)
-                        .ThenByDescending(p => p.IdPlanPago)
-                        .ToList();
-                }
-            }
             var cuentas = idUsuario > 0
                 ? await _httpClientService.GetAsync<List<CuentaBancariaDuenoDTO>>($"api/Pagos/dueno/{idUsuario}/cuentas-bancarias") ?? new()
                 : new List<CuentaBancariaDuenoDTO>();
@@ -166,55 +166,10 @@ namespace PSA.WebApp.Controllers
                 });
 
             TempData[resultado != null ? "Exito" : "Error"] = resultado != null
-                ? "Cuenta bancaria asociada correctamente. El plan pasó a PendienteAprobacionFinal."
+                ? "Cuenta bancaria asociada correctamente."
                 : "No fue posible asociar la cuenta bancaria al plan.";
 
             return RedirectToAction(nameof(PlanesDueno));
-        }
-
-        [HttpGet]
-        [Authorize(Roles = "3")]
-        public async Task<IActionResult> PlanesIngenieroPendientes(int? anio = null, string? estadoPlan = null)
-        {
-            ViewBag.ModuloActivo = "pagos";
-            ViewBag.RolActivo = "Ingeniero";
-            ViewBag.TituloPagina = "Planes pendientes de aprobación";
-            ViewBag.SubtituloPagina = "Aprobación final de planes con cuenta bancaria asociada.";
-            ViewBag.BreadcrumbActual = "Planes pendientes";
-            ViewBag.Anio = anio;
-            ViewBag.EstadoPlan = estadoPlan;
-
-            var soloPendientes = string.IsNullOrWhiteSpace(estadoPlan);
-            var query = $"?soloPendientes={soloPendientes.ToString().ToLowerInvariant()}";
-            if (anio.HasValue)
-            {
-                query += $"&anio={anio.Value}";
-            }
-            if (!string.IsNullOrWhiteSpace(estadoPlan))
-            {
-                query += $"&estadoPlan={Uri.EscapeDataString(estadoPlan)}";
-            }
-
-            var planes = await _httpClientService.GetAsync<List<PlanPagoResumenDTO>>($"api/Pagos/planes{query}") ?? new();
-
-            return View(planes);
-        }
-
-        [HttpPost]
-        [Authorize(Roles = "3")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AprobarPlanIngeniero(int idPlanPago)
-        {
-            var idIngeniero = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
-            var resultado = await _httpClientService.PutAsync<AprobarPlanPagoFinalDTO, object>(
-                $"api/Pagos/ingeniero/planes/{idPlanPago}/aprobar-final",
-                new AprobarPlanPagoFinalDTO { IdIngeniero = idIngeniero });
-
-            TempData[resultado != null ? "Exito" : "Error"] = resultado != null
-                ? "Plan aprobado y activado correctamente."
-                : "No fue posible aprobar el plan seleccionado.";
-
-            return RedirectToAction(nameof(PlanesIngenieroPendientes));
         }
     }
 }

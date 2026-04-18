@@ -93,6 +93,7 @@ namespace PSA.EntidadesDTO.DTOs.Evaluaciones
     {
         public int IdEvaluacion { get; set; }
         public int IdFinca { get; set; }
+        public bool TienePlanPago { get; set; }
         public string NombreFinca { get; set; } = string.Empty;
         public string EstadoEvaluacion { get; set; } = string.Empty;
         public string? DecisionTecnica { get; set; }
