@@ -4,4 +4,5 @@
   <Project Path="PSA.EntidadesDTO/PSA.EntidadesDTO.csproj" />
   <Project Path="PSA.WebAPI/PSA.WebAPI.csproj" />
   <Project Path="PSA.WebApp/PSA.WebApp.csproj" />
+  <Project Path="PSA.AppCore.Tests/PSA.AppCore.Tests.csproj" />
 </Solution>

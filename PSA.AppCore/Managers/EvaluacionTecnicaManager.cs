@@ -6,10 +6,12 @@ namespace PSA.AppCore.Managers
     public class EvaluacionTecnicaManager
     {
         private readonly EvaluacionTecnicaDAO _evaluacionTecnicaDAO;
+        private readonly Services.IPaymentPlanService _paymentPlanService;
 
-        public EvaluacionTecnicaManager(EvaluacionTecnicaDAO evaluacionTecnicaDAO)
+        public EvaluacionTecnicaManager(EvaluacionTecnicaDAO evaluacionTecnicaDAO, Services.IPaymentPlanService paymentPlanService)
         {
             _evaluacionTecnicaDAO = evaluacionTecnicaDAO ?? throw new ArgumentNullException(nameof(evaluacionTecnicaDAO));
+            _paymentPlanService = paymentPlanService ?? throw new ArgumentNullException(nameof(paymentPlanService));
         }
 
         public Task<int> CrearPendientePorNuevaFincaAsync(int idFinca)
@@ -52,7 +54,7 @@ namespace PSA.AppCore.Managers
             return _evaluacionTecnicaDAO.AsignarIngenieroAsync(idEvaluacion, idIngeniero);
         }
 
-        public Task<bool> RegistrarResultadoAsync(int idEvaluacion, RegistrarResultadoEvaluacionDTO dto)
+        public async Task<bool> RegistrarResultadoAsync(int idEvaluacion, RegistrarResultadoEvaluacionDTO dto)
         {
             if (idEvaluacion <= 0)
             {
@@ -94,7 +96,17 @@ namespace PSA.AppCore.Managers
             dto.PendienteAjustada = string.IsNullOrWhiteSpace(dto.PendienteAjustada) ? null : dto.PendienteAjustada.Trim();
             dto.Observaciones = string.IsNullOrWhiteSpace(dto.Observaciones) ? null : dto.Observaciones.Trim();
 
-            return _evaluacionTecnicaDAO.RegistrarResultadoAsync(idEvaluacion, dto);
+            var resultado = await _evaluacionTecnicaDAO.RegistrarResultadoAsync(idEvaluacion, dto);
+            if (resultado && dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase))
+            {
+                await _paymentPlanService.GeneratePreliminaryPlanFromEvaluationAsync(
+                    idEvaluacion,
+                    DateTime.UtcNow.Year + 1,
+                    actorId: null,
+                    ip: null);
+            }
+
+            return resultado;
         }
 
         public Task<bool> AvanzarEstadoAsync(int idEvaluacion, string nuevoEstado)
