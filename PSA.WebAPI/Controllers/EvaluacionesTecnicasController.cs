@@ -49,13 +49,20 @@ namespace PSA.WebAPI.Controllers
         [HttpPut("{idEvaluacion:int}/resultado")]
         public async Task<IActionResult> RegistrarResultado([FromRoute] int idEvaluacion, [FromBody] RegistrarResultadoEvaluacionDTO dto)
         {
-            var actualizado = await _evaluacionTecnicaManager.RegistrarResultadoAsync(idEvaluacion, dto);
-            if (!actualizado)
+            try
             {
-                return BadRequest(new { Mensaje = "No fue posible registrar el resultado de evaluación." });
-            }
+                var actualizado = await _evaluacionTecnicaManager.RegistrarResultadoAsync(idEvaluacion, dto);
+                if (!actualizado)
+                {
+                    return BadRequest(new { Mensaje = "No fue posible registrar el resultado de evaluación. Verifique que la evaluación esté en estado Pendiente o En proceso." });
+                }
 
-            return Ok(new { Mensaje = "Resultado de evaluación registrado correctamente." });
+                return Ok(new { Mensaje = "Resultado de evaluación registrado correctamente." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
         }
 
         [HttpPut("{idEvaluacion:int}/estado")]

@@ -7,6 +7,7 @@ using PSA.WebApp.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace PSA.WebApp.Controllers
 {
@@ -44,6 +45,39 @@ namespace PSA.WebApp.Controllers
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
             if (detalle == null) return RedirectToAction(nameof(FincasPendientes));
+            var idIngenieroSesion = ObtenerIdUsuarioSesion();
+            if (idIngenieroSesion <= 0)
+            {
+                TempData["MensajeError"] = "No fue posible identificar la sesión del ingeniero actual.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (detalle.IdIngeniero.HasValue && detalle.IdIngeniero.Value != idIngenieroSesion)
+            {
+                TempData["MensajeError"] = "No puede editar esta evaluación porque está asignada a otro ingeniero.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (!detalle.IdIngeniero.HasValue)
+            {
+                var responseAsignar = await client.PutAsJsonAsync(
+                    $"api/EvaluacionesTecnicas/{idEvaluacion}/asignar",
+                    new AsignarEvaluacionDTO { IdIngeniero = idIngenieroSesion });
+
+                if (!responseAsignar.IsSuccessStatusCode)
+                {
+                    TempData["MensajeError"] = await ObtenerMensajeErrorApiAsync(responseAsignar, "No fue posible asignar la evaluación al ingeniero actual.");
+                    return RedirectToAction(nameof(FincasPendientes));
+                }
+
+                detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
+                if (detalle == null)
+                {
+                    TempData["MensajeError"] = "No fue posible recuperar el detalle de la evaluación después de asignarla.";
+                    return RedirectToAction(nameof(FincasPendientes));
+                }
+            }
+
             var evidencias = await ObtenerEvidenciasPorFincaAsync(client, detalle.IdFinca);
 
             CargarCatalogosEvaluacion();
@@ -62,10 +96,43 @@ namespace PSA.WebApp.Controllers
         {
             if (idEvaluacion <= 0 || model?.Formulario == null) return RedirectToAction(nameof(FincasPendientes));
             var client = _httpClientFactory.CreateClient("AuthApi");
+            var idIngenieroSesion = ObtenerIdUsuarioSesion();
+            if (idIngenieroSesion <= 0)
+            {
+                TempData["MensajeError"] = "No fue posible identificar la sesión del ingeniero actual.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            var detalleActual = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
+            if (detalleActual == null)
+            {
+                TempData["MensajeError"] = "No se encontró la evaluación solicitada.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (detalleActual.IdIngeniero.HasValue && detalleActual.IdIngeniero.Value != idIngenieroSesion)
+            {
+                TempData["MensajeError"] = "No puede guardar esta evaluación porque está asignada a otro ingeniero.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (!detalleActual.IdIngeniero.HasValue)
+            {
+                var responseAsignar = await client.PutAsJsonAsync(
+                    $"api/EvaluacionesTecnicas/{idEvaluacion}/asignar",
+                    new AsignarEvaluacionDTO { IdIngeniero = idIngenieroSesion });
+
+                if (!responseAsignar.IsSuccessStatusCode)
+                {
+                    TempData["MensajeError"] = await ObtenerMensajeErrorApiAsync(responseAsignar, "No fue posible asignar la evaluación antes de guardarla.");
+                    return RedirectToAction(nameof(FincasPendientes));
+                }
+            }
+
             var response = await client.PutAsJsonAsync($"api/EvaluacionesTecnicas/{idEvaluacion}/resultado", model.Formulario);
             if (!response.IsSuccessStatusCode)
             {
-                TempData["MensajeError"] = "No fue posible guardar la evaluación.";
+                TempData["MensajeError"] = await ObtenerMensajeErrorApiAsync(response, "No fue posible guardar la evaluación.");
                 model.Detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new();
                 model.EvidenciasExistentes = await ObtenerEvidenciasPorFincaAsync(client, model.Detalle.IdFinca);
                 CargarCatalogosEvaluacion();
@@ -165,6 +232,29 @@ namespace PSA.WebApp.Controllers
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        private static async Task<string> ObtenerMensajeErrorApiAsync(HttpResponseMessage response, string mensajePorDefecto)
+        {
+            try
+            {
+                var contenido = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(contenido))
+                    return mensajePorDefecto;
+
+                using var doc = JsonDocument.Parse(contenido);
+                if (doc.RootElement.TryGetProperty("mensaje", out var mensajeCamel) && mensajeCamel.ValueKind == JsonValueKind.String)
+                    return mensajeCamel.GetString() ?? mensajePorDefecto;
+
+                if (doc.RootElement.TryGetProperty("Mensaje", out var mensajePascal) && mensajePascal.ValueKind == JsonValueKind.String)
+                    return mensajePascal.GetString() ?? mensajePorDefecto;
+
+                return mensajePorDefecto;
+            }
+            catch
+            {
+                return mensajePorDefecto;
+            }
+        }
 
         private static async Task<List<FincaEvidenciaDTO>> ObtenerEvidenciasPorFincaAsync(HttpClient client, int idFinca)
         {
