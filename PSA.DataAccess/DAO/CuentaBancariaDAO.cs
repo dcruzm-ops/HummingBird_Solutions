@@ -15,7 +15,28 @@ public class CuentaBancariaDAO
 
     public async Task<List<CuentaBancariaPendienteDTO>> ObtenerPendientesValidacionAsync()
     {
-        const string sql = @"
+        var resultado = new List<CuentaBancariaPendienteDTO>();
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        var columnas = await ObtenerColumnasCuentaBancariaAsync(connection);
+        var expresionEstadoCuenta = columnas.Contains("Activa", StringComparer.OrdinalIgnoreCase)
+            ? "CASE WHEN cb.Activa = 1 THEN 'Activa' ELSE 'Inactiva' END AS EstadoCuenta"
+            : columnas.Contains("Estado", StringComparer.OrdinalIgnoreCase)
+                ? "cb.Estado AS EstadoCuenta"
+                : "'Desconocida' AS EstadoCuenta";
+        var expresionFecha = columnas.Contains("FechaRegistro", StringComparer.OrdinalIgnoreCase)
+            ? "cb.FechaRegistro AS FechaReferencia"
+            : columnas.Contains("FechaCreacion", StringComparer.OrdinalIgnoreCase)
+                ? "cb.FechaCreacion AS FechaReferencia"
+                : "SYSUTCDATETIME() AS FechaReferencia";
+        var ordenFecha = columnas.Contains("FechaRegistro", StringComparer.OrdinalIgnoreCase)
+            ? "cb.FechaRegistro DESC"
+            : columnas.Contains("FechaCreacion", StringComparer.OrdinalIgnoreCase)
+                ? "cb.FechaCreacion DESC"
+                : "cb.IdCuentaBancaria DESC";
+        var sql = $@"
 SELECT
     cb.IdCuentaBancaria,
     cb.IdUsuario,
@@ -27,18 +48,14 @@ SELECT
     cb.Titular,
     cb.EstadoValidacion,
     cb.ObservacionesValidacion,
-    cb.Estado AS EstadoCuenta,
-    cb.FechaCreacion
+    {expresionEstadoCuenta},
+    {expresionFecha}
 FROM dbo.CuentasBancarias cb
 INNER JOIN dbo.Usuarios u ON u.IdUsuario = cb.IdUsuario
-ORDER BY cb.FechaCreacion DESC;";
+WHERE cb.EstadoValidacion = 'Pendiente'
+ORDER BY {ordenFecha};";
 
-        var resultado = new List<CuentaBancariaPendienteDTO>();
-
-        using var connection = _connectionFactory.CreateConnection();
         using var command = new SqlCommand(sql, connection);
-
-        await connection.OpenAsync();
         using var reader = await command.ExecuteReaderAsync();
 
         while (await reader.ReadAsync())
@@ -56,7 +73,7 @@ ORDER BY cb.FechaCreacion DESC;";
                 EstadoValidacion = reader["EstadoValidacion"]?.ToString() ?? string.Empty,
                 ObservacionesValidacion = reader["ObservacionesValidacion"] == DBNull.Value ? null : reader["ObservacionesValidacion"]?.ToString(),
                 Activa = string.Equals(reader["EstadoCuenta"]?.ToString(), "Activa", StringComparison.OrdinalIgnoreCase),
-                FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaCreacion"))
+                FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaReferencia"))
             });
         }
 
@@ -65,22 +82,69 @@ ORDER BY cb.FechaCreacion DESC;";
 
     public async Task ValidarCuentaAsync(ValidacionCuentaBancariaDTO dto)
     {
-        const string sql = @"
-UPDATE dbo.CuentasBancarias
-SET
-    EstadoValidacion = @EstadoValidacion,
-    ObservacionesValidacion = @Observaciones,
-    FechaActualizacion = SYSUTCDATETIME()
-WHERE IdCuentaBancaria = @IdCuentaBancaria;";
-
         using var connection = _connectionFactory.CreateConnection();
-        using var command = new SqlCommand(sql, connection);
+        await connection.OpenAsync();
+
+        var columnas = await ObtenerColumnasCuentaBancariaAsync(connection);
+        var asignaciones = new List<string> { "EstadoValidacion = @EstadoValidacion" };
+        var sql = string.Empty;
+        using var command = new SqlCommand { Connection = connection };
 
         command.Parameters.AddWithValue("@IdCuentaBancaria", dto.IdCuentaBancaria);
-        command.Parameters.AddWithValue("@EstadoValidacion", dto.Aprobada ? "Aprobada" : "Rechazada");
-        command.Parameters.AddWithValue("@Observaciones", (object?)dto.Observaciones ?? DBNull.Value);
+        command.Parameters.AddWithValue("@EstadoValidacion", dto.Aprobada ? "Validada" : "Rechazada");
 
-        await connection.OpenAsync();
+        if (columnas.Contains("ObservacionesValidacion", StringComparer.OrdinalIgnoreCase))
+        {
+            asignaciones.Add("ObservacionesValidacion = @Observaciones");
+            command.Parameters.AddWithValue("@Observaciones", (object?)dto.Observaciones ?? DBNull.Value);
+        }
+
+        if (columnas.Contains("ValidadoPor", StringComparer.OrdinalIgnoreCase))
+        {
+            asignaciones.Add("ValidadoPor = @ValidadoPor");
+            command.Parameters.AddWithValue("@ValidadoPor", dto.IdAdministrador);
+        }
+
+        if (columnas.Contains("FechaValidacion", StringComparer.OrdinalIgnoreCase))
+        {
+            asignaciones.Add("FechaValidacion = SYSUTCDATETIME()");
+        }
+
+        if (columnas.Contains("FechaActualizacion", StringComparer.OrdinalIgnoreCase))
+        {
+            asignaciones.Add("FechaActualizacion = SYSUTCDATETIME()");
+        }
+
+        if (dto.Aprobada && columnas.Contains("Activa", StringComparer.OrdinalIgnoreCase))
+        {
+            asignaciones.Add("Activa = 1");
+        }
+
+        sql = $@"
+UPDATE dbo.CuentasBancarias
+SET {string.Join(", ", asignaciones)}
+WHERE IdCuentaBancaria = @IdCuentaBancaria;";
+        command.CommandText = sql;
+
         await command.ExecuteNonQueryAsync();
+    }
+
+    private static async Task<HashSet<string>> ObtenerColumnasCuentaBancariaAsync(SqlConnection connection)
+    {
+        const string sql = @"
+SELECT c.COLUMN_NAME
+FROM INFORMATION_SCHEMA.COLUMNS c
+WHERE c.TABLE_SCHEMA = 'dbo'
+  AND c.TABLE_NAME = 'CuentasBancarias';";
+
+        using var command = new SqlCommand(sql, connection);
+        using var reader = await command.ExecuteReaderAsync();
+        var columnas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        while (await reader.ReadAsync())
+        {
+            columnas.Add(reader["COLUMN_NAME"]?.ToString() ?? string.Empty);
+        }
+
+        return columnas;
     }
 }
