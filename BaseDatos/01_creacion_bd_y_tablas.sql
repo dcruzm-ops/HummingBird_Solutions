@@ -274,7 +274,7 @@ CREATE TABLE dbo.PlanesPago
     IdFinca                     INT NOT NULL,
     IdEvaluacion                INT NOT NULL,
     IdConfiguracionPago         INT NOT NULL,
-    IdCuentaBancaria            INT NOT NULL,
+    IdCuentaBancaria            INT NULL,
     Anio                        INT NOT NULL,
     MontoBaseMensual            DECIMAL(10,2) NOT NULL,
     PorcentajeAjusteTotal       DECIMAL(5,2) NOT NULL,
@@ -293,7 +293,37 @@ CREATE TABLE dbo.PlanesPago
 GO
 
 /* =========================================
-   10. CuotasPago
+   10. PlanesPagoDetalleCalculo
+   ========================================= */
+CREATE TABLE dbo.PlanesPagoDetalleCalculo
+(
+    IdDetalleCalculo            INT IDENTITY(1,1) NOT NULL,
+    IdPlanPago                  INT NOT NULL,
+    HectareasAprobadas          DECIMAL(12,2) NOT NULL,
+    PrecioBasePorHectarea       DECIMAL(10,2) NOT NULL,
+    PorcentajeVegetacion        DECIMAL(5,2) NOT NULL,
+    PorcentajeHidrico           DECIMAL(5,2) NOT NULL,
+    PorcentajeNacientes         DECIMAL(5,2) NOT NULL,
+    PorcentajePendiente         DECIMAL(5,2) NOT NULL,
+    PorcentajeTotalAntesTope    DECIMAL(5,2) NOT NULL,
+    PorcentajeTopeAplicado      DECIMAL(5,2) NOT NULL,
+    PorcentajeTotalAplicado     DECIMAL(5,2) NOT NULL,
+    MontoBaseMensual            DECIMAL(10,2) NOT NULL,
+    MontoAjusteMensual          DECIMAL(10,2) NOT NULL,
+    MontoFinalMensual           DECIMAL(10,2) NOT NULL,
+    VegetacionFinal             VARCHAR(100) NOT NULL,
+    TieneRecursosHidricosFinal  BIT NOT NULL,
+    CantidadNacientesFinal      INT NOT NULL,
+    PendienteFinal              VARCHAR(50) NOT NULL,
+    FechaCalculo                DATETIME2 NOT NULL CONSTRAINT DF_PlanesPagoDetalleCalculo_FechaCalculo DEFAULT (SYSDATETIME()),
+    CONSTRAINT PK_PlanesPagoDetalleCalculo PRIMARY KEY (IdDetalleCalculo),
+    CONSTRAINT FK_PlanesPagoDetalleCalculo_PlanesPago FOREIGN KEY (IdPlanPago) REFERENCES dbo.PlanesPago(IdPlanPago),
+    CONSTRAINT UQ_PlanesPagoDetalleCalculo_IdPlanPago UNIQUE (IdPlanPago)
+);
+GO
+
+/* =========================================
+   11. CuotasPago
    ========================================= */
 CREATE TABLE dbo.CuotasPago
 (
@@ -315,7 +345,7 @@ CREATE TABLE dbo.CuotasPago
 GO
 
 /* =========================================
-   11. TransaccionesPago (opcional para MVP)
+   12. TransaccionesPago (opcional para MVP)
    ========================================= */
 CREATE TABLE dbo.TransaccionesPago
 (
@@ -334,7 +364,7 @@ CREATE TABLE dbo.TransaccionesPago
 GO
 
 /* =========================================
-   12. AuditoriaLog
+   13. AuditoriaLog
    ========================================= */
 CREATE TABLE dbo.AuditoriaLog
 (
@@ -355,7 +385,7 @@ CREATE TABLE dbo.AuditoriaLog
 GO
 
 /* =========================================
-   13. FincaEvidencias
+   14. FincaEvidencias
    ========================================= */
 CREATE TABLE dbo.FincaEvidencias
 (

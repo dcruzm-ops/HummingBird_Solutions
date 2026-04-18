@@ -41,6 +41,104 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER TRIGGER dbo.TR_EvaluacionesTecnicas_GenerarPlanPago
+ON dbo.EvaluacionesTecnicas
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @IdFinca INT;
+    DECLARE @Anio INT = YEAR(SYSDATETIME()) + 1;
+
+    DECLARE cursorFincas CURSOR LOCAL FAST_FORWARD FOR
+        SELECT DISTINCT i.IdFinca
+        FROM inserted i
+        INNER JOIN deleted d ON d.IdEvaluacion = i.IdEvaluacion
+        INNER JOIN dbo.Fincas f ON f.IdFinca = i.IdFinca
+        WHERE i.EstadoEvaluacion = 'Evaluada – Califica'
+          AND i.DecisionTecnica = 'Califica'
+          AND (d.EstadoEvaluacion <> i.EstadoEvaluacion OR ISNULL(d.DecisionTecnica, '') <> ISNULL(i.DecisionTecnica, ''))
+          AND EXISTS (
+              SELECT 1
+              FROM dbo.ConfiguracionesPago cp
+              WHERE cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
+                AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1))
+          );
+
+    OPEN cursorFincas;
+    FETCH NEXT FROM cursorFincas INTO @IdFinca;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        BEGIN TRY
+            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
+        END TRY
+        BEGIN CATCH
+            -- Si falta cuenta validada o configuración activa, no se cae la transacción principal.
+            PRINT CONCAT('TR_EvaluacionesTecnicas_GenerarPlanPago omitido para finca ', @IdFinca, ': ', ERROR_MESSAGE());
+        END CATCH;
+
+        FETCH NEXT FROM cursorFincas INTO @IdFinca;
+    END
+
+    CLOSE cursorFincas;
+    DEALLOCATE cursorFincas;
+END;
+GO
+
+CREATE OR ALTER TRIGGER dbo.TR_CuentasBancarias_GenerarPlanPagoPendiente
+ON dbo.CuentasBancarias
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @IdFinca INT;
+    DECLARE @Anio INT = YEAR(SYSDATETIME()) + 1;
+
+    DECLARE cursorFincas CURSOR LOCAL FAST_FORWARD FOR
+        SELECT DISTINCT f.IdFinca
+        FROM inserted i
+        INNER JOIN deleted d ON d.IdCuentaBancaria = i.IdCuentaBancaria
+        INNER JOIN dbo.Fincas f ON f.IdPropietario = i.IdUsuario
+        WHERE i.EstadoValidacion = 'Validada'
+          AND ISNULL(d.EstadoValidacion, '') <> 'Validada'
+          AND f.EstadoFinca = 'Aprobada'
+          AND EXISTS (
+              SELECT 1
+              FROM dbo.EvaluacionesTecnicas e
+              WHERE e.IdFinca = f.IdFinca
+                AND e.EstadoEvaluacion = 'Evaluada – Califica'
+                AND e.DecisionTecnica = 'Califica'
+          )
+          AND EXISTS (
+              SELECT 1
+              FROM dbo.ConfiguracionesPago cp
+              WHERE cp.FechaVigenciaDesde <= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1)
+                AND (cp.FechaVigenciaHasta IS NULL OR cp.FechaVigenciaHasta >= DATEFROMPARTS(YEAR(SYSDATETIME()) + 1, 1, 1))
+          );
+
+    OPEN cursorFincas;
+    FETCH NEXT FROM cursorFincas INTO @IdFinca;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        BEGIN TRY
+            EXEC dbo.SP_Pagos_GenerarPlanPago @IdFinca = @IdFinca, @Anio = @Anio, @Simular = 0;
+        END TRY
+        BEGIN CATCH
+            PRINT CONCAT('TR_CuentasBancarias_GenerarPlanPagoPendiente omitido para finca ', @IdFinca, ': ', ERROR_MESSAGE());
+        END CATCH;
+
+        FETCH NEXT FROM cursorFincas INTO @IdFinca;
+    END
+
+    CLOSE cursorFincas;
+    DEALLOCATE cursorFincas;
+END;
+GO
+
 CREATE OR ALTER TRIGGER dbo.TR_Fincas_Auditoria
 ON dbo.Fincas
 AFTER INSERT, UPDATE, DELETE
