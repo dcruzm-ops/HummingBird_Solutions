@@ -1,3 +1,4 @@
+@model List<PSA.EntidadesDTO.DTOs.Pagos.AdminPaymentPlanDto>
 @{
     ViewData["Title"] = "Planes de pago";
 }
@@ -5,32 +6,69 @@
     <div class="cabecera-pagina">
         <div>
             <span class="eyebrow">Módulo de pagos</span>
-            <h2>Planes de pago</h2>
-            <p>Vista administrativa para consulta de planes y su progreso.</p>
+            <h2>Planes de pago (administración)</h2>
+            <p>Consulta global con filtros por ubicación, estado y situación bancaria.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Reportes" asp-action="Index">Ver reportes</a>
     </div>
 
     <section class="tarjeta-panel">
+        <form method="get" class="d-flex flex-wrap gap-2 mb-3">
+            <input class="form-control" style="max-width:120px" type="number" name="anio" value="@ViewBag.Anio" placeholder="Año" />
+            <input class="form-control" style="max-width:180px" type="text" name="provincia" value="@ViewBag.Provincia" placeholder="Provincia" />
+            <input class="form-control" style="max-width:180px" type="text" name="canton" value="@ViewBag.Canton" placeholder="Cantón" />
+            <input class="form-control" style="max-width:180px" type="text" name="distrito" value="@ViewBag.Distrito" placeholder="Distrito" />
+            <select class="form-select" style="max-width:220px" name="estadoPlan">
+                <option value="">Estado plan (todos)</option>
+                <option value="PendienteDatosBancarios">PendienteDatosBancarios</option>
+                <option value="PendienteAprobacionFinal">PendienteAprobacionFinal</option>
+                <option value="Activo">Activo</option>
+                <option value="Finalizado">Finalizado</option>
+                <option value="Cancelado">Cancelado</option>
+            </select>
+            <select class="form-select" style="max-width:180px" name="estadoBancario">
+                <option value="">Estado bancario (todos)</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Validada">Validada</option>
+                <option value="Rechazada">Rechazada</option>
+            </select>
+            <button type="submit" class="boton-secundario">Filtrar</button>
+        </form>
+
         <div class="tabla-responsive">
             <table class="tabla-base">
                 <thead>
                     <tr>
                         <th>Plan</th>
                         <th>Finca</th>
-                        <th>Año</th>
+                        <th>Propietario</th>
+                        <th>Ubicación</th>
                         <th>Estado</th>
+                        <th>Cuenta</th>
+                        <th>Monto mensual</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>PLAN-2026-001</td>
-                        <td>Río Verde</td>
-                        <td>2026</td>
-                        <td><span class="badge-estado badge-exito">Activo</span></td>
-                        <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="1">Ver detalle</a></td>
-                    </tr>
+                @if (!Model.Any())
+                {
+                    <tr><td colspan="8" class="text-center text-muted">No hay planes para los filtros seleccionados.</td></tr>
+                }
+                else
+                {
+                    @foreach (var plan in Model)
+                    {
+                        <tr>
+                            <td>#@plan.IdPlanPago (@plan.Anio)</td>
+                            <td>@plan.NombreFinca</td>
+                            <td>@plan.Propietario</td>
+                            <td>@plan.Provincia, @plan.Canton, @plan.Distrito</td>
+                            <td>@plan.EstadoPlan</td>
+                            <td>@plan.EstadoBancario (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
+                            <td>₡@plan.MontoMensual.ToString("N2")</td>
+                            <td><a class="boton-link" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a></td>
+                        </tr>
+                    }
+                }
                 </tbody>
             </table>
         </div>

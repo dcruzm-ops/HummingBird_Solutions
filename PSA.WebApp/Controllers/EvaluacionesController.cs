@@ -228,6 +228,15 @@ namespace PSA.WebApp.Controllers
                 "Detalle de visita técnica y trazabilidad de ajustes.");
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new DetalleFincaParaEvaluacionDTO();
+            var idIngeniero = ObtenerIdUsuarioSesion();
+            if (idIngeniero > 0 && detalle.IdEvaluacion > 0)
+            {
+                ViewBag.ImpactoPago = await ObtenerSeguroDesdeApiAsync<EngineerPaymentImpactDto>(
+                    client,
+                    $"api/Pagos/ingeniero/{idIngeniero}/evaluaciones/{detalle.IdEvaluacion}/impacto",
+                    "No fue posible cargar el impacto en plan de pago.");
+            }
+
             return View(detalle);
         }
 

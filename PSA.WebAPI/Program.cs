@@ -55,6 +55,7 @@ builder.Services.AddScoped<LandingDAO>();
 
 builder.Services.AddScoped<PSA.AppCore.Services.IPaymentCalculationService, PSA.AppCore.Services.PaymentCalculationService>();
 builder.Services.AddScoped<PSA.AppCore.Services.IPaymentPlanService, PSA.AppCore.Services.PaymentPlanService>();
+builder.Services.AddScoped<PSA.AppCore.Services.IPaymentPlanReadService, PSA.AppCore.Services.PaymentPlanReadService>();
 builder.Services.AddScoped<FincaService>();
 builder.Services.AddScoped<EvaluacionService>();
 builder.Services.AddScoped<FincaEvidenciaService>();

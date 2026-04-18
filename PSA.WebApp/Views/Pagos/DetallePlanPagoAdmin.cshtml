@@ -1,0 +1,66 @@
+@model PSA.EntidadesDTO.DTOs.Pagos.AdminPaymentPlanDetailDto
+@{ ViewData["Title"] = "Detalle del plan"; }
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span>
+            <h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2>
+            <p>Detalle operativo: cálculo, cuotas y auditoría.</p>
+        </div>
+        <a class="boton-secundario" asp-action="PlanesPago">Volver</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <ul class="lista-timeline">
+            <li>Propietario: @Model.Plan.Propietario</li>
+            <li>Ingeniero: @Model.Plan.Ingeniero</li>
+            <li>Estado del plan: @Model.Plan.EstadoPlan</li>
+            <li>Estado bancario: @Model.Plan.EstadoBancario (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</li>
+            <li>Versión de configuración: @Model.Plan.VersionConfiguracion</li>
+            <li>Precio base por hectárea: ₡@Model.Calculo.PrecioBasePorHectarea.ToString("N2")</li>
+            <li>Hectáreas aprobadas: @Model.Calculo.HectareasAprobadas.ToString("N2")</li>
+            <li>Porcentaje total aplicado: @Model.Calculo.PorcentajeTotalAplicado.ToString("N2")%</li>
+            <li>Monto mensual: ₡@Model.Plan.MontoMensual.ToString("N2")</li>
+            <li>Monto anual: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
+        </ul>
+    </section>
+
+    <section class="tarjeta-panel">
+        <h3>Cuotas</h3>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead><tr><th>Mes</th><th>Programada</th><th>Monto</th><th>Pendiente</th><th>Estado</th><th>Pago</th></tr></thead>
+                <tbody>
+                @foreach (var cuota in Model.Cuotas)
+                {
+                    <tr>
+                        <td>@cuota.Mes</td>
+                        <td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                        <td>₡@cuota.MontoProgramado.ToString("N2")</td>
+                        <td>₡@cuota.MontoPendiente.ToString("N2")</td>
+                        <td>@cuota.EstadoCuota</td>
+                        <td>@(cuota.FechaPago?.ToString("dd/MM/yyyy") ?? "N/A")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <h3>Bitácora del plan</h3>
+        <ul class="lista-timeline">
+            @if (!Model.Bitacora.Any())
+            {
+                <li>Sin registros de auditoría disponibles para este plan.</li>
+            }
+            else
+            {
+                @foreach (var log in Model.Bitacora)
+                {
+                    <li>@log.FechaAccion.ToString("dd/MM/yyyy HH:mm") - @log.Accion - @(log.Detalle ?? "Sin detalle")</li>
+                }
+            }
+        </ul>
+    </section>
+</section>

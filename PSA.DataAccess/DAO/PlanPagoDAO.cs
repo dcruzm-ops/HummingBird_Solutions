@@ -500,6 +500,418 @@ ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
         return Convert.ToInt32(result ?? 0);
     }
 
+    public async Task<List<OwnerPaymentPlanDto>> ObtenerPlanesOwnerAsync(int idPropietario)
+    {
+        const string sql = @"
+SELECT
+    pp.IdPlanPago,
+    pp.IdFinca,
+    f.NombreFinca,
+    pp.Anio,
+    pp.EstadoPlan,
+    pp.MontoMensualCalculado,
+    CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnual,
+    cb.EstadoValidacion AS EstadoCuentaBancaria,
+    cb.NumeroCuenta,
+    dc.HectareasAprobadas,
+    dc.VegetacionFinal,
+    dc.PorcentajeTotalAplicado,
+    dc.PorcentajeTopeAplicado,
+    dc.PorcentajeTotalAntesTope
+FROM dbo.PlanesPago pp
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+LEFT JOIN dbo.CuentasBancarias cb ON cb.IdCuentaBancaria = pp.IdCuentaBancaria
+LEFT JOIN dbo.PlanesPagoDetalleCalculo dc ON dc.IdPlanPago = pp.IdPlanPago
+WHERE f.IdPropietario = @IdPropietario
+ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdPropietario", idPropietario);
+
+        using var reader = await command.ExecuteReaderAsync();
+        var resultado = new List<OwnerPaymentPlanDto>();
+        while (await reader.ReadAsync())
+        {
+            var cuenta = reader["NumeroCuenta"]?.ToString();
+            var porcentajeTope = reader["PorcentajeTopeAplicado"] == DBNull.Value ? 0 : reader.GetDecimal(reader.GetOrdinal("PorcentajeTopeAplicado"));
+            var porcentajeAntesTope = reader["PorcentajeTotalAntesTope"] == DBNull.Value ? 0 : reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAntesTope"));
+            resultado.Add(new OwnerPaymentPlanDto
+            {
+                IdPlanPago = reader.GetInt32(reader.GetOrdinal("IdPlanPago")),
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
+                EstadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty,
+                MontoMensual = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
+                MontoAnual = reader.GetDecimal(reader.GetOrdinal("MontoAnual")),
+                EstadoCuentaBancaria = reader["EstadoCuentaBancaria"]?.ToString() ?? "Pendiente",
+                CuentaBancariaMascara = MascaraCuenta(cuenta),
+                ResumenCalculo = new OwnerPaymentCalculationSummaryDto
+                {
+                    HectareasAprobadas = reader["HectareasAprobadas"] == DBNull.Value ? 0 : reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
+                    CoberturaVegetacion = reader["VegetacionFinal"]?.ToString() ?? "No disponible",
+                    AjusteAplicadoPorcentaje = reader["PorcentajeTotalAplicado"] == DBNull.Value ? 0 : reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAplicado")),
+                    TopeAplicadoPorcentaje = porcentajeTope,
+                    SeAplicoTope = porcentajeAntesTope > porcentajeTope && porcentajeTope > 0
+                }
+            });
+        }
+
+        return resultado;
+    }
+
+    public async Task<OwnerPaymentPlanDetailDto?> ObtenerDetalleOwnerAsync(int idPropietario, int idPlanPago)
+    {
+        var planes = await ObtenerPlanesOwnerAsync(idPropietario);
+        var plan = planes.FirstOrDefault(p => p.IdPlanPago == idPlanPago);
+        if (plan == null)
+        {
+            return null;
+        }
+
+        return new OwnerPaymentPlanDetailDto
+        {
+            Plan = plan,
+            Cuotas = await ObtenerCuotasPorPlanAsync(idPlanPago)
+        };
+    }
+
+    public async Task<EngineerPaymentImpactDto?> ObtenerImpactoPagoIngenieroAsync(int idIngeniero, int idEvaluacion)
+    {
+        const string sql = @"
+SELECT TOP 1
+    e.IdEvaluacion,
+    f.IdFinca,
+    f.NombreFinca,
+    e.DecisionTecnica,
+    pp.IdPlanPago,
+    pp.EstadoPlan,
+    pp.MontoMensualCalculado,
+    CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnual,
+    cb.EstadoValidacion AS EstadoCuentaBancaria,
+    pp.IdCuentaBancaria
+FROM dbo.EvaluacionesTecnicas e
+INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
+LEFT JOIN dbo.PlanesPago pp ON pp.IdEvaluacion = e.IdEvaluacion
+LEFT JOIN dbo.CuentasBancarias cb ON cb.IdCuentaBancaria = pp.IdCuentaBancaria
+WHERE e.IdEvaluacion = @IdEvaluacion
+  AND e.IdIngeniero = @IdIngeniero;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdEvaluacion", idEvaluacion);
+        command.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
+
+        using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        var decision = reader["DecisionTecnica"]?.ToString() ?? string.Empty;
+        var idPlan = reader["IdPlanPago"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdPlanPago"));
+        var estadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty;
+        var estadoCuenta = reader["EstadoCuentaBancaria"]?.ToString() ?? "Pendiente";
+
+        return new EngineerPaymentImpactDto
+        {
+            IdEvaluacion = reader.GetInt32(reader.GetOrdinal("IdEvaluacion")),
+            IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+            NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+            DecisionTecnica = decision,
+            GeneroPlan = idPlan.HasValue,
+            IdPlanPago = idPlan,
+            EstadoContinuidad = ResolverEstadoContinuidad(decision, idPlan.HasValue, estadoPlan, estadoCuenta),
+            MontoMensualReferencial = reader["MontoMensualCalculado"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
+            MontoAnualReferencial = reader["MontoAnual"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("MontoAnual")),
+            EstadoCuentaBancaria = estadoCuenta,
+            CuentaRegistrada = reader["IdCuentaBancaria"] != DBNull.Value,
+            CuentaValidada = string.Equals(estadoCuenta, "Validada", StringComparison.OrdinalIgnoreCase)
+        };
+    }
+
+    public async Task<List<AdminPaymentPlanDto>> ObtenerPlanesAdminAsync(AdminPaymentPlanFilterDto filtro)
+    {
+        filtro ??= new AdminPaymentPlanFilterDto();
+        var condiciones = new List<string>();
+        var parametros = new List<SqlParameter>();
+
+        if (filtro.Anio.HasValue)
+        {
+            condiciones.Add("pp.Anio = @Anio");
+            parametros.Add(new SqlParameter("@Anio", filtro.Anio.Value));
+        }
+
+        if (filtro.IdFinca.HasValue)
+        {
+            condiciones.Add("pp.IdFinca = @IdFinca");
+            parametros.Add(new SqlParameter("@IdFinca", filtro.IdFinca.Value));
+        }
+
+        if (filtro.IdPropietario.HasValue)
+        {
+            condiciones.Add("f.IdPropietario = @IdPropietario");
+            parametros.Add(new SqlParameter("@IdPropietario", filtro.IdPropietario.Value));
+        }
+
+        if (filtro.IdIngeniero.HasValue)
+        {
+            condiciones.Add("e.IdIngeniero = @IdIngeniero");
+            parametros.Add(new SqlParameter("@IdIngeniero", filtro.IdIngeniero.Value));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtro.Provincia))
+        {
+            condiciones.Add("f.Provincia = @Provincia");
+            parametros.Add(new SqlParameter("@Provincia", filtro.Provincia.Trim()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtro.Canton))
+        {
+            condiciones.Add("f.Canton = @Canton");
+            parametros.Add(new SqlParameter("@Canton", filtro.Canton.Trim()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtro.Distrito))
+        {
+            condiciones.Add("f.Distrito = @Distrito");
+            parametros.Add(new SqlParameter("@Distrito", filtro.Distrito.Trim()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtro.EstadoPlan))
+        {
+            condiciones.Add("pp.EstadoPlan = @EstadoPlan");
+            parametros.Add(new SqlParameter("@EstadoPlan", filtro.EstadoPlan.Trim()));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filtro.EstadoBancario))
+        {
+            condiciones.Add("COALESCE(cb.EstadoValidacion, 'Pendiente') = @EstadoBancario");
+            parametros.Add(new SqlParameter("@EstadoBancario", filtro.EstadoBancario.Trim()));
+        }
+
+        var where = condiciones.Count > 0 ? $"WHERE {string.Join(" AND ", condiciones)}" : string.Empty;
+        var sql = $@"
+SELECT
+    pp.IdPlanPago,
+    pp.IdFinca,
+    f.NombreFinca,
+    f.Provincia,
+    f.Canton,
+    f.Distrito,
+    pp.Anio,
+    pp.EstadoPlan,
+    pp.MontoMensualCalculado,
+    CAST(pp.MontoMensualCalculado * 12 AS DECIMAL(12,2)) AS MontoAnual,
+    COALESCE(cb.EstadoValidacion, 'Pendiente') AS EstadoBancario,
+    cb.NumeroCuenta,
+    cp.Version AS VersionConfiguracion,
+    prop.Nombre + ' ' + prop.Apellido1 AS Propietario,
+    e.IdIngeniero,
+    COALESCE(ing.Nombre + ' ' + ing.Apellido1, 'Sin asignar') AS Ingeniero
+FROM dbo.PlanesPago pp
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+INNER JOIN dbo.Usuarios prop ON prop.IdUsuario = f.IdPropietario
+INNER JOIN dbo.ConfiguracionesPago cp ON cp.IdConfiguracionPago = pp.IdConfiguracionPago
+LEFT JOIN dbo.CuentasBancarias cb ON cb.IdCuentaBancaria = pp.IdCuentaBancaria
+LEFT JOIN dbo.EvaluacionesTecnicas e ON e.IdEvaluacion = pp.IdEvaluacion
+LEFT JOIN dbo.Usuarios ing ON ing.IdUsuario = e.IdIngeniero
+{where}
+ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var command = new SqlCommand(sql, connection);
+        if (parametros.Count > 0)
+        {
+            command.Parameters.AddRange(parametros.ToArray());
+        }
+
+        using var reader = await command.ExecuteReaderAsync();
+        var resultado = new List<AdminPaymentPlanDto>();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new AdminPaymentPlanDto
+            {
+                IdPlanPago = reader.GetInt32(reader.GetOrdinal("IdPlanPago")),
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Propietario = reader["Propietario"]?.ToString() ?? string.Empty,
+                IdIngeniero = reader["IdIngeniero"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("IdIngeniero")),
+                Ingeniero = reader["Ingeniero"]?.ToString() ?? string.Empty,
+                Provincia = reader["Provincia"]?.ToString() ?? string.Empty,
+                Canton = reader["Canton"]?.ToString() ?? string.Empty,
+                Distrito = reader["Distrito"]?.ToString() ?? string.Empty,
+                Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
+                EstadoPlan = reader["EstadoPlan"]?.ToString() ?? string.Empty,
+                EstadoBancario = reader["EstadoBancario"]?.ToString() ?? "Pendiente",
+                CuentaBancariaMascara = MascaraCuenta(reader["NumeroCuenta"]?.ToString()),
+                MontoMensual = reader.GetDecimal(reader.GetOrdinal("MontoMensualCalculado")),
+                MontoAnual = reader.GetDecimal(reader.GetOrdinal("MontoAnual")),
+                VersionConfiguracion = reader.GetInt32(reader.GetOrdinal("VersionConfiguracion"))
+            });
+        }
+
+        return resultado;
+    }
+
+    public async Task<AdminPaymentPlanDetailDto?> ObtenerDetalleAdminAsync(int idPlanPago)
+    {
+        var plan = (await ObtenerPlanesAdminAsync(new AdminPaymentPlanFilterDto()))
+            .FirstOrDefault(p => p.IdPlanPago == idPlanPago);
+        if (plan == null)
+        {
+            return null;
+        }
+
+        const string sqlDetalle = @"
+SELECT TOP 1 *
+FROM dbo.PlanesPagoDetalleCalculo
+WHERE IdPlanPago = @IdPlanPago;";
+
+        const string sqlBitacora = @"
+SELECT TOP 20 FechaAccion, Accion, Detalle, IdUsuario
+FROM dbo.AuditoriaLog
+WHERE Modulo = 'Pagos'
+  AND IdRegistroAfectado = @IdPlanPago
+ORDER BY FechaAccion DESC;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var commandDetalle = new SqlCommand(sqlDetalle, connection);
+        commandDetalle.Parameters.AddWithValue("@IdPlanPago", idPlanPago);
+        using var readerDetalle = await commandDetalle.ExecuteReaderAsync();
+
+        var calculo = new PlanPagoCalculoDetalleDTO();
+        if (await readerDetalle.ReadAsync())
+        {
+            calculo = new PlanPagoCalculoDetalleDTO
+            {
+                HectareasAprobadas = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("HectareasAprobadas")),
+                PrecioBasePorHectarea = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PrecioBasePorHectarea")),
+                MontoBaseMensual = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("MontoBaseMensual")),
+                PorcentajeVegetacion = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeVegetacion")),
+                PorcentajeHidrico = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeHidrico")),
+                PorcentajeNacientes = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeNacientes")),
+                PorcentajePendiente = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajePendiente")),
+                PorcentajeTotalAntesTope = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeTotalAntesTope")),
+                PorcentajeTopeAplicado = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeTopeAplicado")),
+                PorcentajeTotalAplicado = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeTotalAplicado")),
+                MontoAjusteMensual = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("MontoAjusteMensual")),
+                MontoFinalMensual = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("MontoFinalMensual")),
+                VegetacionFinal = readerDetalle["VegetacionFinal"]?.ToString() ?? string.Empty,
+                TieneRecursosHidricosFinal = readerDetalle.GetBoolean(readerDetalle.GetOrdinal("TieneRecursosHidricosFinal")),
+                CantidadNacientesFinal = readerDetalle.GetInt32(readerDetalle.GetOrdinal("CantidadNacientesFinal")),
+                PendienteFinal = readerDetalle["PendienteFinal"]?.ToString() ?? string.Empty
+            };
+        }
+
+        await readerDetalle.CloseAsync();
+
+        var bitacora = new List<AuditoriaPlanPagoDto>();
+        using var commandBitacora = new SqlCommand(sqlBitacora, connection);
+        commandBitacora.Parameters.AddWithValue("@IdPlanPago", idPlanPago);
+        using var readerBitacora = await commandBitacora.ExecuteReaderAsync();
+        while (await readerBitacora.ReadAsync())
+        {
+            bitacora.Add(new AuditoriaPlanPagoDto
+            {
+                FechaAccion = readerBitacora.GetDateTime(readerBitacora.GetOrdinal("FechaAccion")),
+                Accion = readerBitacora["Accion"]?.ToString() ?? string.Empty,
+                Detalle = readerBitacora["Detalle"]?.ToString(),
+                IdUsuario = readerBitacora["IdUsuario"] == DBNull.Value ? null : readerBitacora.GetInt32(readerBitacora.GetOrdinal("IdUsuario"))
+            });
+        }
+
+        return new AdminPaymentPlanDetailDto
+        {
+            Plan = plan,
+            Calculo = calculo,
+            Cuotas = await ObtenerCuotasPorPlanAsync(idPlanPago),
+            Bitacora = bitacora
+        };
+    }
+
+    private async Task<List<CuotaPlanPagoDTO>> ObtenerCuotasPorPlanAsync(int idPlanPago)
+    {
+        const string sql = @"
+SELECT pp.IdPlanPago, c.IdCuotaPago, pp.IdFinca, f.NombreFinca, pp.Anio, c.Mes, c.FechaProgramada, c.MontoProgramado, c.MontoPendiente, c.EstadoCuota, c.FechaPago
+FROM dbo.CuotasPago c
+INNER JOIN dbo.PlanesPago pp ON pp.IdPlanPago = c.IdPlanPago
+INNER JOIN dbo.Fincas f ON f.IdFinca = pp.IdFinca
+WHERE c.IdPlanPago = @IdPlanPago
+ORDER BY c.Mes;";
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdPlanPago", idPlanPago);
+        using var reader = await command.ExecuteReaderAsync();
+
+        var cuotas = new List<CuotaPlanPagoDTO>();
+        while (await reader.ReadAsync())
+        {
+            cuotas.Add(new CuotaPlanPagoDTO
+            {
+                IdPlanPago = reader.GetInt32(reader.GetOrdinal("IdPlanPago")),
+                IdCuotaPago = reader.GetInt32(reader.GetOrdinal("IdCuotaPago")),
+                IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
+                NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+                Anio = reader.GetInt32(reader.GetOrdinal("Anio")),
+                Mes = reader.GetInt32(reader.GetOrdinal("Mes")),
+                FechaProgramada = reader.GetDateTime(reader.GetOrdinal("FechaProgramada")),
+                MontoProgramado = reader.GetDecimal(reader.GetOrdinal("MontoProgramado")),
+                MontoPendiente = reader.GetDecimal(reader.GetOrdinal("MontoPendiente")),
+                EstadoCuota = reader["EstadoCuota"]?.ToString() ?? string.Empty,
+                FechaPago = reader["FechaPago"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaPago"))
+            });
+        }
+
+        return cuotas;
+    }
+
+    private static string? MascaraCuenta(string? numeroCuenta)
+    {
+        if (string.IsNullOrWhiteSpace(numeroCuenta))
+        {
+            return null;
+        }
+
+        var compacta = new string(numeroCuenta.Where(char.IsLetterOrDigit).ToArray());
+        if (compacta.Length <= 4)
+        {
+            return $"****{compacta}";
+        }
+
+        return $"****{compacta[^4..]}";
+    }
+
+    private static string ResolverEstadoContinuidad(string decisionTecnica, bool generoPlan, string estadoPlan, string estadoCuenta)
+    {
+        if (!string.Equals(decisionTecnica, "Califica", StringComparison.OrdinalIgnoreCase))
+        {
+            return "No califica";
+        }
+
+        if (!generoPlan)
+        {
+            return "Pendiente de generación";
+        }
+
+        if (!string.Equals(estadoCuenta, "Validada", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Bloqueado por cuenta bancaria";
+        }
+
+        return string.Equals(estadoPlan, EstadosPlanPago.Activo, StringComparison.OrdinalIgnoreCase)
+            ? "Plan generado correctamente"
+            : "Pendiente de continuidad";
+    }
+
     private static PlanPagoDTO MapPlanPago(SqlDataReader reader)
     {
         return new PlanPagoDTO
