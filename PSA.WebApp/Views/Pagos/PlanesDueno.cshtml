@@ -1,16 +1,19 @@
-@model List<PSA.EntidadesDTO.DTOs.Pagos.PlanPagoResumenDTO>
+@model List<PSA.EntidadesDTO.DTOs.Pagos.OwnerPaymentPlanDto>
 @{
-    ViewData["Title"] = "Planes de pago";
+    ViewData["Title"] = "Mis pagos";
     var cuentasValidadasActivas = ViewBag.CuentasValidadasActivas as List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO> ?? new();
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
             <span class="eyebrow">Consulta del propietario</span>
-            <h2>Planes de pago</h2>
-            <p>Un plan por finca aprobada para pago.</p>
+            <h2>Mis pagos</h2>
+            <p>Solo se muestran planes asociados a sus fincas aprobadas.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Pagos" asp-action="HistorialPagos">Ver historial de cuotas</a>
+        <div class="d-flex gap-2">
+            <a class="boton-secundario" asp-controller="Pagos" asp-action="CuentaBancaria">Cuenta bancaria</a>
+            <a class="boton-secundario" asp-controller="Pagos" asp-action="HistorialPagos">Historial de cuotas</a>
+        </div>
     </div>
 
     <section class="tarjeta-panel">
@@ -20,9 +23,9 @@
                     <tr>
                         <th>Finca</th>
                         <th>Año</th>
+                        <th>Estado</th>
                         <th>Monto mensual</th>
                         <th>Monto anual</th>
-                        <th>Estado</th>
                         <th>Cuenta bancaria</th>
                         <th>Acción</th>
                     </tr>
@@ -39,44 +42,48 @@
                             <tr>
                                 <td>@plan.NombreFinca</td>
                                 <td>@plan.Anio</td>
-                                <td>₡@plan.MontoMensualCalculado.ToString("N2")</td>
-                                <td>₡@plan.MontoAnualEstimado.ToString("N2")</td>
-                                <td><span class="badge-estado badge-pendiente">@plan.EstadoPlan</span></td>
-                                <td>
-                                    @if (plan.IdCuentaBancaria.HasValue)
-                                    {
-                                        <span>Asociada (#@plan.IdCuentaBancaria.Value)</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-danger">Pendiente de asociar</span>
-                                    }
-                                </td>
+                                <td>@plan.EstadoPlan</td>
+                                <td>₡@plan.MontoMensual.ToString("N2")</td>
+                                <td>₡@plan.MontoAnual.ToString("N2")</td>
+                                <td>@plan.EstadoCuentaBancaria (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
                                 <td>
                                     <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>
                                     @if (string.Equals(plan.EstadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase)
                                         || string.Equals(plan.EstadoPlan, "BorradorGenerado", StringComparison.OrdinalIgnoreCase)
                                         || string.Equals(plan.EstadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        <form method="post" asp-controller="Pagos" asp-action="AsociarCuentaPlan" class="mt-2">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="idPlanPago" value="@plan.IdPlanPago" />
-                                            <select name="idCuentaBancaria" required>
-                                                <option value="">Seleccionar cuenta...</option>
-                                                @foreach (var cuenta in cuentasValidadasActivas)
-                                                {
-                                                    if (plan.IdCuentaBancaria == cuenta.IdCuentaBancaria)
+                                        if (!cuentasValidadasActivas.Any())
+                                        {
+                                            <div class="text-danger mt-2">
+                                                No tiene cuentas bancarias validadas activas. Registre/valide una cuenta para continuar.
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <form method="post" asp-controller="Pagos" asp-action="AsociarCuentaPlan" class="mt-2">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="idPlanPago" value="@plan.IdPlanPago" />
+                                                <select name="idCuentaBancaria" required class="form-select form-select-sm">
+                                                    <option value="">Seleccionar cuenta...</option>
+                                                    @foreach (var cuenta in cuentasValidadasActivas)
                                                     {
-                                                        <option value="@cuenta.IdCuentaBancaria" selected="selected">@cuenta.Banco - @cuenta.NumeroCuenta</option>
+                                                        var mascara = cuenta.NumeroCuenta.Length <= 4
+                                                            ? $"****{cuenta.NumeroCuenta}"
+                                                            : $"****{cuenta.NumeroCuenta[^4..]}";
+                                                        var textoCuenta = $"{cuenta.Banco} - {mascara}";
+                                                        if (plan.IdCuentaBancaria == cuenta.IdCuentaBancaria)
+                                                        {
+                                                            <option value="@cuenta.IdCuentaBancaria" selected="selected">@textoCuenta</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@cuenta.IdCuentaBancaria">@textoCuenta</option>
+                                                        }
                                                     }
-                                                    else
-                                                    {
-                                                        <option value="@cuenta.IdCuentaBancaria">@cuenta.Banco - @cuenta.NumeroCuenta</option>
-                                                    }
-                                                }
-                                            </select>
-                                            <button type="submit" class="boton-secundario mt-1">Asignar cuenta</button>
-                                        </form>
+                                                </select>
+                                                <button type="submit" class="boton-secundario mt-1">Asociar cuenta</button>
+                                            </form>
+                                        }
                                     }
                                 </td>
                             </tr>

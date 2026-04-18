@@ -1,0 +1,46 @@
+@model PSA.EntidadesDTO.DTOs.Pagos.OwnerPaymentPlanDetailDto
+@{ ViewData["Title"] = "Detalle del plan"; }
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span>
+            <h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2>
+            <p>Resumen simple del cálculo y estado de cuotas.</p>
+        </div>
+        <a class="boton-secundario" asp-action="PlanesDueno">Volver</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <ul class="lista-timeline">
+            <li>Estado general: @Model.Plan.EstadoPlan</li>
+            <li>Monto mensual: ₡@Model.Plan.MontoMensual.ToString("N2")</li>
+            <li>Monto anual: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
+            <li>Cuenta bancaria: @Model.Plan.EstadoCuentaBancaria (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</li>
+            <li>Hectáreas aprobadas: @Model.Plan.ResumenCalculo.HectareasAprobadas.ToString("N2")</li>
+            <li>Cobertura/vegetación: @Model.Plan.ResumenCalculo.CoberturaVegetacion</li>
+            <li>Ajuste aplicado: @Model.Plan.ResumenCalculo.AjusteAplicadoPorcentaje.ToString("N2")%</li>
+            <li>Tope aplicado: @(Model.Plan.ResumenCalculo.SeAplicoTope ? $"Sí ({Model.Plan.ResumenCalculo.TopeAplicadoPorcentaje:N2}%)" : "No")</li>
+        </ul>
+    </section>
+
+    <section class="tarjeta-panel">
+        <h3>Cuotas mensuales</h3>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead><tr><th>Mes</th><th>Fecha programada</th><th>Monto</th><th>Estado</th><th>Fecha pago</th></tr></thead>
+                <tbody>
+                @foreach (var cuota in Model.Cuotas)
+                {
+                    <tr>
+                        <td>@cuota.Mes</td>
+                        <td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                        <td>₡@cuota.MontoProgramado.ToString("N2")</td>
+                        <td>@cuota.EstadoCuota</td>
+                        <td>@(cuota.FechaPago?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>

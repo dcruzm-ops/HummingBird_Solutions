@@ -6,7 +6,7 @@ namespace PSA.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PagosController(PagosManager pagosManager) : BaseApiController
+public class PagosController(PagosManager pagosManager) : ControllerBase
 {
     private readonly PagosManager _pagosManager = pagosManager;
 
@@ -17,7 +17,7 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
         {
             var plan = await _pagosManager.GenerarPlanPagoAsync(
                 request,
-                AdminSistemaId,
+                idUsuario: 1,
                 HttpContext.Connection.RemoteIpAddress?.ToString());
 
             if (plan == null)
@@ -26,6 +26,38 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
             }
 
             return Ok(plan);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
+    [HttpGet("dueno/{idPropietario:int}/planes")]
+    public async Task<ActionResult<List<OwnerPaymentPlanDto>>> ObtenerPlanesDueno([FromRoute] int idPropietario)
+    {
+        try
+        {
+            return Ok(await _pagosManager.ObtenerPlanesOwnerAsync(idPropietario));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
+    [HttpGet("dueno/{idPropietario:int}/planes/{idPlanPago:int}")]
+    public async Task<ActionResult<OwnerPaymentPlanDetailDto>> ObtenerDetalleDueno([FromRoute] int idPropietario, [FromRoute] int idPlanPago)
+    {
+        try
+        {
+            var detalle = await _pagosManager.ObtenerDetalleOwnerAsync(idPropietario, idPlanPago);
+            if (detalle == null)
+            {
+                return NotFound(new { Mensaje = "No se encontró el plan solicitado para el propietario." });
+            }
+
+            return Ok(detalle);
         }
         catch (InvalidOperationException ex)
         {
@@ -47,13 +79,18 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
         }
     }
 
-    [HttpGet("dueno/{idPropietario:int}/planes")]
-    public async Task<ActionResult<List<PlanPagoResumenDTO>>> ObtenerPlanesDueno([FromRoute] int idPropietario)
+    [HttpGet("ingeniero/{idIngeniero:int}/evaluaciones/{idEvaluacion:int}/impacto")]
+    public async Task<ActionResult<EngineerPaymentImpactDto>> ObtenerImpactoIngeniero([FromRoute] int idIngeniero, [FromRoute] int idEvaluacion)
     {
         try
         {
-            var planes = await _pagosManager.ObtenerPlanesDuenoAsync(idPropietario);
-            return Ok(planes);
+            var impacto = await _pagosManager.ObtenerImpactoIngenieroAsync(idIngeniero, idEvaluacion);
+            if (impacto == null)
+            {
+                return NotFound(new { Mensaje = "No se encontró la evaluación o no pertenece al ingeniero." });
+            }
+
+            return Ok(impacto);
         }
         catch (InvalidOperationException ex)
         {
@@ -61,42 +98,53 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
         }
     }
 
-    [HttpGet("ingeniero/{idIngeniero:int}/planes-pendientes")]
-    public async Task<ActionResult<List<PlanPagoResumenDTO>>> ObtenerPlanesPendientesIngeniero([FromRoute] int idIngeniero)
-    {
-        try
-        {
-            var planes = await _pagosManager.ObtenerPlanesPendientesIngenieroAsync(idIngeniero);
-            return Ok(planes);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { Mensaje = ex.Message });
-        }
-    }
-
-    [HttpGet("planes")]
-    public async Task<ActionResult<List<PlanPagoResumenDTO>>> ObtenerPlanesConFiltros(
+    [HttpGet("admin/planes")]
+    public async Task<ActionResult<List<AdminPaymentPlanDto>>> ObtenerPlanesAdmin(
         [FromQuery] int? anio = null,
         [FromQuery] int? idFinca = null,
         [FromQuery] int? idPropietario = null,
         [FromQuery] int? idIngeniero = null,
+        [FromQuery] string? provincia = null,
+        [FromQuery] string? canton = null,
+        [FromQuery] string? distrito = null,
         [FromQuery] string? estadoPlan = null,
-        [FromQuery] bool soloPendientes = false)
+        [FromQuery] string? estadoBancario = null)
     {
         try
         {
-            var planes = await _pagosManager.ObtenerPlanesConFiltrosAsync(new FiltroPlanesPagoDTO
+            var filtro = new AdminPaymentPlanFilterDto
             {
                 Anio = anio,
                 IdFinca = idFinca,
                 IdPropietario = idPropietario,
                 IdIngeniero = idIngeniero,
+                Provincia = provincia,
+                Canton = canton,
+                Distrito = distrito,
                 EstadoPlan = estadoPlan,
-                SoloPendientes = soloPendientes
-            });
+                EstadoBancario = estadoBancario
+            };
 
-            return Ok(planes);
+            return Ok(await _pagosManager.ObtenerPlanesAdminAsync(filtro));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Mensaje = ex.Message });
+        }
+    }
+
+    [HttpGet("admin/planes/{idPlanPago:int}")]
+    public async Task<ActionResult<AdminPaymentPlanDetailDto>> ObtenerDetalleAdmin([FromRoute] int idPlanPago)
+    {
+        try
+        {
+            var detalle = await _pagosManager.ObtenerDetalleAdminAsync(idPlanPago);
+            if (detalle == null)
+            {
+                return NotFound(new { Mensaje = "No se encontró el plan solicitado." });
+            }
+
+            return Ok(detalle);
         }
         catch (InvalidOperationException ex)
         {
@@ -143,7 +191,7 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
                 return BadRequest(new { Mensaje = "No fue posible asociar la cuenta al plan seleccionado." });
             }
 
-            return Ok(new { Mensaje = "Cuenta bancaria asociada correctamente al plan de pago. Estado: PendienteAprobacionFinal." });
+            return Ok(new { Mensaje = "Cuenta bancaria asociada correctamente al plan de pago." });
         }
         catch (InvalidOperationException ex)
         {
@@ -159,7 +207,7 @@ public class PagosController(PagosManager pagosManager) : BaseApiController
             var aprobado = await _pagosManager.AprobarPlanFinalAsync(idPlanPago, model, HttpContext.Connection.RemoteIpAddress?.ToString());
             if (!aprobado)
             {
-                return BadRequest(new { Mensaje = "No fue posible activar el plan. Verifique estado pendiente de aprobación y cuenta bancaria válida." });
+                return BadRequest(new { Mensaje = "No fue posible activar el plan. Verifique estado y cuenta bancaria válida." });
             }
 
             return Ok(new { Mensaje = "Plan de pago activado correctamente." });

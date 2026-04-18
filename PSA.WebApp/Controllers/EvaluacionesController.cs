@@ -228,7 +228,45 @@ namespace PSA.WebApp.Controllers
                 "Detalle de visita técnica y trazabilidad de ajustes.");
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new DetalleFincaParaEvaluacionDTO();
+            var idIngeniero = ObtenerIdUsuarioSesion();
+            if (idIngeniero > 0 && detalle.IdEvaluacion > 0)
+            {
+                ViewBag.ImpactoPago = await ObtenerSeguroDesdeApiAsync<EngineerPaymentImpactDto>(
+                    client,
+                    $"api/Pagos/ingeniero/{idIngeniero}/evaluaciones/{detalle.IdEvaluacion}/impacto",
+                    "No fue posible cargar el impacto en plan de pago.");
+            }
+
             return View(detalle);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AprobarActivacionPlanPago(int idEvaluacion, int idPlanPago)
+        {
+            if (idEvaluacion <= 0 || idPlanPago <= 0)
+            {
+                TempData["MensajeError"] = "No fue posible identificar la evaluación o el plan de pago a activar.";
+                return RedirectToAction(nameof(HistorialEvaluaciones));
+            }
+
+            var idIngeniero = ObtenerIdUsuarioSesion();
+            if (idIngeniero <= 0)
+            {
+                TempData["MensajeError"] = "No fue posible identificar al ingeniero en sesión.";
+                return RedirectToAction(nameof(DetalleEvaluacion), new { idEvaluacion });
+            }
+
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var resultado = await client.PutAsJsonAsync(
+                $"api/Pagos/ingeniero/planes/{idPlanPago}/aprobar-final",
+                new AprobarPlanPagoFinalDTO { IdIngeniero = idIngeniero });
+
+            TempData[resultado.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = resultado.IsSuccessStatusCode
+                ? "Plan de pago activado correctamente."
+                : "No fue posible activar el plan. Verifique que esté en PendienteAprobacionFinal y tenga cuenta válida.";
+
+            return RedirectToAction(nameof(DetalleEvaluacion), new { idEvaluacion });
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
