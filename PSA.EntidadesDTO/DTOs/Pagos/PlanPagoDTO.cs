@@ -130,6 +130,101 @@
         public bool SoloPendientes { get; set; }
     }
 
+    public class OwnerPaymentPlanDto
+    {
+        public int IdPlanPago { get; set; }
+        public int IdFinca { get; set; }
+        public string NombreFinca { get; set; } = string.Empty;
+        public int Anio { get; set; }
+        public string EstadoPlan { get; set; } = string.Empty;
+        public int? IdCuentaBancaria { get; set; }
+        public decimal MontoMensual { get; set; }
+        public decimal MontoAnual { get; set; }
+        public string EstadoCuentaBancaria { get; set; } = "Pendiente";
+        public string? CuentaBancariaMascara { get; set; }
+        public OwnerPaymentCalculationSummaryDto ResumenCalculo { get; set; } = new();
+    }
+
+    public class OwnerPaymentCalculationSummaryDto
+    {
+        public decimal HectareasAprobadas { get; set; }
+        public string CoberturaVegetacion { get; set; } = string.Empty;
+        public decimal AjusteAplicadoPorcentaje { get; set; }
+        public decimal TopeAplicadoPorcentaje { get; set; }
+        public bool SeAplicoTope { get; set; }
+    }
+
+    public class OwnerPaymentPlanDetailDto
+    {
+        public OwnerPaymentPlanDto Plan { get; set; } = new();
+        public List<CuotaPlanPagoDTO> Cuotas { get; set; } = new();
+    }
+
+    public class EngineerPaymentImpactDto
+    {
+        public int IdEvaluacion { get; set; }
+        public int IdFinca { get; set; }
+        public string NombreFinca { get; set; } = string.Empty;
+        public string DecisionTecnica { get; set; } = string.Empty;
+        public bool GeneroPlan { get; set; }
+        public int? IdPlanPago { get; set; }
+        public string EstadoContinuidad { get; set; } = string.Empty;
+        public decimal? MontoMensualReferencial { get; set; }
+        public decimal? MontoAnualReferencial { get; set; }
+        public string EstadoCuentaBancaria { get; set; } = "Pendiente";
+        public bool CuentaRegistrada { get; set; }
+        public bool CuentaValidada { get; set; }
+    }
+
+    public class AdminPaymentPlanFilterDto
+    {
+        public int? Anio { get; set; }
+        public int? IdFinca { get; set; }
+        public int? IdPropietario { get; set; }
+        public int? IdIngeniero { get; set; }
+        public string? Provincia { get; set; }
+        public string? Canton { get; set; }
+        public string? Distrito { get; set; }
+        public string? EstadoPlan { get; set; }
+        public string? EstadoBancario { get; set; }
+    }
+
+    public class AdminPaymentPlanDto
+    {
+        public int IdPlanPago { get; set; }
+        public int IdFinca { get; set; }
+        public string NombreFinca { get; set; } = string.Empty;
+        public string Propietario { get; set; } = string.Empty;
+        public int? IdIngeniero { get; set; }
+        public string Ingeniero { get; set; } = string.Empty;
+        public string Provincia { get; set; } = string.Empty;
+        public string Canton { get; set; } = string.Empty;
+        public string Distrito { get; set; } = string.Empty;
+        public int Anio { get; set; }
+        public string EstadoPlan { get; set; } = string.Empty;
+        public string EstadoBancario { get; set; } = string.Empty;
+        public string? CuentaBancariaMascara { get; set; }
+        public decimal MontoMensual { get; set; }
+        public decimal MontoAnual { get; set; }
+        public int VersionConfiguracion { get; set; }
+    }
+
+    public class AdminPaymentPlanDetailDto
+    {
+        public AdminPaymentPlanDto Plan { get; set; } = new();
+        public PlanPagoCalculoDetalleDTO Calculo { get; set; } = new();
+        public List<CuotaPlanPagoDTO> Cuotas { get; set; } = new();
+        public List<AuditoriaPlanPagoDto> Bitacora { get; set; } = new();
+    }
+
+    public class AuditoriaPlanPagoDto
+    {
+        public DateTime FechaAccion { get; set; }
+        public string Accion { get; set; } = string.Empty;
+        public string? Detalle { get; set; }
+        public int? IdUsuario { get; set; }
+    }
+
     public class PlanPagoGenerationContextDTO
     {
         public int IdFinca { get; set; }

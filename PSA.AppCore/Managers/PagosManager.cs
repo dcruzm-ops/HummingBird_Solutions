@@ -6,10 +6,12 @@ namespace PSA.AppCore.Managers;
 
 public class PagosManager(
     PlanPagoDAO planPagoDao,
-    IPaymentPlanService paymentPlanService)
+    IPaymentPlanService paymentPlanService,
+    IPaymentPlanReadService paymentPlanReadService)
 {
     private readonly PlanPagoDAO _planPagoDao = planPagoDao;
     private readonly IPaymentPlanService _paymentPlanService = paymentPlanService;
+    private readonly IPaymentPlanReadService _paymentPlanReadService = paymentPlanReadService;
 
     public async Task<PlanPagoDTO?> GenerarPlanPagoAsync(GenerarPlanPagoRequestDTO request, int idUsuario, string? ip)
     {
@@ -51,15 +53,61 @@ public class PagosManager(
         return _planPagoDao.ObtenerPlanesDuenoAsync(idPropietario);
     }
 
+    public Task<List<OwnerPaymentPlanDto>> ObtenerPlanesOwnerAsync(int idPropietario)
+    {
+        if (idPropietario <= 0)
+        {
+            throw new InvalidOperationException("Debe indicar un propietario válido.");
+        }
+
+        return _paymentPlanReadService.ObtenerPlanesOwnerAsync(idPropietario);
+    }
+
+    public Task<OwnerPaymentPlanDetailDto?> ObtenerDetalleOwnerAsync(int idPropietario, int idPlanPago)
+    {
+        if (idPropietario <= 0 || idPlanPago <= 0)
+        {
+            throw new InvalidOperationException("Propietario o plan inválido.");
+        }
+
+        return _paymentPlanReadService.ObtenerDetalleOwnerAsync(idPropietario, idPlanPago);
+    }
+
     public Task<List<PlanPagoResumenDTO>> ObtenerPlanesPendientesIngenieroAsync(int idIngeniero)
     {
         return _planPagoDao.ObtenerPlanesPendientesAprobacionIngenieroAsync(idIngeniero);
+    }
+
+    public Task<EngineerPaymentImpactDto?> ObtenerImpactoIngenieroAsync(int idIngeniero, int idEvaluacion)
+    {
+        if (idIngeniero <= 0 || idEvaluacion <= 0)
+        {
+            throw new InvalidOperationException("Ingeniero o evaluación inválidos.");
+        }
+
+        return _paymentPlanReadService.ObtenerImpactoIngenieroAsync(idIngeniero, idEvaluacion);
     }
 
     public Task<List<PlanPagoResumenDTO>> ObtenerPlanesConFiltrosAsync(FiltroPlanesPagoDTO filtro)
     {
         filtro ??= new FiltroPlanesPagoDTO();
         return _planPagoDao.ObtenerPlanesConFiltrosAsync(filtro);
+    }
+
+    public Task<List<AdminPaymentPlanDto>> ObtenerPlanesAdminAsync(AdminPaymentPlanFilterDto filtro)
+    {
+        filtro ??= new AdminPaymentPlanFilterDto();
+        return _paymentPlanReadService.ObtenerPlanesAdminAsync(filtro);
+    }
+
+    public Task<AdminPaymentPlanDetailDto?> ObtenerDetalleAdminAsync(int idPlanPago)
+    {
+        if (idPlanPago <= 0)
+        {
+            throw new InvalidOperationException("Debe indicar un plan válido.");
+        }
+
+        return _paymentPlanReadService.ObtenerDetalleAdminAsync(idPlanPago);
     }
 
     public Task<List<CuentaBancariaDuenoDTO>> ObtenerCuentasBancariasDuenoAsync(int idUsuario)
