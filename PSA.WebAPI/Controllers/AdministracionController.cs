@@ -183,17 +183,37 @@ namespace PSA.WebAPI.Controllers
         [HttpGet("cuentas-bancarias/pendientes")]
         public async Task<ActionResult<List<CuentaBancariaPendienteDTO>>> ObtenerCuentasPendientes()
         {
-            var cuentas = await _administracionManager.ObtenerCuentasPendientesAsync();
-            return Ok(cuentas);
+            try
+            {
+                var cuentas = await _administracionManager.ObtenerCuentasPendientesAsync();
+                return Ok(cuentas);
+            }
+            catch (Exception ex)
+            {
+                return Problem(
+                    title: "No se pudieron obtener las cuentas bancarias pendientes.",
+                    detail: ex.Message,
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpPost("cuentas-bancarias/validar")]
         [HttpPost("cuentas-bancarias/validacion")]
         public async Task<ActionResult<bool>> ValidarCuentaBancaria([FromBody] ValidacionCuentaBancariaDTO model)
         {
-            model.IdAdministrador = AdminSistemaId;
-            await _administracionManager.ValidarCuentaBancariaAsync(model, HttpContext.Connection.RemoteIpAddress?.ToString());
-            return Ok(true);
+            try
+            {
+                model.IdAdministrador = AdminSistemaId;
+                await _administracionManager.ValidarCuentaBancariaAsync(model, HttpContext.Connection.RemoteIpAddress?.ToString());
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return Problem(
+                    title: "No se pudo validar la cuenta bancaria.",
+                    detail: ex.Message,
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
         }
 
         [HttpGet("auditoria")]
