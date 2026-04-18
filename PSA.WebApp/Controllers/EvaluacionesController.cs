@@ -45,6 +45,39 @@ namespace PSA.WebApp.Controllers
             var client = _httpClientFactory.CreateClient("AuthApi");
             var detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
             if (detalle == null) return RedirectToAction(nameof(FincasPendientes));
+            var idIngenieroSesion = ObtenerIdUsuarioSesion();
+            if (idIngenieroSesion <= 0)
+            {
+                TempData["MensajeError"] = "No fue posible identificar la sesión del ingeniero actual.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (detalle.IdIngeniero.HasValue && detalle.IdIngeniero.Value != idIngenieroSesion)
+            {
+                TempData["MensajeError"] = "No puede editar esta evaluación porque está asignada a otro ingeniero.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (!detalle.IdIngeniero.HasValue)
+            {
+                var responseAsignar = await client.PutAsJsonAsync(
+                    $"api/EvaluacionesTecnicas/{idEvaluacion}/asignar",
+                    new AsignarEvaluacionDTO { IdIngeniero = idIngenieroSesion });
+
+                if (!responseAsignar.IsSuccessStatusCode)
+                {
+                    TempData["MensajeError"] = await ObtenerMensajeErrorApiAsync(responseAsignar, "No fue posible asignar la evaluación al ingeniero actual.");
+                    return RedirectToAction(nameof(FincasPendientes));
+                }
+
+                detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
+                if (detalle == null)
+                {
+                    TempData["MensajeError"] = "No fue posible recuperar el detalle de la evaluación después de asignarla.";
+                    return RedirectToAction(nameof(FincasPendientes));
+                }
+            }
+
             var evidencias = await ObtenerEvidenciasPorFincaAsync(client, detalle.IdFinca);
 
             CargarCatalogosEvaluacion();
@@ -63,6 +96,39 @@ namespace PSA.WebApp.Controllers
         {
             if (idEvaluacion <= 0 || model?.Formulario == null) return RedirectToAction(nameof(FincasPendientes));
             var client = _httpClientFactory.CreateClient("AuthApi");
+            var idIngenieroSesion = ObtenerIdUsuarioSesion();
+            if (idIngenieroSesion <= 0)
+            {
+                TempData["MensajeError"] = "No fue posible identificar la sesión del ingeniero actual.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            var detalleActual = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle");
+            if (detalleActual == null)
+            {
+                TempData["MensajeError"] = "No se encontró la evaluación solicitada.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (detalleActual.IdIngeniero.HasValue && detalleActual.IdIngeniero.Value != idIngenieroSesion)
+            {
+                TempData["MensajeError"] = "No puede guardar esta evaluación porque está asignada a otro ingeniero.";
+                return RedirectToAction(nameof(FincasPendientes));
+            }
+
+            if (!detalleActual.IdIngeniero.HasValue)
+            {
+                var responseAsignar = await client.PutAsJsonAsync(
+                    $"api/EvaluacionesTecnicas/{idEvaluacion}/asignar",
+                    new AsignarEvaluacionDTO { IdIngeniero = idIngenieroSesion });
+
+                if (!responseAsignar.IsSuccessStatusCode)
+                {
+                    TempData["MensajeError"] = await ObtenerMensajeErrorApiAsync(responseAsignar, "No fue posible asignar la evaluación antes de guardarla.");
+                    return RedirectToAction(nameof(FincasPendientes));
+                }
+            }
+
             var response = await client.PutAsJsonAsync($"api/EvaluacionesTecnicas/{idEvaluacion}/resultado", model.Formulario);
             if (!response.IsSuccessStatusCode)
             {
