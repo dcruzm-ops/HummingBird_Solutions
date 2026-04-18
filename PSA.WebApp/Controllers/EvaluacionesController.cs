@@ -7,6 +7,7 @@ using PSA.WebApp.Models;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace PSA.WebApp.Controllers
 {
@@ -65,7 +66,7 @@ namespace PSA.WebApp.Controllers
             var response = await client.PutAsJsonAsync($"api/EvaluacionesTecnicas/{idEvaluacion}/resultado", model.Formulario);
             if (!response.IsSuccessStatusCode)
             {
-                TempData["MensajeError"] = "No fue posible guardar la evaluación.";
+                TempData["MensajeError"] = await ObtenerMensajeErrorApiAsync(response, "No fue posible guardar la evaluación.");
                 model.Detalle = await client.GetFromJsonAsync<DetalleFincaParaEvaluacionDTO>($"api/EvaluacionesTecnicas/{idEvaluacion}/detalle") ?? new();
                 model.EvidenciasExistentes = await ObtenerEvidenciasPorFincaAsync(client, model.Detalle.IdFinca);
                 CargarCatalogosEvaluacion();
@@ -165,6 +166,29 @@ namespace PSA.WebApp.Controllers
         }
 
         private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
+
+        private static async Task<string> ObtenerMensajeErrorApiAsync(HttpResponseMessage response, string mensajePorDefecto)
+        {
+            try
+            {
+                var contenido = await response.Content.ReadAsStringAsync();
+                if (string.IsNullOrWhiteSpace(contenido))
+                    return mensajePorDefecto;
+
+                using var doc = JsonDocument.Parse(contenido);
+                if (doc.RootElement.TryGetProperty("mensaje", out var mensajeCamel) && mensajeCamel.ValueKind == JsonValueKind.String)
+                    return mensajeCamel.GetString() ?? mensajePorDefecto;
+
+                if (doc.RootElement.TryGetProperty("Mensaje", out var mensajePascal) && mensajePascal.ValueKind == JsonValueKind.String)
+                    return mensajePascal.GetString() ?? mensajePorDefecto;
+
+                return mensajePorDefecto;
+            }
+            catch
+            {
+                return mensajePorDefecto;
+            }
+        }
 
         private static async Task<List<FincaEvidenciaDTO>> ObtenerEvidenciasPorFincaAsync(HttpClient client, int idFinca)
         {

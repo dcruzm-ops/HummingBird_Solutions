@@ -75,11 +75,24 @@ namespace PSA.AppCore.Managers
             }
 
             dto.DecisionTecnica = dto.DecisionTecnica.Trim();
-            if (!dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase)
-                && !dto.DecisionTecnica.Equals("No Califica", StringComparison.OrdinalIgnoreCase))
+            if (dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase))
+            {
+                dto.DecisionTecnica = "Califica";
+            }
+            else if (dto.DecisionTecnica.Equals("No Califica", StringComparison.OrdinalIgnoreCase)
+                || dto.DecisionTecnica.Equals("No califica", StringComparison.OrdinalIgnoreCase))
+            {
+                dto.DecisionTecnica = "No Califica";
+            }
+            else
             {
                 throw new InvalidOperationException("La decisión técnica debe ser 'Califica' o 'No Califica'.");
             }
+
+            dto.VegetacionAjustada = string.IsNullOrWhiteSpace(dto.VegetacionAjustada) ? null : dto.VegetacionAjustada.Trim();
+            dto.UsoSueloAjustado = string.IsNullOrWhiteSpace(dto.UsoSueloAjustado) ? null : dto.UsoSueloAjustado.Trim();
+            dto.PendienteAjustada = string.IsNullOrWhiteSpace(dto.PendienteAjustada) ? null : dto.PendienteAjustada.Trim();
+            dto.Observaciones = string.IsNullOrWhiteSpace(dto.Observaciones) ? null : dto.Observaciones.Trim();
 
             return _evaluacionTecnicaDAO.RegistrarResultadoAsync(idEvaluacion, dto);
         }
