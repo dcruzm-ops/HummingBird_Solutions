@@ -69,6 +69,35 @@ namespace PSA.DataAccess.DAO
             };
         }
 
+
+        public async Task<TokenRecuperacion?> ObtenerTokenPorValorAsync(string token)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("dbo.SP_Auth_ObtenerTokenPorValor", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
+            command.Parameters.AddWithValue("@Token", token);
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            return new TokenRecuperacion
+            {
+                IdToken = reader.GetInt32(reader.GetOrdinal("IdToken")),
+                IdUsuario = reader.GetInt32(reader.GetOrdinal("IdUsuario")),
+                Token = reader["Token"]?.ToString() ?? string.Empty,
+                FechaCreacion = reader.GetDateTime(reader.GetOrdinal("FechaCreacion")),
+                FechaExpiracion = reader.GetDateTime(reader.GetOrdinal("FechaExpiracion")),
+                Usado = reader.GetBoolean(reader.GetOrdinal("Usado")),
+                FechaUso = reader["FechaUso"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaUso"))
+            };
+        }
+
         public async Task MarcarTokenComoUsadoAsync(int idToken)
         {
             using var connection = _connectionFactory.CreateConnection();
