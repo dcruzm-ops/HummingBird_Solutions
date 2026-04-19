@@ -34,7 +34,7 @@ public class PasswordRecoveryEmailSender : IPasswordRecoveryEmailSender
         _logger = logger;
     }
 
-    public async Task SendRecoveryEmailAsync(string destino, string nombreUsuario, string token, DateTime fechaExpiracionUtc)
+    public async Task SendRecoveryEmailAsync(string destino, string nombreUsuario, string token, DateTime fechaExpiracion)
     {
         var smtp = new SmtpSettingsDTO
         {
@@ -61,7 +61,7 @@ public class PasswordRecoveryEmailSender : IPasswordRecoveryEmailSender
         try
         {
             var correoService = new CorreoService(smtp);
-            await correoService.EnviarCorreoRecuperacionAsync(destino, nombreUsuario, token, fechaExpiracionUtc);
+            await correoService.EnviarCorreoRecuperacionAsync(destino, nombreUsuario, token, fechaExpiracion);
         }
         catch (Exception ex)
         {
