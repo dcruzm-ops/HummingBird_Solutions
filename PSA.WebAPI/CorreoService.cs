@@ -13,7 +13,7 @@ namespace PSA.WebAPI.Services
             _smtp = smtp;
         }
 
-        public void EnviarCorreoRecuperacion(string destino, string nombreUsuario, string enlace)
+        public async Task EnviarCorreoRecuperacionAsync(string destino, string nombreUsuario, string token, DateTime fechaExpiracionUtc)
         {
             var asunto = "Recuperación de contraseña - PSA Costa Rica";
 
@@ -23,29 +23,14 @@ namespace PSA.WebAPI.Services
                     <h2>Recuperación de contraseña</h2>
                     <p>Hola {nombreUsuario},</p>
                     <p>Recibimos una solicitud para restablecer tu contraseña.</p>
-                    <p>Haz clic en el siguiente enlace para continuar:</p>
-                    <p>
-                        <a href='{enlace}' style='background:#2f9e44;color:white;padding:10px 16px;text-decoration:none;border-radius:6px;'>
-                            Restablecer contraseña
-                        </a>
-                    </p>
+                    <p>Tu token de recuperación es:</p>
+                    <p style='font-size:24px;font-weight:700;letter-spacing:4px;'>{token}</p>
+                    <p>Este token vence el {fechaExpiracionUtc:yyyy-MM-dd HH:mm:ss} UTC (máximo 1 minuto).</p>
                     <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
-                    <p>Este enlace expirará pronto.</p>
                 </body>
                 </html>";
 
-            using var mensaje = new MailMessage();
-            mensaje.From = new MailAddress(_smtp.FromEmail, _smtp.FromName);
-            mensaje.To.Add(destino);
-            mensaje.Subject = asunto;
-            mensaje.Body = cuerpo;
-            mensaje.IsBodyHtml = true;
-
-            using var cliente = new SmtpClient(_smtp.Host, _smtp.Port);
-            cliente.Credentials = new NetworkCredential(_smtp.Username, _smtp.Password);
-            cliente.EnableSsl = _smtp.EnableSsl;
-
-            cliente.Send(mensaje);
+            await EnviarCorreoHtmlAsync(destino, asunto, cuerpo);
         }
 
         public void EnviarCorreoBienvenida(string destino, string nombreUsuario, string rol, string enlaceSistema)
@@ -107,6 +92,22 @@ namespace PSA.WebAPI.Services
             cliente.EnableSsl = _smtp.EnableSsl;
 
             cliente.Send(mensaje);
+        }
+
+        public async Task EnviarCorreoHtmlAsync(string destino, string asunto, string cuerpoHtml)
+        {
+            using var mensaje = new MailMessage();
+            mensaje.From = new MailAddress(_smtp.FromEmail, _smtp.FromName);
+            mensaje.To.Add(destino);
+            mensaje.Subject = asunto;
+            mensaje.Body = cuerpoHtml;
+            mensaje.IsBodyHtml = true;
+
+            using var cliente = new SmtpClient(_smtp.Host, _smtp.Port);
+            cliente.Credentials = new NetworkCredential(_smtp.Username, _smtp.Password);
+            cliente.EnableSsl = _smtp.EnableSsl;
+
+            await cliente.SendMailAsync(mensaje);
         }
     }
 }
