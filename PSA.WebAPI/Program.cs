@@ -1,5 +1,6 @@
 using PSA.AppCore;
 using PSA.AppCore.Managers;
+using PSA.AppCore.Services.Security;
 using PSA.AppCore.Services.Notifications;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess;
@@ -64,6 +65,8 @@ builder.Services.AddScoped<EvaluacionService>();
 builder.Services.AddScoped<FincaEvidenciaService>();
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
+builder.Services.AddScoped<IPasswordRecoveryPolicy, PasswordRecoveryPolicy>();
+builder.Services.AddScoped<IPasswordRecoveryEmailSender, PasswordRecoveryEmailSender>();
 builder.Services.AddScoped<EvaluacionTecnicaManager>();
 builder.Services.AddScoped<FincaManager>();
 builder.Services.AddScoped<AdministracionManager>();
