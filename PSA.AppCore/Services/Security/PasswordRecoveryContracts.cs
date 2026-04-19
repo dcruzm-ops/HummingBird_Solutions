@@ -7,7 +7,7 @@ public interface IPasswordRecoveryPolicy
 
 public interface IPasswordRecoveryEmailSender
 {
-    Task SendRecoveryEmailAsync(string destino, string nombreUsuario, string token, DateTime fechaExpiracionUtc);
+    Task SendRecoveryEmailAsync(string destino, string nombreUsuario, string token, DateTime fechaExpiracion);
 }
 
 public enum EstadoTokenRecuperacion

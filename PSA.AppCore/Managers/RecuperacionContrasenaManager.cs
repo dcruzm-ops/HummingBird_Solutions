@@ -32,16 +32,16 @@ namespace PSA.AppCore.Managers
 
         public async Task SolicitarRecuperacionAsync(string email)
         {
-            var (token, nombreUsuario, fechaExpiracionUtc) = await GenerarTokenConNombreAsync(email);
+            var (token, nombreUsuario, fechaExpiracion) = await GenerarTokenConNombreAsync(email);
 
             await _passwordRecoveryEmailSender.SendRecoveryEmailAsync(
                 destino: email.Trim(),
                 nombreUsuario: nombreUsuario,
                 token: token,
-                fechaExpiracionUtc: fechaExpiracionUtc);
+                fechaExpiracion: fechaExpiracion);
         }
 
-        public async Task<(string Token, string NombreUsuario, DateTime FechaExpiracionUtc)> GenerarTokenConNombreAsync(string email)
+        public async Task<(string Token, string NombreUsuario, DateTime FechaExpiracion)> GenerarTokenConNombreAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -66,8 +66,8 @@ namespace PSA.AppCore.Managers
             await _tokenRecuperacionDAO.InvalidarTokensActivosPorUsuarioAsync(usuario.IdUsuario);
 
             var token = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
-            var fechaExpiracionUtc = DateTime.UtcNow.Add(_passwordRecoveryPolicy.TokenLifetime);
-            await _tokenRecuperacionDAO.CrearTokenAsync(usuario.IdUsuario, token, fechaExpiracionUtc);
+            var fechaExpiracion = DateTime.Now.Add(_passwordRecoveryPolicy.TokenLifetime);
+            await _tokenRecuperacionDAO.CrearTokenAsync(usuario.IdUsuario, token, fechaExpiracion);
 
             await _auditoriaLogDAO.RegistrarEventoAsync(
                 idUsuario: usuario.IdUsuario,
@@ -78,18 +78,28 @@ namespace PSA.AppCore.Managers
                 detalle: "Se generó token de recuperación de contraseña."
             );
 
-            return (token, usuario.NombreCompleto, fechaExpiracionUtc);
+            return (token, usuario.NombreCompleto, fechaExpiracion);
         }
 
-        public async Task<TokenRecuperacionValidationResult> ValidarTokenAsync(string token)
+        public async Task<TokenRecuperacionValidationResult> ValidarTokenAsync(string token, string email)
         {
-            if (string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(email))
+            {
+                return new TokenRecuperacionValidationResult { Estado = EstadoTokenRecuperacion.Invalido };
+            }
+
+            var usuario = await _usuarioDAO.ObtenerPorEmailAsync(email.Trim());
+            if (usuario == null)
             {
                 return new TokenRecuperacionValidationResult { Estado = EstadoTokenRecuperacion.Invalido };
             }
 
             var registro = await _tokenRecuperacionDAO.ObtenerTokenPorValorAsync(token.Trim());
             var estado = DeterminarEstado(registro);
+            if (registro == null || registro.IdUsuario != usuario.IdUsuario)
+            {
+                estado = EstadoTokenRecuperacion.Invalido;
+            }
 
             await _auditoriaLogDAO.RegistrarEventoAsync(
                 idUsuario: registro?.IdUsuario,
@@ -107,7 +117,18 @@ namespace PSA.AppCore.Managers
 
         public async Task<bool> TokenEsValidoAsync(string token)
         {
-            var resultado = await ValidarTokenAsync(token);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return false;
+            }
+
+            var registro = await _tokenRecuperacionDAO.ObtenerTokenPorValorAsync(token.Trim());
+            return DeterminarEstado(registro) == EstadoTokenRecuperacion.Vigente;
+        }
+
+        public async Task<bool> TokenEsValidoAsync(string token, string email)
+        {
+            var resultado = await ValidarTokenAsync(token, email);
             return resultado.EsValido;
         }
 
@@ -122,11 +143,16 @@ namespace PSA.AppCore.Managers
             return TokenEsValidoAsync(token).GetAwaiter().GetResult();
         }
 
-        public async Task RestablecerContrasenaAsync(string token, string nuevaContrasena)
+        public async Task RestablecerContrasenaAsync(string token, string email, string nuevaContrasena)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
                 throw new InvalidOperationException("El token es obligatorio.");
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new InvalidOperationException("El correo es obligatorio.");
             }
 
             if (string.IsNullOrWhiteSpace(nuevaContrasena) || nuevaContrasena.Trim().Length < 8)
@@ -134,8 +160,19 @@ namespace PSA.AppCore.Managers
                 throw new InvalidOperationException("La nueva contraseña debe contener al menos 8 caracteres.");
             }
 
+            var usuario = await _usuarioDAO.ObtenerPorEmailAsync(email.Trim());
+            if (usuario == null)
+            {
+                throw new InvalidOperationException("token inválido");
+            }
+
             var registro = await _tokenRecuperacionDAO.ObtenerTokenPorValorAsync(token.Trim());
             var estado = DeterminarEstado(registro);
+            if (registro == null || registro.IdUsuario != usuario.IdUsuario)
+            {
+                estado = EstadoTokenRecuperacion.Invalido;
+            }
+
             if (estado != EstadoTokenRecuperacion.Vigente || registro == null)
             {
                 await _auditoriaLogDAO.RegistrarEventoAsync(
@@ -149,21 +186,21 @@ namespace PSA.AppCore.Managers
                 throw new InvalidOperationException(ObtenerMensajePorEstado(estado));
             }
 
-            var usuario = await _usuarioDAO.ObtenerPorIdAsync(registro.IdUsuario);
-            if (usuario == null)
+            var usuarioConToken = await _usuarioDAO.ObtenerPorIdAsync(registro.IdUsuario);
+            if (usuarioConToken == null)
             {
                 throw new InvalidOperationException("No se encontró el usuario asociado al token.");
             }
 
             var hash = _servicioHash.GenerarHash(nuevaContrasena.Trim());
-            await _usuarioDAO.ActualizarPasswordHashPorEmailAsync(usuario.Email, hash);
+            await _usuarioDAO.ActualizarPasswordHashPorEmailAsync(usuarioConToken.Email, hash);
             await _tokenRecuperacionDAO.MarcarTokenComoUsadoAsync(registro.IdToken);
 
             await _auditoriaLogDAO.RegistrarEventoAsync(
-                idUsuario: usuario.IdUsuario,
+                idUsuario: usuarioConToken.IdUsuario,
                 modulo: "Autenticacion",
                 tablaAfectada: "Usuarios",
-                idRegistroAfectado: usuario.IdUsuario,
+                idRegistroAfectado: usuarioConToken.IdUsuario,
                 accion: "CAMBIO_CONTRASENA_EXITOSO",
                 detalle: "Se restableció la contraseña usando token de recuperación."
             );
@@ -181,7 +218,7 @@ namespace PSA.AppCore.Managers
                 return EstadoTokenRecuperacion.Utilizado;
             }
 
-            return registro.FechaExpiracion <= DateTime.UtcNow
+            return registro.FechaExpiracion <= DateTime.Now
                 ? EstadoTokenRecuperacion.Expirado
                 : EstadoTokenRecuperacion.Vigente;
         }

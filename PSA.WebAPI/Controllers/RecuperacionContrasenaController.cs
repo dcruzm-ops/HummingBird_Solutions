@@ -61,16 +61,16 @@ namespace PSA.WebAPI.Controllers
         {
             try
             {
-                if (dto == null || string.IsNullOrWhiteSpace(dto.Token))
+                if (dto == null || string.IsNullOrWhiteSpace(dto.Token) || string.IsNullOrWhiteSpace(dto.Email))
                 {
                     return BadRequest(new RespuestaRecuperacionDTO
                     {
                         Exito = false,
-                        Mensaje = "Debe enviar un token válido."
+                        Mensaje = "Debe enviar token y correo válidos."
                     });
                 }
 
-                var validacion = await _manager.ValidarTokenAsync(dto.Token);
+                var validacion = await _manager.ValidarTokenAsync(dto.Token, dto.Email);
                 var mensaje = validacion.Estado switch
                 {
                     EstadoTokenRecuperacion.Vigente => "Token válido.",
@@ -79,9 +79,18 @@ namespace PSA.WebAPI.Controllers
                     _ => "token inválido"
                 };
 
+                if (!validacion.EsValido)
+                {
+                    return BadRequest(new RespuestaRecuperacionDTO
+                    {
+                        Exito = false,
+                        Mensaje = mensaje
+                    });
+                }
+
                 return Ok(new RespuestaRecuperacionDTO
                 {
-                    Exito = validacion.EsValido,
+                    Exito = true,
                     Mensaje = mensaje
                 });
             }
@@ -101,6 +110,7 @@ namespace PSA.WebAPI.Controllers
             try
             {
                 if (dto == null
+                    || string.IsNullOrWhiteSpace(dto.Email)
                     || string.IsNullOrWhiteSpace(dto.Token)
                     || string.IsNullOrWhiteSpace(dto.NuevaContrasena)
                     || string.IsNullOrWhiteSpace(dto.ConfirmarContrasena))
@@ -121,7 +131,7 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                await _manager.RestablecerContrasenaAsync(dto.Token, dto.NuevaContrasena);
+                await _manager.RestablecerContrasenaAsync(dto.Token, dto.Email, dto.NuevaContrasena);
                 return Ok(new RespuestaRecuperacionDTO
                 {
                     Exito = true,
