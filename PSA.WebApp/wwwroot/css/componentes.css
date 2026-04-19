@@ -340,15 +340,14 @@
     text-decoration: none;
 }
 
-body.menu-colapsado .contenedor-aplicacion {
-    grid-template-columns: 1fr;
-}
+@media (min-width: 993px) {
+    body.menu-colapsado .contenedor-aplicacion {
+        grid-template-columns: 1fr;
+    }
 
-body.menu-colapsado .barra-lateral {
-    width: 0;
-    padding-inline: 0;
-    overflow: hidden;
-    border-right-color: transparent;
+    body.menu-colapsado .barra-lateral {
+        display: none;
+    }
 }
 
     .item-menu:hover {
@@ -647,6 +646,13 @@ label, .form-label, .etiqueta-ui { color: var(--color-texto-principal); font-siz
     border: 1px solid var(--color-borde-suave);
 }
 
+.btn-outline-primary,
+.btn-outline-success {
+    background: transparent;
+    color: var(--color-accion);
+    border: 1px solid var(--color-accion);
+}
+
 .btn-danger,
 .boton-peligro,
 .btn-outline-danger {
@@ -666,6 +672,28 @@ label, .form-label, .etiqueta-ui { color: var(--color-texto-principal); font-siz
 .btn:hover,
 .boton-primario:hover,
 .boton-secundario:hover { filter: brightness(1.02); text-decoration: none; }
+
+.btn-primary:hover,
+.btn-success:hover,
+.btn-primary:focus-visible,
+.btn-success:focus-visible,
+.btn-primary:active,
+.btn-success:active {
+    background: color-mix(in srgb, var(--color-accion) 86%, #000 14%) !important;
+    border-color: color-mix(in srgb, var(--color-accion) 86%, #000 14%) !important;
+    color: #fff !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-primary:focus-visible,
+.btn-outline-success:focus-visible,
+.btn-outline-primary:active,
+.btn-outline-success:active {
+    background: color-mix(in srgb, var(--color-accion) 18%, transparent) !important;
+    border-color: var(--color-accion) !important;
+    color: var(--color-accion) !important;
+}
 
 button:focus-visible,
 .btn:focus-visible,
