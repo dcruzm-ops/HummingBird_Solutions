@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
             tap: false,
             maxBounds: limitesCostaRica,
             maxBoundsViscosity: 1.0
-        }).setView([9.7489, -83.7534], 8);
+        }).setView([9.9325, -84.0796], 12);
 
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
