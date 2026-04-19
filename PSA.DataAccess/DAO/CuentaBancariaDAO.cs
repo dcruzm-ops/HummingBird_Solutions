@@ -99,7 +99,9 @@ ORDER BY {ordenFecha};";
             command.Parameters.AddWithValue("@Observaciones", (object?)dto.Observaciones ?? DBNull.Value);
         }
 
-        if (columnas.Contains("ValidadoPor", StringComparer.OrdinalIgnoreCase))
+        if (columnas.Contains("ValidadoPor", StringComparer.OrdinalIgnoreCase)
+            && dto.IdAdministrador > 0
+            && await UsuarioExisteAsync(connection, dto.IdAdministrador))
         {
             asignaciones.Add("ValidadoPor = @ValidadoPor");
             command.Parameters.AddWithValue("@ValidadoPor", dto.IdAdministrador);
@@ -127,6 +129,19 @@ WHERE IdCuentaBancaria = @IdCuentaBancaria;";
         command.CommandText = sql;
 
         await command.ExecuteNonQueryAsync();
+    }
+
+    private static async Task<bool> UsuarioExisteAsync(SqlConnection connection, int idUsuario)
+    {
+        const string sql = @"
+SELECT 1
+FROM dbo.Usuarios
+WHERE IdUsuario = @IdUsuario;";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+        var existe = await command.ExecuteScalarAsync();
+        return existe != null && existe != DBNull.Value;
     }
 
     private static async Task<HashSet<string>> ObtenerColumnasCuentaBancariaAsync(SqlConnection connection)
