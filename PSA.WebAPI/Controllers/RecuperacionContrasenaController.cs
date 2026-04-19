@@ -79,9 +79,18 @@ namespace PSA.WebAPI.Controllers
                     _ => "token inválido"
                 };
 
+                if (!validacion.EsValido)
+                {
+                    return BadRequest(new RespuestaRecuperacionDTO
+                    {
+                        Exito = false,
+                        Mensaje = mensaje
+                    });
+                }
+
                 return Ok(new RespuestaRecuperacionDTO
                 {
-                    Exito = validacion.EsValido,
+                    Exito = true,
                     Mensaje = mensaje
                 });
             }

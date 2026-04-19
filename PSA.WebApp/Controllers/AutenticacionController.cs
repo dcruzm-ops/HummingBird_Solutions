@@ -21,7 +21,9 @@ namespace PSA.WebApp.Controllers
         [HttpGet] public IActionResult IniciarSesion() => View(new InicioSesionDTO());
         [HttpGet] public IActionResult RegistroUsuario() => View(new RegistrarUsuarioDTO());
         [HttpGet] public IActionResult RecuperarContrasena() => View(new RecuperarContrasenaDTO());
-        [HttpGet] public IActionResult ValidarTokenRecuperacion() => View(new ValidarTokenRecuperacionDTO());
+        [HttpGet]
+        public IActionResult ValidarTokenRecuperacion(string? email = null)
+            => View(new ValidarTokenRecuperacionDTO { Email = email ?? string.Empty });
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -92,7 +94,7 @@ namespace PSA.WebApp.Controllers
             if (!ModelState.IsValid) return View(dto);
             var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/RecuperacionContrasena/solicitar", dto);
             TempData[response.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = response.IsSuccessStatusCode ? "Se procesó la solicitud de recuperación." : "No fue posible procesar la solicitud.";
-            return RedirectToAction(nameof(ValidarTokenRecuperacion));
+            return RedirectToAction(nameof(ValidarTokenRecuperacion), new { email = dto.Email });
         }
 
         [HttpPost]
@@ -102,12 +104,12 @@ namespace PSA.WebApp.Controllers
             if (!ModelState.IsValid) return View(dto);
             var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/RecuperacionContrasena/validar-token", dto);
             if (!response.IsSuccessStatusCode) { ModelState.AddModelError(string.Empty, "Token inválido."); return View(dto); }
-            return RedirectToAction(nameof(RestablecerContrasena), new { tokenRecuperacion = dto.Token });
+            return RedirectToAction(nameof(RestablecerContrasena), new { tokenRecuperacion = dto.Token, email = dto.Email });
         }
 
         [HttpGet]
-        public IActionResult RestablecerContrasena(string? tokenRecuperacion = null)
-            => View(new RestablecerContrasenaDTO { Token = tokenRecuperacion ?? string.Empty });
+        public IActionResult RestablecerContrasena(string? tokenRecuperacion = null, string? email = null)
+            => View(new RestablecerContrasenaDTO { Token = tokenRecuperacion ?? string.Empty, Email = email ?? string.Empty });
 
         [HttpPost]
         [ValidateAntiForgeryToken]
