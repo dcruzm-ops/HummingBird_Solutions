@@ -1,3 +1,4 @@
+@model PSA.WebApp.Models.NotificacionesViewModel
 @{
     ViewData["Title"] = "Notificaciones";
 }
@@ -6,16 +7,35 @@
         <div>
             <span class="eyebrow">Avisos del sistema</span>
             <h2>Notificaciones</h2>
-            <p>Base para comunicación al propietario sobre cambios de estado y pagos.</p>
+            <p>Historial de avisos relevantes sobre evaluaciones, cuentas y pagos.</p>
         </div>
         <a class="boton-secundario" asp-controller="Dashboard" asp-action="Dueno">Volver al dashboard</a>
     </div>
 
     <section class="tarjeta-panel">
-        <ul class="lista-timeline">
-            <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Su finca “Los Laureles” fue registrada correctamente.</a></li>
-            <li><a asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="1">Debe actualizar o registrar una cuenta bancaria para futuros pagos.</a></li>
-            <li><a asp-controller="Evaluaciones" asp-action="EvaluacionesEnProceso">La evaluación técnica de “Río Verde” ya se encuentra en proceso.</a></li>
-        </ul>
+        @if (Model.Items.Count == 0)
+        {
+            <p class="text-muted mb-0">No hay notificaciones para mostrar.</p>
+        }
+        else
+        {
+            <ul class="lista-timeline mb-0">
+                @foreach (var item in Model.Items)
+                {
+                    var claseTipo = (item.Tipo ?? string.Empty).ToLowerInvariant() switch
+                    {
+                        "success" => "notificacion-item--success",
+                        "warning" => "notificacion-item--warning",
+                        "error" => "notificacion-item--error",
+                        _ => "notificacion-item--info"
+                    };
+                    <li class="notificacion-item @claseTipo">
+                        <strong>@item.Titulo</strong>
+                        <div>@item.Mensaje</div>
+                        <small class="text-muted">@item.Fecha.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>
+                    </li>
+                }
+            </ul>
+        }
     </section>
 </section>

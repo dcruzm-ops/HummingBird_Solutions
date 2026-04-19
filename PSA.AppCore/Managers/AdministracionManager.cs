@@ -1,4 +1,5 @@
 using PSA.AppCore.Servicios;
+using PSA.AppCore.Services.Notifications;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs.Administracion;
 using PSA.EntidadesDTO.DTOs.Usuarios;
@@ -14,6 +15,7 @@ public class AdministracionManager
     private readonly CuentaBancariaDAO _cuentaBancariaDao;
     private readonly AuditoriaLogDAO _auditoriaLogDao;
     private readonly IServicioHashContrasena _servicioHashContrasena;
+    private readonly INotificationDispatcher _notificationDispatcher;
 
     public AdministracionManager(
         UsuarioDAO usuarioDao,
@@ -21,7 +23,8 @@ public class AdministracionManager
         ConfiguracionPagoDAO configuracionPagoDao,
         CuentaBancariaDAO cuentaBancariaDao,
         AuditoriaLogDAO auditoriaLogDao,
-        IServicioHashContrasena servicioHashContrasena)
+        IServicioHashContrasena servicioHashContrasena,
+        INotificationDispatcher notificationDispatcher)
     {
         _usuarioDao = usuarioDao;
         _rolPermisoDao = rolPermisoDao;
@@ -29,6 +32,7 @@ public class AdministracionManager
         _cuentaBancariaDao = cuentaBancariaDao;
         _auditoriaLogDao = auditoriaLogDao;
         _servicioHashContrasena = servicioHashContrasena;
+        _notificationDispatcher = notificationDispatcher;
     }
 
     public Task<List<UsuarioAdminListadoDTO>> ObtenerUsuariosAsync(int? idRol = null)
@@ -203,6 +207,9 @@ public class AdministracionManager
 
     public async Task ValidarCuentaBancariaAsync(ValidacionCuentaBancariaDTO model, string? ip)
     {
+        var cuentas = await _cuentaBancariaDao.ObtenerPendientesValidacionAsync();
+        var cuenta = cuentas.FirstOrDefault(c => c.IdCuentaBancaria == model.IdCuentaBancaria);
+
         await _cuentaBancariaDao.ValidarCuentaAsync(model);
 
         await _auditoriaLogDao.RegistrarEventoAsync(
@@ -213,6 +220,46 @@ public class AdministracionManager
             detalle: $"Cuenta {model.IdCuentaBancaria} validada con resultado: {(model.Aprobada ? "Validada" : "Rechazada")}",
             idRegistroAfectado: model.IdCuentaBancaria,
             ipOrigen: ip);
+
+        if (cuenta != null)
+        {
+            await _notificationDispatcher.NotifyInAppAsync(
+                cuenta.IdUsuario,
+                model.Aprobada ? "Cuenta bancaria aprobada" : "Cuenta bancaria rechazada",
+                model.Aprobada
+                    ? "Su cuenta bancaria fue validada y ya puede usarse en planes de pago."
+                    : "Su cuenta bancaria fue rechazada. Revise observaciones y registre una nueva cuenta si aplica.",
+                model.Aprobada ? NotificationCatalog.TipoSuccess : NotificationCatalog.TipoWarning,
+                cuenta.IdCuentaBancaria);
+
+            await _notificationDispatcher.NotifyEmailAsync(
+                cuenta.EmailUsuario,
+                model.Aprobada ? "Cuenta bancaria validada" : "Cuenta bancaria rechazada",
+                NotificationCatalog.EmailCuentaBancaria(
+                    cuenta.NombreUsuario,
+                    model.Aprobada,
+                    cuenta.Banco,
+                    MascaraCuenta(cuenta.NumeroCuenta),
+                    DateTime.UtcNow,
+                    model.Observaciones,
+                    enlaceSistema: null));
+        }
+    }
+
+    private static string MascaraCuenta(string? numeroCuenta)
+    {
+        if (string.IsNullOrWhiteSpace(numeroCuenta))
+        {
+            return "****";
+        }
+
+        var compacta = new string(numeroCuenta.Where(char.IsLetterOrDigit).ToArray());
+        if (compacta.Length <= 4)
+        {
+            return $"****{compacta}";
+        }
+
+        return $"****{compacta[^4..]}";
     }
 
     public Task<List<AuditoriaEventoDTO>> ObtenerEventosAuditoriaAsync(AuditoriaFiltroDTO filtro)

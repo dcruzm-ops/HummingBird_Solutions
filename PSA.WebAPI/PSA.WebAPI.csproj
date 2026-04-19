@@ -22,11 +22,13 @@
     <Compile Include="Controllers\ReportesController.cs" />
     <Compile Include="Controllers\PerfilController.cs" />
     <Compile Include="Controllers\PagosController.cs" />
+    <Compile Include="Controllers\NotificacionesController.cs" />
     <Compile Include="Controllers\Middleware\ExceptionMiddleware.cs" />
     <Compile Include="Controllers\Models\ApiResponse.cs" />
     <Compile Include="Controllers\RecuperacionContrasenaController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="CorreoService.cs" />
+    <Compile Include="Services\SmtpNotificationEmailSender.cs" />
     <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
     <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />

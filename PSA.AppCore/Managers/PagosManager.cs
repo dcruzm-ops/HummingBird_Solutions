@@ -1,4 +1,5 @@
 using PSA.AppCore.Services;
+using PSA.AppCore.Services.Notifications;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs.Pagos;
 
@@ -7,11 +8,13 @@ namespace PSA.AppCore.Managers;
 public class PagosManager(
     PlanPagoDAO planPagoDao,
     IPaymentPlanService paymentPlanService,
-    IPaymentPlanReadService paymentPlanReadService)
+    IPaymentPlanReadService paymentPlanReadService,
+    INotificationDispatcher notificationDispatcher)
 {
     private readonly PlanPagoDAO _planPagoDao = planPagoDao;
     private readonly IPaymentPlanService _paymentPlanService = paymentPlanService;
     private readonly IPaymentPlanReadService _paymentPlanReadService = paymentPlanReadService;
+    private readonly INotificationDispatcher _notificationDispatcher = notificationDispatcher;
 
     public async Task<PlanPagoDTO?> GenerarPlanPagoAsync(GenerarPlanPagoRequestDTO request, int idUsuario, string? ip)
     {
@@ -120,7 +123,7 @@ public class PagosManager(
         return _planPagoDao.ObtenerCuentasBancariasDuenoAsync(idUsuario);
     }
 
-    public Task<int> RegistrarCuentaBancariaDuenoAsync(RegistrarCuentaBancariaDTO dto)
+    public async Task<int> RegistrarCuentaBancariaDuenoAsync(RegistrarCuentaBancariaDTO dto)
     {
         if (dto.IdUsuario <= 0)
         {
@@ -135,7 +138,34 @@ public class PagosManager(
             throw new InvalidOperationException("Debe completar todos los datos de la cuenta bancaria.");
         }
 
-        return _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
+        var idCuenta = await _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
+        if (idCuenta > 0)
+        {
+            await _notificationDispatcher.NotifyInAppAsync(
+                dto.IdUsuario,
+                "Cuenta bancaria registrada",
+                $"La cuenta bancaria terminada en {ObtenerMascaraCuenta(dto.NumeroCuenta)} quedó registrada y pendiente de validación.",
+                NotificationCatalog.TipoInfo,
+                idCuenta);
+        }
+
+        return idCuenta;
+    }
+
+    private static string ObtenerMascaraCuenta(string numeroCuenta)
+    {
+        if (string.IsNullOrWhiteSpace(numeroCuenta))
+        {
+            return "****";
+        }
+
+        var limpia = new string(numeroCuenta.Where(char.IsDigit).ToArray());
+        if (limpia.Length <= 4)
+        {
+            return limpia;
+        }
+
+        return limpia[^4..];
     }
 
     public Task<bool> AsociarCuentaPlanAsync(int idPlanPago, AsociarCuentaPlanDTO dto, string? ip)

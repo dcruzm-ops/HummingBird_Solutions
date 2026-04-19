@@ -108,11 +108,13 @@ namespace PSA.WebAPI.Controllers
 
                 var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
                 var nombreUsuario = string.IsNullOrWhiteSpace(dto.NombreCompleto) ? "usuario" : dto.NombreCompleto.Trim();
+                var rol = "Dueño de finca";
 
                 var correoService = new CorreoService(smtp);
-                correoService.EnviarCorreoRecuperacion(
+                correoService.EnviarCorreoBienvenida(
                     dto.Email.Trim(),
                     nombreUsuario,
+                    rol,
                     urlLogin
                 );
             }
