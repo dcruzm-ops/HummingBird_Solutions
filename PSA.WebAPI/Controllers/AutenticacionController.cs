@@ -106,13 +106,19 @@ namespace PSA.WebAPI.Controllers
                     return Task.CompletedTask;
                 }
 
-                var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
+                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"]?.TrimEnd('/');
+                var baseUrl = string.IsNullOrWhiteSpace(webAppBaseUrl)
+                    ? "https://localhost:59664"
+                    : webAppBaseUrl;
+                var urlLogin = $"{baseUrl}/Autenticacion/IniciarSesion";
                 var nombreUsuario = string.IsNullOrWhiteSpace(dto.NombreCompleto) ? "usuario" : dto.NombreCompleto.Trim();
+                var rol = "Dueño de finca";
 
                 var correoService = new CorreoService(smtp);
-                correoService.EnviarCorreoRecuperacion(
+                correoService.EnviarCorreoBienvenida(
                     dto.Email.Trim(),
                     nombreUsuario,
+                    rol,
                     urlLogin
                 );
             }

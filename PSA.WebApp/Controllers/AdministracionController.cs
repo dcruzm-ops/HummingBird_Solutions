@@ -270,7 +270,14 @@ namespace PSA.WebApp.Controllers
         {
             try
             {
-                var respuesta = await _httpClientService.PostAsync<ValidacionCuentaBancariaDTO, bool>("api/Administracion/cuentas-bancarias/validar", model);
+                var request = new ValidarCuentaBancariaRequest
+                {
+                    IdCuentaBancaria = model.IdCuentaBancaria,
+                    Aprobada = model.Aprobada,
+                    Observaciones = model.Observaciones
+                };
+
+                var respuesta = await _httpClientService.PostAsync<ValidarCuentaBancariaRequest, bool>("api/Administracion/cuentas-bancarias/validar", request);
                 TempData[respuesta ? "Exito" : "Error"] = respuesta
                     ? "Validación procesada correctamente."
                     : "No se pudo procesar la validación.";
@@ -281,6 +288,13 @@ namespace PSA.WebApp.Controllers
             }
 
             return RedirectToAction(nameof(ValidacionCuentasBancarias));
+        }
+
+        private class ValidarCuentaBancariaRequest
+        {
+            public int IdCuentaBancaria { get; set; }
+            public bool Aprobada { get; set; }
+            public string? Observaciones { get; set; }
         }
 
         [HttpGet]
