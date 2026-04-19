@@ -1,5 +1,4 @@
 using Microsoft.Data.SqlClient;
-
 using PSA.DataAccess;
 
 namespace PSA.DataAccess.DAO
@@ -13,7 +12,7 @@ namespace PSA.DataAccess.DAO
             _connectionFactory = connectionFactory;
         }
 
-        public async Task<(int FincasRegistradas, int EvaluacionesPendientes, int CuotasPorConfirmar, List<(string Mensaje, int? IdEntidad)> Actividad)> ObtenerResumenDuenoAsync(int idPropietario)
+        public async Task<(int FincasRegistradas, int EvaluacionesPendientes, int CuotasPorConfirmar, List<(string Mensaje, DateTime Fecha, int? IdEntidad)> Actividad)> ObtenerResumenDuenoAsync(int idPropietario)
         {
             const string sql = @"
 SELECT
@@ -31,10 +30,18 @@ SELECT
        AND c.EstadoCuota IN ('Pendiente', 'Notificada')) AS CuotasPorConfirmar;";
 
             const string sqlActividad = @"
-SELECT TOP 3 Mensaje, IdEntidadReferencia
-FROM Notificaciones
+SELECT TOP 3
+    Detalle AS Mensaje,
+    FechaAccion,
+    CASE
+        WHEN TablaAfectada = 'Fincas' THEN IdRegistroAfectado
+        ELSE NULL
+    END AS IdEntidadReferencia
+FROM AuditoriaLog
 WHERE IdUsuario = @IdPropietario
-ORDER BY FechaCreacion DESC;";
+  AND Detalle IS NOT NULL
+  AND LTRIM(RTRIM(Detalle)) <> ''
+ORDER BY FechaAccion DESC;";
 
             using var connection = _connectionFactory.CreateConnection();
             await connection.OpenAsync();
@@ -46,6 +53,7 @@ ORDER BY FechaCreacion DESC;";
             using (var command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@IdPropietario", idPropietario);
+
                 using var reader = await command.ExecuteReaderAsync();
                 if (await reader.ReadAsync())
                 {
@@ -55,22 +63,65 @@ ORDER BY FechaCreacion DESC;";
                 }
             }
 
-            var actividad = new List<(string Mensaje, int? IdEntidad)>();
+            var actividad = new List<(string Mensaje, DateTime Fecha, int? IdEntidad)>();
+
             using (var commandActividad = new SqlCommand(sqlActividad, connection))
             {
                 commandActividad.Parameters.AddWithValue("@IdPropietario", idPropietario);
+
                 using var readerActividad = await commandActividad.ExecuteReaderAsync();
                 while (await readerActividad.ReadAsync())
                 {
                     var mensaje = readerActividad["Mensaje"]?.ToString() ?? string.Empty;
+                    var fecha = Convert.ToDateTime(readerActividad["FechaAccion"]);
                     var idEntidad = readerActividad["IdEntidadReferencia"] == DBNull.Value
                         ? (int?)null
                         : Convert.ToInt32(readerActividad["IdEntidadReferencia"]);
-                    actividad.Add((mensaje, idEntidad));
+
+                    actividad.Add((mensaje, fecha, idEntidad));
                 }
             }
 
             return (fincas, evaluaciones, cuotas, actividad);
+        }
+
+        public async Task<List<(string Mensaje, DateTime Fecha, int? IdEntidad)>> ObtenerActividadDuenoAsync(int idPropietario)
+        {
+            const string sqlActividad = @"
+SELECT
+    Detalle AS Mensaje,
+    FechaAccion,
+    CASE
+        WHEN TablaAfectada = 'Fincas' THEN IdRegistroAfectado
+        ELSE NULL
+    END AS IdEntidadReferencia
+FROM AuditoriaLog
+WHERE IdUsuario = @IdPropietario
+  AND Detalle IS NOT NULL
+  AND LTRIM(RTRIM(Detalle)) <> ''
+ORDER BY FechaAccion DESC;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            var actividad = new List<(string Mensaje, DateTime Fecha, int? IdEntidad)>();
+
+            using var command = new SqlCommand(sqlActividad, connection);
+            command.Parameters.AddWithValue("@IdPropietario", idPropietario);
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var mensaje = reader["Mensaje"]?.ToString() ?? string.Empty;
+                var fecha = Convert.ToDateTime(reader["FechaAccion"]);
+                var idEntidad = reader["IdEntidadReferencia"] == DBNull.Value
+                    ? (int?)null
+                    : Convert.ToInt32(reader["IdEntidadReferencia"]);
+
+                actividad.Add((mensaje, fecha, idEntidad));
+            }
+
+            return actividad;
         }
 
         public async Task<(int FincasPendientes, int EvaluacionesAbiertas, int DecisionesMesActual, List<(int IdFinca, string NombreFinca)> ProximasAcciones)> ObtenerResumenIngenieroAsync(int idIngeniero)
@@ -104,6 +155,7 @@ ORDER BY ISNULL(e.FechaVisita, CAST(GETDATE() AS date)) ASC, e.IdEvaluacion DESC
             using (var command = new SqlCommand(sql, connection))
             {
                 command.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
+
                 using var reader = await command.ExecuteReaderAsync();
                 if (await reader.ReadAsync())
                 {
@@ -114,9 +166,11 @@ ORDER BY ISNULL(e.FechaVisita, CAST(GETDATE() AS date)) ASC, e.IdEvaluacion DESC
             }
 
             var acciones = new List<(int IdFinca, string NombreFinca)>();
+
             using (var commandAcciones = new SqlCommand(sqlAcciones, connection))
             {
                 commandAcciones.Parameters.AddWithValue("@IdIngeniero", idIngeniero);
+
                 using var readerAcciones = await commandAcciones.ExecuteReaderAsync();
                 while (await readerAcciones.ReadAsync())
                 {
@@ -141,7 +195,8 @@ SELECT
             const string sqlAlertas = @"
 SELECT TOP 3 Detalle
 FROM AuditoriaLog
-WHERE Detalle IS NOT NULL AND LTRIM(RTRIM(Detalle)) <> ''
+WHERE Detalle IS NOT NULL
+  AND LTRIM(RTRIM(Detalle)) <> ''
 ORDER BY FechaAccion DESC;";
 
             using var connection = _connectionFactory.CreateConnection();
@@ -163,6 +218,7 @@ ORDER BY FechaAccion DESC;";
             }
 
             var alertas = new List<string>();
+
             using (var commandAlertas = new SqlCommand(sqlAlertas, connection))
             {
                 using var readerAlertas = await commandAlertas.ExecuteReaderAsync();

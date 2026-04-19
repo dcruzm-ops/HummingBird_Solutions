@@ -1,9 +1,26 @@
 @model List<PSA.EntidadesDTO.DTOs.Pagos.PlanPagoResumenDTO>
+
 @{
     ViewData["Title"] = "Planes pendientes de aprobación";
     var anio = ViewBag.Anio as int?;
     var estadoPlan = ViewBag.EstadoPlan as string;
 }
+
+@functions {
+    public string FormatearEstado(string estado)
+    {
+        return estado switch
+        {
+            "PendienteDatosBancarios" => "Pendiente de datos bancarios",
+            "PendienteAprobacionFinal" => "Pendiente de aprobación final",
+            "Activo" => "Activo",
+            "Finalizado" => "Finalizado",
+            "Cancelado" => "Cancelado",
+            _ => estado
+        };
+    }
+}
+
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
@@ -14,16 +31,49 @@
     </div>
 
     <section class="tarjeta-panel">
-        <form method="get" asp-controller="Pagos" asp-action="PlanesIngenieroPendientes" class="mb-3 d-flex gap-2 flex-wrap">
-            <input type="number" name="anio" value="@anio" min="2000" max="2100" class="form-control" style="max-width: 180px;" placeholder="Año" />
+
+        <form method="get" asp-controller="Pagos" asp-action="PlanesIngenieroPendientes"
+              class="mb-3 d-flex gap-2 flex-wrap">
+
+            <input type="number" name="anio" value="@anio"
+                   min="2000" max="2100"
+                   class="form-control"
+                   style="max-width: 180px;"
+                   placeholder="Año" />
+
             <select name="estadoPlan" class="form-select" style="max-width: 280px;">
-                <option value="" selected="@(string.IsNullOrWhiteSpace(estadoPlan) ? "selected" : null)">Pendientes (default)</option>
-                <option value="PendienteDatosBancarios" selected="@(string.Equals(estadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">PendienteDatosBancarios</option>
-                <option value="PendienteAprobacionFinal" selected="@(string.Equals(estadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">PendienteAprobacionFinal</option>
-                <option value="Activo" selected="@(string.Equals(estadoPlan, "Activo", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Activo</option>
-                <option value="Finalizado" selected="@(string.Equals(estadoPlan, "Finalizado", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Finalizado</option>
-                <option value="Cancelado" selected="@(string.Equals(estadoPlan, "Cancelado", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Cancelado</option>
+
+                <option value="" selected="@(string.IsNullOrWhiteSpace(estadoPlan) ? "selected" : null)">
+                    Pendientes (default)
+                </option>
+
+                <option value="PendienteDatosBancarios"
+                        selected="@(estadoPlan == "PendienteDatosBancarios")">
+                    @FormatearEstado("PendienteDatosBancarios")
+                </option>
+
+                <option value="PendienteAprobacionFinal"
+                        selected="@(estadoPlan == "PendienteAprobacionFinal")">
+                    @FormatearEstado("PendienteAprobacionFinal")
+                </option>
+
+                <option value="Activo"
+                        selected="@(estadoPlan == "Activo")">
+                    @FormatearEstado("Activo")
+                </option>
+
+                <option value="Finalizado"
+                        selected="@(estadoPlan == "Finalizado")">
+                    @FormatearEstado("Finalizado")
+                </option>
+
+                <option value="Cancelado"
+                        selected="@(estadoPlan == "Cancelado")">
+                    @FormatearEstado("Cancelado")
+                </option>
+
             </select>
+
             <button type="submit" class="boton-secundario">Aplicar filtros</button>
         </form>
 
@@ -40,10 +90,15 @@
                         <th>Acciones</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="7" class="text-center text-muted">No hay planes con los filtros seleccionados.</td></tr>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                No hay planes con los filtros seleccionados.
+                            </td>
+                        </tr>
                     }
                     else
                     {
@@ -54,14 +109,36 @@
                                 <td>@plan.Anio</td>
                                 <td>₡@plan.MontoMensualCalculado.ToString("N2")</td>
                                 <td>₡@plan.MontoAnualEstimado.ToString("N2")</td>
-                                <td><span class="badge-estado badge-pendiente">@plan.EstadoPlan</span></td>
-                                <td>@(plan.IdCuentaBancaria.HasValue ? $"#{plan.IdCuentaBancaria}" : "Sin cuenta")</td>
+
                                 <td>
-                                    <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>
-                                    <form method="post" asp-controller="Pagos" asp-action="AprobarPlanIngeniero" class="mt-2">
+                                    <span class="badge-estado badge-pendiente">
+                                        @FormatearEstado(plan.EstadoPlan)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @(plan.IdCuentaBancaria.HasValue
+                                        ? $"#{plan.IdCuentaBancaria}"
+                                        : "Sin cuenta")
+                                </td>
+
+                                <td>
+                                    <a class="boton-link"
+                                           asp-controller="Pagos"
+                                           asp-action="DetallePlanPago"
+                                           asp-route-id="@plan.IdPlanPago">
+                                        Ver detalle
+                                    </a>
+
+                                    <form method="post"
+                                          asp-controller="Pagos"
+                                          asp-action="AprobarPlanIngeniero"
+                                          class="mt-2">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="idPlanPago" value="@plan.IdPlanPago" />
-                                        <button type="submit" class="boton-secundario">Aprobar y activar</button>
+                                        <button type="submit" class="boton-secundario">
+                                            Aprobar y activar
+                                        </button>
                                     </form>
                                 </td>
                             </tr>

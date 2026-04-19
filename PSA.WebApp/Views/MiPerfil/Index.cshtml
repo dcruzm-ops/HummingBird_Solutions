@@ -1,6 +1,22 @@
+@using System.Security.Claims
 @model PSA.WebApp.Models.MiPerfilViewModel
+
 @{
     ViewData["Title"] = "Mi perfil";
+
+    var roleClaim = User?.FindFirst(ClaimTypes.Role)?.Value ?? string.Empty;
+
+    var rolVisible = roleClaim switch
+    {
+        "1" => "Administrador",
+        "2" => "Dueño",
+        "3" => "Ingeniero",
+        "Administrador" => "Administrador",
+        "Dueno" => "Dueño",
+        "Dueño" => "Dueño",
+        "Ingeniero" => "Ingeniero",
+        _ => "Usuario"
+    };
 }
 
 <section class="seccion-pagina perfil-usuario">
@@ -27,7 +43,7 @@
                 <h3>@Model.NombreCompleto</h3>
                 <p>@Model.Email</p>
                 <div class="perfil-resumen__meta">
-                    <span class="badge-estado badge-info">@Model.RolNombre</span>
+                    <span class="badge-estado badge-info">@rolVisible</span>
                     <span class="badge-estado badge-exito">@Model.Estado</span>
                 </div>
             </div>
@@ -64,7 +80,7 @@
                     </div>
                     <div>
                         <dt>Rol</dt>
-                        <dd>@Model.RolNombre</dd>
+                        <dd>@rolVisible</dd>
                     </div>
                     <div>
                         <dt>Creado el</dt>
@@ -105,6 +121,7 @@
 
             btnEditar.addEventListener('click', function () {
                 const habilitar = btnGuardar.hasAttribute('disabled');
+
                 inputs.forEach(input => {
                     if (habilitar) {
                         input.removeAttribute('readonly');

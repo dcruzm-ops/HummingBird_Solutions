@@ -1,8 +1,10 @@
 @model List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO>
+
 @{
     ViewData["Title"] = "Cuenta bancaria";
     var cuentaNueva = ViewBag.CuentaNueva as PSA.EntidadesDTO.DTOs.Pagos.RegistrarCuentaBancariaDTO ?? new();
 }
+
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
@@ -11,7 +13,9 @@
             <p>Registre cuentas para habilitar pagos y consulte su estado de validación.</p>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevaCuenta">Nueva Cuenta Bancaria</button>
+            <button type="button" class="boton-primario" data-bs-toggle="modal" data-bs-target="#modalNuevaCuenta">
+                Nueva Cuenta Bancaria
+            </button>
             <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesDueno">Ver planes</a>
         </div>
     </div>
@@ -31,7 +35,9 @@
                 <tbody>
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="5" class="text-center text-muted">No tiene cuentas bancarias registradas.</td></tr>
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No tiene cuentas bancarias registradas.</td>
+                        </tr>
                     }
                     else
                     {
@@ -42,7 +48,9 @@
                                 <td>@cuenta.NumeroCuenta</td>
                                 <td>@cuenta.TipoCuenta</td>
                                 <td>@cuenta.Titular</td>
-                                <td><span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion</span></td>
+                                <td>
+                                    <span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion</span>
+                                </td>
                             </tr>
                         }
                     }
@@ -58,31 +66,37 @@
             <form asp-action="RegistrarCuentaBancaria" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="IdUsuario" value="@cuentaNueva.IdUsuario" />
+
                 <div class="modal-header">
                     <h5 class="modal-title">Nueva cuenta bancaria</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
+
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label">Banco</label>
                         <input class="form-control" name="Banco" required />
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Número de cuenta</label>
                         <input class="form-control" name="NumeroCuenta" required />
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Tipo de cuenta</label>
                         <input class="form-control" name="TipoCuenta" required />
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Titular</label>
                         <input class="form-control" name="Titular" required />
                     </div>
                 </div>
+
                 <div class="modal-footer">
                     <button type="button" class="boton-secundario" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Registrar cuenta</button>
+                    <button type="submit" class="boton-primario">Registrar cuenta</button>
                 </div>
             </form>
         </div>

@@ -1,8 +1,26 @@
 @model List<PSA.EntidadesDTO.DTOs.Pagos.OwnerPaymentPlanDto>
+
 @{
     ViewData["Title"] = "Mis pagos";
     var cuentasValidadasActivas = ViewBag.CuentasValidadasActivas as List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO> ?? new();
 }
+
+@functions {
+    public string FormatearEstado(string estado)
+    {
+        return estado switch
+        {
+            "PendienteDatosBancarios" => "Pendiente de datos bancarios",
+            "PendienteAprobacionFinal" => "Pendiente de aprobación final",
+            "BorradorGenerado" => "Borrador generado",
+            "Activo" => "Activo",
+            "Finalizado" => "Finalizado",
+            "Cancelado" => "Cancelado",
+            _ => estado
+        };
+    }
+}
+
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
@@ -33,7 +51,9 @@
                 <tbody>
                     @if (!Model.Any())
                     {
-                        <tr><td colspan="7" class="text-center text-muted">No hay planes de pago disponibles.</td></tr>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No hay planes de pago disponibles.</td>
+                        </tr>
                     }
                     else
                     {
@@ -42,15 +62,25 @@
                             <tr>
                                 <td>@plan.NombreFinca</td>
                                 <td>@plan.Anio</td>
-                                <td>@plan.EstadoPlan</td>
+                                <td>@FormatearEstado(plan.EstadoPlan)</td>
                                 <td>₡@plan.MontoMensual.ToString("N2")</td>
                                 <td>₡@plan.MontoAnual.ToString("N2")</td>
-                                <td>@plan.EstadoCuentaBancaria (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
+                                <td>
+                                    @if (!string.IsNullOrWhiteSpace(plan.CuentaBancariaMascara))
+                                    {
+                                        <span>@plan.EstadoCuentaBancaria (@plan.CuentaBancariaMascara)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Sin cuenta</span>
+                                    }
+                                </td>
                                 <td>
                                     <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>
+
                                     @if (string.Equals(plan.EstadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase)
-                                        || string.Equals(plan.EstadoPlan, "BorradorGenerado", StringComparison.OrdinalIgnoreCase)
-                                        || string.Equals(plan.EstadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase))
+                                                                            || string.Equals(plan.EstadoPlan, "BorradorGenerado", StringComparison.OrdinalIgnoreCase)
+                                                                            || string.Equals(plan.EstadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase))
                                     {
                                         if (!cuentasValidadasActivas.Any())
                                         {
@@ -63,6 +93,7 @@
                                             <form method="post" asp-controller="Pagos" asp-action="AsociarCuentaPlan" class="mt-2">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="idPlanPago" value="@plan.IdPlanPago" />
+
                                                 <select name="idCuentaBancaria" required class="form-select form-select-sm">
                                                     <option value="">Seleccionar cuenta...</option>
                                                     @foreach (var cuenta in cuentasValidadasActivas)
@@ -70,7 +101,9 @@
                                                         var mascara = cuenta.NumeroCuenta.Length <= 4
                                                             ? $"****{cuenta.NumeroCuenta}"
                                                             : $"****{cuenta.NumeroCuenta[^4..]}";
+
                                                         var textoCuenta = $"{cuenta.Banco} - {mascara}";
+
                                                         if (plan.IdCuentaBancaria == cuenta.IdCuentaBancaria)
                                                         {
                                                             <option value="@cuenta.IdCuentaBancaria" selected="selected">@textoCuenta</option>
@@ -81,6 +114,7 @@
                                                         }
                                                     }
                                                 </select>
+
                                                 <button type="submit" class="boton-secundario mt-1">Asociar cuenta</button>
                                             </form>
                                         }

@@ -1,7 +1,6 @@
 @model PSA.WebApp.Models.DashboardDuenoViewModel
 @{
     ViewData["Title"] = "Dashboard del dueño";
-    var actividadReciente = ViewBag.ActividadReciente as List<string> ?? new List<string>();
 }
 <section class="seccion-pagina propietario-dashboard">
     <div class="cabecera-pagina">
@@ -27,7 +26,7 @@
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Cuotas por confirmar</span>
             <strong>@Model.CuotasPorConfirmar</strong>
-            <small>Cuotas programadas, atrasadas o acumuladas</small>
+            <small>Cuotas pendientes o notificadas</small>
         </article>
     </div>
 
@@ -52,12 +51,17 @@
                 {
                     @foreach (var actividad in Model.ActividadReciente)
                     {
-                        <li><a href="@(actividad.Url ?? "#")">@actividad.Titulo</a></li>
+                        <li>
+                            <div>
+                                <strong>@actividad.Titulo</strong><br />
+                                <small>@actividad.Fecha.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </li>
                     }
                 }
                 else
                 {
-                    <li><a asp-controller="Notificaciones" asp-action="Index">No hay actividad reciente para mostrar.</a></li>
+                    <li>No hay actividad reciente para mostrar.</li>
                 }
             </ul>
         </section>

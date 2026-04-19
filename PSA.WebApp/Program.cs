@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using PSA.DataAccess;
+using PSA.DataAccess.DAO;
 using PSA.WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +37,21 @@ if (builder.Environment.IsDevelopment())
 }
 
 builder.Services.AddScoped<HttpClientService>();
+
+builder.Services.AddScoped<IDbConnectionFactory>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection'.");
+    }
+
+    return new SqlConnectionFactory(connectionString);
+});
+
+builder.Services.AddScoped<DashboardDAO>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
