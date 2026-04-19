@@ -49,11 +49,11 @@
                                 </td>
                                 <td>@(usuario.UltimoAcceso?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</td>
                                 <td>
-                                    <div class="d-flex flex-wrap gap-2">
+                                    <div class="acciones-tabla-usuario">
                                         <a class="boton-link" asp-action="EditarUsuario" asp-route-id="@usuario.IdUsuario">Editar</a>
-                                        <form asp-action="EliminarUsuario" asp-route-id="@usuario.IdUsuario" method="post" class="d-inline">
+                                        <form asp-action="EliminarUsuario" asp-route-id="@usuario.IdUsuario" method="post">
                                             @Html.AntiForgeryToken()
-                                            <button type="submit" class="boton-link border-0 bg-transparent p-0">@(activo ? "Inactivar" : "Activar / Inactivar")</button>
+                                            <button type="submit" class="boton-link border-0 bg-transparent">@(activo ? "Inactivar" : "Activar / Inactivar")</button>
                                         </form>
                                     </div>
                                 </td>

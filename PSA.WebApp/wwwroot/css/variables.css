@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
 :root {
     --color-fondo: #F4F7F3;
     --color-superficie: #FFFFFF;
@@ -12,12 +14,29 @@
     --color-error: #D94A4A;
     --color-info: #0EA5C6;
     --color-overlay: rgba(7, 20, 11, 0.35);
+
     --tipografia-principal: "Inter", "Segoe UI", Arial, sans-serif;
+    --peso-regular: 400;
+    --peso-medio: 500;
+    --peso-seminegrita: 600;
+    --peso-negrita: 700;
+
+    --tam-h1: clamp(1.9rem, 2.8vw, 2.5rem);
+    --tam-h2: clamp(1.6rem, 2.3vw, 2rem);
+    --tam-h3: 1.25rem;
+    --tam-h4: 1.05rem;
+    --tam-base: 1rem;
+    --tam-secundario: 0.92rem;
+    --tam-label: 0.94rem;
+    --tam-ayuda: 0.84rem;
+
     --radio-sm: 8px;
     --radio-md: 14px;
     --radio-lg: 20px;
+
     --sombra-sm: 0 8px 18px rgba(16, 24, 18, 0.06);
     --sombra-md: 0 14px 34px rgba(16, 24, 18, 0.1);
+
     --espacio-1: 0.25rem;
     --espacio-2: 0.5rem;
     --espacio-3: 0.75rem;
@@ -26,19 +45,28 @@
     --espacio-6: 2rem;
     --espacio-7: 2.5rem;
     --espacio-8: 3rem;
+
     --ancho-sidebar: 280px;
     --ancho-contenido: 1200px;
+
+    --focus-ring: 0 0 0 3px rgba(46, 151, 57, 0.2);
+    --disabled-bg: color-mix(in srgb, var(--color-superficie-secundaria) 92%, #ffffff 8%);
+    --disabled-text: color-mix(in srgb, var(--color-texto-secundario) 70%, #ffffff 30%);
 }
 
 html[data-tema="oscuro"] {
     --color-fondo: #07140B;
-    --color-superficie: #0E1F12;
-    --color-superficie-secundaria: #122818;
-    --color-borde-suave: #1E3A24;
+    --color-superficie: #173624;
+    --color-superficie-secundaria: #1B412B;
+    --color-borde-suave: #2B6441;
     --color-texto-principal: #EAF2EA;
-    --color-texto-secundario: #A9B5A9;
-    --color-primario: #2E9739;
-    --color-accion: #39A845;
+    --color-texto-secundario: #C2D3C4;
+    --color-primario: #6BD47B;
+    --color-accion: #59C96D;
+    --color-exito: #72D983;
+    --color-advertencia: #E8B53C;
+    --color-error: #F47575;
+    --color-info: #43C7E4;
     --sombra-sm: 0 8px 18px rgba(0, 0, 0, 0.25);
     --sombra-md: 0 14px 34px rgba(0, 0, 0, 0.35);
 }
