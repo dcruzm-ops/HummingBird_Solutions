@@ -235,8 +235,31 @@ public class AdministracionManager
             await _notificationDispatcher.NotifyEmailAsync(
                 cuenta.EmailUsuario,
                 model.Aprobada ? "Cuenta bancaria validada" : "Cuenta bancaria rechazada",
-                NotificationCatalog.EmailCuentaBancaria(cuenta.NombreUsuario, model.Aprobada, model.Observaciones));
+                NotificationCatalog.EmailCuentaBancaria(
+                    cuenta.NombreUsuario,
+                    model.Aprobada,
+                    cuenta.Banco,
+                    MascaraCuenta(cuenta.NumeroCuenta),
+                    DateTime.UtcNow,
+                    model.Observaciones,
+                    enlaceSistema: null));
         }
+    }
+
+    private static string MascaraCuenta(string? numeroCuenta)
+    {
+        if (string.IsNullOrWhiteSpace(numeroCuenta))
+        {
+            return "****";
+        }
+
+        var compacta = new string(numeroCuenta.Where(char.IsLetterOrDigit).ToArray());
+        if (compacta.Length <= 4)
+        {
+            return $"****{compacta}";
+        }
+
+        return $"****{compacta[^4..]}";
     }
 
     public Task<List<AuditoriaEventoDTO>> ObtenerEventosAuditoriaAsync(AuditoriaFiltroDTO filtro)

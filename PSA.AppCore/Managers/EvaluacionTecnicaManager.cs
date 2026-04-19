@@ -175,11 +175,31 @@ namespace PSA.AppCore.Managers
                     await _notificationDispatcher.NotifyEmailAsync(
                         propietario.Email,
                         $"Resultado de evaluación técnica - {detalle.NombreFinca}",
-                        NotificationCatalog.EmailResultadoEvaluacion(propietario.NombreCompleto, detalle.NombreFinca, dto.DecisionTecnica, dto.Observaciones));
+                        NotificationCatalog.EmailResultadoEvaluacion(
+                            propietario.NombreCompleto,
+                            detalle.NombreFinca,
+                            dto.DecisionTecnica,
+                            DateTime.UtcNow,
+                            dto.Observaciones,
+                            ConstruirResumenCambios(dto),
+                            enlaceSistema: null));
                 }
             }
 
             return true;
+        }
+
+        private static string? ConstruirResumenCambios(RegistrarResultadoEvaluacionDTO dto)
+        {
+            var cambios = new List<string>();
+
+            if (dto.HectareasAjustadas.HasValue) cambios.Add($"Hectáreas ajustadas a {dto.HectareasAjustadas.Value:N2}");
+            if (!string.IsNullOrWhiteSpace(dto.VegetacionAjustada)) cambios.Add($"Vegetación: {dto.VegetacionAjustada}");
+            if (dto.RecursosHidricosAjustado.HasValue) cambios.Add($"Recursos hídricos: {(dto.RecursosHidricosAjustado.Value ? "Sí" : "No")}");
+            if (!string.IsNullOrWhiteSpace(dto.UsoSueloAjustado)) cambios.Add($"Uso de suelo: {dto.UsoSueloAjustado}");
+            if (!string.IsNullOrWhiteSpace(dto.PendienteAjustada)) cambios.Add($"Pendiente: {dto.PendienteAjustada}");
+
+            return cambios.Count == 0 ? null : string.Join("; ", cambios);
         }
 
         public Task<bool> AvanzarEstadoAsync(int idEvaluacion, string nuevoEstado)

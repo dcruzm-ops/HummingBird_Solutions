@@ -22,7 +22,14 @@
             <ul class="lista-timeline mb-0">
                 @foreach (var item in Model.Items)
                 {
-                    <li>
+                    var claseTipo = (item.Tipo ?? string.Empty).ToLowerInvariant() switch
+                    {
+                        "success" => "notificacion-item--success",
+                        "warning" => "notificacion-item--warning",
+                        "error" => "notificacion-item--error",
+                        _ => "notificacion-item--info"
+                    };
+                    <li class="notificacion-item @claseTipo">
                         <strong>@item.Titulo</strong>
                         <div>@item.Mensaje</div>
                         <small class="text-muted">@item.Fecha.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small>

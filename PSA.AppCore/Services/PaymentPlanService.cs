@@ -63,7 +63,13 @@ public class PaymentPlanService(
             await _notificationDispatcher.NotifyEmailAsync(
                 propietario.Email,
                 $"Plan de pagos generado - {context.NombreFinca}",
-                NotificationCatalog.EmailPlanPago(propietario.NombreCompleto, context.NombreFinca, plan.IdPlanPago));
+                NotificationCatalog.EmailPlanPago(
+                    propietario.NombreCompleto,
+                    context.NombreFinca,
+                    plan.IdPlanPago,
+                    periodoPlan: anioPlan.ToString(),
+                    montoEstimado: plan.MontoMensualCalculado,
+                    enlaceSistema: null));
         }
 
         return plan;

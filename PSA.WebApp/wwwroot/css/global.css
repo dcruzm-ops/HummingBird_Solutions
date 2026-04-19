@@ -157,6 +157,35 @@ main {
     color: var(--color-texto-secundario);
 }
 
+.notificacion-item {
+    list-style: none;
+    margin-bottom: var(--espacio-3);
+    padding: var(--espacio-3) var(--espacio-4);
+    border-left: 4px solid #94a3b8;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+.notificacion-item--success {
+    border-left-color: #16a34a;
+    background: #f0fdf4;
+}
+
+.notificacion-item--warning {
+    border-left-color: #d97706;
+    background: #fffbeb;
+}
+
+.notificacion-item--error {
+    border-left-color: #dc2626;
+    background: #fef2f2;
+}
+
+.notificacion-item--info {
+    border-left-color: #2563eb;
+    background: #eff6ff;
+}
+
 .lista-detalle {
     display: grid;
     gap: var(--espacio-3);
