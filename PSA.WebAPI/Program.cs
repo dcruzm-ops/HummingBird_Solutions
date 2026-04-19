@@ -1,11 +1,15 @@
+using System.Text.RegularExpressions;
 using PSA.AppCore;
 using PSA.AppCore.Managers;
 using PSA.AppCore.Services.Notifications;
+using PSA.AppCore.Services.Security;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess;
 using PSA.DataAccess.DAO;
 using PSA.WebAPI.Controllers.Middleware;
 using PSA.WebAPI.Services;
+
+SanitizarAppSettingsSiEsNecesario();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +68,8 @@ builder.Services.AddScoped<EvaluacionService>();
 builder.Services.AddScoped<FincaEvidenciaService>();
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
+builder.Services.AddScoped<IPasswordRecoveryPolicy, PasswordRecoveryPolicy>();
+builder.Services.AddScoped<IPasswordRecoveryEmailSender, PasswordRecoveryEmailSender>();
 builder.Services.AddScoped<EvaluacionTecnicaManager>();
 builder.Services.AddScoped<FincaManager>();
 builder.Services.AddScoped<AdministracionManager>();
@@ -96,3 +102,33 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static void SanitizarAppSettingsSiEsNecesario()
+{
+    var rutaBase = AppContext.BaseDirectory;
+    var rutaCandidata1 = Path.Combine(rutaBase, "appsettings.json");
+    var rutaCandidata2 = Path.Combine(Directory.GetCurrentDirectory(), "appsettings.json");
+    var appSettingsPath = File.Exists(rutaCandidata1) ? rutaCandidata1 : rutaCandidata2;
+
+    if (!File.Exists(appSettingsPath))
+    {
+        return;
+    }
+
+    var contenido = File.ReadAllText(appSettingsPath);
+    var tieneSeccionConnectionStrings = contenido.Contains("\"ConnectionStrings\"", StringComparison.Ordinal);
+    var tieneClaveDuplicada = Regex.IsMatch(contenido, "\"ConnectionStrings:PSAConnection\"\\s*:", RegexOptions.CultureInvariant);
+
+    if (!tieneSeccionConnectionStrings || !tieneClaveDuplicada)
+    {
+        return;
+    }
+
+    var contenidoSanitizado = Regex.Replace(
+        contenido,
+        "^\\s*\"ConnectionStrings:PSAConnection\"\\s*:\\s*\".*?\"\\s*,?\\s*(?:\\r?\\n)?",
+        string.Empty,
+        RegexOptions.Multiline | RegexOptions.CultureInvariant);
+
+    File.WriteAllText(appSettingsPath, contenidoSanitizado);
+}
