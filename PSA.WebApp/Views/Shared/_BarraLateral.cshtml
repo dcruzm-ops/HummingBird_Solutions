@@ -17,6 +17,12 @@
         "ingeniero" => "Ingeniero",
         _ => "Dueno"
     };
+
+    var ingenieroInicioActivo = controllerActual == "dashboard" && accionActual == "ingeniero";
+    var ingenieroPendientesActivo = controllerActual == "evaluaciones"
+        && (accionActual == "fincaspendientes" || accionActual == "nuevaevaluacion" || accionActual == "evaluacionesenproceso");
+    var ingenieroResultadosActivo = controllerActual == "evaluaciones"
+        && (accionActual == "historialevaluaciones" || accionActual == "detalleevaluacion" || accionActual == "fincasingeniero");
 }
 <aside class="barra-lateral" id="barraLateral">
     <div class="barra-lateral__marca">
@@ -27,9 +33,9 @@
     <nav class="menu-lateral" aria-label="Navegación principal">
         @if (rolActivo == "ingeniero")
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Inicio</a>
-            <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Visitas técnicas pendientes</a>
-            <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Resultados de visitas técnicas</a>
+            <a class="item-menu @(ingenieroInicioActivo ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Inicio</a>
+            <a class="item-menu @(ingenieroPendientesActivo ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Visitas técnicas pendientes</a>
+            <a class="item-menu @(ingenieroResultadosActivo ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Resultados de visitas técnicas</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
             <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
             <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>

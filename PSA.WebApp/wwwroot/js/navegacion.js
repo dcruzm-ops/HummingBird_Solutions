@@ -19,8 +19,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (botonMenuLateral && barraLateral) {
+        var menuColapsadoGuardado = localStorage.getItem("psa-menu-colapsado");
+        if (menuColapsadoGuardado === "true") {
+            document.body.classList.add("menu-colapsado");
+        }
+
         botonMenuLateral.addEventListener("click", function () {
-            barraLateral.classList.toggle("abierta");
+            var esPantallaMovil = window.matchMedia("(max-width: 992px)").matches;
+            if (esPantallaMovil) {
+                barraLateral.classList.toggle("abierta");
+                return;
+            }
+
+            document.body.classList.toggle("menu-colapsado");
+            localStorage.setItem("psa-menu-colapsado", document.body.classList.contains("menu-colapsado") ? "true" : "false");
         });
     }
 
