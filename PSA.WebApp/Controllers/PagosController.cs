@@ -143,10 +143,11 @@ namespace PSA.WebApp.Controllers
         {
             var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
             model.IdUsuario = idUsuario;
-            var idCuenta = await _httpClientService.PostAsync<RegistrarCuentaBancariaDTO, int>("api/Pagos/dueno/cuentas-bancarias", model);
+            var resultado = await _httpClientService.PostWithResultAsync<RegistrarCuentaBancariaDTO, int>("api/Pagos/dueno/cuentas-bancarias", model);
+            var idCuenta = resultado.Data;
             TempData[idCuenta > 0 ? "Exito" : "Error"] = idCuenta > 0
                 ? "Cuenta bancaria registrada. Queda pendiente de validación por administración."
-                : "No fue posible registrar la cuenta bancaria.";
+                : resultado.ErrorMessage ?? "No fue posible registrar la cuenta bancaria.";
 
             return RedirectToAction(nameof(CuentaBancaria));
         }

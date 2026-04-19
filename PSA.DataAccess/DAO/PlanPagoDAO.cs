@@ -496,8 +496,15 @@ ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
         command.Parameters.AddWithValue("@TipoCuenta", dto.TipoCuenta.Trim());
         command.Parameters.AddWithValue("@Titular", dto.Titular.Trim());
 
-        var result = await command.ExecuteScalarAsync();
-        return Convert.ToInt32(result ?? 0);
+        try
+        {
+            var result = await command.ExecuteScalarAsync();
+            return Convert.ToInt32(result ?? 0);
+        }
+        catch (SqlException ex) when (ex.Message.Contains("CK_Cuentas_TipoCuenta", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("El tipo de cuenta no es válido. Use: Ahorro, Corriente, IBAN, SINPE u Otra.", ex);
+        }
     }
 
     public async Task<List<OwnerPaymentPlanDto>> ObtenerPlanesOwnerAsync(int idPropietario)
