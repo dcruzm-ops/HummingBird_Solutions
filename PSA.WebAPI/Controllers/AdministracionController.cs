@@ -199,11 +199,18 @@ namespace PSA.WebAPI.Controllers
 
         [HttpPost("cuentas-bancarias/validar")]
         [HttpPost("cuentas-bancarias/validacion")]
-        public async Task<ActionResult<bool>> ValidarCuentaBancaria([FromBody] ValidacionCuentaBancariaDTO model)
+        public async Task<ActionResult<bool>> ValidarCuentaBancaria([FromBody] ValidarCuentaBancariaRequestDTO request)
         {
             try
             {
-                model.IdAdministrador = AdminSistemaId;
+                var model = new ValidacionCuentaBancariaDTO
+                {
+                    IdCuentaBancaria = request.IdCuentaBancaria,
+                    Aprobada = request.Aprobada,
+                    Observaciones = request.Observaciones,
+                    IdAdministrador = AdminSistemaId
+                };
+
                 await _administracionManager.ValidarCuentaBancariaAsync(model, HttpContext.Connection.RemoteIpAddress?.ToString());
                 return Ok(true);
             }
@@ -235,6 +242,13 @@ namespace PSA.WebAPI.Controllers
         {
             var opciones = await _administracionManager.ObtenerOpcionesFiltroAuditoriaAsync(modulo);
             return Ok(opciones);
+        }
+
+        public class ValidarCuentaBancariaRequestDTO
+        {
+            public int IdCuentaBancaria { get; set; }
+            public bool Aprobada { get; set; }
+            public string? Observaciones { get; set; }
         }
     }
 }
