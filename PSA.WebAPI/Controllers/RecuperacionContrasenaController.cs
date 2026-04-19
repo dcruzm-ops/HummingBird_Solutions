@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
+using PSA.AppCore.Services.Security;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
-using PSA.WebAPI.Services;
 
 namespace PSA.WebAPI.Controllers
 {
@@ -11,13 +11,9 @@ namespace PSA.WebAPI.Controllers
     public class RecuperacionContrasenaController : ControllerBase
     {
         private readonly RecuperacionContrasenaManager _manager;
-        private readonly IConfiguration _configuration;
 
-        public RecuperacionContrasenaController(
-            IConfiguration configuration,
-            RecuperacionContrasenaManager manager)
+        public RecuperacionContrasenaController(RecuperacionContrasenaManager manager)
         {
-            _configuration = configuration;
             _manager = manager;
         }
 
@@ -35,66 +31,27 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var (token, nombreUsuario) = await _manager.GenerarTokenConNombreAsync(dto.Correo);
-                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"]?.TrimEnd('/');
-                var linkRecuperacion = string.IsNullOrWhiteSpace(webAppBaseUrl)
-                    ? null
-                    : $"{webAppBaseUrl}/Autenticacion/RestablecerContrasena?tokenRecuperacion={Uri.EscapeDataString(token)}";
-
-                var respuesta = new RespuestaRecuperacionDTO
+                await _manager.SolicitarRecuperacionAsync(dto.Correo);
+                return Ok(new RespuestaRecuperacionDTO
                 {
                     Exito = true,
-                    Mensaje = "Solicitud procesada correctamente.",
-                    LinkRecuperacion = linkRecuperacion,
-                    CorreoDestino = dto.Correo,
-                    NombreUsuario = nombreUsuario
-                };
-
-                var smtp = new SmtpSettingsDTO
-                {
-                    Host = _configuration["SmtpSettings:Host"] ?? string.Empty,
-                    Port = int.TryParse(_configuration["SmtpSettings:Port"], out var port) ? port : 587,
-                    EnableSsl = bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) ? ssl : true,
-                    FromName = _configuration["SmtpSettings:FromName"] ?? string.Empty,
-                    FromEmail = _configuration["SmtpSettings:FromEmail"] ?? string.Empty,
-                    Username = _configuration["SmtpSettings:Username"] ?? string.Empty,
-                    Password = _configuration["SmtpSettings:Password"] ?? string.Empty
-                };
-
-                var smtpConfigurado = !string.IsNullOrWhiteSpace(smtp.Host)
-                    && !string.IsNullOrWhiteSpace(smtp.FromEmail)
-                    && !string.IsNullOrWhiteSpace(smtp.Username)
-                    && !string.IsNullOrWhiteSpace(smtp.Password);
-
-                if (respuesta.Exito
-                    && smtpConfigurado
-                    && !string.IsNullOrWhiteSpace(respuesta.LinkRecuperacion)
-                    && !string.IsNullOrWhiteSpace(respuesta.CorreoDestino))
-                {
-                    var correoService = new CorreoService(smtp);
-                    correoService.EnviarCorreoRecuperacion(
-                        respuesta.CorreoDestino,
-                        respuesta.NombreUsuario ?? "usuario",
-                        respuesta.LinkRecuperacion
-                    );
-                }
-                else if (respuesta.Exito && !smtpConfigurado)
-                {
-                    respuesta.Mensaje = "Solicitud procesada. SMTP no configurado, por lo que no se envió correo de recuperación.";
-                }
-
-                respuesta.LinkRecuperacion = null;
-                respuesta.CorreoDestino = null;
-                respuesta.NombreUsuario = null;
-
-                return Ok(respuesta);
+                    Mensaje = "Solicitud procesada correctamente."
+                });
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new RespuestaRecuperacionDTO
+                {
+                    Exito = false,
+                    Mensaje = ex.Message
+                });
+            }
+            catch (Exception)
             {
                 return StatusCode(500, new RespuestaRecuperacionDTO
                 {
                     Exito = false,
-                    Mensaje = $"Error al procesar la recuperación: {ex.Message}"
+                    Mensaje = "Error al procesar la recuperación."
                 });
             }
         }
@@ -113,22 +70,27 @@ namespace PSA.WebAPI.Controllers
                     });
                 }
 
-                var esValido = await _manager.TokenEsValidoAsync(dto.Token);
-                var respuesta = new RespuestaRecuperacionDTO
+                var validacion = await _manager.ValidarTokenAsync(dto.Token);
+                var mensaje = validacion.Estado switch
                 {
-                    Exito = esValido,
-                    Mensaje = esValido
-                        ? "Token válido."
-                        : "El token es inválido o expiró."
+                    EstadoTokenRecuperacion.Vigente => "Token válido.",
+                    EstadoTokenRecuperacion.Expirado => "token expirado",
+                    EstadoTokenRecuperacion.Utilizado => "token ya utilizado",
+                    _ => "token inválido"
                 };
-                return Ok(respuesta);
+
+                return Ok(new RespuestaRecuperacionDTO
+                {
+                    Exito = validacion.EsValido,
+                    Mensaje = mensaje
+                });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new RespuestaRecuperacionDTO
                 {
                     Exito = false,
-                    Mensaje = $"Error al validar el token: {ex.Message}"
+                    Mensaje = "Error al validar el token."
                 });
             }
         }
@@ -166,12 +128,20 @@ namespace PSA.WebAPI.Controllers
                     Mensaje = "Contraseña restablecida correctamente."
                 });
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new RespuestaRecuperacionDTO
+                {
+                    Exito = false,
+                    Mensaje = ex.Message
+                });
+            }
+            catch (Exception)
             {
                 return StatusCode(500, new RespuestaRecuperacionDTO
                 {
                     Exito = false,
-                    Mensaje = $"Error al restablecer la contraseña: {ex.Message}"
+                    Mensaje = "Error al restablecer la contraseña."
                 });
             }
         }

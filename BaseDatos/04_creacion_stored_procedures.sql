@@ -549,6 +549,26 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE dbo.SP_Auth_ObtenerTokenPorValor
+    @Token NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT TOP 1
+        IdToken,
+        IdUsuario,
+        Token,
+        FechaCreacion,
+        FechaExpiracion,
+        Usado,
+        FechaUso
+    FROM dbo.TokensRecuperacion
+    WHERE Token = @Token
+    ORDER BY IdToken DESC;
+END;
+GO
+
 CREATE OR ALTER PROCEDURE dbo.SP_Auth_MarcarTokenComoUsado
     @IdToken INT
 AS
