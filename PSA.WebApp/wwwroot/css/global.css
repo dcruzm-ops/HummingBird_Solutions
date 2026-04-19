@@ -193,6 +193,13 @@ main {
     color: var(--color-texto-principal);
 }
 
+.notificacion-fecha {
+    display: inline-block;
+    margin-top: var(--espacio-1);
+    color: color-mix(in srgb, var(--color-texto-principal) 72%, var(--color-texto-secundario) 28%);
+    font-weight: var(--peso-seminegrita, 600);
+}
+
 html[data-tema="oscuro"] .notificacion-item {
     background: color-mix(in srgb, var(--color-superficie-secundaria) 84%, #000 16%);
 }
@@ -211,6 +218,10 @@ html[data-tema="oscuro"] .notificacion-item--error {
 
 html[data-tema="oscuro"] .notificacion-item--info {
     background: color-mix(in srgb, var(--color-info) 16%, var(--color-superficie) 84%);
+}
+
+html[data-tema="oscuro"] .notificacion-fecha {
+    color: #7CF7A1;
 }
 
 .lista-detalle {
