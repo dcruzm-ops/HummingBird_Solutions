@@ -13,7 +13,7 @@ namespace PSA.WebAPI.Services
             _smtp = smtp;
         }
 
-        public async Task EnviarCorreoRecuperacionAsync(string destino, string nombreUsuario, string token, DateTime fechaExpiracionUtc)
+        public async Task EnviarCorreoRecuperacionAsync(string destino, string nombreUsuario, string token, DateTime fechaExpiracion)
         {
             var asunto = "Recuperación de contraseña - PSA Costa Rica";
 
@@ -25,7 +25,7 @@ namespace PSA.WebAPI.Services
                     <p>Recibimos una solicitud para restablecer tu contraseña.</p>
                     <p>Tu token de recuperación es:</p>
                     <p style='font-size:24px;font-weight:700;letter-spacing:4px;'>{token}</p>
-                    <p>Este token vence el {fechaExpiracionUtc:yyyy-MM-dd HH:mm:ss} UTC (máximo 1 minuto).</p>
+                    <p>Este token vence el {fechaExpiracion:yyyy-MM-dd HH:mm:ss} (máximo 1 minuto).</p>
                     <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
                 </body>
                 </html>";

@@ -4,6 +4,17 @@ namespace PSA.EntidadesDTO.DTOs
 {
     public class RestablecerContrasenaDTO
     {
+        [Required(ErrorMessage = "El correo es obligatorio.")]
+        [EmailAddress(ErrorMessage = "Ingrese un correo válido.")]
+        public string Email { get; set; } = string.Empty;
+
+        // Compatibilidad con clientes que envían "correo"
+        public string Correo
+        {
+            get => Email;
+            set => Email = value;
+        }
+
         [Required]
         public string Token { get; set; } = string.Empty;
 
