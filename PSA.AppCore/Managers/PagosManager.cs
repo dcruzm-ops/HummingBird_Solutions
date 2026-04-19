@@ -11,6 +11,15 @@ public class PagosManager(
     IPaymentPlanReadService paymentPlanReadService,
     INotificationDispatcher notificationDispatcher)
 {
+    private static readonly HashSet<string> TiposCuentaPermitidos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Ahorro",
+        "Corriente",
+        "IBAN",
+        "SINPE",
+        "Otra"
+    };
+
     private readonly PlanPagoDAO _planPagoDao = planPagoDao;
     private readonly IPaymentPlanService _paymentPlanService = paymentPlanService;
     private readonly IPaymentPlanReadService _paymentPlanReadService = paymentPlanReadService;
@@ -136,6 +145,12 @@ public class PagosManager(
             || string.IsNullOrWhiteSpace(dto.Titular))
         {
             throw new InvalidOperationException("Debe completar todos los datos de la cuenta bancaria.");
+        }
+
+        dto.TipoCuenta = dto.TipoCuenta.Trim();
+        if (!TiposCuentaPermitidos.Contains(dto.TipoCuenta))
+        {
+            throw new InvalidOperationException("El tipo de cuenta no es válido. Use: Ahorro, Corriente, IBAN, SINPE u Otra.");
         }
 
         var idCuenta = await _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
