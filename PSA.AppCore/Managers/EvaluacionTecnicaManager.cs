@@ -1,3 +1,4 @@
+using PSA.AppCore.Services.Notifications;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
 
@@ -7,11 +8,19 @@ namespace PSA.AppCore.Managers
     {
         private readonly EvaluacionTecnicaDAO _evaluacionTecnicaDAO;
         private readonly Services.IPaymentPlanService _paymentPlanService;
+        private readonly INotificationDispatcher _notificationDispatcher;
+        private readonly UsuarioDAO _usuarioDao;
 
-        public EvaluacionTecnicaManager(EvaluacionTecnicaDAO evaluacionTecnicaDAO, Services.IPaymentPlanService paymentPlanService)
+        public EvaluacionTecnicaManager(
+            EvaluacionTecnicaDAO evaluacionTecnicaDAO,
+            Services.IPaymentPlanService paymentPlanService,
+            INotificationDispatcher notificationDispatcher,
+            UsuarioDAO usuarioDao)
         {
             _evaluacionTecnicaDAO = evaluacionTecnicaDAO ?? throw new ArgumentNullException(nameof(evaluacionTecnicaDAO));
             _paymentPlanService = paymentPlanService ?? throw new ArgumentNullException(nameof(paymentPlanService));
+            _notificationDispatcher = notificationDispatcher ?? throw new ArgumentNullException(nameof(notificationDispatcher));
+            _usuarioDao = usuarioDao ?? throw new ArgumentNullException(nameof(usuarioDao));
         }
 
         public Task<int> CrearPendientePorNuevaFincaAsync(int idFinca)
@@ -25,9 +34,7 @@ namespace PSA.AppCore.Managers
         }
 
         public Task<List<BandejaEvaluacionPendienteDTO>> ObtenerBandejaPendienteAsync()
-        {
-            return _evaluacionTecnicaDAO.ObtenerBandejaPendientesAsync();
-        }
+            => _evaluacionTecnicaDAO.ObtenerBandejaPendientesAsync();
 
         public Task<DetalleFincaParaEvaluacionDTO?> ObtenerDetalleAsync(int idEvaluacion)
         {
@@ -39,7 +46,7 @@ namespace PSA.AppCore.Managers
             return _evaluacionTecnicaDAO.ObtenerDetalleParaEvaluacionAsync(idEvaluacion);
         }
 
-        public Task<bool> AsignarIngenieroAsync(int idEvaluacion, int idIngeniero)
+        public async Task<bool> AsignarIngenieroAsync(int idEvaluacion, int idIngeniero)
         {
             if (idEvaluacion <= 0)
             {
@@ -51,7 +58,31 @@ namespace PSA.AppCore.Managers
                 throw new InvalidOperationException("El ingeniero asignado es inválido.");
             }
 
-            return _evaluacionTecnicaDAO.AsignarIngenieroAsync(idEvaluacion, idIngeniero);
+            var asignado = await _evaluacionTecnicaDAO.AsignarIngenieroAsync(idEvaluacion, idIngeniero);
+            if (!asignado)
+            {
+                return false;
+            }
+
+            var detalle = await _evaluacionTecnicaDAO.ObtenerDetalleParaEvaluacionAsync(idEvaluacion);
+            if (detalle != null)
+            {
+                await _notificationDispatcher.NotifyInAppAsync(
+                    detalle.IdPropietario,
+                    "Evaluación en proceso",
+                    $"La evaluación técnica de la finca \"{detalle.NombreFinca}\" fue tomada y está en proceso.",
+                    NotificationCatalog.TipoInfo,
+                    detalle.IdFinca);
+
+                await _notificationDispatcher.NotifyInAppAsync(
+                    idIngeniero,
+                    "Evaluación asignada",
+                    $"Se le asignó la evaluación #{idEvaluacion} de la finca \"{detalle.NombreFinca}\".",
+                    NotificationCatalog.TipoSuccess,
+                    idEvaluacion);
+            }
+
+            return true;
         }
 
         public async Task<bool> RegistrarResultadoAsync(int idEvaluacion, RegistrarResultadoEvaluacionDTO dto)
@@ -97,7 +128,12 @@ namespace PSA.AppCore.Managers
             dto.Observaciones = string.IsNullOrWhiteSpace(dto.Observaciones) ? null : dto.Observaciones.Trim();
 
             var resultado = await _evaluacionTecnicaDAO.RegistrarResultadoAsync(idEvaluacion, dto);
-            if (resultado && dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase))
+            if (!resultado)
+            {
+                return false;
+            }
+
+            if (dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase))
             {
                 await _paymentPlanService.GeneratePreliminaryPlanFromEvaluationAsync(
                     idEvaluacion,
@@ -106,7 +142,44 @@ namespace PSA.AppCore.Managers
                     ip: null);
             }
 
-            return resultado;
+            var detalle = await _evaluacionTecnicaDAO.ObtenerDetalleParaEvaluacionAsync(idEvaluacion);
+            if (detalle != null)
+            {
+                var tituloEstado = dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase)
+                    ? "Finca califica"
+                    : "Finca no califica";
+                var mensajeEstado = dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase)
+                    ? $"La evaluación de \"{detalle.NombreFinca}\" finalizó y la finca califica para el programa."
+                    : $"La evaluación de \"{detalle.NombreFinca}\" finalizó y la finca no califica para el programa.";
+
+                await _notificationDispatcher.NotifyInAppAsync(
+                    detalle.IdPropietario,
+                    tituloEstado,
+                    mensajeEstado,
+                    dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase) ? NotificationCatalog.TipoSuccess : NotificationCatalog.TipoWarning,
+                    detalle.IdFinca);
+
+                if (detalle.IdIngeniero.HasValue)
+                {
+                    await _notificationDispatcher.NotifyInAppAsync(
+                        detalle.IdIngeniero.Value,
+                        "Evaluación finalizada",
+                        $"La evaluación #{idEvaluacion} de la finca \"{detalle.NombreFinca}\" se guardó y finalizó correctamente.",
+                        NotificationCatalog.TipoSuccess,
+                        idEvaluacion);
+                }
+
+                var propietario = await _usuarioDao.ObtenerPorIdAsync(detalle.IdPropietario);
+                if (propietario != null)
+                {
+                    await _notificationDispatcher.NotifyEmailAsync(
+                        propietario.Email,
+                        $"Resultado de evaluación técnica - {detalle.NombreFinca}",
+                        NotificationCatalog.EmailResultadoEvaluacion(propietario.NombreCompleto, detalle.NombreFinca, dto.DecisionTecnica, dto.Observaciones));
+                }
+            }
+
+            return true;
         }
 
         public Task<bool> AvanzarEstadoAsync(int idEvaluacion, string nuevoEstado)

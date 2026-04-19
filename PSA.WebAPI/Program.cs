@@ -1,9 +1,11 @@
 using PSA.AppCore;
 using PSA.AppCore.Managers;
+using PSA.AppCore.Services.Notifications;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess;
 using PSA.DataAccess.DAO;
 using PSA.WebAPI.Controllers.Middleware;
+using PSA.WebAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +54,7 @@ builder.Services.AddScoped<CuentaBancariaDAO>();
 builder.Services.AddScoped<DashboardDAO>();
 builder.Services.AddScoped<ReportesDAO>();
 builder.Services.AddScoped<LandingDAO>();
+builder.Services.AddScoped<NotificacionDAO>();
 
 builder.Services.AddScoped<PSA.AppCore.Services.IPaymentCalculationService, PSA.AppCore.Services.PaymentCalculationService>();
 builder.Services.AddScoped<PSA.AppCore.Services.IPaymentPlanService, PSA.AppCore.Services.PaymentPlanService>();
@@ -67,6 +70,9 @@ builder.Services.AddScoped<AdministracionManager>();
 builder.Services.AddScoped<PagosManager>();
 builder.Services.AddScoped<ReportesManager>();
 builder.Services.AddScoped<LandingManager>();
+builder.Services.AddScoped<NotificacionesManager>();
+builder.Services.AddScoped<INotificationEmailSender, SmtpNotificationEmailSender>();
+builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
 
 var app = builder.Build();
 

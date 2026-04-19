@@ -1,7 +1,7 @@
 @{
     var mensajeExitoHtml = TempData["MensajeExitoHtml"]?.ToString();
-    var mensajeExito = TempData["MensajeExito"]?.ToString();
-    var mensajeError = TempData["MensajeError"]?.ToString();
+    var mensajeExito = TempData["MensajeExito"]?.ToString() ?? TempData["Exito"]?.ToString();
+    var mensajeError = TempData["MensajeError"]?.ToString() ?? TempData["Error"]?.ToString();
 }
 
 @if (!string.IsNullOrWhiteSpace(mensajeExitoHtml))

@@ -63,5 +63,21 @@ namespace PSA.WebAPI.Services
 
             cliente.Send(mensaje);
         }
+
+        public void EnviarCorreoHtml(string destino, string asunto, string cuerpoHtml)
+        {
+            using var mensaje = new MailMessage();
+            mensaje.From = new MailAddress(_smtp.FromEmail, _smtp.FromName);
+            mensaje.To.Add(destino);
+            mensaje.Subject = asunto;
+            mensaje.Body = cuerpoHtml;
+            mensaje.IsBodyHtml = true;
+
+            using var cliente = new SmtpClient(_smtp.Host, _smtp.Port);
+            cliente.Credentials = new NetworkCredential(_smtp.Username, _smtp.Password);
+            cliente.EnableSsl = _smtp.EnableSsl;
+
+            cliente.Send(mensaje);
+        }
     }
 }
