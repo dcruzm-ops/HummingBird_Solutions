@@ -56,14 +56,14 @@
 
 html[data-tema="oscuro"] {
     --color-fondo: #07140B;
-    --color-superficie: #0E1F12;
-    --color-superficie-secundaria: #122818;
-    --color-borde-suave: #1E3A24;
+    --color-superficie: #173624;
+    --color-superficie-secundaria: #1B412B;
+    --color-borde-suave: #2B6441;
     --color-texto-principal: #EAF2EA;
-    --color-texto-secundario: #A9B5A9;
-    --color-primario: #2E9739;
-    --color-accion: #39A845;
-    --color-exito: #45C866;
+    --color-texto-secundario: #C2D3C4;
+    --color-primario: #6BD47B;
+    --color-accion: #59C96D;
+    --color-exito: #72D983;
     --color-advertencia: #E8B53C;
     --color-error: #F47575;
     --color-info: #43C7E4;

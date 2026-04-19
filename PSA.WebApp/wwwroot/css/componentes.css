@@ -300,6 +300,7 @@
     padding: var(--espacio-5);
     background: var(--color-superficie);
     border-right: 1px solid var(--color-borde-suave);
+    transition: transform 0.2s ease, width 0.2s ease, padding 0.2s ease, border-color 0.2s ease;
 }
 
 .barra-lateral__marca {
@@ -337,6 +338,17 @@
     border-radius: var(--radio-md);
     color: var(--color-texto-principal);
     text-decoration: none;
+}
+
+body.menu-colapsado .contenedor-aplicacion {
+    grid-template-columns: 1fr;
+}
+
+body.menu-colapsado .barra-lateral {
+    width: 0;
+    padding-inline: 0;
+    overflow: hidden;
+    border-right-color: transparent;
 }
 
     .item-menu:hover {
@@ -426,6 +438,24 @@
     justify-content: space-between;
     gap: var(--espacio-3);
     margin-bottom: var(--espacio-4);
+}
+
+.acciones-tabla-usuario {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-3);
+    flex-wrap: wrap;
+}
+
+.acciones-tabla-usuario .boton-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0;
+}
+
+.acciones-tabla-usuario form {
+    margin: 0;
 }
 
 @media (max-width: 992px) {
@@ -756,4 +786,3 @@ th { letter-spacing: .01em; }
 .filtro-w-220 { max-width: 220px; }
 .filtro-w-280 { max-width: 280px; }
 .mensaje-validacion-oculto { display: none; }
-
