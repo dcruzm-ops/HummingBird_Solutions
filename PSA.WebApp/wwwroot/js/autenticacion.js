@@ -27,17 +27,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.addEventListener("pageshow", ocultarTrobber);
 
-    var alertasAutoDismiss = document.querySelectorAll("[data-auto-dismiss-ms]");
-    alertasAutoDismiss.forEach(function (alerta) {
-        var tiempo = Number(alerta.getAttribute("data-auto-dismiss-ms")) || 8000;
-        window.setTimeout(function () {
-            alerta.classList.add("alerta-desvanecer");
-            window.setTimeout(function () {
-                alerta.remove();
-            }, 550);
-        }, tiempo);
-    });
-
     var formularios = [
         document.getElementById("formularioIniciarSesion"),
         document.getElementById("formularioRegistroUsuario"),

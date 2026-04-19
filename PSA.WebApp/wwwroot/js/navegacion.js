@@ -19,8 +19,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (botonMenuLateral && barraLateral) {
+        var menuColapsadoGuardado = localStorage.getItem("psa-menu-colapsado");
+        if (menuColapsadoGuardado === "true") {
+            document.body.classList.add("menu-colapsado");
+        }
+
         botonMenuLateral.addEventListener("click", function () {
-            barraLateral.classList.toggle("abierta");
+            var esPantallaMovil = window.matchMedia("(max-width: 992px)").matches;
+            if (esPantallaMovil) {
+                barraLateral.classList.toggle("abierta");
+                return;
+            }
+
+            document.body.classList.toggle("menu-colapsado");
+            localStorage.setItem("psa-menu-colapsado", document.body.classList.contains("menu-colapsado") ? "true" : "false");
         });
     }
 
@@ -48,17 +60,6 @@ document.addEventListener("DOMContentLoaded", function () {
     window.psa = window.psa || {};
     window.psa.mostrarTrobberGlobal = mostrarTrobber;
     window.psa.ocultarTrobberGlobal = ocultarTrobber;
-
-    var alertasAutoDismiss = document.querySelectorAll("[data-auto-dismiss-ms]");
-    alertasAutoDismiss.forEach(function (alerta) {
-        var tiempo = Number(alerta.getAttribute("data-auto-dismiss-ms")) || 8000;
-        window.setTimeout(function () {
-            alerta.classList.add("alerta-desvanecer");
-            window.setTimeout(function () {
-                alerta.remove();
-            }, 550);
-        }, tiempo);
-    });
 
     document.querySelectorAll("a[href]").forEach(function (enlace) {
         enlace.addEventListener("click", function (evento) {

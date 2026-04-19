@@ -1,32 +1,33 @@
 @{
     var mensajeExitoHtml = TempData["MensajeExitoHtml"]?.ToString();
-    var mensajeExito = TempData["MensajeExito"]?.ToString() ?? TempData["Exito"]?.ToString();
-    var mensajeError = TempData["MensajeError"]?.ToString() ?? TempData["Error"]?.ToString();
+    var toasts = new List<(string Tipo, string Mensaje)>
+    {
+        ("exito", TempData["MensajeExito"]?.ToString() ?? TempData["Exito"]?.ToString() ?? string.Empty),
+        ("error", TempData["MensajeError"]?.ToString() ?? TempData["Error"]?.ToString() ?? string.Empty),
+        ("advertencia", TempData["MensajeAdvertencia"]?.ToString() ?? TempData["Advertencia"]?.ToString() ?? string.Empty),
+        ("info", TempData["MensajeInfo"]?.ToString() ?? TempData["Info"]?.ToString() ?? string.Empty)
+    }.Where(x => !string.IsNullOrWhiteSpace(x.Mensaje)).ToList();
 }
 
 @if (!string.IsNullOrWhiteSpace(mensajeExitoHtml))
 {
-    <section class="mensajes-sistema">
-        <article class="alerta alerta-info" role="status" data-auto-dismiss-ms="9000">
+    <section class="mensajes-contexto">
+        <article class="alerta alerta-info" role="status">
             @Html.Raw(mensajeExitoHtml)
         </article>
     </section>
 }
 
-@if (!string.IsNullOrWhiteSpace(mensajeExito))
+@if (toasts.Any())
 {
-    <section class="mensajes-sistema">
-        <article class="alerta alerta-info" role="status" data-auto-dismiss-ms="8000">
-            @mensajeExito
-        </article>
-    </section>
-}
-
-@if (!string.IsNullOrWhiteSpace(mensajeError))
-{
-    <section class="mensajes-sistema">
-        <article class="alerta alerta-error" role="alert">
-            @mensajeError
-        </article>
+    <section class="toast-contenedor" aria-live="polite" aria-atomic="true">
+        @foreach (var toast in toasts)
+        {
+            var rol = toast.Tipo == "error" ? "alert" : "status";
+            <article class="toast-sistema toast-sistema--@toast.Tipo" role="@rol" data-toast-tipo="@toast.Tipo" tabindex="0">
+                <div class="toast-sistema__contenido">@toast.Mensaje</div>
+                <button type="button" class="toast-sistema__cerrar" data-toast-cerrar aria-label="Cerrar mensaje">×</button>
+            </article>
+        }
     </section>
 }
