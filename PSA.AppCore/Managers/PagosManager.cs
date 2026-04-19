@@ -11,6 +11,15 @@ public class PagosManager(
     IPaymentPlanReadService paymentPlanReadService,
     INotificationDispatcher notificationDispatcher)
 {
+    private static readonly HashSet<string> TiposCuentaPermitidos = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Ahorro",
+        "Corriente",
+        "IBAN",
+        "SINPE",
+        "Otra"
+    };
+
     private readonly PlanPagoDAO _planPagoDao = planPagoDao;
     private readonly IPaymentPlanService _paymentPlanService = paymentPlanService;
     private readonly IPaymentPlanReadService _paymentPlanReadService = paymentPlanReadService;

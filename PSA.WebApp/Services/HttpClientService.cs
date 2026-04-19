@@ -49,6 +49,27 @@ public class HttpClientService
         return await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions);
     }
 
+    public async Task<ApiResult<TResponse>> PostWithResultAsync<TRequest, TResponse>(string endpoint, TRequest data)
+    {
+        var client = _httpClientFactory.CreateClient("AuthApi");
+        var response = await client.PostAsJsonAsync(endpoint, data, JsonOptions);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return new ApiResult<TResponse>
+            {
+                IsSuccess = false,
+                ErrorMessage = await ExtractErrorMessageAsync(response)
+            };
+        }
+
+        return new ApiResult<TResponse>
+        {
+            IsSuccess = true,
+            Data = await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions)
+        };
+    }
+
     public async Task<TResponse?> PutAsync<TRequest, TResponse>(string endpoint, TRequest data)
     {
         var client = _httpClientFactory.CreateClient("AuthApi");
@@ -93,4 +114,40 @@ public class HttpClientService
 
         return await response.Content.ReadFromJsonAsync<TResponse>(JsonOptions);
     }
+
+    private static async Task<string?> ExtractErrorMessageAsync(HttpResponseMessage response)
+    {
+        var payload = await response.Content.ReadAsStringAsync();
+        if (string.IsNullOrWhiteSpace(payload))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(payload);
+            if (doc.RootElement.TryGetProperty("mensaje", out var mensajeMin))
+            {
+                return mensajeMin.GetString();
+            }
+
+            if (doc.RootElement.TryGetProperty("Mensaje", out var mensajeMay))
+            {
+                return mensajeMay.GetString();
+            }
+        }
+        catch (JsonException)
+        {
+            // Intencional: si la respuesta no es JSON se usa el fallback.
+        }
+
+        return payload;
+    }
+}
+
+public class ApiResult<T>
+{
+    public bool IsSuccess { get; init; }
+    public T? Data { get; init; }
+    public string? ErrorMessage { get; init; }
 }

@@ -178,6 +178,10 @@ public class PagosController(PagosManager pagosManager) : ControllerBase
         {
             return BadRequest(new { Mensaje = ex.Message });
         }
+        catch (Exception)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new { Mensaje = "No fue posible registrar la cuenta bancaria en este momento." });
+        }
     }
 
     [HttpPut("dueno/planes/{idPlanPago:int}/cuenta-bancaria")]

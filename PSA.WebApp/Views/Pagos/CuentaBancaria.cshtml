@@ -73,7 +73,14 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Tipo de cuenta</label>
-                        <input class="form-control" name="TipoCuenta" required />
+                        <select class="form-select" name="TipoCuenta" required>
+                            <option value="">Seleccione un tipo</option>
+                            <option value="Ahorro">Ahorro</option>
+                            <option value="Corriente">Corriente</option>
+                            <option value="IBAN">IBAN</option>
+                            <option value="SINPE">SINPE</option>
+                            <option value="Otra">Otra</option>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Titular</label>
