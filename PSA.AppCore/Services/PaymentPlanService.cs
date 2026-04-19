@@ -1,3 +1,4 @@
+using PSA.AppCore.Services.Notifications;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs.Pagos;
 
@@ -13,11 +14,15 @@ public interface IPaymentPlanService
 public class PaymentPlanService(
     PlanPagoDAO planPagoDao,
     AuditoriaLogDAO auditoriaLogDao,
-    IPaymentCalculationService paymentCalculationService) : IPaymentPlanService
+    IPaymentCalculationService paymentCalculationService,
+    UsuarioDAO usuarioDao,
+    INotificationDispatcher notificationDispatcher) : IPaymentPlanService
 {
     private readonly PlanPagoDAO _planPagoDao = planPagoDao;
     private readonly AuditoriaLogDAO _auditoriaLogDao = auditoriaLogDao;
     private readonly IPaymentCalculationService _paymentCalculationService = paymentCalculationService;
+    private readonly UsuarioDAO _usuarioDao = usuarioDao;
+    private readonly INotificationDispatcher _notificationDispatcher = notificationDispatcher;
 
     public async Task<PlanPagoDTO?> GeneratePreliminaryPlanFromEvaluationAsync(int idEvaluacion, int anioPlan, int? actorId, string? ip)
     {
@@ -44,6 +49,28 @@ public class PaymentPlanService(
             detalle: $"Plan preliminar #{plan.IdPlanPago} generado por evaluación #{idEvaluacion} para finca #{plan.IdFinca}.",
             idRegistroAfectado: plan.IdPlanPago,
             ipOrigen: ip);
+
+        await _notificationDispatcher.NotifyInAppAsync(
+            context.IdPropietario,
+            "Plan de pagos generado",
+            $"Se generó el plan de pagos #{plan.IdPlanPago} para la finca \"{context.NombreFinca}\".",
+            NotificationCatalog.TipoSuccess,
+            plan.IdPlanPago);
+
+        var propietario = await _usuarioDao.ObtenerPorIdAsync(context.IdPropietario);
+        if (propietario != null)
+        {
+            await _notificationDispatcher.NotifyEmailAsync(
+                propietario.Email,
+                $"Plan de pagos generado - {context.NombreFinca}",
+                NotificationCatalog.EmailPlanPago(
+                    propietario.NombreCompleto,
+                    context.NombreFinca,
+                    plan.IdPlanPago,
+                    periodoPlan: anioPlan.ToString(),
+                    montoEstimado: plan.MontoMensualCalculado,
+                    enlaceSistema: null));
+        }
 
         return plan;
     }
@@ -84,6 +111,13 @@ public class PaymentPlanService(
             detalle: $"Plan de pago #{idPlanPago} aprobado y activado por ingeniero #{idIngeniero}.",
             idRegistroAfectado: idPlanPago,
             ipOrigen: ip);
+
+        await _notificationDispatcher.NotifyInAppAsync(
+            idIngeniero,
+            "Plan activado",
+            $"El plan de pago #{idPlanPago} fue activado correctamente.",
+            NotificationCatalog.TipoSuccess,
+            idPlanPago);
 
         return true;
     }
