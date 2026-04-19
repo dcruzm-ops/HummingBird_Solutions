@@ -20,7 +20,7 @@ public class NotificationDispatcher : INotificationDispatcher
             return Task.CompletedTask;
         }
 
-        return _notificacionDao.CrearAsync(idUsuario, titulo, mensaje, tipo, idEntidadReferencia);
+        return EjecutarSeguroAsync(() => _notificacionDao.CrearAsync(idUsuario, titulo, mensaje, tipo, idEntidadReferencia));
     }
 
     public Task NotifyEmailAsync(string? destino, string asunto, string cuerpoHtml)
@@ -30,6 +30,18 @@ public class NotificationDispatcher : INotificationDispatcher
             return Task.CompletedTask;
         }
 
-        return _emailSender.SendHtmlAsync(destino.Trim(), asunto.Trim(), cuerpoHtml);
+        return EjecutarSeguroAsync(() => _emailSender.SendHtmlAsync(destino.Trim(), asunto.Trim(), cuerpoHtml));
+    }
+
+    private static async Task EjecutarSeguroAsync(Func<Task> accion)
+    {
+        try
+        {
+            await accion();
+        }
+        catch
+        {
+            // Las notificaciones no deben bloquear el flujo principal de negocio.
+        }
     }
 }

@@ -147,12 +147,6 @@ public class PagosManager(
             throw new InvalidOperationException("Debe completar todos los datos de la cuenta bancaria.");
         }
 
-        dto.TipoCuenta = dto.TipoCuenta.Trim();
-        if (!TiposCuentaPermitidos.Contains(dto.TipoCuenta))
-        {
-            throw new InvalidOperationException("El tipo de cuenta no es válido. Use: Ahorro, Corriente, IBAN, SINPE u Otra.");
-        }
-
         var idCuenta = await _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
         if (idCuenta > 0)
         {

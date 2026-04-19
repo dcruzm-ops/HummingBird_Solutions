@@ -31,7 +31,7 @@
             <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Visitas técnicas pendientes</a>
             <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Resultados de visitas técnicas</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Notificaciones</a>
+            <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
             <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
         }
         else if (rolActivo == "administrador")
@@ -44,7 +44,7 @@
             <a class="item-menu @((controllerActual == "pagos" && (accionActual == "planespago" || accionActual == "detalleplanpago")) ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Planes de pago</a>
             <a class="item-menu @(moduloActivo == "reportes" || controllerActual == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
             <a class="item-menu @((controllerActual == "administracion" && accionActual == "auditorialogs") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="AuditoriaLogs">Auditoría</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Notificaciones</a>
+            <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
             <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
         }
         else

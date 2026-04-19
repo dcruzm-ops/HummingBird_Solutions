@@ -9,7 +9,7 @@
             <h2>Notificaciones</h2>
             <p>Historial de avisos relevantes sobre evaluaciones, cuentas y pagos.</p>
         </div>
-        <a class="boton-secundario" asp-controller="Dashboard" asp-action="Dueno">Volver al dashboard</a>
+        <a class="boton-secundario" asp-controller="Dashboard" asp-action="@(ViewBag.AccionDashboard ?? "Dueno")">Volver al dashboard</a>
     </div>
 
     <section class="tarjeta-panel">

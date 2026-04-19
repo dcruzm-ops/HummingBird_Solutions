@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 namespace PSA.WebApp.Controllers
 {
-    [Authorize(Roles = "2")]
+    [Authorize(Roles = "1,2,3")]
     public class NotificacionesController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
@@ -20,11 +20,25 @@ namespace PSA.WebApp.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
+            var rol = User.FindFirstValue(ClaimTypes.Role) ?? "2";
+            var rolActivo = rol switch
+            {
+                "1" => "Administrador",
+                "3" => "Ingeniero",
+                _ => "Dueno"
+            };
+
             ViewBag.ModuloActivo = "notificaciones";
-            ViewBag.RolActivo = "Dueno";
+            ViewBag.RolActivo = rolActivo;
             ViewBag.TituloPagina = "Notificaciones";
-            ViewBag.SubtituloPagina = "Revise avisos del sistema asociados a evaluaciones, cuentas y pagos.";
+            ViewBag.SubtituloPagina = "Revise avisos del sistema asociados a evaluaciones, cuentas, pagos y acciones administrativas.";
             ViewBag.BreadcrumbActual = "Notificaciones";
+            ViewBag.AccionDashboard = rol switch
+            {
+                "1" => "Administrador",
+                "3" => "Ingeniero",
+                _ => "Dueno"
+            };
 
             var idUsuario = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
             if (idUsuario <= 0)
