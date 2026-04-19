@@ -567,3 +567,193 @@
     gap: var(--espacio-3);
     flex-wrap: wrap;
 }
+
+
+/* === Sistema visual unificado PSA === */
+h1, .h1-ui { font-size: var(--tam-h1); font-weight: var(--peso-negrita); margin: 0 0 var(--espacio-3); }
+h2, .h2-ui { font-size: var(--tam-h2); font-weight: var(--peso-negrita); margin: 0 0 var(--espacio-2); }
+h3, .h3-ui { font-size: var(--tam-h3); font-weight: var(--peso-seminegrita); margin: 0 0 var(--espacio-2); }
+h4, .h4-ui { font-size: var(--tam-h4); font-weight: var(--peso-seminegrita); margin: 0 0 var(--espacio-2); }
+
+.texto-secundario-ui { color: var(--color-texto-secundario); font-size: var(--tam-secundario); }
+label, .form-label, .etiqueta-ui { color: var(--color-texto-principal); font-size: var(--tam-label); font-weight: var(--peso-seminegrita); }
+.texto-ayuda, .form-text, small { color: var(--color-texto-secundario); font-size: var(--tam-ayuda); }
+
+.boton-primario,
+.boton-secundario,
+.boton-link,
+.boton-icono,
+.btn {
+    min-height: 44px;
+    font-size: 0.95rem;
+    font-weight: var(--peso-negrita);
+    border-radius: var(--radio-md);
+}
+
+.btn,
+.btn.btn-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding: .75rem 1rem;
+}
+
+.btn-primary,
+.boton-primario,
+.btn-success,
+.btn-accent {
+    background: var(--color-accion);
+    border-color: var(--color-accion);
+    color: #fff;
+}
+
+.btn-outline-secondary,
+.btn-secondary,
+.boton-secundario,
+.btn-light {
+    background: var(--color-superficie);
+    color: var(--color-texto-principal);
+    border: 1px solid var(--color-borde-suave);
+}
+
+.btn-danger,
+.boton-peligro,
+.btn-outline-danger {
+    background: var(--color-error);
+    border-color: var(--color-error);
+    color: #fff;
+}
+
+.btn-warning,
+.boton-neutral,
+.boton-cancelar {
+    background: color-mix(in srgb, var(--color-advertencia) 18%, var(--color-superficie) 82%);
+    border: 1px solid color-mix(in srgb, var(--color-advertencia) 50%, var(--color-superficie) 50%);
+    color: var(--color-texto-principal);
+}
+
+.btn:hover,
+.boton-primario:hover,
+.boton-secundario:hover { filter: brightness(1.02); text-decoration: none; }
+
+button:focus-visible,
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+.btn:disabled,
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+    background: var(--disabled-bg);
+    color: var(--disabled-text);
+    cursor: not-allowed;
+    opacity: .85;
+}
+
+.form-control,
+.form-select,
+.form-check-input,
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"],
+input[type="date"],
+select,
+textarea {
+    background: var(--color-superficie);
+    color: var(--color-texto-principal);
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-md);
+    min-height: 44px;
+    padding: .75rem .95rem;
+}
+
+.form-check-input {
+    min-height: 1.1rem;
+    min-width: 1.1rem;
+    padding: 0;
+}
+
+.formulario-base .text-danger,
+.validation-summary-errors,
+.field-validation-error {
+    font-size: .84rem;
+    color: var(--color-error) !important;
+    font-weight: var(--peso-seminegrita);
+}
+
+.tabla-base tbody tr:hover { background: var(--color-superficie-secundaria); }
+.tabla-base td { vertical-align: middle; }
+
+th, td { font-size: .94rem; }
+th { letter-spacing: .01em; }
+
+.badge-estado {
+    border: 1px solid transparent;
+}
+
+.badge-exito { border-color: color-mix(in srgb, var(--color-exito) 45%, transparent); }
+.badge-pendiente { border-color: color-mix(in srgb, var(--color-advertencia) 45%, transparent); }
+.badge-error { border-color: color-mix(in srgb, var(--color-error) 45%, transparent); }
+.badge-info { border-color: color-mix(in srgb, var(--color-info) 45%, transparent); }
+
+.alerta-exito { border-left-color: var(--color-exito); }
+.alerta-advertencia { border-left-color: var(--color-advertencia); }
+
+.mapa-ubicacion-finca,
+.mapa-detalle-finca {
+    width: 100%;
+    min-height: 340px;
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-md);
+    overflow: hidden;
+    box-shadow: var(--sombra-sm);
+}
+
+.tarjeta-panel-interna { margin-top: var(--espacio-3); }
+.detalle-resumen-grid { gap: var(--espacio-2); }
+
+.lista-evidencias { display: grid; gap: var(--espacio-3); }
+.evidencia-item {
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-md);
+    padding: var(--espacio-3);
+    background: var(--color-superficie);
+}
+.evidencia-preview-imagen,
+.evidencia-preview-pdf {
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+    object-fit: contain;
+    border-radius: var(--radio-sm);
+    border: 1px solid var(--color-borde-suave);
+    margin: var(--espacio-2) 0;
+    background: var(--color-superficie);
+}
+.evidencia-preview-pdf { min-height: 320px; }
+
+.campo-ajustable {
+    border-left: 4px solid var(--color-accion);
+    padding-left: .75rem;
+    background: color-mix(in srgb, var(--color-accion) 10%, var(--color-superficie) 90%);
+    border-radius: var(--radio-sm);
+}
+
+.texto-ajustes-tecnicos { margin-bottom: var(--espacio-3); }
+
+.celda-icono-pronostico { font-size: 1.25rem; }
+.filtro-w-120 { max-width: 120px; }
+.filtro-w-180 { max-width: 180px; }
+.filtro-w-220 { max-width: 220px; }
+.filtro-w-280 { max-width: 280px; }
+.mensaje-validacion-oculto { display: none; }
+

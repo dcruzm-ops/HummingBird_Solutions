@@ -15,8 +15,8 @@
 
     <section class="tarjeta-panel">
         <form method="get" asp-controller="Pagos" asp-action="PlanesIngenieroPendientes" class="mb-3 d-flex gap-2 flex-wrap">
-            <input type="number" name="anio" value="@anio" min="2000" max="2100" class="form-control" style="max-width: 180px;" placeholder="Año" />
-            <select name="estadoPlan" class="form-select" style="max-width: 280px;">
+            <input type="number" name="anio" value="@anio" min="2000" max="2100" class="form-control filtro-w-180" placeholder="Año" />
+            <select name="estadoPlan" class="form-select filtro-w-280">
                 <option value="" selected="@(string.IsNullOrWhiteSpace(estadoPlan) ? "selected" : null)">Pendientes (default)</option>
                 <option value="PendienteDatosBancarios" selected="@(string.Equals(estadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">PendienteDatosBancarios</option>
                 <option value="PendienteAprobacionFinal" selected="@(string.Equals(estadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">PendienteAprobacionFinal</option>
