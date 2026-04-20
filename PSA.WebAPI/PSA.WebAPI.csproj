@@ -30,6 +30,8 @@
     <Compile Include="CorreoService.cs" />
     <Compile Include="Services\SmtpNotificationEmailSender.cs" />
     <Compile Include="Services\PasswordRecoveryServices.cs" />
+    <Compile Include="Extensions\ControllerUserExtensions.cs" />
+    <Compile Include="Services\Security\HeaderAuthenticationHandler.cs" />
     <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
     <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />

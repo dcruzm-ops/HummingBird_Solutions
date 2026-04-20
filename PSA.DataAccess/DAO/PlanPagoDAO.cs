@@ -9,6 +9,18 @@ public class PlanPagoDAO(IDbConnectionFactory connectionFactory)
 {
     private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
 
+
+    public async Task<bool> ExistePlanPorFincaAnioAsync(int idFinca, int anio)
+    {
+        const string sql = @"SELECT TOP 1 1 FROM dbo.PlanesPago WHERE IdFinca=@IdFinca AND Anio=@Anio;";
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdFinca", idFinca);
+        command.Parameters.AddWithValue("@Anio", anio);
+        await connection.OpenAsync();
+        return (await command.ExecuteScalarAsync()) != null;
+    }
+
     public async Task<PlanPagoDTO?> GenerarPlanPagoAsync(GenerarPlanPagoRequestDTO request)
     {
         using var connection = _connectionFactory.CreateConnection();
@@ -156,17 +168,11 @@ WHERE IdConfiguracionPago = @IdConfiguracionPago;";
 
         if (existingPlanId.HasValue)
         {
-            idPlanPago = existingPlanId.Value;
-            await ActualizarPlanAsync(connection, tx, idPlanPago, context, config, calculation, estadoInicial);
-            await LimpiarCuotasAsync(connection, tx, idPlanPago);
-            await UpsertDetalleCalculoAsync(connection, tx, idPlanPago, context, config, calculation);
-        }
-        else
-        {
-            idPlanPago = await InsertarPlanAsync(connection, tx, context, config, calculation, anio, estadoInicial);
-            await UpsertDetalleCalculoAsync(connection, tx, idPlanPago, context, config, calculation);
+            throw new InvalidOperationException($"Ya existe un plan de pago para la finca {context.IdFinca} en el año {anio}. No se permite recalcular ni sobrescribir.");
         }
 
+        idPlanPago = await InsertarPlanAsync(connection, tx, context, config, calculation, anio, estadoInicial);
+        await UpsertDetalleCalculoAsync(connection, tx, idPlanPago, context, config, calculation);
         await InsertarCuotasAsync(connection, tx, idPlanPago, anio, calculation.MontoMensualTotal);
 
         await tx.CommitAsync();
@@ -251,7 +257,7 @@ INNER JOIN dbo.EvaluacionesTecnicas e ON e.IdEvaluacion = pp.IdEvaluacion
 WHERE pp.IdPlanPago = @IdPlanPago
   AND pp.IdCuentaBancaria IS NOT NULL
   AND pp.EstadoPlan = @EstadoPendienteAprobacion
-  AND (e.IdIngeniero = @IdIngeniero OR @IdIngeniero = 1);
+  AND e.IdIngeniero = @IdIngeniero;
 
 SELECT @@ROWCOUNT;";
 
@@ -1116,4 +1122,45 @@ VALUES(@IdPlanPago, @Mes, @FechaProgramada, @MontoProgramado, @MontoPendiente, @
             await command.ExecuteNonQueryAsync();
         }
     }
+
+    public async Task<int> ArrastrarSaldosPendientesAsync(DateTime fechaCorte)
+    {
+        const string sql = @"
+;WITH CuotasVencidas AS (
+    SELECT c.IdCuotaPago, c.IdPlanPago, c.Mes, c.MontoPendiente
+    FROM dbo.CuotasPago c
+    INNER JOIN dbo.PlanesPago p ON p.IdPlanPago = c.IdPlanPago
+    WHERE c.FechaProgramada < @FechaCorte
+      AND c.MontoPendiente > 0
+      AND c.EstadoCuota IN ('Pendiente','Notificada','Atrasada')
+      AND p.EstadoPlan = @EstadoActivo
+), ProximaCuota AS (
+    SELECT v.IdCuotaPago, v.MontoPendiente, nx.IdCuotaPago AS IdSiguiente
+    FROM CuotasVencidas v
+    OUTER APPLY (
+      SELECT TOP 1 c2.IdCuotaPago
+      FROM dbo.CuotasPago c2
+      WHERE c2.IdPlanPago = v.IdPlanPago AND c2.Mes > v.Mes
+      ORDER BY c2.Mes ASC
+    ) nx
+)
+UPDATE cnext SET cnext.MontoPendiente = cnext.MontoPendiente + p.MontoPendiente
+FROM ProximaCuota p
+INNER JOIN dbo.CuotasPago cnext ON cnext.IdCuotaPago = p.IdSiguiente;
+
+UPDATE c
+SET c.EstadoCuota = 'Atrasada', c.MontoPendiente = 0
+FROM dbo.CuotasPago c
+INNER JOIN ProximaCuota p ON p.IdCuotaPago = c.IdCuotaPago
+WHERE p.IdSiguiente IS NOT NULL;
+
+SELECT @@ROWCOUNT;";
+        using var connection = _connectionFactory.CreateConnection();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@FechaCorte", fechaCorte.Date);
+        command.Parameters.AddWithValue("@EstadoActivo", EstadosPlanPago.Activo);
+        await connection.OpenAsync();
+        return Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
+    }
+
 }

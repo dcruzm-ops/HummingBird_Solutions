@@ -19,7 +19,7 @@ namespace PSA.EntidadesDTO.DTOs
         public string Token { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La contraseña es obligatoria.")]
-        [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{10,}$", ErrorMessage = "La contraseña debe tener mínimo 10 caracteres e incluir mayúscula, minúscula, número y símbolo.")]
         public string NuevaContrasena { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Confirme la contraseña.")]

@@ -23,6 +23,7 @@
 		<Compile Include="DAO\PlanPagoDAO.cs" />
 		<Compile Include="DAO\CuentaBancariaDAO.cs" />
 		<Compile Include="DAO\EvaluacionTecnicaDAO.cs" />
+		<Compile Include="DAO\EvaluacionEvidenciaDAO.cs" />
 		<Compile Include="DAO\RecuperacionContrasenaDAO.cs" />
 		<Compile Include="DAO\ReportesDAO.cs" />
 		<Compile Include="DAO\TokenRecuperacionDAO.cs" />

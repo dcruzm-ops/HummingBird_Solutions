@@ -1,11 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs.Evaluaciones;
+using PSA.WebAPI.Extensions;
 
 namespace PSA.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "3")]
     public class EvaluacionesTecnicasController : ControllerBase
     {
         private readonly EvaluacionTecnicaManager _evaluacionTecnicaManager;
@@ -51,7 +54,7 @@ namespace PSA.WebAPI.Controllers
         {
             try
             {
-                var actualizado = await _evaluacionTecnicaManager.RegistrarResultadoAsync(idEvaluacion, dto);
+                var actualizado = await _evaluacionTecnicaManager.RegistrarResultadoAsync(idEvaluacion, dto, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
                 if (!actualizado)
                 {
                     return BadRequest(new { Mensaje = "No fue posible registrar el resultado de evaluación. Verifique que la evaluación esté en estado Pendiente o En proceso." });

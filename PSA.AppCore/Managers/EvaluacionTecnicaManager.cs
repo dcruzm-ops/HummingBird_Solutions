@@ -10,17 +10,20 @@ namespace PSA.AppCore.Managers
         private readonly Services.IPaymentPlanService _paymentPlanService;
         private readonly INotificationDispatcher _notificationDispatcher;
         private readonly UsuarioDAO _usuarioDao;
+        private readonly AuditoriaLogDAO _auditoriaLogDao;
 
         public EvaluacionTecnicaManager(
             EvaluacionTecnicaDAO evaluacionTecnicaDAO,
             Services.IPaymentPlanService paymentPlanService,
             INotificationDispatcher notificationDispatcher,
-            UsuarioDAO usuarioDao)
+            UsuarioDAO usuarioDao,
+            AuditoriaLogDAO auditoriaLogDao)
         {
             _evaluacionTecnicaDAO = evaluacionTecnicaDAO ?? throw new ArgumentNullException(nameof(evaluacionTecnicaDAO));
             _paymentPlanService = paymentPlanService ?? throw new ArgumentNullException(nameof(paymentPlanService));
             _notificationDispatcher = notificationDispatcher ?? throw new ArgumentNullException(nameof(notificationDispatcher));
             _usuarioDao = usuarioDao ?? throw new ArgumentNullException(nameof(usuarioDao));
+            _auditoriaLogDao = auditoriaLogDao ?? throw new ArgumentNullException(nameof(auditoriaLogDao));
         }
 
         public Task<int> CrearPendientePorNuevaFincaAsync(int idFinca)
@@ -85,7 +88,7 @@ namespace PSA.AppCore.Managers
             return true;
         }
 
-        public async Task<bool> RegistrarResultadoAsync(int idEvaluacion, RegistrarResultadoEvaluacionDTO dto)
+        public async Task<bool> RegistrarResultadoAsync(int idEvaluacion, RegistrarResultadoEvaluacionDTO dto, int actorId, string? ipOrigen)
         {
             if (idEvaluacion <= 0)
             {
@@ -108,6 +111,7 @@ namespace PSA.AppCore.Managers
             }
 
             dto.DecisionTecnica = dto.DecisionTecnica.Trim();
+
             if (dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase))
             {
                 dto.DecisionTecnica = "Califica";
@@ -127,19 +131,22 @@ namespace PSA.AppCore.Managers
             dto.PendienteAjustada = string.IsNullOrWhiteSpace(dto.PendienteAjustada) ? null : dto.PendienteAjustada.Trim();
             dto.Observaciones = string.IsNullOrWhiteSpace(dto.Observaciones) ? null : dto.Observaciones.Trim();
 
+            var antes = await _evaluacionTecnicaDAO.ObtenerDetalleParaEvaluacionAsync(idEvaluacion);
             var resultado = await _evaluacionTecnicaDAO.RegistrarResultadoAsync(idEvaluacion, dto);
             if (!resultado)
             {
                 return false;
             }
 
+            await RegistrarDiffTecnicoAsync(idEvaluacion, actorId, ipOrigen, antes, dto);
+
             if (dto.DecisionTecnica.Equals("Califica", StringComparison.OrdinalIgnoreCase))
             {
                 await _paymentPlanService.GeneratePreliminaryPlanFromEvaluationAsync(
                     idEvaluacion,
                     DateTime.UtcNow.Year + 1,
-                    actorId: null,
-                    ip: null);
+                    actorId: actorId,
+                    ip: ipOrigen);
             }
 
             var detalle = await _evaluacionTecnicaDAO.ObtenerDetalleParaEvaluacionAsync(idEvaluacion);
@@ -200,6 +207,26 @@ namespace PSA.AppCore.Managers
             if (!string.IsNullOrWhiteSpace(dto.PendienteAjustada)) cambios.Add($"Pendiente: {dto.PendienteAjustada}");
 
             return cambios.Count == 0 ? null : string.Join("; ", cambios);
+        }
+
+
+        private async Task RegistrarDiffTecnicoAsync(int idEvaluacion, int actorId, string? ipOrigen, DetalleFincaParaEvaluacionDTO? antes, RegistrarResultadoEvaluacionDTO despues)
+        {
+            if (antes == null) return;
+
+            var diffs = new List<(string Campo, string? Antes, string? Despues)>
+            {
+                ("Hectareas", antes.Hectareas.ToString("0.##"), despues.HectareasAjustadas?.ToString("0.##") ?? antes.Hectareas.ToString("0.##")),
+                ("Vegetacion", antes.Vegetacion, despues.VegetacionAjustada ?? antes.Vegetacion),
+                ("RecursosHidricos", antes.TieneRecursosHidricos ? "true" : "false", (despues.RecursosHidricosAjustado ?? antes.TieneRecursosHidricos) ? "true" : "false"),
+                ("UsoSuelo", antes.UsoSuelo, despues.UsoSueloAjustado ?? antes.UsoSuelo),
+                ("Pendiente", antes.Pendiente, despues.PendienteAjustada ?? antes.Pendiente)
+            };
+
+            foreach (var diff in diffs.Where(d => !string.Equals(d.Antes, d.Despues, StringComparison.OrdinalIgnoreCase)))
+            {
+                await _auditoriaLogDao.RegistrarEventoAsync(actorId, "Evaluaciones", "Fincas", "CAMBIO_CAMPO_TECNICO", $"Campo {diff.Campo} modificado en evaluación {idEvaluacion}.", antes.IdFinca, ipOrigen, diff.Antes, diff.Despues);
+            }
         }
 
         public Task<bool> AvanzarEstadoAsync(int idEvaluacion, string nuevoEstado)

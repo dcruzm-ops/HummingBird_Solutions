@@ -52,4 +52,23 @@ public class FincaManager
 
     public Task<bool> ActualizarFincaAsync(int idFinca, RegistrarFincaDTO dto) => _fincaDao.ActualizarFincaAsync(idFinca, dto);
     public Task<bool> EliminarFincaAsync(int idFinca, int idPropietario) => _fincaDao.EliminarFincaAsync(idFinca, idPropietario);
+
+    public async Task<int> GenerarRenovacionAnualAsync(int idFinca, int idPropietario, string? ipOrigen)
+    {
+        var detalle = await _fincaDao.ObtenerDetalleAsync(idFinca, idPropietario);
+        if (detalle == null)
+        {
+            throw new InvalidOperationException("La finca no existe o no pertenece al propietario autenticado.");
+        }
+
+        var idEvaluacion = await _evaluacionTecnicaManager.CrearPendientePorNuevaFincaAsync(idFinca);
+        await _notificationDispatcher.NotifyInAppAsync(
+            idPropietario,
+            "Renovación anual creada",
+            $"Se creó la renovación anual de la finca \"{detalle.NombreFinca}\" y quedó en cola técnica.",
+            NotificationCatalog.TipoInfo,
+            idFinca);
+
+        return idEvaluacion;
+    }
 }
