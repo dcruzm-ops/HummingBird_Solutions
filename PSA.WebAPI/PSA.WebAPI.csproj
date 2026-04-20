@@ -30,12 +30,15 @@
     <Compile Include="CorreoService.cs" />
     <Compile Include="Services\SmtpNotificationEmailSender.cs" />
     <Compile Include="Services\PasswordRecoveryServices.cs" />
+    <Compile Include="Services\Security\JwtTokenService.cs" />
+    <Compile Include="Services\Security\PermissionAuthorization.cs" />
     <Compile Include="Extensions\ControllerUserExtensions.cs" />
     <Compile Include="Services\Security\HeaderAuthenticationHandler.cs" />
     <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
     <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.0" />
   </ItemGroup>
 
