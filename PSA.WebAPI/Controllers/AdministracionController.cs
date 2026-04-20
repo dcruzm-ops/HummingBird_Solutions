@@ -20,6 +20,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("usuarios")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosVer)]
         public async Task<ActionResult<List<UsuarioAdminListadoDTO>>> ObtenerUsuarios()
         {
             var usuarios = await _administracionManager.ObtenerUsuariosAsync();
@@ -34,6 +35,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("usuarios")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosCrear)]
         public async Task<ActionResult<bool>> CrearUsuario([FromBody] UsuarioAdminEdicionDTO model)
         {
             await _administracionManager.CrearUsuarioAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
@@ -41,6 +43,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPut("usuarios/{id:int}")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosEditar)]
         public async Task<ActionResult<bool>> ActualizarUsuario(int id, [FromBody] UsuarioAdminEdicionDTO model)
         {
             model.IdUsuario = id;
@@ -49,6 +52,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpDelete("usuarios/{id:int}")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosEliminar)]
         public async Task<ActionResult<bool>> EliminarUsuario(int id)
         {
             await _administracionManager.EliminarUsuarioAsync(id, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
@@ -176,6 +180,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("configuracion-pago")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminPagosConfigurar)]
         public async Task<ActionResult<bool>> CrearConfiguracionPago([FromBody] ConfiguracionPagoAdminDTO model)
         {
             await _administracionManager.CrearConfiguracionPagoAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
@@ -201,6 +206,7 @@ namespace PSA.WebAPI.Controllers
 
         [HttpPost("cuentas-bancarias/validar")]
         [HttpPost("cuentas-bancarias/validacion")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminCuentasValidar)]
         public async Task<ActionResult<bool>> ValidarCuentaBancaria([FromBody] ValidarCuentaBancariaRequestDTO request)
         {
             try
@@ -226,6 +232,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("auditoria")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminAuditoriaConsultar)]
         public async Task<ActionResult<List<AuditoriaEventoDTO>>> ObtenerAuditoria([FromQuery] string? modulo, [FromQuery] string? accion, [FromQuery] DateTime? fechaDesde, [FromQuery] DateTime? fechaHasta, [FromQuery] int maximoRegistros = 50)
         {
             var eventos = await _administracionManager.ObtenerEventosAuditoriaAsync(new AuditoriaFiltroDTO

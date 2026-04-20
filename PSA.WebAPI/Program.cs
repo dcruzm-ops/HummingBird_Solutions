@@ -9,7 +9,11 @@ using PSA.DataAccess.DAO;
 using PSA.WebAPI.Controllers.Middleware;
 using PSA.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 using PSA.WebAPI.Services.Security;
+using System.Text;
 
 SanitizarAppSettingsSiEsNecesario();
 
@@ -34,12 +38,39 @@ builder.Services.AddScoped<IPasswordPolicy, PasswordPolicy>();
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = HeaderAuthenticationHandler.SchemeName;
-    options.DefaultChallengeScheme = HeaderAuthenticationHandler.SchemeName;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddScheme<AuthenticationSchemeOptions, HeaderAuthenticationHandler>(HeaderAuthenticationHandler.SchemeName, _ => { });
+.AddJwtBearer(options =>
+{
+    var jwtKey = builder.Configuration["Jwt:Key"] ?? string.Empty;
+    var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"] ?? "PSA.WebAPI",
+        ValidAudience = builder.Configuration["Jwt:Audience"] ?? "PSA.WebApp",
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromMinutes(2)
+    };
+});
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AppPermissions.AdminUsuariosVer, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminUsuariosVer)));
+    options.AddPolicy(AppPermissions.AdminUsuariosCrear, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminUsuariosCrear)));
+    options.AddPolicy(AppPermissions.AdminUsuariosEditar, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminUsuariosEditar)));
+    options.AddPolicy(AppPermissions.AdminUsuariosEliminar, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminUsuariosEliminar)));
+    options.AddPolicy(AppPermissions.AdminPagosConfigurar, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminPagosConfigurar)));
+    options.AddPolicy(AppPermissions.AdminCuentasValidar, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminCuentasValidar)));
+    options.AddPolicy(AppPermissions.AdminAuditoriaConsultar, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminAuditoriaConsultar)));
+    options.AddPolicy(AppPermissions.AdminReportes, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.AdminReportes)));
+    options.AddPolicy(AppPermissions.IngenieroAprobarPlan, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.IngenieroAprobarPlan)));
+    options.AddPolicy(AppPermissions.PropietarioRenovarFinca, p => p.Requirements.Add(new PermissionRequirement(AppPermissions.PropietarioRenovarFinca)));
+});
 
 
 
@@ -95,6 +126,8 @@ builder.Services.AddScoped<LandingManager>();
 builder.Services.AddScoped<NotificacionesManager>();
 builder.Services.AddScoped<INotificationEmailSender, SmtpNotificationEmailSender>();
 builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
 var app = builder.Build();
 

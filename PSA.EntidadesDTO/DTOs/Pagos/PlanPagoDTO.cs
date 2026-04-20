@@ -15,6 +15,7 @@
         public const string Pendiente = "Pendiente";
         public const string Ejecutada = "Ejecutada";
         public const string Notificada = "Notificada";
+        public const string Atrasada = "Atrasada";
     }
 
     public class PlanPagoDTO

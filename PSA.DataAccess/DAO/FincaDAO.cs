@@ -6,6 +6,15 @@ using Microsoft.Data.SqlClient;
 
 namespace PSA.DataAccess.DAO
     {
+        public sealed class RenovacionElegibilidadDbDTO
+        {
+            public bool TienePlanVigente { get; set; }
+            public string? EstadoPlanActual { get; set; }
+            public int CuotasRestantes { get; set; }
+            public int AnioPlanActual { get; set; }
+            public bool ExisteRenovacionPendienteMismoCiclo { get; set; }
+        }
+
         public class FincaDAO
         {
             private readonly IDbConnectionFactory _connectionFactory;
@@ -349,6 +358,56 @@ WHERE IdFinca = @IdFinca";
             {
                 throw new InvalidOperationException("Error inesperado al registrar la finca.", ex);
             }
+        }
+
+        public async Task<RenovacionElegibilidadDbDTO?> ObtenerElegibilidadRenovacionAsync(int idFinca, int idPropietario)
+        {
+            const string sql = @"
+SELECT TOP 1
+    CAST(CASE WHEN pp.IdPlanPago IS NULL THEN 0 ELSE 1 END AS bit) AS TienePlanVigente,
+    pp.EstadoPlan AS EstadoPlanActual,
+    ISNULL((
+        SELECT COUNT(1)
+        FROM dbo.CuotasPago c
+        WHERE c.IdPlanPago = pp.IdPlanPago
+          AND c.EstadoCuota <> 'Ejecutada'
+    ), 0) AS CuotasRestantes,
+    ISNULL(pp.Anio, YEAR(SYSDATETIME())) AS AnioPlanActual,
+    CAST(CASE WHEN EXISTS (
+        SELECT 1
+        FROM dbo.EvaluacionesTecnicas e
+        WHERE e.IdFinca = f.IdFinca
+          AND e.EstadoEvaluacion IN ('Pendiente','En Proceso')
+    ) THEN 1 ELSE 0 END AS bit) AS ExisteRenovacionPendienteMismoCiclo
+FROM dbo.Fincas f
+OUTER APPLY (
+    SELECT TOP 1 p.IdPlanPago, p.EstadoPlan, p.Anio
+    FROM dbo.PlanesPago p
+    WHERE p.IdFinca = f.IdFinca
+    ORDER BY p.Anio DESC, p.IdPlanPago DESC
+) pp
+WHERE f.IdFinca = @IdFinca
+  AND f.IdPropietario = @IdPropietario;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdFinca", idFinca);
+            command.Parameters.AddWithValue("@IdPropietario", idPropietario);
+            await connection.OpenAsync();
+            using var reader = await command.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            return new RenovacionElegibilidadDbDTO
+            {
+                TienePlanVigente = reader.GetBoolean(reader.GetOrdinal("TienePlanVigente")),
+                EstadoPlanActual = reader["EstadoPlanActual"] == DBNull.Value ? null : reader["EstadoPlanActual"]?.ToString(),
+                CuotasRestantes = reader.GetInt32(reader.GetOrdinal("CuotasRestantes")),
+                AnioPlanActual = reader.GetInt32(reader.GetOrdinal("AnioPlanActual")),
+                ExisteRenovacionPendienteMismoCiclo = reader.GetBoolean(reader.GetOrdinal("ExisteRenovacionPendienteMismoCiclo"))
+            };
         }
 
         public async Task<bool> ActualizarFincaAsync(int idFinca, RegistrarFincaDTO dto)
