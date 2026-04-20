@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
+using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
 using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.WebAPI.Services;
+using PSA.WebAPI.Services.Security;
 
 namespace PSA.WebAPI.Controllers
 {
@@ -14,13 +16,19 @@ namespace PSA.WebAPI.Controllers
     {
         private readonly AutenticacionManager _autenticacionManager;
         private readonly IConfiguration _configuration;
+        private readonly RolPermisoDAO _rolPermisoDao;
+        private readonly IJwtTokenService _jwtTokenService;
 
         public AutenticacionController(
             AutenticacionManager autenticacionManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            RolPermisoDAO rolPermisoDao,
+            IJwtTokenService jwtTokenService)
         {
             _autenticacionManager = autenticacionManager;
             _configuration = configuration;
+            _rolPermisoDao = rolPermisoDao;
+            _jwtTokenService = jwtTokenService;
         }
 
         [AllowAnonymous]
@@ -54,6 +62,14 @@ namespace PSA.WebAPI.Controllers
             try
             {
                 var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol);
+                respuesta.Permisos = permisos;
+                respuesta.TokenAcceso = _jwtTokenService.CreateToken(
+                    respuesta.IdUsuario,
+                    respuesta.IdRol,
+                    respuesta.Email,
+                    respuesta.NombreCompleto,
+                    permisos);
                 return Ok(respuesta);
             }
             catch (Exception ex)

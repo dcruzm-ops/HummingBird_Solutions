@@ -306,6 +306,40 @@ WHERE schema_id = SCHEMA_ID('dbo')
         };
     }
 
+    public async Task<List<string>> ObtenerCodigosPermisoPorRolAsync(int idRol)
+    {
+        if (idRol <= 0)
+        {
+            return new List<string>();
+        }
+
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        var tablaRolPermisos = await ObtenerTablaRolPermisosAsync(connection);
+        var sql = $@"
+SELECT DISTINCT p.Codigo
+FROM {tablaRolPermisos} rp
+INNER JOIN dbo.Permisos p ON p.IdPermiso = rp.IdPermiso
+WHERE rp.IdRol = @IdRol
+ORDER BY p.Codigo;";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdRol", idRol);
+        using var reader = await command.ExecuteReaderAsync();
+        var codigos = new List<string>();
+        while (await reader.ReadAsync())
+        {
+            var codigo = reader["Codigo"]?.ToString();
+            if (!string.IsNullOrWhiteSpace(codigo))
+            {
+                codigos.Add(codigo);
+            }
+        }
+
+        return codigos;
+    }
+
     private static string ObtenerExpresionActivo(
         string aliasTabla,
         (bool Exists, string? SqlType) metadataEstado,

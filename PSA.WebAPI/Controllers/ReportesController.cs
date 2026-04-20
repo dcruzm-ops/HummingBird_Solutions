@@ -40,12 +40,14 @@ public class ReportesController : ControllerBase
     }
 
     [HttpGet("administrador/pagos-ubicacion")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminReportes)]
     public async Task<IActionResult> ObtenerPagosPorUbicacion([FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerPagosPorUbicacionAsync(new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("administrador/resumen-actividad")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminReportes)]
     public async Task<IActionResult> ObtenerResumenActividad()
     {
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerResumenActividadAsync());
@@ -71,30 +73,35 @@ public class ReportesController : ControllerBase
     }
 
     [HttpGet("administrador/usuarios-roles")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminReportes)]
     public async Task<IActionResult> ObtenerUsuariosRoles()
     {
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteUsuariosRolesAsync());
     }
 
     [HttpGet("administrador/fincas-estado")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminReportes)]
     public async Task<IActionResult> ObtenerFincasPorEstado()
     {
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteFincasPorEstadoAsync());
     }
 
     [HttpGet("administrador/evaluaciones-tecnicas")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminReportes)]
     public async Task<IActionResult> ObtenerEvaluacionesTecnicasAdmin([FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteEvaluacionesAdminAsync(new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("administrador/pagos")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminReportes)]
     public async Task<IActionResult> ObtenerPagosAdmin([FromQuery] int? anio = null)
     {
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerReportePagosAdminAsync(anio));
     }
 
     [HttpGet("administrador/auditoria-critica")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminAuditoriaConsultar)]
     public async Task<IActionResult> ObtenerAuditoriaCritica([FromQuery] int top = 50)
     {
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerAuditoriaCriticaAsync(top));
