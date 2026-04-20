@@ -136,6 +136,17 @@ namespace PSA.WebApp.Controllers
             }
             ViewBag.Evidencias = evidencias;
 
+            EstadoRenovacionAnualDTO? estadoRenovacion = null;
+            try
+            {
+                estadoRenovacion = await client.GetFromJsonAsync<EstadoRenovacionAnualDTO>($"api/Fincas/{id}/renovacion-anual/estado");
+            }
+            catch
+            {
+                // No bloquea render; si falla, UI mantiene fallback conservador.
+            }
+            ViewBag.EstadoRenovacion = estadoRenovacion;
+
             return View(detalle);
         }
 

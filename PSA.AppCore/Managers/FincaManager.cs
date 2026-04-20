@@ -1,6 +1,7 @@
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using PSA.AppCore.Services.Notifications;
+using PSA.EntidadesDTO.DTOs.Fincas;
 using PSA.EntidadesDTO.DTOs.Pagos;
 
 namespace PSA.AppCore.Managers;
@@ -26,6 +27,39 @@ public class FincaManager
 
     public Task<List<FincaResumenDTO>> ObtenerPorPropietarioAsync(int idPropietario) => _fincaDao.ObtenerPorPropietarioAsync(idPropietario);
     public Task<FincaDetalleDTO?> ObtenerDetalleAsync(int idFinca, int idPropietario) => _fincaDao.ObtenerDetalleAsync(idFinca, idPropietario);
+
+    public async Task<EstadoRenovacionAnualDTO> ObtenerEstadoRenovacionAnualAsync(int idFinca, int idPropietario)
+    {
+        var detalle = await _fincaDao.ObtenerDetalleAsync(idFinca, idPropietario);
+        if (detalle is null)
+        {
+            throw new InvalidOperationException("La finca no existe o no pertenece al propietario autenticado.");
+        }
+
+        var elegibilidad = await _fincaDao.ObtenerElegibilidadRenovacionAsync(idFinca, idPropietario)
+            ?? throw new InvalidOperationException("No fue posible verificar la elegibilidad de renovación.");
+
+        var estadoExpiradoOVencido = string.Equals(elegibilidad.EstadoPlanActual, EstadosPlanPago.Finalizado, StringComparison.OrdinalIgnoreCase)
+                                     || string.Equals(elegibilidad.EstadoPlanActual, EstadosPlanPago.Cancelado, StringComparison.OrdinalIgnoreCase);
+        var faltaUnaCuota = elegibilidad.TienePlanVigente && elegibilidad.CuotasRestantes == 1;
+        var cumpleCondicionPago = estadoExpiradoOVencido || faltaUnaCuota;
+        var puedeRenovar = cumpleCondicionPago && !elegibilidad.ExisteRenovacionPendienteMismoCiclo;
+
+        var motivo = puedeRenovar
+            ? "Cumple criterios para solicitar renovación anual."
+            : elegibilidad.ExisteRenovacionPendienteMismoCiclo
+                ? "Ya existe una evaluación técnica pendiente activa para esta finca."
+                : "Solo se permite renovar cuando el plan actual está vencido/expirado o cuando falta una única cuota para completarlo.";
+
+        return new EstadoRenovacionAnualDTO
+        {
+            PuedeRenovar = puedeRenovar,
+            Motivo = motivo,
+            EstadoPlanActual = elegibilidad.EstadoPlanActual,
+            CuotasRestantes = elegibilidad.CuotasRestantes,
+            ExisteEvaluacionPendienteActiva = elegibilidad.ExisteRenovacionPendienteMismoCiclo
+        };
+    }
 
     public async Task<int> RegistrarFincaAsync(RegistrarFincaDTO dto)
     {
@@ -89,21 +123,10 @@ public class FincaManager
             throw new InvalidOperationException("La finca no existe o no pertenece al propietario autenticado.");
         }
 
-        var elegibilidad = await _fincaDao.ObtenerElegibilidadRenovacionAsync(idFinca, idPropietario)
-            ?? throw new InvalidOperationException("No fue posible verificar la elegibilidad de renovación.");
-
-        if (elegibilidad.ExisteRenovacionPendienteMismoCiclo)
+        var estadoRenovacion = await ObtenerEstadoRenovacionAnualAsync(idFinca, idPropietario);
+        if (!estadoRenovacion.PuedeRenovar)
         {
-            throw new InvalidOperationException("Ya existe una evaluación técnica pendiente para esta finca. No se permiten duplicados de renovación activa.");
-        }
-
-        var estadoExpiradoOVencido = string.Equals(elegibilidad.EstadoPlanActual, EstadosPlanPago.Finalizado, StringComparison.OrdinalIgnoreCase)
-                                     || string.Equals(elegibilidad.EstadoPlanActual, EstadosPlanPago.Cancelado, StringComparison.OrdinalIgnoreCase);
-        var faltaUnaCuota = elegibilidad.TienePlanVigente && elegibilidad.CuotasRestantes == 1;
-        var permitido = estadoExpiradoOVencido || faltaUnaCuota;
-        if (!permitido)
-        {
-            throw new InvalidOperationException("Renovación no permitida: solo aplica cuando el plan está vencido/expirado o cuando falta una única cuota para finalizar.");
+            throw new InvalidOperationException(estadoRenovacion.Motivo);
         }
 
         var idEvaluacion = await _evaluacionTecnicaManager.CrearPendientePorNuevaFincaAsync(idFinca);
@@ -113,7 +136,7 @@ public class FincaManager
             "Fincas",
             "EvaluacionesTecnicas",
             "RENOVACION_ANUAL_GENERADA",
-            $"Renovación anual generada para finca #{idFinca}. IdEvaluacion={idEvaluacion}. EstadoPlan={elegibilidad.EstadoPlanActual}, CuotasRestantes={elegibilidad.CuotasRestantes}.",
+            $"Renovación anual generada para finca #{idFinca}. IdEvaluacion={idEvaluacion}. EstadoPlan={estadoRenovacion.EstadoPlanActual}, CuotasRestantes={estadoRenovacion.CuotasRestantes}.",
             idEvaluacion,
             ipOrigen);
 

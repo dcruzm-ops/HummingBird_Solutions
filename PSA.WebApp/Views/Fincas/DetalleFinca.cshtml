@@ -7,6 +7,9 @@
     var latitudData = Model.Latitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
     var longitudData = Model.Longitud.ToString(System.Globalization.CultureInfo.InvariantCulture);
     var evidencias = ViewBag.Evidencias as List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO> ?? new List<PSA.EntidadesDTO.DTOs.Fincas.FincaEvidenciaDTO>();
+    var estadoRenovacion = ViewBag.EstadoRenovacion as PSA.EntidadesDTO.DTOs.Fincas.EstadoRenovacionAnualDTO;
+    var puedeSolicitarRenovacion = estadoRenovacion?.PuedeRenovar ?? false;
+    var motivoRenovacion = estadoRenovacion?.Motivo ?? "La renovación anual está temporalmente no disponible para esta finca.";
 }
 
 <section class="seccion-pagina propietario-detalle-finca">
@@ -114,12 +117,18 @@
         </section>
 
         <div class="fila-acciones-formulario">
-
-            <form asp-controller="Fincas" asp-action="RenovacionAnual" method="post" class="d-inline">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="idFinca" value="@Model.IdFinca" />
-                <button type="submit" class="boton-primario">Solicitar renovación anual</button>
-            </form>
+            @if (puedeSolicitarRenovacion)
+            {
+                <form asp-controller="Fincas" asp-action="RenovacionAnual" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="idFinca" value="@Model.IdFinca" />
+                    <button type="submit" class="boton-primario">Solicitar renovación anual</button>
+                </form>
+            }
+            else
+            {
+                <div class="texto-ayuda">@motivoRenovacion</div>
+            }
             <a class="boton-secundario" asp-controller="Fincas" asp-action="MisFincas">Volver</a>
         </div>
     </section>
