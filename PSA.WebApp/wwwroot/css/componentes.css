@@ -230,6 +230,32 @@
     border-left-color: var(--color-error);
 }
 
+.modal-sistema {
+    background: var(--color-superficie);
+    color: var(--color-texto-principal);
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-lg);
+    box-shadow: var(--sombra-md);
+}
+
+.modal-sistema .modal-header,
+.modal-sistema .modal-footer {
+    border-color: var(--color-borde-suave);
+}
+
+.modal-sistema .modal-title {
+    color: var(--color-texto-principal);
+    font-weight: 700;
+}
+
+.modal-sistema .btn-close {
+    filter: var(--icono-cerrar-filtro, none);
+}
+
+html[data-theme="dark"] .modal-sistema .btn-close {
+    --icono-cerrar-filtro: invert(1) grayscale(100%);
+}
+
 .migas-pan {
     display: flex;
     align-items: center;

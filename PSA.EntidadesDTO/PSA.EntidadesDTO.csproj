@@ -23,6 +23,7 @@
     <Compile Include="DTOs\FincaResumenDTO.cs" />
     <Compile Include="DTOs\Fincas\FincaDTO.cs" />
     <Compile Include="DTOs\Fincas\FincaEvidenciaDTO.cs" />
+    <Compile Include="DTOs\Fincas\RenovacionAnualDTO.cs" />
     <Compile Include="DTOs\InicioSesionDTO.cs" />
     <Compile Include="DTOs\Landing\LandingContenidoDTO.cs" />
     <Compile Include="DTOs\Notificaciones\NotificacionDTO.cs" />

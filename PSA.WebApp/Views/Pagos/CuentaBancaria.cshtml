@@ -11,7 +11,7 @@
             <p>Registre cuentas para habilitar pagos y consulte su estado de validación.</p>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevaCuenta">Nueva Cuenta Bancaria</button>
+            <button type="button" class="boton-primario" data-bs-toggle="modal" data-bs-target="#modalNuevaCuenta">Nueva cuenta bancaria</button>
             <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesDueno">Ver planes</a>
         </div>
     </div>
@@ -52,28 +52,28 @@
     </section>
 </section>
 
-<div class="modal fade" id="modalNuevaCuenta" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+<div class="modal fade" id="modalNuevaCuenta" tabindex="-1" aria-labelledby="modalNuevaCuentaTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-sistema">
             <form asp-action="RegistrarCuentaBancaria" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="IdUsuario" value="@cuentaNueva.IdUsuario" />
                 <div class="modal-header">
-                    <h5 class="modal-title">Nueva cuenta bancaria</h5>
+                    <h5 class="modal-title" id="modalNuevaCuentaTitulo">Nueva cuenta bancaria</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="mb-3">
+                    <div class="campo-formulario mb-3">
                         <label class="form-label">Banco</label>
-                        <input class="form-control" name="Banco" required />
+                        <input name="Banco" required />
                     </div>
-                    <div class="mb-3">
+                    <div class="campo-formulario mb-3">
                         <label class="form-label">Número de cuenta</label>
-                        <input class="form-control" name="NumeroCuenta" required />
+                        <input name="NumeroCuenta" required />
                     </div>
-                    <div class="mb-3">
+                    <div class="campo-formulario mb-3">
                         <label class="form-label">Tipo de cuenta</label>
-                        <select class="form-select" name="TipoCuenta" required>
+                        <select name="TipoCuenta" required>
                             <option value="">Seleccione un tipo</option>
                             <option value="Ahorro">Ahorro</option>
                             <option value="Corriente">Corriente</option>
@@ -82,14 +82,14 @@
                             <option value="Otra">Otra</option>
                         </select>
                     </div>
-                    <div class="mb-3">
+                    <div class="campo-formulario mb-3">
                         <label class="form-label">Titular</label>
-                        <input class="form-control" name="Titular" required />
+                        <input name="Titular" required />
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="boton-secundario" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Registrar cuenta</button>
+                    <button type="submit" class="boton-primario">Registrar cuenta</button>
                 </div>
             </form>
         </div>

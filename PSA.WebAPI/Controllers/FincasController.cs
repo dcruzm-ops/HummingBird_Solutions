@@ -29,6 +29,21 @@ namespace PSA.WebAPI.Controllers
             return detalle == null ? NotFound(new { Mensaje = "No se encontró la finca solicitada." }) : Ok(detalle);
         }
 
+        [HttpGet("{idFinca:int}/renovacion-anual/estado")]
+        [Authorize(Roles = "2")]
+        [Authorize(Policy = Services.Security.AppPermissions.PropietarioRenovarFinca)]
+        public async Task<IActionResult> ObtenerEstadoRenovacionAnual([FromRoute] int idFinca)
+        {
+            try
+            {
+                return Ok(await _fincaManager.ObtenerEstadoRenovacionAnualAsync(idFinca, this.GetUserId()));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
+        }
+
         [HttpPost]
         [Authorize(Roles = "2")]
         public async Task<IActionResult> RegistrarFinca([FromBody] PSA.EntidadesDTO.DTOs.RegistrarFincaDTO dto)
@@ -41,10 +56,18 @@ namespace PSA.WebAPI.Controllers
 
         [HttpPost("{idFinca:int}/renovacion-anual")]
         [Authorize(Roles = "2")]
+        [Authorize(Policy = Services.Security.AppPermissions.PropietarioRenovarFinca)]
         public async Task<IActionResult> RenovacionAnual([FromRoute] int idFinca)
         {
-            var idEvaluacion = await _fincaManager.GenerarRenovacionAnualAsync(idFinca, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
-            return Ok(new { IdEvaluacion = idEvaluacion, Mensaje = "Se generó la renovación anual y quedó en cola de pendientes." });
+            try
+            {
+                var idEvaluacion = await _fincaManager.GenerarRenovacionAnualAsync(idFinca, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+                return Ok(new { IdEvaluacion = idEvaluacion, Mensaje = "Se generó la renovación anual y quedó en cola de pendientes." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
         }
     }
 }
