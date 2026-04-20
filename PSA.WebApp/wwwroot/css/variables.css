@@ -54,7 +54,7 @@
     --disabled-text: color-mix(in srgb, var(--color-texto-secundario) 70%, #ffffff 30%);
 }
 
-html[data-tema="oscuro"] {
+html[data-theme="dark"] {
     --color-fondo: #07140B;
     --color-superficie: #173624;
     --color-superficie-secundaria: #1B412B;

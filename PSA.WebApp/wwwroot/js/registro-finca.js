@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var mapa = null;
     var marcador = null;
     var limitesCostaRica = null;
+    var centroSanJose = { lat: 9.9281, lng: -84.0907 };
 
     function obtenerMensajeValidacion(campo) {
         var nombreCampo = (campo.labels && campo.labels[0] && campo.labels[0].textContent)
@@ -203,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
             tap: false,
             maxBounds: limitesCostaRica,
             maxBoundsViscosity: 1.0
-        }).setView([9.9325, -84.0796], 12);
+        }).setView([centroSanJose.lat, centroSanJose.lng], 12);
 
         window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
             maxZoom: 19,
@@ -235,7 +236,20 @@ document.addEventListener("DOMContentLoaded", function () {
     sincronizarRecursosHidricos();
 
     if (latitudInput && longitudInput && latitudInput.value && longitudInput.value && mapa) {
-        colocarPin(Number(latitudInput.value), Number(longitudInput.value), true);
+        var latInicial = Number(latitudInput.value);
+        var lngInicial = Number(longitudInput.value);
+        var coordsInicialesValidas = Number.isFinite(latInicial)
+            && Number.isFinite(lngInicial)
+            && limitesCostaRica
+            && limitesCostaRica.contains(window.L.latLng(latInicial, lngInicial));
+
+        if (coordsInicialesValidas) {
+            colocarPin(latInicial, lngInicial, true);
+        } else {
+            if (latitudInput) latitudInput.value = "";
+            if (longitudInput) longitudInput.value = "";
+            mapa.setView([centroSanJose.lat, centroSanJose.lng], 12);
+        }
     }
 
     formulario.addEventListener("submit", function (evento) {

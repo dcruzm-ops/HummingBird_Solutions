@@ -89,6 +89,7 @@ public class PagosController(PagosManager pagosManager) : ControllerBase
 
     [HttpPost("admin/arrastrar-saldos")]
     [Authorize(Roles = "1")]
+    [Authorize(Policy = Services.Security.AppPermissions.AdminPagosConfigurar)]
     public async Task<IActionResult> ArrastrarSaldosPendientes()
     {
         var total = await _pagosManager.ArrastrarSaldosPendientesAsync(this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
@@ -97,6 +98,7 @@ public class PagosController(PagosManager pagosManager) : ControllerBase
 
     [HttpPut("ingeniero/planes/{idPlanPago:int}/aprobar-final")]
     [Authorize(Roles = "3")]
+    [Authorize(Policy = Services.Security.AppPermissions.IngenieroAprobarPlan)]
     public async Task<IActionResult> AprobarPlanFinal([FromRoute] int idPlanPago, [FromBody] AprobarPlanPagoFinalDTO model)
     {
         model.IdIngeniero = this.GetUserId();
