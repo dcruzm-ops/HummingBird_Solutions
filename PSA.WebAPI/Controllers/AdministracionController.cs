@@ -36,7 +36,7 @@ namespace PSA.WebAPI.Controllers
         [HttpPost("usuarios")]
         public async Task<ActionResult<bool>> CrearUsuario([FromBody] UsuarioAdminEdicionDTO model)
         {
-            await _administracionManager.CrearUsuarioAsync(model, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _administracionManager.CrearUsuarioAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             return Ok(true);
         }
 
@@ -44,14 +44,14 @@ namespace PSA.WebAPI.Controllers
         public async Task<ActionResult<bool>> ActualizarUsuario(int id, [FromBody] UsuarioAdminEdicionDTO model)
         {
             model.IdUsuario = id;
-            await _administracionManager.ActualizarUsuarioAsync(model, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _administracionManager.ActualizarUsuarioAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             return Ok(true);
         }
 
         [HttpDelete("usuarios/{id:int}")]
         public async Task<ActionResult<bool>> EliminarUsuario(int id)
         {
-            await _administracionManager.EliminarUsuarioAsync(id, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _administracionManager.EliminarUsuarioAsync(id, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             return Ok(true);
         }
 
@@ -73,7 +73,7 @@ namespace PSA.WebAPI.Controllers
         [HttpPost("reasignacion-cliente")]
         public async Task<ActionResult<bool>> ReasignarCliente([FromBody] ReasignacionClienteDTO model)
         {
-            await _administracionManager.ReasignarClienteAsync(model, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _administracionManager.ReasignarClienteAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             return Ok(true);
         }
 
@@ -141,7 +141,7 @@ namespace PSA.WebAPI.Controllers
         [HttpPost("roles-permisos")]
         public async Task<ActionResult<bool>> GuardarPermisosRolPost([FromBody] GuardarPermisosRolDTO model)
         {
-            await _administracionManager.GuardarPermisosRolAsync(model, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _administracionManager.GuardarPermisosRolAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             return Ok(true);
         }
 
@@ -149,7 +149,7 @@ namespace PSA.WebAPI.Controllers
         public async Task<ActionResult<bool>> GuardarPermisosRol(int idRol, [FromBody] GuardarPermisosRolDTO model)
         {
             model.IdRol = idRol;
-            await _administracionManager.GuardarPermisosRolAsync(model, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _administracionManager.GuardarPermisosRolAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             return Ok(true);
         }
 
@@ -178,7 +178,7 @@ namespace PSA.WebAPI.Controllers
         [HttpPost("configuracion-pago")]
         public async Task<ActionResult<bool>> CrearConfiguracionPago([FromBody] ConfiguracionPagoAdminDTO model)
         {
-            await _administracionManager.CrearConfiguracionPagoAsync(model, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            await _administracionManager.CrearConfiguracionPagoAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
             return Ok(true);
         }
 
@@ -210,7 +210,7 @@ namespace PSA.WebAPI.Controllers
                     IdCuentaBancaria = request.IdCuentaBancaria,
                     Aprobada = request.Aprobada,
                     Observaciones = request.Observaciones,
-                    IdAdministrador = GetUserId()
+                    IdAdministrador = this.GetUserId()
                 };
 
                 await _administracionManager.ValidarCuentaBancariaAsync(model, HttpContext.Connection.RemoteIpAddress?.ToString());

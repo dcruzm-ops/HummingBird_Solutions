@@ -21,21 +21,21 @@ public class ReportesController : ControllerBase
     [HttpGet("dueno/{idPropietario:int}/pagos")]
     public async Task<IActionResult> ObtenerPagosDueno([FromRoute] int idPropietario, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var target = IsRole("1") ? idPropietario : GetUserId();
+        var target = this.IsRole("1") ? idPropietario : this.GetUserId();
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerPagosDuenoAsync(target, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("dueno/{idPropietario:int}/transacciones")]
     public async Task<IActionResult> ObtenerTransaccionesDueno([FromRoute] int idPropietario, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var target = IsRole("1") ? idPropietario : GetUserId();
+        var target = this.IsRole("1") ? idPropietario : this.GetUserId();
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerTransaccionesDuenoAsync(target, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
     [HttpGet("ingeniero/{idIngeniero:int}/evaluaciones")]
     public async Task<IActionResult> ObtenerEvaluacionesIngeniero([FromRoute] int idIngeniero, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var target = IsRole("1") ? idIngeniero : GetUserId();
+        var target = this.IsRole("1") ? idIngeniero : this.GetUserId();
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerEvaluacionesIngenieroAsync(target, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 
@@ -66,7 +66,7 @@ public class ReportesController : ControllerBase
     [HttpGet("ingeniero/{idIngeniero:int}/tecnico-finca")]
     public async Task<IActionResult> ObtenerReporteTecnicoFinca([FromRoute] int idIngeniero, [FromQuery] int? anio = null, [FromQuery] int? mes = null)
     {
-        var target = IsRole("1") ? idIngeniero : GetUserId();
+        var target = this.IsRole("1") ? idIngeniero : this.GetUserId();
         return await EjecutarSeguro(async () => await _reportesManager.ObtenerReporteTecnicoPorFincaAsync(target, new FiltroReporteDTO { Anio = anio, Mes = mes }));
     }
 

@@ -54,7 +54,7 @@ namespace PSA.WebAPI.Controllers
         {
             try
             {
-                var actualizado = await _evaluacionTecnicaManager.RegistrarResultadoAsync(idEvaluacion, dto, GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+                var actualizado = await _evaluacionTecnicaManager.RegistrarResultadoAsync(idEvaluacion, dto, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
                 if (!actualizado)
                 {
                     return BadRequest(new { Mensaje = "No fue posible registrar el resultado de evaluación. Verifique que la evaluación esté en estado Pendiente o En proceso." });

@@ -20,7 +20,7 @@ namespace PSA.WebAPI.Controllers
         [HttpGet("mi-perfil/{idUsuario:int}")]
         public async Task<IActionResult> ObtenerMiPerfil([FromRoute] int idUsuario)
         {
-            idUsuario = GetUserId();
+            idUsuario = this.GetUserId();
             if (idUsuario <= 0)
                 return BadRequest(new { Mensaje = "El idUsuario debe ser mayor a 0." });
 
@@ -34,7 +34,7 @@ namespace PSA.WebAPI.Controllers
         [HttpPut("mi-perfil/{idUsuario:int}")]
         public async Task<IActionResult> ActualizarMiPerfil([FromRoute] int idUsuario, [FromBody] ActualizarMiPerfilRequest request)
         {
-            idUsuario = GetUserId();
+            idUsuario = this.GetUserId();
             if (idUsuario <= 0)
                 return BadRequest(new { Mensaje = "El idUsuario debe ser mayor a 0." });
 

@@ -17,8 +17,8 @@ public class NotificacionesController(NotificacionesManager notificacionesManage
     {
         try
         {
-            var actor = GetUserId();
-            var destino = IsRole("1") ? idUsuario : actor;
+            var actor = this.GetUserId();
+            var destino = this.IsRole("1") ? idUsuario : actor;
             var notificaciones = await _notificacionesManager.ObtenerPorUsuarioAsync(destino, maximo);
             return Ok(notificaciones);
         }

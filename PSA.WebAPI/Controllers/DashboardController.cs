@@ -22,7 +22,7 @@ namespace PSA.WebAPI.Controllers
         [Authorize(Roles = "2")]
         public async Task<IActionResult> ObtenerResumenDuenoAsync(int idUsuario)
         {
-            idUsuario = GetUserId();
+            idUsuario = this.GetUserId();
                 if (idUsuario <= 0) return BadRequest(new { Mensaje = "Id inválido." });
             var resumen = await _dashboardDao.ObtenerResumenDuenoAsync(idUsuario);
             return Ok(new
@@ -37,7 +37,7 @@ namespace PSA.WebAPI.Controllers
         [HttpGet("ingeniero-resumen/{idUsuario:int}")]
         public async Task<IActionResult> ObtenerResumenIngenieroAsync(int idUsuario)
         {
-            idUsuario = GetUserId();
+            idUsuario = this.GetUserId();
                 if (idUsuario <= 0) return BadRequest(new { Mensaje = "Id inválido." });
             var resumen = await _dashboardDao.ObtenerResumenIngenieroAsync(idUsuario);
             return Ok(new

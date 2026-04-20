@@ -24,12 +24,12 @@ namespace PSA.WebAPI.Controllers
         [HttpPost("subir")]
         [Authorize(Roles = "2")]
         public Task<IActionResult> SubirFinca([FromForm] int idFinca, [FromForm] List<IFormFile> archivos)
-            => SubirCoreAsync(idFinca, null, archivos, GetUserId(), true);
+            => SubirCoreAsync(idFinca, null, archivos, this.GetUserId(), true);
 
         [HttpPost("evaluacion/{idEvaluacion:int}/subir")]
         [Authorize(Roles = "3")]
         public Task<IActionResult> SubirEvaluacion([FromRoute] int idEvaluacion, [FromForm] List<IFormFile> archivos)
-            => SubirCoreAsync(0, idEvaluacion, archivos, GetUserId(), false);
+            => SubirCoreAsync(0, idEvaluacion, archivos, this.GetUserId(), false);
 
         [HttpGet("finca/{idFinca:int}")]
         [Authorize(Roles = "2,3")]
