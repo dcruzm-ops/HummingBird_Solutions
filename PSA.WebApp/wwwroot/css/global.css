@@ -200,27 +200,27 @@ main {
     font-weight: var(--peso-seminegrita, 600);
 }
 
-html[data-tema="oscuro"] .notificacion-item {
+html[data-theme="dark"] .notificacion-item {
     background: color-mix(in srgb, var(--color-superficie-secundaria) 84%, #000 16%);
 }
 
-html[data-tema="oscuro"] .notificacion-item--success {
+html[data-theme="dark"] .notificacion-item--success {
     background: color-mix(in srgb, var(--color-exito) 16%, var(--color-superficie) 84%);
 }
 
-html[data-tema="oscuro"] .notificacion-item--warning {
+html[data-theme="dark"] .notificacion-item--warning {
     background: color-mix(in srgb, var(--color-advertencia) 18%, var(--color-superficie) 82%);
 }
 
-html[data-tema="oscuro"] .notificacion-item--error {
+html[data-theme="dark"] .notificacion-item--error {
     background: color-mix(in srgb, var(--color-error) 18%, var(--color-superficie) 82%);
 }
 
-html[data-tema="oscuro"] .notificacion-item--info {
+html[data-theme="dark"] .notificacion-item--info {
     background: color-mix(in srgb, var(--color-info) 16%, var(--color-superficie) 84%);
 }
 
-html[data-tema="oscuro"] .notificacion-fecha {
+html[data-theme="dark"] .notificacion-fecha {
     color: #7CF7A1;
 }
 

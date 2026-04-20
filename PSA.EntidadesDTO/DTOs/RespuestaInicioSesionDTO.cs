@@ -12,6 +12,10 @@ namespace PSA.EntidadesDTO.DTOs
 
         public DateTime? UltimoAcceso { get; set; }
 
+        public string TokenAcceso { get; set; } = string.Empty;
+
+        public List<string> Permisos { get; set; } = new();
+
         public string Mensaje { get; set; } = string.Empty;
     }
 }

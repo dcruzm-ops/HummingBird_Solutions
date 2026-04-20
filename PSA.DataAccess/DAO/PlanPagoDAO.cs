@@ -1132,7 +1132,7 @@ VALUES(@IdPlanPago, @Mes, @FechaProgramada, @MontoProgramado, @MontoPendiente, @
     INNER JOIN dbo.PlanesPago p ON p.IdPlanPago = c.IdPlanPago
     WHERE c.FechaProgramada < @FechaCorte
       AND c.MontoPendiente > 0
-      AND c.EstadoCuota IN ('Pendiente','Notificada','Atrasada')
+      AND c.EstadoCuota IN (@EstadoPendiente,@EstadoNotificada,@EstadoAtrasada)
       AND p.EstadoPlan = @EstadoActivo
 ), ProximaCuota AS (
     SELECT v.IdCuotaPago, v.MontoPendiente, nx.IdCuotaPago AS IdSiguiente
@@ -1149,7 +1149,7 @@ FROM ProximaCuota p
 INNER JOIN dbo.CuotasPago cnext ON cnext.IdCuotaPago = p.IdSiguiente;
 
 UPDATE c
-SET c.EstadoCuota = 'Atrasada', c.MontoPendiente = 0
+SET c.EstadoCuota = @EstadoAtrasada, c.MontoPendiente = 0
 FROM dbo.CuotasPago c
 INNER JOIN ProximaCuota p ON p.IdCuotaPago = c.IdCuotaPago
 WHERE p.IdSiguiente IS NOT NULL;
@@ -1158,6 +1158,9 @@ SELECT @@ROWCOUNT;";
         using var connection = _connectionFactory.CreateConnection();
         using var command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@FechaCorte", fechaCorte.Date);
+        command.Parameters.AddWithValue("@EstadoPendiente", EstadosCuotaPago.Pendiente);
+        command.Parameters.AddWithValue("@EstadoNotificada", EstadosCuotaPago.Notificada);
+        command.Parameters.AddWithValue("@EstadoAtrasada", EstadosCuotaPago.Atrasada);
         command.Parameters.AddWithValue("@EstadoActivo", EstadosPlanPago.Activo);
         await connection.OpenAsync();
         return Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);

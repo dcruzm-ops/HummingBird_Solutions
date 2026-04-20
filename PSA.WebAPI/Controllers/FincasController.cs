@@ -41,6 +41,7 @@ namespace PSA.WebAPI.Controllers
 
         [HttpPost("{idFinca:int}/renovacion-anual")]
         [Authorize(Roles = "2")]
+        [Authorize(Policy = Services.Security.AppPermissions.PropietarioRenovarFinca)]
         public async Task<IActionResult> RenovacionAnual([FromRoute] int idFinca)
         {
             var idEvaluacion = await _fincaManager.GenerarRenovacionAnualAsync(idFinca, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
