@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
+using PSA.WebAPI.Extensions;
 
 namespace PSA.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class NotificacionesController(NotificacionesManager notificacionesManager) : ControllerBase
 {
     private readonly NotificacionesManager _notificacionesManager = notificacionesManager;
@@ -14,7 +17,9 @@ public class NotificacionesController(NotificacionesManager notificacionesManage
     {
         try
         {
-            var notificaciones = await _notificacionesManager.ObtenerPorUsuarioAsync(idUsuario, maximo);
+            var actor = GetUserId();
+            var destino = IsRole("1") ? idUsuario : actor;
+            var notificaciones = await _notificacionesManager.ObtenerPorUsuarioAsync(destino, maximo);
             return Ok(notificaciones);
         }
         catch (InvalidOperationException ex)

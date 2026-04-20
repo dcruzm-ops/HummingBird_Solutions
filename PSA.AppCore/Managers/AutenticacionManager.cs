@@ -1,4 +1,5 @@
 using PSA.AppCore.Servicios;
+using PSA.AppCore.Services.Security;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.Usuarios;
@@ -11,15 +12,18 @@ namespace PSA.AppCore.Managers
         private readonly IServicioHashContrasena _servicioHashContrasena;
         private readonly UsuarioDAO _usuarioDAO;
         private readonly AuditoriaLogDAO _auditoriaLogDAO;
+        private readonly IPasswordPolicy _passwordPolicy;
 
         public AutenticacionManager(
             IServicioHashContrasena servicioHashContrasena,
             UsuarioDAO usuarioDAO,
-            AuditoriaLogDAO auditoriaLogDAO)
+            AuditoriaLogDAO auditoriaLogDAO,
+            IPasswordPolicy passwordPolicy)
         {
             _servicioHashContrasena = servicioHashContrasena;
             _usuarioDAO = usuarioDAO;
             _auditoriaLogDAO = auditoriaLogDAO;
+            _passwordPolicy = passwordPolicy;
         }
 
         public async Task<int> RegistrarUsuarioAsync(RegistrarUsuarioDTO dto)
@@ -37,6 +41,9 @@ namespace PSA.AppCore.Managers
 
             if (dto.Contrasena != dto.ConfirmacionContrasena)
                 throw new Exception("La contraseña y la confirmación no coinciden.");
+
+            if (!_passwordPolicy.IsValid(dto.Contrasena))
+                throw new Exception(_passwordPolicy.RequirementsMessage);
 
             var rolExiste = await _usuarioDAO.ExisteRolAsync(idRolPropietario);
             if (!rolExiste)

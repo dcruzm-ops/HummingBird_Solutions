@@ -37,9 +37,9 @@ public class PagosManager(
             throw new InvalidOperationException("El año del plan no puede ser anterior al año actual.");
         }
 
-        if (!request.Simular)
+        if (await _planPagoDao.ExistePlanPorFincaAnioAsync(request.IdFinca, request.Anio))
         {
-            return await _planPagoDao.GenerarPlanPagoAsync(request);
+            throw new InvalidOperationException("Ya existe un plan para la finca y año indicados. No se permite recalcular ni sobrescribir.");
         }
 
         return await _planPagoDao.GenerarPlanPagoAsync(request);
@@ -190,6 +190,12 @@ public class PagosManager(
         }
 
         return _paymentPlanService.AttachBankAccountAsync(idPlanPago, dto.IdUsuario, dto.IdCuentaBancaria, ip);
+    }
+
+    public async Task<int> ArrastrarSaldosPendientesAsync(int actorId, string? ip)
+    {
+        var afectados = await _planPagoDao.ArrastrarSaldosPendientesAsync(DateTime.UtcNow);
+        return afectados;
     }
 
     public Task<bool> AprobarPlanFinalAsync(int idPlanPago, AprobarPlanPagoFinalDTO dto, string? ip)
