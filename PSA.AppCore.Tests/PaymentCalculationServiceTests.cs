@@ -66,4 +66,58 @@ public class PaymentCalculationServiceTests
         Assert.Equal(555.53m, result.MontoMensualTotal);
         Assert.Equal(6666.36m, result.MontoAnualTotal);
     }
+
+    [Fact]
+    public void Calculate_Throws_WhenApprovedHectaresAreNegative()
+    {
+        var context = new PlanPagoGenerationContextDTO
+        {
+            HectareasAprobadas = -0.01m,
+            VegetacionFinal = "bosque",
+            TieneRecursosHidricosFinal = false,
+            CantidadNacientesFinal = 0,
+            PendienteFinal = "plana"
+        };
+
+        var config = new PaymentConfigurationVersionDTO
+        {
+            PrecioBasePorHectarea = 100m,
+            TopePorcentajeAjuste = 40m
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => _service.Calculate(context, config));
+
+        Assert.Equal("Las hectáreas aprobadas no pueden ser negativas.", ex.Message);
+    }
+
+    [Fact]
+    public void Calculate_TrimsInputAndHandlesMissingPercentages()
+    {
+        var context = new PlanPagoGenerationContextDTO
+        {
+            HectareasAprobadas = 1m,
+            VegetacionFinal = "  bosque secundario  ",
+            TieneRecursosHidricosFinal = true,
+            CantidadNacientesFinal = 1,
+            PendienteFinal = "desconocida"
+        };
+
+        var config = new PaymentConfigurationVersionDTO
+        {
+            PrecioBasePorHectarea = 100m,
+            TopePorcentajeAjuste = 99m,
+            VegetacionAjustes = new(StringComparer.OrdinalIgnoreCase) { ["bosque secundario"] = 15m },
+            HidricosAjustes = new(StringComparer.OrdinalIgnoreCase) { ["Si"] = 8m }
+        };
+
+        var result = _service.Calculate(context, config);
+
+        Assert.Equal(100m, result.MontoBaseMensual);
+        Assert.Equal(15m, result.PorcentajeVegetacion);
+        Assert.Equal(8m, result.PorcentajeHidrico);
+        Assert.Equal(0m, result.PorcentajeNacientes);
+        Assert.Equal(0m, result.PorcentajePendiente);
+        Assert.Equal(23m, result.PorcentajeAjusteAplicado);
+        Assert.Equal(123m, result.MontoMensualTotal);
+    }
 }
