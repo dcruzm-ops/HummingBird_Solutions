@@ -1,11 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
-using PSA.EntidadesDTO.DTOs;
+using PSA.WebAPI.Extensions;
 
 namespace PSA.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class FincasController : ControllerBase
     {
         private readonly FincaManager _fincaManager;
@@ -16,89 +18,33 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("mis-fincas")]
-        public async Task<IActionResult> ObtenerMisFincas([FromQuery] int idPropietario)
-        {
-            try
-            {
-                if (idPropietario <= 0) return BadRequest(new { Mensaje = "El idPropietario debe ser mayor a 0." });
-                return Ok(await _fincaManager.ObtenerPorPropietarioAsync(idPropietario));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Mensaje = $"Error al obtener fincas: {ex.Message}" });
-            }
-        }
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> ObtenerMisFincas() => Ok(await _fincaManager.ObtenerPorPropietarioAsync(this.GetUserId()));
 
         [HttpGet("{idFinca:int}/detalle")]
-        public async Task<IActionResult> ObtenerDetalle([FromRoute] int idFinca, [FromQuery] int idPropietario)
+        [Authorize(Roles = "2,3")]
+        public async Task<IActionResult> ObtenerDetalle([FromRoute] int idFinca)
         {
-            try
-            {
-                if (idFinca <= 0 || idPropietario <= 0) return BadRequest(new { Mensaje = "Parámetros inválidos." });
-                var detalle = await _fincaManager.ObtenerDetalleAsync(idFinca, idPropietario);
-                return detalle == null ? NotFound(new { Mensaje = "No se encontró la finca solicitada." }) : Ok(detalle);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Mensaje = $"Error al obtener detalle de finca: {ex.Message}" });
-            }
+            var detalle = await _fincaManager.ObtenerDetalleAsync(idFinca, this.GetUserId());
+            return detalle == null ? NotFound(new { Mensaje = "No se encontró la finca solicitada." }) : Ok(detalle);
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegistrarFinca([FromBody] RegistrarFincaDTO dto)
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> RegistrarFinca([FromBody] PSA.EntidadesDTO.DTOs.RegistrarFincaDTO dto)
         {
-            try
-            {
-                if (!ModelState.IsValid || dto.IdPropietario <= 0) return ValidationProblem(ModelState);
-                var idFinca = await _fincaManager.RegistrarFincaAsync(dto);
-                return CreatedAtAction(nameof(ObtenerDetalle), new { idFinca, idPropietario = dto.IdPropietario }, new { IdFinca = idFinca, Mensaje = "Finca registrada correctamente." });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Mensaje = $"Error inesperado al registrar finca: {ex.Message}" });
-            }
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
+            dto.IdPropietario = this.GetUserId();
+            var idFinca = await _fincaManager.RegistrarFincaAsync(dto);
+            return CreatedAtAction(nameof(ObtenerDetalle), new { idFinca }, new { IdFinca = idFinca, Mensaje = "Finca registrada correctamente." });
         }
 
-        [HttpPut("{idFinca:int}")]
-        public async Task<IActionResult> ActualizarFinca([FromRoute] int idFinca, [FromBody] RegistrarFincaDTO dto)
+        [HttpPost("{idFinca:int}/renovacion-anual")]
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> RenovacionAnual([FromRoute] int idFinca)
         {
-            try
-            {
-                if (!ModelState.IsValid || idFinca <= 0 || dto.IdPropietario <= 0) return ValidationProblem(ModelState);
-                var actualizado = await _fincaManager.ActualizarFincaAsync(idFinca, dto);
-                return actualizado ? Ok(new { Mensaje = "Finca actualizada correctamente." }) : NotFound(new { Mensaje = "No fue posible actualizar la finca solicitada." });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Mensaje = $"Error inesperado al actualizar finca: {ex.Message}" });
-            }
-        }
-
-        [HttpDelete("{idFinca:int}")]
-        public async Task<IActionResult> EliminarFinca([FromRoute] int idFinca, [FromQuery] int idPropietario)
-        {
-            try
-            {
-                if (idFinca <= 0 || idPropietario <= 0) return BadRequest(new { Mensaje = "Datos inválidos." });
-                var eliminado = await _fincaManager.EliminarFincaAsync(idFinca, idPropietario);
-                return eliminado ? Ok(new { Mensaje = "Finca eliminada correctamente." }) : NotFound(new { Mensaje = "No se encontró la finca para eliminar." });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { Mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { Mensaje = $"Error inesperado al eliminar finca: {ex.Message}" });
-            }
+            var idEvaluacion = await _fincaManager.GenerarRenovacionAnualAsync(idFinca, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+            return Ok(new { IdEvaluacion = idEvaluacion, Mensaje = "Se generó la renovación anual y quedó en cola de pendientes." });
         }
     }
 }

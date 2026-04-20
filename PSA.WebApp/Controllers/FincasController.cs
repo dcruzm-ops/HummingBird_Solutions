@@ -72,7 +72,7 @@ namespace PSA.WebApp.Controllers
             if (idPropietario <= 0) return RedirectToAction("IniciarSesion", "Autenticacion");
 
             var client = _httpClientFactory.CreateClient("AuthApi");
-            var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>($"api/Fincas/mis-fincas?idPropietario={idPropietario}")
+            var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>($"api/Fincas/mis-fincas")
                 ?? new List<FincaResumenDTO>();
 
             return View(fincas);
@@ -91,7 +91,7 @@ namespace PSA.WebApp.Controllers
             FincaDetalleDTO? detalle;
             try
             {
-                detalle = await client.GetFromJsonAsync<FincaDetalleDTO>($"api/Fincas/{id}/detalle?idPropietario={idPropietario}");
+                detalle = await client.GetFromJsonAsync<FincaDetalleDTO>($"api/Fincas/{id}/detalle");
                 if (detalle == null)
                 {
                     TempData["MensajeError"] = "No se encontró la finca solicitada.";
@@ -117,7 +117,7 @@ namespace PSA.WebApp.Controllers
             var evidencias = new List<FincaEvidenciaDTO>();
             try
             {
-                evidencias = await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/por-finca/{id}")
+                evidencias = await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/finca/{id}")
                     ?? new List<FincaEvidenciaDTO>();
             }
             catch
@@ -137,6 +137,19 @@ namespace PSA.WebApp.Controllers
             ViewBag.Evidencias = evidencias;
 
             return View(detalle);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RenovacionAnual(int idFinca)
+        {
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var response = await client.PostAsync($"api/Fincas/{idFinca}/renovacion-anual", null);
+            TempData[response.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = response.IsSuccessStatusCode
+                ? "Renovación anual solicitada correctamente."
+                : "No fue posible solicitar la renovación anual.";
+            return RedirectToAction(nameof(DetalleFinca), new { id = idFinca });
         }
 
         private static async Task<int> ExtraerIdFincaAsync(HttpResponseMessage response)

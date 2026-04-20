@@ -13,6 +13,7 @@ namespace PSA.AppCore.Managers
         private readonly AuditoriaLogDAO _auditoriaLogDAO;
         private readonly IPasswordRecoveryPolicy _passwordRecoveryPolicy;
         private readonly IPasswordRecoveryEmailSender _passwordRecoveryEmailSender;
+        private readonly IPasswordPolicy _passwordPolicy;
 
         public RecuperacionContrasenaManager(
             UsuarioDAO usuarioDAO,
@@ -20,7 +21,8 @@ namespace PSA.AppCore.Managers
             IServicioHashContrasena servicioHash,
             AuditoriaLogDAO auditoriaLogDAO,
             IPasswordRecoveryPolicy passwordRecoveryPolicy,
-            IPasswordRecoveryEmailSender passwordRecoveryEmailSender)
+            IPasswordRecoveryEmailSender passwordRecoveryEmailSender,
+            IPasswordPolicy passwordPolicy)
         {
             _usuarioDAO = usuarioDAO ?? throw new ArgumentNullException(nameof(usuarioDAO));
             _tokenRecuperacionDAO = tokenRecuperacionDAO ?? throw new ArgumentNullException(nameof(tokenRecuperacionDAO));
@@ -28,6 +30,7 @@ namespace PSA.AppCore.Managers
             _auditoriaLogDAO = auditoriaLogDAO ?? throw new ArgumentNullException(nameof(auditoriaLogDAO));
             _passwordRecoveryPolicy = passwordRecoveryPolicy ?? throw new ArgumentNullException(nameof(passwordRecoveryPolicy));
             _passwordRecoveryEmailSender = passwordRecoveryEmailSender ?? throw new ArgumentNullException(nameof(passwordRecoveryEmailSender));
+            _passwordPolicy = passwordPolicy ?? throw new ArgumentNullException(nameof(passwordPolicy));
         }
 
         public async Task SolicitarRecuperacionAsync(string email)
@@ -155,9 +158,9 @@ namespace PSA.AppCore.Managers
                 throw new InvalidOperationException("El correo es obligatorio.");
             }
 
-            if (string.IsNullOrWhiteSpace(nuevaContrasena) || nuevaContrasena.Trim().Length < 8)
+            if (!_passwordPolicy.IsValid(nuevaContrasena))
             {
-                throw new InvalidOperationException("La nueva contraseña debe contener al menos 8 caracteres.");
+                throw new InvalidOperationException(_passwordPolicy.RequirementsMessage);
             }
 
             var usuario = await _usuarioDAO.ObtenerPorEmailAsync(email.Trim());

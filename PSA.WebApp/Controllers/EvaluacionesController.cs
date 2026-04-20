@@ -148,7 +148,7 @@ namespace PSA.WebApp.Controllers
 
                 if (idFinca > 0 && idUsuario > 0)
                 {
-                    var evidenciaSubida = await SubirEvidenciasAsync(client, idFinca, idUsuario, model.Evidencias ?? new List<IFormFile>());
+                    var evidenciaSubida = await SubirEvidenciasAsync(client, idEvaluacion, idUsuario, model.Evidencias ?? new List<IFormFile>());
                     if (!evidenciaSubida)
                     {
                         TempData["MensajeError"] = "La evaluación se guardó, pero no fue posible cargar la evidencia adjunta.";
@@ -332,11 +332,10 @@ namespace PSA.WebApp.Controllers
             }
         }
 
-        private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idFinca, int idUsuario, List<IFormFile> archivos)
+        private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idEvaluacion, int idUsuario, List<IFormFile> archivos)
         {
             using var form = new MultipartFormDataContent();
-            form.Add(new StringContent(idFinca.ToString()), "idFinca");
-            form.Add(new StringContent(idUsuario.ToString()), "cargadoPor");
+
 
             foreach (var archivo in archivos.Where(a => a != null && a.Length > 0))
             {
@@ -345,7 +344,7 @@ namespace PSA.WebApp.Controllers
                 form.Add(contenido, "archivos", archivo.FileName);
             }
 
-            var response = await client.PostAsync("api/FincaEvidencias/subir", form);
+            var response = await client.PostAsync($"api/FincaEvidencias/evaluacion/{idEvaluacion}/subir", form);
             return response.IsSuccessStatusCode;
         }
 

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
@@ -22,6 +23,7 @@ namespace PSA.WebAPI.Controllers
             _configuration = configuration;
         }
 
+        [AllowAnonymous]
         [HttpPost("registrar")]
         public async Task<IActionResult> Registrar([FromBody] RegistrarUsuarioDTO dto)
         {
@@ -45,6 +47,7 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("iniciar-sesion")]
         public async Task<IActionResult> IniciarSesion([FromBody] InicioSesionDTO dto)
         {
@@ -62,6 +65,7 @@ namespace PSA.WebAPI.Controllers
             }
         }
 
+        [Authorize(Roles = "1")]
         [HttpPost("asignar-rol")]
         public async Task<IActionResult> AsignarRol([FromBody] AsignarRolUsuarioDTO dto)
         {

@@ -1,3 +1,4 @@
+using PSA.WebApp.Services.Security;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using PSA.WebApp.Services;
 
@@ -20,11 +21,16 @@ if (string.IsNullOrWhiteSpace(apiBaseUrl))
     throw new InvalidOperationException("Debe configurar ApiSettings:BaseUrl en PSA.WebApp.");
 }
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<ApiUserHeadersHandler>();
+
 var httpClientBuilder = builder.Services.AddHttpClient("AuthApi", client =>
 {
     client.BaseAddress = new Uri(apiBaseUrl.TrimEnd('/') + "/");
     client.Timeout = TimeSpan.FromSeconds(20);
 });
+
+httpClientBuilder.AddHttpMessageHandler<ApiUserHeadersHandler>();
 
 if (builder.Environment.IsDevelopment())
 {

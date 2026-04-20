@@ -3,12 +3,13 @@ using PSA.AppCore;
 using PSA.AppCore.Managers;
 using PSA.AppCore.Services.Security;
 using PSA.AppCore.Services.Notifications;
-using PSA.AppCore.Services.Security;
 using PSA.AppCore.Servicios;
 using PSA.DataAccess;
 using PSA.DataAccess.DAO;
 using PSA.WebAPI.Controllers.Middleware;
 using PSA.WebAPI.Services;
+using Microsoft.AspNetCore.Authentication;
+using PSA.WebAPI.Services.Security;
 
 SanitizarAppSettingsSiEsNecesario();
 
@@ -29,6 +30,18 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
+builder.Services.AddScoped<IPasswordPolicy, PasswordPolicy>();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = HeaderAuthenticationHandler.SchemeName;
+    options.DefaultChallengeScheme = HeaderAuthenticationHandler.SchemeName;
+})
+.AddScheme<AuthenticationSchemeOptions, HeaderAuthenticationHandler>(HeaderAuthenticationHandler.SchemeName, _ => { });
+
+builder.Services.AddAuthorization();
+
+
 
 builder.Services.AddScoped<IDbConnectionFactory>(sp =>
 {
@@ -51,6 +64,7 @@ builder.Services.AddScoped<RecuperacionContrasenaDAO>();
 builder.Services.AddScoped<TokenRecuperacionDAO>();
 builder.Services.AddScoped<FincaEvidenciaDAO>();
 builder.Services.AddScoped<EvaluacionDAO>();
+builder.Services.AddScoped<EvaluacionEvidenciaDAO>();
 builder.Services.AddScoped<AuditoriaLogDAO>();
 builder.Services.AddScoped<RolPermisoDAO>();
 builder.Services.AddScoped<ConfiguracionPagoDAO>();
@@ -66,6 +80,7 @@ builder.Services.AddScoped<PSA.AppCore.Services.IPaymentPlanService, PSA.AppCore
 builder.Services.AddScoped<PSA.AppCore.Services.IPaymentPlanReadService, PSA.AppCore.Services.PaymentPlanReadService>();
 builder.Services.AddScoped<FincaService>();
 builder.Services.AddScoped<EvaluacionService>();
+builder.Services.AddScoped<EvaluacionEvidenciaService>();
 builder.Services.AddScoped<FincaEvidenciaService>();
 builder.Services.AddScoped<AutenticacionManager>();
 builder.Services.AddScoped<RecuperacionContrasenaManager>();
@@ -99,6 +114,7 @@ app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

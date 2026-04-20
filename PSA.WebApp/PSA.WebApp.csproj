@@ -29,6 +29,7 @@
     <Compile Include="Models\RecuperarContrasenaViewModel.cs" />
     <Compile Include="Models\RestablecerContrasenaViewModel.cs" />
     <Compile Include="Services\HttpClientService.cs" />
+    <Compile Include="Services\Security\ApiUserHeadersHandler.cs" />
     <Compile Include="Program.cs" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
   </ItemGroup>

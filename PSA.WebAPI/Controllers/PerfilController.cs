@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.DataAccess.DAO;
+using PSA.WebAPI.Extensions;
 
 namespace PSA.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class PerfilController : ControllerBase
     {
         private readonly UsuarioDAO _usuarioDao;
@@ -17,6 +20,7 @@ namespace PSA.WebAPI.Controllers
         [HttpGet("mi-perfil/{idUsuario:int}")]
         public async Task<IActionResult> ObtenerMiPerfil([FromRoute] int idUsuario)
         {
+            idUsuario = this.GetUserId();
             if (idUsuario <= 0)
                 return BadRequest(new { Mensaje = "El idUsuario debe ser mayor a 0." });
 
@@ -30,6 +34,7 @@ namespace PSA.WebAPI.Controllers
         [HttpPut("mi-perfil/{idUsuario:int}")]
         public async Task<IActionResult> ActualizarMiPerfil([FromRoute] int idUsuario, [FromBody] ActualizarMiPerfilRequest request)
         {
+            idUsuario = this.GetUserId();
             if (idUsuario <= 0)
                 return BadRequest(new { Mensaje = "El idUsuario debe ser mayor a 0." });
 
