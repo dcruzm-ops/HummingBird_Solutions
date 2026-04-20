@@ -146,9 +146,25 @@ namespace PSA.WebApp.Controllers
         {
             var client = _httpClientFactory.CreateClient("AuthApi");
             var response = await client.PostAsync($"api/Fincas/{idFinca}/renovacion-anual", null);
+            var body = await response.Content.ReadAsStringAsync();
+            string? mensajeApi = null;
+            if (!string.IsNullOrWhiteSpace(body))
+            {
+                try
+                {
+                    using var doc = JsonDocument.Parse(body);
+                    if (doc.RootElement.TryGetProperty("mensaje", out var m1)) mensajeApi = m1.GetString();
+                    if (string.IsNullOrWhiteSpace(mensajeApi) && doc.RootElement.TryGetProperty("Mensaje", out var m2)) mensajeApi = m2.GetString();
+                }
+                catch
+                {
+                    // Ignorado: fallback a mensaje estándar.
+                }
+            }
+
             TempData[response.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = response.IsSuccessStatusCode
-                ? "Renovación anual solicitada correctamente."
-                : "No fue posible solicitar la renovación anual.";
+                ? (mensajeApi ?? "Renovación anual solicitada correctamente.")
+                : (mensajeApi ?? "No fue posible solicitar la renovación anual.");
             return RedirectToAction(nameof(DetalleFinca), new { id = idFinca });
         }
 

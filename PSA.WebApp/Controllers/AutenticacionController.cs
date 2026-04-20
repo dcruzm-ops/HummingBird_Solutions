@@ -144,8 +144,13 @@ namespace PSA.WebApp.Controllers
                 new(ClaimTypes.NameIdentifier, respuesta.IdUsuario.ToString()),
                 new(ClaimTypes.Name, respuesta.NombreCompleto),
                 new(ClaimTypes.Email, respuesta.Email),
-                new(ClaimTypes.Role, respuesta.IdRol.ToString())
+                new(ClaimTypes.Role, respuesta.IdRol.ToString()),
+                new("psa_api_token", respuesta.TokenAcceso ?? string.Empty)
             };
+            foreach (var permiso in respuesta.Permisos.Where(x => !string.IsNullOrWhiteSpace(x)))
+            {
+                claims.Add(new Claim("perm", permiso));
+            }
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)));
         }
 
