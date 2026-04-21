@@ -55,6 +55,18 @@ IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'DUENO_FINCAS_RENOVAR')
 GO
 
 /* 2) Quitar permisos ADMIN_* de roles no administrativos */
+DECLARE @TablaRolPermisos SYSNAME = CASE
+    WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
+    WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
+    ELSE NULL
+END;
+
+IF @TablaRolPermisos IS NULL
+BEGIN
+    PRINT 'No existe tabla de relación RolesPermisos/RolPermisos. Se omite limpieza de permisos.';
+    RETURN;
+END
+
 DECLARE @SqlCleanup NVARCHAR(MAX) = N'
 DELETE rp
 FROM ' + @TablaRolPermisos + N' rp
@@ -67,6 +79,18 @@ EXEC sp_executesql @SqlCleanup;
 GO
 
 /* 3) Asignaciones esperadas por rol */
+DECLARE @TablaRolPermisos SYSNAME = CASE
+    WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
+    WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
+    ELSE NULL
+END;
+
+IF @TablaRolPermisos IS NULL
+BEGIN
+    PRINT 'No existe tabla de relación RolesPermisos/RolPermisos. Se omite reasignación.';
+    RETURN;
+END
+
 IF OBJECT_ID('tempdb..#AsignacionesEsperadas') IS NOT NULL
     DROP TABLE #AsignacionesEsperadas;
 
