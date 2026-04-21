@@ -178,9 +178,14 @@ namespace PSA.WebApp.Controllers
                 return null;
             }
 
+            var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
+            {
+                PropertyNameCaseInsensitive = true
+            };
+
             try
             {
-                var direct = JsonSerializer.Deserialize<RespuestaInicioSesionDTO>(json);
+                var direct = JsonSerializer.Deserialize<RespuestaInicioSesionDTO>(json, jsonOptions);
                 if (direct?.IdUsuario > 0)
                 {
                     return direct;
@@ -193,7 +198,7 @@ namespace PSA.WebApp.Controllers
 
             try
             {
-                var wrapped = JsonSerializer.Deserialize<ApiEnvelope<RespuestaInicioSesionDTO>>(json);
+                var wrapped = JsonSerializer.Deserialize<ApiEnvelope<RespuestaInicioSesionDTO>>(json, jsonOptions);
                 if (wrapped?.Success == true && wrapped.Data?.IdUsuario > 0)
                 {
                     return wrapped.Data;
