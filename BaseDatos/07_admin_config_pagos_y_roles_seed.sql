@@ -156,6 +156,15 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'ADMIN_AUDITORIA_CONSULTAR')
         INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('ADMIN_AUDITORIA_CONSULTAR', 'Consultar auditoría', 'Permite revisar eventos y trazabilidad del sistema');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'ADMIN_REPORTES_CONSULTAR')
+        INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('ADMIN_REPORTES_CONSULTAR', 'Consultar reportes administrativos', 'Permite consultar reportes globales del sistema');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'ING_PLAN_APROBAR')
+        INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('ING_PLAN_APROBAR', 'Aprobar plan de pago', 'Permite al ingeniero aprobar o rechazar planes de pago');
+
+    IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'DUENO_FINCAS_RENOVAR')
+        INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('DUENO_FINCAS_RENOVAR', 'Renovar fincas', 'Permite al propietario renovar solicitudes de finca');
 END
 GO
 
@@ -194,18 +203,19 @@ BEGIN
         ('Administrador', 'ADMIN_CLIENTES_REASIGNAR'),
         ('Administrador', 'ADMIN_PAGOS_CONFIGURAR'),
         ('Administrador', 'ADMIN_CUENTAS_VALIDAR'),
-        ('Administrador', 'ADMIN_AUDITORIA_CONSULTAR');
+        ('Administrador', 'ADMIN_AUDITORIA_CONSULTAR'),
+        ('Administrador', 'ADMIN_REPORTES_CONSULTAR');
 
-    /* Ingeniero: lectura de usuarios y consulta de auditoría */
+    /* Ingeniero: permisos de operación técnica */
     INSERT INTO #Asignaciones (NombreRol, CodigoPermiso)
     VALUES
-        ('Ingeniero', 'ADMIN_USUARIOS_VER'),
-        ('Ingeniero', 'ADMIN_AUDITORIA_CONSULTAR');
+        ('Ingeniero', 'ING_PLAN_APROBAR'),
+        ('Ingeniero Forestal', 'ING_PLAN_APROBAR');
 
-    /* Propietario: lectura de usuarios (mínimo para poblar pantalla) */
+    /* Propietario: permisos del flujo de dueño */
     INSERT INTO #Asignaciones (NombreRol, CodigoPermiso)
     VALUES
-        ('Propietario', 'ADMIN_USUARIOS_VER');
+        ('Propietario', 'DUENO_FINCAS_RENOVAR');
 
     DECLARE @SqlAsignacion NVARCHAR(MAX) = N'
         INSERT INTO ' + @TablaRolPermisos + N' (IdRol, IdPermiso)
