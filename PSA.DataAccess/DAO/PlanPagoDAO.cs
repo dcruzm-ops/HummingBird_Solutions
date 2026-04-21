@@ -90,14 +90,6 @@ WHERE e.IdEvaluacion = @IdEvaluacion
 
     public async Task<PaymentConfigurationVersionDTO?> ObtenerConfiguracionVigenteParaAnioAsync(int anio)
     {
-        const string sqlConfig = @"
-SELECT TOP 1 IdConfiguracionPago, Version, PrecioBasePorHectarea, COALESCE(TopePorcentajeAjuste, PorcentajeTopeAjuste, 0) AS TopePorcentajeAjuste
-FROM dbo.ConfiguracionesPago
-WHERE Activa = 1
-  AND FechaVigenciaDesde <= DATEFROMPARTS(@Anio, 1, 1)
-  AND (FechaVigenciaHasta IS NULL OR FechaVigenciaHasta >= DATEFROMPARTS(@Anio, 1, 1))
-ORDER BY FechaVigenciaDesde DESC, IdConfiguracionPago DESC;";
-
         const string sqlDetalle = @"
 SELECT TipoFactor, ValorFactor, PorcentajeAjuste
 FROM dbo.ConfiguracionPagoDetalle
@@ -105,6 +97,22 @@ WHERE IdConfiguracionPago = @IdConfiguracionPago;";
 
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
+
+        var existeTopePorcentajeAjuste = await ExisteColumnaAsync(connection, "ConfiguracionesPago", "TopePorcentajeAjuste");
+        var existePorcentajeTopeAjuste = await ExisteColumnaAsync(connection, "ConfiguracionesPago", "PorcentajeTopeAjuste");
+        var expresionTope = existeTopePorcentajeAjuste
+            ? "ISNULL(TopePorcentajeAjuste, 0)"
+            : existePorcentajeTopeAjuste
+                ? "ISNULL(PorcentajeTopeAjuste, 0)"
+                : "CAST(0 AS decimal(5,2))";
+
+        var sqlConfig = $@"
+SELECT TOP 1 IdConfiguracionPago, Version, PrecioBasePorHectarea, {expresionTope} AS TopePorcentajeAjuste
+FROM dbo.ConfiguracionesPago
+WHERE Activa = 1
+  AND FechaVigenciaDesde <= DATEFROMPARTS(@Anio, 1, 1)
+  AND (FechaVigenciaHasta IS NULL OR FechaVigenciaHasta >= DATEFROMPARTS(@Anio, 1, 1))
+ORDER BY FechaVigenciaDesde DESC, IdConfiguracionPago DESC;";
 
         using var configCommand = new SqlCommand(sqlConfig, connection);
         configCommand.Parameters.AddWithValue("@Anio", anio);
@@ -150,6 +158,24 @@ WHERE IdConfiguracionPago = @IdConfiguracionPago;";
         }
 
         return config;
+    }
+
+    private static async Task<bool> ExisteColumnaAsync(SqlConnection connection, string tabla, string columna)
+    {
+        const string sql = @"
+SELECT COUNT(1)
+FROM sys.columns c
+INNER JOIN sys.tables t ON t.object_id = c.object_id
+INNER JOIN sys.schemas s ON s.schema_id = t.schema_id
+WHERE s.name = 'dbo'
+  AND t.name = @Tabla
+  AND c.name = @Columna;";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@Tabla", tabla);
+        command.Parameters.AddWithValue("@Columna", columna);
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result ?? 0) > 0;
     }
 
     public async Task<PlanPagoDTO> CrearOActualizarPlanPreliminarAsync(
