@@ -155,6 +155,14 @@ namespace PSA.WebApp.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RenovacionAnual(int idFinca)
         {
+            var idPropietario = ObtenerIdUsuarioSesion();
+            if (idPropietario <= 0) return RedirectToAction("IniciarSesion", "Autenticacion");
+            if (idFinca <= 0)
+            {
+                TempData["MensajeError"] = "La finca indicada para renovación no es válida.";
+                return RedirectToAction(nameof(MisFincas));
+            }
+
             var client = _httpClientFactory.CreateClient("AuthApi");
             var response = await client.PostAsync($"api/Fincas/{idFinca}/renovacion-anual", null);
             var body = await response.Content.ReadAsStringAsync();
