@@ -61,11 +61,21 @@ namespace PSA.WebAPI.Controllers
                 return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiados intentos. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
             }
 
+            RespuestaInicioSesionDTO respuesta;
             try
             {
-                var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
                 _securityThrottleService.RegisterSuccess("login", compositeKey);
-                var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol);
+            }
+            catch (Exception ex)
+            {
+                _securityThrottleService.RegisterFailure("login", compositeKey);
+                return ApiValidationError("Credenciales inválidas.", ex.Message);
+            }
+
+            try
+            {
+                var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol) ?? [];
                 respuesta.Permisos = permisos;
                 var nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
                 respuesta.TokenAcceso = _jwtTokenService.CreateToken(
@@ -79,8 +89,11 @@ namespace PSA.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                _securityThrottleService.RegisterFailure("login", compositeKey);
-                return ApiValidationError("Credenciales inválidas.", ex.Message);
+                return ApiError(
+                    StatusCodes.Status500InternalServerError,
+                    "login_session_error",
+                    "El usuario fue validado, pero ocurrió un error al preparar la sesión.",
+                    ex.Message);
             }
         }
 
