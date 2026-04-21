@@ -95,11 +95,14 @@ namespace PSA.WebAPI.Controllers
                 // El nombre de rol es opcional en el token.
             }
 
+            var idRolAplicacion = NormalizarIdRolAplicacion(respuesta.IdRol, nombreRol, permisos);
+            respuesta.IdRol = idRolAplicacion;
+
             try
             {
                 respuesta.TokenAcceso = _jwtTokenService.CreateToken(
                     respuesta.IdUsuario,
-                    respuesta.IdRol,
+                    idRolAplicacion,
                     respuesta.Email,
                     respuesta.NombreCompleto,
                     permisos,
@@ -112,6 +115,42 @@ namespace PSA.WebAPI.Controllers
             }
 
             return ApiOk(respuesta, "Inicio de sesión exitoso.");
+        }
+
+        private static int NormalizarIdRolAplicacion(int idRolActual, string? nombreRol, IReadOnlyCollection<string> permisos)
+        {
+            if (idRolActual is 1 or 2 or 3)
+            {
+                return idRolActual;
+            }
+
+            var nombreNormalizado = (nombreRol ?? string.Empty).Trim().ToLowerInvariant();
+            if (nombreNormalizado.Contains("admin"))
+            {
+                return 1;
+            }
+
+            if (nombreNormalizado.Contains("ing"))
+            {
+                return 3;
+            }
+
+            if (nombreNormalizado.Contains("due") || nombreNormalizado.Contains("prop"))
+            {
+                return 2;
+            }
+
+            if (permisos.Any(p => p.StartsWith("ADMIN_", StringComparison.OrdinalIgnoreCase)))
+            {
+                return 1;
+            }
+
+            if (permisos.Any(p => p.StartsWith("ING_", StringComparison.OrdinalIgnoreCase)))
+            {
+                return 3;
+            }
+
+            return 2;
         }
 
         [Authorize(Roles = "1")]
