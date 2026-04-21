@@ -73,11 +73,30 @@ namespace PSA.WebAPI.Controllers
                 return ApiValidationError("Credenciales inválidas.", ex.Message);
             }
 
+            var permisos = new List<string>();
             try
             {
-                var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol) ?? [];
-                respuesta.Permisos = permisos;
-                var nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
+                permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol) ?? [];
+            }
+            catch
+            {
+                // Fallback a lista vacía para no bloquear el inicio de sesión.
+            }
+
+            respuesta.Permisos = permisos;
+
+            string? nombreRol = null;
+            try
+            {
+                nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
+            }
+            catch
+            {
+                // El nombre de rol es opcional en el token.
+            }
+
+            try
+            {
                 respuesta.TokenAcceso = _jwtTokenService.CreateToken(
                     respuesta.IdUsuario,
                     respuesta.IdRol,
@@ -85,16 +104,14 @@ namespace PSA.WebAPI.Controllers
                     respuesta.NombreCompleto,
                     permisos,
                     nombreRol);
-                return ApiOk(respuesta, "Inicio de sesión exitoso.");
             }
-            catch (Exception ex)
+            catch
             {
-                return ApiError(
-                    StatusCodes.Status500InternalServerError,
-                    "login_session_error",
-                    "El usuario fue validado, pero ocurrió un error al preparar la sesión.",
-                    ex.Message);
+                // No se bloquea el login web por falla de token API.
+                respuesta.TokenAcceso = string.Empty;
             }
+
+            return ApiOk(respuesta, "Inicio de sesión exitoso.");
         }
 
         [Authorize(Roles = "1")]
