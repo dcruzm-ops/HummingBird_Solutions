@@ -20,9 +20,9 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
         var issuer = _configuration["Jwt:Issuer"] ?? "PSA.WebAPI";
         var audience = _configuration["Jwt:Audience"] ?? "PSA.WebApp";
         var key = _configuration["Jwt:Key"];
-        if (string.IsNullOrWhiteSpace(key))
+        if (string.IsNullOrWhiteSpace(key) || key.Contains("set-via", StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("Debe configurar Jwt:Key para emitir tokens.");
+            throw new InvalidOperationException("JWT no configurado. Defina Jwt:Key en variable de entorno JWT__KEY o User Secrets.");
         }
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));

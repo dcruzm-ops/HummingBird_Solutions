@@ -12,27 +12,20 @@ namespace PSA.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AutenticacionController : ControllerBase
+    public class AutenticacionController(
+        AutenticacionManager autenticacionManager,
+        IConfiguration configuration,
+        RolPermisoDAO rolPermisoDao,
+        UsuarioDAO usuarioDao,
+        IJwtTokenService jwtTokenService,
+        ISecurityThrottleService securityThrottleService) : BaseApiController
     {
-        private readonly AutenticacionManager _autenticacionManager;
-        private readonly IConfiguration _configuration;
-        private readonly RolPermisoDAO _rolPermisoDao;
-        private readonly UsuarioDAO _usuarioDao;
-        private readonly IJwtTokenService _jwtTokenService;
-
-        public AutenticacionController(
-            AutenticacionManager autenticacionManager,
-            IConfiguration configuration,
-            RolPermisoDAO rolPermisoDao,
-            UsuarioDAO usuarioDao,
-            IJwtTokenService jwtTokenService)
-        {
-            _autenticacionManager = autenticacionManager;
-            _configuration = configuration;
-            _rolPermisoDao = rolPermisoDao;
-            _usuarioDao = usuarioDao;
-            _jwtTokenService = jwtTokenService;
-        }
+        private readonly AutenticacionManager _autenticacionManager = autenticacionManager;
+        private readonly IConfiguration _configuration = configuration;
+        private readonly RolPermisoDAO _rolPermisoDao = rolPermisoDao;
+        private readonly UsuarioDAO _usuarioDao = usuarioDao;
+        private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+        private readonly ISecurityThrottleService _securityThrottleService = securityThrottleService;
 
         [AllowAnonymous]
         [HttpPost("registrar")]
@@ -43,7 +36,7 @@ namespace PSA.WebAPI.Controllers
                 var idUsuario = await _autenticacionManager.RegistrarUsuarioAsync(dto);
                 await IntentarEnviarCorreoBienvenidaAsync(dto);
 
-                return Ok(new
+                return ApiCreated(new
                 {
                     IdUsuario = idUsuario,
                     Mensaje = "Usuario registrado correctamente."
@@ -51,10 +44,7 @@ namespace PSA.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Mensaje = ex.Message
-                });
+                return ApiValidationError("No fue posible registrar el usuario.", ex.Message);
             }
         }
 
@@ -62,9 +52,19 @@ namespace PSA.WebAPI.Controllers
         [HttpPost("iniciar-sesion")]
         public async Task<IActionResult> IniciarSesion([FromBody] InicioSesionDTO dto)
         {
+            var email = dto.Email?.Trim() ?? string.Empty;
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+            var compositeKey = $"{email}|{ip}";
+
+            if (_securityThrottleService.IsBlocked("login", compositeKey, out var retryAfter))
+            {
+                return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiados intentos. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
+            }
+
             try
             {
                 var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                _securityThrottleService.RegisterSuccess("login", compositeKey);
                 var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol);
                 respuesta.Permisos = permisos;
                 var nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
@@ -75,14 +75,12 @@ namespace PSA.WebAPI.Controllers
                     respuesta.NombreCompleto,
                     permisos,
                     nombreRol);
-                return Ok(respuesta);
+                return ApiOk(respuesta, "Inicio de sesión exitoso.");
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Mensaje = ex.Message
-                });
+                _securityThrottleService.RegisterFailure("login", compositeKey);
+                return ApiValidationError("Credenciales inválidas.", ex.Message);
             }
         }
 
@@ -93,11 +91,11 @@ namespace PSA.WebAPI.Controllers
             try
             {
                 await _autenticacionManager.AsignarRolAsync(dto);
-                return Ok(new { Mensaje = "Rol asignado correctamente." });
+                return ApiOk(new { Mensaje = "Rol asignado correctamente." });
             }
             catch (Exception ex)
             {
-                return BadRequest(new { Mensaje = ex.Message });
+                return ApiValidationError("No fue posible asignar el rol.", ex.Message);
             }
         }
 
@@ -114,7 +112,7 @@ namespace PSA.WebAPI.Controllers
                 {
                     Host = _configuration["SmtpSettings:Host"] ?? string.Empty,
                     Port = int.TryParse(_configuration["SmtpSettings:Port"], out var port) ? port : 587,
-                    EnableSsl = bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) ? ssl : true,
+                    EnableSsl = !bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) || ssl,
                     FromName = _configuration["SmtpSettings:FromName"] ?? string.Empty,
                     FromEmail = _configuration["SmtpSettings:FromEmail"] ?? string.Empty,
                     Username = _configuration["SmtpSettings:Username"] ?? string.Empty,
