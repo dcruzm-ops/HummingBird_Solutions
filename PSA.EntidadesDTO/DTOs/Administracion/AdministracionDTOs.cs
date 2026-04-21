@@ -145,7 +145,7 @@ namespace PSA.EntidadesDTO.DTOs.Administracion
         [Required(ErrorMessage = "El estado es obligatorio.")]
         public string Estado { get; set; } = "Activo";
 
-        [MinLength(8, ErrorMessage = "La contraseña debe tener al menos 8 caracteres.")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{10,}$", ErrorMessage = "La contraseña debe tener mínimo 10 caracteres e incluir mayúscula, minúscula, número y símbolo.")]
         public string? Contrasena { get; set; }
 
         [Compare("Contrasena", ErrorMessage = "La contraseña y la confirmación no coinciden.")]

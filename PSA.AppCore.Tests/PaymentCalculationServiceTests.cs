@@ -120,4 +120,32 @@ public class PaymentCalculationServiceTests
         Assert.Equal(23m, result.PorcentajeAjusteAplicado);
         Assert.Equal(123m, result.MontoMensualTotal);
     }
+
+    [Fact]
+    public void Calculate_ClampsConfiguredCap_WhenItExceedsInstitutionalMaximum()
+    {
+        var context = new PlanPagoGenerationContextDTO
+        {
+            HectareasAprobadas = 12m,
+            VegetacionFinal = "bosque",
+            TieneRecursosHidricosFinal = true,
+            CantidadNacientesFinal = 2,
+            PendienteFinal = "inclinada"
+        };
+
+        var config = new PaymentConfigurationVersionDTO
+        {
+            PrecioBasePorHectarea = 200m,
+            TopePorcentajeAjuste = 80m,
+            VegetacionAjustes = new(StringComparer.OrdinalIgnoreCase) { ["bosque"] = 30m },
+            HidricosAjustes = new(StringComparer.OrdinalIgnoreCase) { ["Si"] = 20m, ["Naciente"] = 10m },
+            PendienteAjustes = new(StringComparer.OrdinalIgnoreCase) { ["inclinada"] = 20m }
+        };
+
+        var result = _service.Calculate(context, config);
+
+        Assert.Equal(70m, result.PorcentajeAjusteTotalBruto);
+        Assert.Equal(40m, result.PorcentajeAjusteAplicado);
+        Assert.Equal(40m, result.TopePorcentajeAjuste);
+    }
 }

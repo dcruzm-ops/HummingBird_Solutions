@@ -9,6 +9,8 @@ public interface IPaymentCalculationService
 
 public class PaymentCalculationService : IPaymentCalculationService
 {
+    private const decimal TopeInstitucionalMaximo = 40m;
+
     public PaymentCalculationResultDTO Calculate(PlanPagoGenerationContextDTO context, PaymentConfigurationVersionDTO config)
     {
         if (context.HectareasAprobadas < 0)
@@ -28,7 +30,8 @@ public class PaymentCalculationService : IPaymentCalculationService
 
         var montoBaseMensual = Round2(context.HectareasAprobadas * config.PrecioBasePorHectarea);
         var porcentajeBruto = porcentajeVegetacion + porcentajeHidrico + porcentajeNacientes + porcentajePendiente;
-        var porcentajeAplicado = Math.Min(porcentajeBruto, config.TopePorcentajeAjuste);
+        var topeOperativo = Math.Min(config.TopePorcentajeAjuste, TopeInstitucionalMaximo);
+        var porcentajeAplicado = Math.Min(porcentajeBruto, topeOperativo);
         var montoAjusteMensual = Round2(montoBaseMensual * (porcentajeAplicado / 100m));
         var montoMensualTotal = Round2(montoBaseMensual + montoAjusteMensual);
 
@@ -44,7 +47,7 @@ public class PaymentCalculationService : IPaymentCalculationService
             PorcentajePendiente = porcentajePendiente,
             PorcentajeAjusteTotalBruto = porcentajeBruto,
             PorcentajeAjusteAplicado = porcentajeAplicado,
-            TopePorcentajeAjuste = config.TopePorcentajeAjuste
+            TopePorcentajeAjuste = topeOperativo
         };
     }
 
