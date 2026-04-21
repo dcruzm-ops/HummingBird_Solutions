@@ -22,6 +22,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddCors(options =>
 {
@@ -43,7 +44,14 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
-    var jwtKey = builder.Configuration["Jwt:Key"] ?? string.Empty;
+    var jwtKey = builder.Configuration["Jwt:Key"];
+    var jwtConfigurado = !string.IsNullOrWhiteSpace(jwtKey) && !jwtKey.Contains("set-via", StringComparison.OrdinalIgnoreCase);
+    if (!jwtConfigurado)
+    {
+        // Evita que toda la app se caiga al arrancar; la emisión de token falla de forma controlada en login.
+        jwtKey = "development-placeholder-key-not-for-production";
+    }
+
     var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -128,6 +136,7 @@ builder.Services.AddScoped<INotificationEmailSender, SmtpNotificationEmailSender
 builder.Services.AddScoped<INotificationDispatcher, NotificationDispatcher>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+builder.Services.AddSingleton<ISecurityThrottleService, SecurityThrottleService>();
 
 var app = builder.Build();
 

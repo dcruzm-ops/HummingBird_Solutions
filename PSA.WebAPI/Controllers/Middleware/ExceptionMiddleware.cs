@@ -28,12 +28,22 @@ namespace PSA.WebAPI.Controllers.Middleware
         private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.StatusCode = exception switch
+            {
+                InvalidOperationException => (int)HttpStatusCode.UnprocessableEntity,
+                UnauthorizedAccessException => (int)HttpStatusCode.Forbidden,
+                _ => (int)HttpStatusCode.InternalServerError
+            };
 
-            var response = ApiResponse<object>.Fail(
-                "Ocurrió un error interno en el servidor.",
-                new List<string> { exception.Message }
-            );
+            var response = new ApiErrorResponse
+            {
+                Code = context.Response.StatusCode == (int)HttpStatusCode.UnprocessableEntity ? "business_rule_error" : "internal_error",
+                Message = context.Response.StatusCode == (int)HttpStatusCode.InternalServerError
+                    ? "Ocurrió un error interno en el servidor."
+                    : "No fue posible procesar la solicitud.",
+                Errors = [exception.Message],
+                TraceId = context.TraceIdentifier
+            };
 
             var json = JsonSerializer.Serialize(response);
 
