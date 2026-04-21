@@ -8,16 +8,12 @@ namespace PSA.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RecuperacionContrasenaController : BaseApiController
+    public class RecuperacionContrasenaController(
+        RecuperacionContrasenaManager manager,
+        ISecurityThrottleService securityThrottleService) : BaseApiController
     {
-        private readonly RecuperacionContrasenaManager _manager;
-        private readonly ISecurityThrottleService _securityThrottleService;
-
-        public RecuperacionContrasenaController(RecuperacionContrasenaManager manager, ISecurityThrottleService securityThrottleService)
-        {
-            _manager = manager;
-            _securityThrottleService = securityThrottleService;
-        }
+        private readonly RecuperacionContrasenaManager _manager = manager;
+        private readonly ISecurityThrottleService _securityThrottleService = securityThrottleService;
 
         [HttpPost("solicitar")]
         public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarContrasenaDTO dto)
@@ -82,9 +78,9 @@ namespace PSA.WebAPI.Controllers
                 var validacion = await _manager.ValidarTokenAsync(dto.Token, dto.Email);
                 var mensaje = validacion.Estado switch
                 {
-                    EstadoTokenRecuperacion.Vigente => "Token válido.",
-                    EstadoTokenRecuperacion.Expirado => "token expirado",
-                    EstadoTokenRecuperacion.Utilizado => "token ya utilizado",
+                    PSA.AppCore.Services.Security.EstadoTokenRecuperacion.Vigente => "Token válido.",
+                    PSA.AppCore.Services.Security.EstadoTokenRecuperacion.Expirado => "token expirado",
+                    PSA.AppCore.Services.Security.EstadoTokenRecuperacion.Utilizado => "token ya utilizado",
                     _ => "token inválido"
                 };
 

@@ -12,30 +12,20 @@ namespace PSA.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AutenticacionController : BaseApiController
+    public class AutenticacionController(
+        AutenticacionManager autenticacionManager,
+        IConfiguration configuration,
+        RolPermisoDAO rolPermisoDao,
+        UsuarioDAO usuarioDao,
+        IJwtTokenService jwtTokenService,
+        ISecurityThrottleService securityThrottleService) : BaseApiController
     {
-        private readonly AutenticacionManager _autenticacionManager;
-        private readonly IConfiguration _configuration;
-        private readonly RolPermisoDAO _rolPermisoDao;
-        private readonly UsuarioDAO _usuarioDao;
-        private readonly IJwtTokenService _jwtTokenService;
-        private readonly ISecurityThrottleService _securityThrottleService;
-
-        public AutenticacionController(
-            AutenticacionManager autenticacionManager,
-            IConfiguration configuration,
-            RolPermisoDAO rolPermisoDao,
-            UsuarioDAO usuarioDao,
-            IJwtTokenService jwtTokenService,
-            ISecurityThrottleService securityThrottleService)
-        {
-            _autenticacionManager = autenticacionManager;
-            _configuration = configuration;
-            _rolPermisoDao = rolPermisoDao;
-            _usuarioDao = usuarioDao;
-            _jwtTokenService = jwtTokenService;
-            _securityThrottleService = securityThrottleService;
-        }
+        private readonly AutenticacionManager _autenticacionManager = autenticacionManager;
+        private readonly IConfiguration _configuration = configuration;
+        private readonly RolPermisoDAO _rolPermisoDao = rolPermisoDao;
+        private readonly UsuarioDAO _usuarioDao = usuarioDao;
+        private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+        private readonly ISecurityThrottleService _securityThrottleService = securityThrottleService;
 
         [AllowAnonymous]
         [HttpPost("registrar")]
@@ -122,7 +112,7 @@ namespace PSA.WebAPI.Controllers
                 {
                     Host = _configuration["SmtpSettings:Host"] ?? string.Empty,
                     Port = int.TryParse(_configuration["SmtpSettings:Port"], out var port) ? port : 587,
-                    EnableSsl = bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) ? ssl : true,
+                    EnableSsl = !bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) || ssl,
                     FromName = _configuration["SmtpSettings:FromName"] ?? string.Empty,
                     FromEmail = _configuration["SmtpSettings:FromEmail"] ?? string.Empty,
                     Username = _configuration["SmtpSettings:Username"] ?? string.Empty,
