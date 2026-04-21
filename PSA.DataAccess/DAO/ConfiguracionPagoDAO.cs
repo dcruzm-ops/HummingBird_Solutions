@@ -7,9 +7,15 @@ namespace PSA.DataAccess.DAO;
 public class ConfiguracionPagoDAO(IDbConnectionFactory connectionFactory)
 {
     private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
+    private const decimal TopeInstitucionalMaximo = 40m;
 
     public async Task<int> CrearConfiguracionAsync(ConfiguracionPagoAdminDTO dto)
     {
+        if (dto.TopePorcentajeAjuste is < 0m or > TopeInstitucionalMaximo)
+        {
+            throw new InvalidOperationException($"El tope de ajuste debe estar entre 0 y {TopeInstitucionalMaximo}%.");
+        }
+
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
@@ -123,7 +129,8 @@ SELECT CAST(SCOPE_IDENTITY() AS int);";
         var columnasSelect = string.Join(", ", columnas.OrderBy(x => x));
         var orden = ObtenerOrdenConsulta(columnas);
 
-        using var command = new SqlCommand($"SELECT TOP 1 {columnasSelect} FROM dbo.ConfiguracionesPago ORDER BY {orden};", connection);
+        var filtroActivo = ObtenerFiltroConfiguracionActiva(columnas);
+        using var command = new SqlCommand($"SELECT TOP 1 {columnasSelect} FROM dbo.ConfiguracionesPago {filtroActivo} ORDER BY {orden};", connection);
         using var reader = await command.ExecuteReaderAsync();
 
         if (!await reader.ReadAsync())
@@ -358,9 +365,9 @@ WHERE TABLE_SCHEMA = 'dbo'
             Version = version,
             NombreVersion = ObtenerTexto(reader, "NombreVersion") ?? $"Versión {version}",
             PrecioBasePorHectarea = ObtenerDecimal(reader, "PrecioBasePorHectarea") ?? 0m,
-            TopePorcentajeAjuste = ObtenerDecimal(reader, "PorcentajeTopeAjuste")
+            TopePorcentajeAjuste = Math.Min(ObtenerDecimal(reader, "PorcentajeTopeAjuste")
                                   ?? ObtenerDecimal(reader, "TopePorcentajeAjuste")
-                                  ?? 0m,
+                                  ?? 0m, TopeInstitucionalMaximo),
             FechaVigenciaDesde = ObtenerFecha(reader, "FechaVigenciaDesde")
                                  ?? ObtenerFecha(reader, "FechaCreacion")
                                  ?? DateTime.UtcNow,
@@ -374,6 +381,21 @@ WHERE TABLE_SCHEMA = 'dbo'
             FechaCreacion = ObtenerFecha(reader, "FechaCreacion") ?? DateTime.UtcNow,
             Ajustes = []
         };
+    }
+
+    private static string ObtenerFiltroConfiguracionActiva(HashSet<string> columnas)
+    {
+        if (columnas.Contains("Activa", StringComparer.OrdinalIgnoreCase))
+        {
+            return "WHERE Activa = 1";
+        }
+
+        if (columnas.Contains("Estado", StringComparer.OrdinalIgnoreCase))
+        {
+            return "WHERE Estado = 'Activa'";
+        }
+
+        return string.Empty;
     }
 
     private static int? ObtenerIndiceColumna(SqlDataReader reader, string columna)

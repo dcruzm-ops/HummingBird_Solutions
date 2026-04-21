@@ -1251,7 +1251,8 @@ BEGIN
           AND cb.EstadoValidacion IN ('Pendiente', 'Validada')
     )
     BEGIN
-        THROW 57011, 'Ya existe una cuenta con ese número en estado pendiente o validada.', 1;
+        RAISERROR('Ya existe una cuenta con ese número en estado pendiente o validada.', 16, 1);
+        RETURN;
     END
 
     INSERT INTO dbo.CuentasBancarias
@@ -1276,7 +1277,7 @@ BEGIN
     );
 
     SELECT CAST(SCOPE_IDENTITY() AS INT) AS IdCuentaBancaria;
-END;
+END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.SP_Pagos_AsociarCuentaPlan

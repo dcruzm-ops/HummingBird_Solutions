@@ -6,8 +6,11 @@ namespace PSA.WebAPI.Controllers
     [Route("api/[controller]")]
     public class HealthController : BaseApiController
     {
-        public HealthController(DbContextHelper dbContextHelper) : base(dbContextHelper)
+        private readonly DbContextHelper _dbContextHelper;
+
+        public HealthController(DbContextHelper dbContextHelper)
         {
+            _dbContextHelper = dbContextHelper;
         }
 
         [HttpGet("test")]

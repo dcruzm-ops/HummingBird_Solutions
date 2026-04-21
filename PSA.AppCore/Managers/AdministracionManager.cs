@@ -1,5 +1,6 @@
 using PSA.AppCore.Servicios;
 using PSA.AppCore.Services.Notifications;
+using PSA.AppCore.Services.Security;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs.Administracion;
 using PSA.EntidadesDTO.DTOs.Usuarios;
@@ -16,6 +17,8 @@ public class AdministracionManager
     private readonly AuditoriaLogDAO _auditoriaLogDao;
     private readonly IServicioHashContrasena _servicioHashContrasena;
     private readonly INotificationDispatcher _notificationDispatcher;
+    private readonly IPasswordPolicy _passwordPolicy;
+    private const decimal TopeAjusteInstitucionalMaximo = 40m;
 
     public AdministracionManager(
         UsuarioDAO usuarioDao,
@@ -24,7 +27,8 @@ public class AdministracionManager
         CuentaBancariaDAO cuentaBancariaDao,
         AuditoriaLogDAO auditoriaLogDao,
         IServicioHashContrasena servicioHashContrasena,
-        INotificationDispatcher notificationDispatcher)
+        INotificationDispatcher notificationDispatcher,
+        IPasswordPolicy passwordPolicy)
     {
         _usuarioDao = usuarioDao;
         _rolPermisoDao = rolPermisoDao;
@@ -33,6 +37,7 @@ public class AdministracionManager
         _auditoriaLogDao = auditoriaLogDao;
         _servicioHashContrasena = servicioHashContrasena;
         _notificationDispatcher = notificationDispatcher;
+        _passwordPolicy = passwordPolicy;
     }
 
     public Task<List<UsuarioAdminListadoDTO>> ObtenerUsuariosAsync(int? idRol = null)
@@ -44,6 +49,10 @@ public class AdministracionManager
     public async Task CrearUsuarioAsync(UsuarioAdminEdicionDTO model, int idAdmin, string? ip)
     {
         ValidarUsuarioAdmin(model, requiereContrasena: true);
+        if (!_passwordPolicy.IsValid(model.Contrasena))
+        {
+            throw new InvalidOperationException(_passwordPolicy.RequirementsMessage);
+        }
 
         var existente = await _usuarioDao.ObtenerPorEmailAsync(model.Email.Trim());
         if (existente != null)
@@ -89,6 +98,10 @@ public class AdministracionManager
             if (model.Contrasena != model.ConfirmacionContrasena)
             {
                 throw new InvalidOperationException("La contraseña y su confirmación no coinciden.");
+            }
+            if (!_passwordPolicy.IsValid(model.Contrasena))
+            {
+                throw new InvalidOperationException(_passwordPolicy.RequirementsMessage);
             }
 
             nuevoHash = _servicioHashContrasena.GenerarHash(model.Contrasena);
@@ -189,6 +202,7 @@ public class AdministracionManager
 
     public async Task CrearConfiguracionPagoAsync(ConfiguracionPagoAdminDTO model, int idAdmin, string? ip)
     {
+        ValidarConfiguracionPago(model);
         model.CreadoPor = idAdmin;
         var idConfiguracion = await _configuracionPagoDao.CrearConfiguracionAsync(model);
 
@@ -293,6 +307,38 @@ public class AdministracionManager
         if (requiereContrasena && string.IsNullOrWhiteSpace(model.Contrasena))
         {
             throw new InvalidOperationException("La contraseña es obligatoria para crear usuarios.");
+        }
+
+    }
+
+    private static void ValidarConfiguracionPago(ConfiguracionPagoAdminDTO model)
+    {
+        if (model.PrecioBasePorHectarea <= 0)
+        {
+            throw new InvalidOperationException("El precio por hectárea debe ser mayor a cero.");
+        }
+
+        if (model.TopePorcentajeAjuste < 0 || model.TopePorcentajeAjuste > TopeAjusteInstitucionalMaximo)
+        {
+            throw new InvalidOperationException($"El tope de ajuste debe estar entre 0 y {TopeAjusteInstitucionalMaximo}%.");
+        }
+
+        if (model.FechaVigenciaHasta.HasValue && model.FechaVigenciaHasta.Value.Date < model.FechaVigenciaDesde.Date)
+        {
+            throw new InvalidOperationException("La fecha fin de vigencia no puede ser menor que la fecha de inicio.");
+        }
+
+        foreach (var ajuste in model.Ajustes)
+        {
+            if (string.IsNullOrWhiteSpace(ajuste.TipoFactor) || string.IsNullOrWhiteSpace(ajuste.ValorFactor))
+            {
+                throw new InvalidOperationException("Los ajustes deben incluir tipo y valor de factor.");
+            }
+
+            if (ajuste.PorcentajeAjuste is < -100m or > 100m)
+            {
+                throw new InvalidOperationException("El porcentaje de ajuste debe estar entre -100 y 100.");
+            }
         }
     }
 }
