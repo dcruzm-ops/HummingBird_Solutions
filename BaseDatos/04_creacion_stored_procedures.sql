@@ -1225,17 +1225,34 @@ BEGIN
     IF @IdUsuario <= 0
         THROW 57006, 'Debe indicar un usuario válido.', 1;
 
-    IF LTRIM(RTRIM(ISNULL(@Banco, ''))) = ''
+    SET @Banco = LTRIM(RTRIM(ISNULL(@Banco, '')));
+    SET @NumeroCuenta = UPPER(LTRIM(RTRIM(ISNULL(@NumeroCuenta, ''))));
+    SET @TipoCuenta = LTRIM(RTRIM(ISNULL(@TipoCuenta, '')));
+    SET @Titular = LTRIM(RTRIM(ISNULL(@Titular, '')));
+
+    IF @Banco = ''
         THROW 57007, 'Debe indicar el banco.', 1;
 
-    IF LTRIM(RTRIM(ISNULL(@NumeroCuenta, ''))) = ''
+    IF @NumeroCuenta = ''
         THROW 57008, 'Debe indicar el número de cuenta.', 1;
 
-    IF LTRIM(RTRIM(ISNULL(@TipoCuenta, ''))) = ''
+    IF @TipoCuenta = ''
         THROW 57009, 'Debe indicar el tipo de cuenta.', 1;
 
-    IF LTRIM(RTRIM(ISNULL(@Titular, ''))) = ''
+    IF @Titular = ''
         THROW 57010, 'Debe indicar el titular de la cuenta.', 1;
+
+    IF EXISTS
+    (
+        SELECT 1
+        FROM dbo.CuentasBancarias cb
+        WHERE cb.IdUsuario = @IdUsuario
+          AND UPPER(LTRIM(RTRIM(cb.NumeroCuenta))) = @NumeroCuenta
+          AND cb.EstadoValidacion IN ('Pendiente', 'Validada')
+    )
+    BEGIN
+        THROW 57011, 'Ya existe una cuenta con ese número en estado pendiente o validada.', 1;
+    END
 
     INSERT INTO dbo.CuentasBancarias
     (

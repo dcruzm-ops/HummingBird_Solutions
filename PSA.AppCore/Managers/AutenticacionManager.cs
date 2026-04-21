@@ -28,7 +28,7 @@ namespace PSA.AppCore.Managers
 
         public async Task<int> RegistrarUsuarioAsync(RegistrarUsuarioDTO dto)
         {
-            const int idRolPropietario = 2;
+            const string nombreRolPropietario = "Propietario";
 
             if (string.IsNullOrWhiteSpace(dto.NombreCompleto))
                 throw new Exception("El nombre completo es requerido.");
@@ -45,9 +45,9 @@ namespace PSA.AppCore.Managers
             if (!_passwordPolicy.IsValid(dto.Contrasena))
                 throw new Exception(_passwordPolicy.RequirementsMessage);
 
-            var rolExiste = await _usuarioDAO.ExisteRolAsync(idRolPropietario);
-            if (!rolExiste)
-                throw new Exception("No existe el rol por defecto 'Propietario' (IdRol = 2).");
+            var idRolPropietario = await _usuarioDAO.ObtenerIdRolPorNombreAsync(nombreRolPropietario);
+            if (!idRolPropietario.HasValue)
+                throw new Exception("No existe el rol por defecto 'Propietario'.");
 
             var usuarioExistente = await _usuarioDAO.ObtenerPorEmailAsync(dto.Email.Trim());
 
@@ -59,7 +59,7 @@ namespace PSA.AppCore.Managers
                 NombreCompleto = dto.NombreCompleto.Trim(),
                 Email = dto.Email.Trim(),
                 PasswordHash = _servicioHashContrasena.GenerarHash(dto.Contrasena),
-                IdRol = idRolPropietario,
+                IdRol = idRolPropietario.Value,
                 Estado = "Activo",
                 FechaCreacion = DateTime.Now,
                 UltimoAcceso = null

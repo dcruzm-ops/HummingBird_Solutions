@@ -7,6 +7,7 @@ namespace PSA.AppCore.Managers;
 
 public class PagosManager(
     PlanPagoDAO planPagoDao,
+    CuentaBancariaDAO cuentaBancariaDao,
     IPaymentPlanService paymentPlanService,
     IPaymentPlanReadService paymentPlanReadService,
     INotificationDispatcher notificationDispatcher)
@@ -21,6 +22,7 @@ public class PagosManager(
     };
 
     private readonly PlanPagoDAO _planPagoDao = planPagoDao;
+    private readonly CuentaBancariaDAO _cuentaBancariaDao = cuentaBancariaDao;
     private readonly IPaymentPlanService _paymentPlanService = paymentPlanService;
     private readonly IPaymentPlanReadService _paymentPlanReadService = paymentPlanReadService;
     private readonly INotificationDispatcher _notificationDispatcher = notificationDispatcher;
@@ -129,7 +131,7 @@ public class PagosManager(
             throw new InvalidOperationException("Debe indicar un usuario válido.");
         }
 
-        return _planPagoDao.ObtenerCuentasBancariasDuenoAsync(idUsuario);
+        return _cuentaBancariaDao.ObtenerCuentasBancariasDuenoAsync(idUsuario);
     }
 
     public async Task<int> RegistrarCuentaBancariaDuenoAsync(RegistrarCuentaBancariaDTO dto)
@@ -147,7 +149,7 @@ public class PagosManager(
             throw new InvalidOperationException("Debe completar todos los datos de la cuenta bancaria.");
         }
 
-        var idCuenta = await _planPagoDao.RegistrarCuentaBancariaDuenoAsync(dto);
+        var idCuenta = await _cuentaBancariaDao.RegistrarCuentaBancariaDuenoAsync(dto);
         if (idCuenta > 0)
         {
             await _notificationDispatcher.NotifyInAppAsync(
