@@ -91,7 +91,7 @@ WHERE e.IdEvaluacion = @IdEvaluacion
     public async Task<PaymentConfigurationVersionDTO?> ObtenerConfiguracionVigenteParaAnioAsync(int anio)
     {
         const string sqlConfig = @"
-SELECT TOP 1 IdConfiguracionPago, Version, PrecioBasePorHectarea, TopePorcentajeAjuste
+SELECT TOP 1 IdConfiguracionPago, Version, PrecioBasePorHectarea, COALESCE(TopePorcentajeAjuste, PorcentajeTopeAjuste, 0) AS TopePorcentajeAjuste
 FROM dbo.ConfiguracionesPago
 WHERE Activa = 1
   AND FechaVigenciaDesde <= DATEFROMPARTS(@Anio, 1, 1)
@@ -120,7 +120,7 @@ WHERE IdConfiguracionPago = @IdConfiguracionPago;";
             IdConfiguracionPago = configReader.GetInt32(configReader.GetOrdinal("IdConfiguracionPago")),
             Version = configReader["Version"] == DBNull.Value ? 0 : configReader.GetInt32(configReader.GetOrdinal("Version")),
             PrecioBasePorHectarea = configReader.GetDecimal(configReader.GetOrdinal("PrecioBasePorHectarea")),
-            TopePorcentajeAjuste = configReader.GetDecimal(configReader.GetOrdinal("TopePorcentajeAjuste"))
+            TopePorcentajeAjuste = Math.Min(configReader.GetDecimal(configReader.GetOrdinal("TopePorcentajeAjuste")), 40m)
         };
 
         await configReader.CloseAsync();

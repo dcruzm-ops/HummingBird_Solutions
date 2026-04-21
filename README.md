@@ -1,37 +1,34 @@
-#  Estrategia de trabajo del repositorio
+# PSA Costa Rica
 
-##  Objetivo
-Definir las reglas de trabajo del repositorio para asegurar consistencia entre los 4 integrantes del equipo.
+## Ejecución local rápida
 
----
+1. Definir secretos/configuración fuera del repositorio:
+   - `ConnectionStrings__PSAConnection`
+   - `Jwt__Key` (**obligatoria**, si falta la API falla de forma controlada)
+2. Restaurar/compilar:
+   - `dotnet restore psa-costa-rica.slnx`
+   - `dotnet build psa-costa-rica.slnx`
+3. Ejecutar API/WebApp según perfil local.
 
-## 📂 Alcance
+## Seguridad de secretos JWT
 
-- Documentar estrategia de ramas:
-  - `main` como rama estable
-  - `develop` como rama de integración
-  - ramas personales por integrante
-- Definir convención de nombres para ramas, commits y pull requests
-- Definir regla de integración hacia `develop`
-- Definir checklist mínimo de revisión antes de aprobar PRs
+- `appsettings*.json` contiene solo placeholder seguro (`set-via-env-or-user-secrets`).
+- El valor real se debe inyectar con variable de entorno o User Secrets:
 
----
-
-## Estrategia de ramas
-
-### 🔹 main
-- Rama estable (producción)
-- Solo contiene código probado y aprobado
-- No se permite hacer push directo
-
-### 🔹 develop
-- Rama de integración
-- Aquí se unen todas las funcionalidades antes de pasar a `main`
-
-### 🔹 Ramas personales
-- Cada integrante trabaja en su propia rama
-- Se crean a partir de `develop`
-
-Ejemplo:
 ```bash
-git checkout -b feature/login-jared develop
+dotnet user-secrets set "Jwt:Key" "<clave-segura-larga>"
+```
+
+o
+
+```bash
+export Jwt__Key="<clave-segura-larga>"
+```
+
+## Evidencia técnica CI/CD y despliegue
+
+Revisar `docs/deploy-azure-cicd.md` para:
+- workflow CI incluido en repo,
+- variables requeridas,
+- pasos manuales para publicación en Azure,
+- limitaciones reales no automatizadas en este entorno.

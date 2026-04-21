@@ -6,6 +6,7 @@ using PSA.EntidadesDTO.DTOs;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PSA.WebApp.Controllers
 {
@@ -36,11 +37,13 @@ namespace PSA.WebApp.Controllers
                 var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/Autenticacion/iniciar-sesion", dto);
                 if (!response.IsSuccessStatusCode)
                 {
-                    ModelState.AddModelError(string.Empty, "Credenciales inválidas.");
+                    var bodyError = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(bodyError));
                     return View(dto);
                 }
 
-                var respuesta = await response.Content.ReadFromJsonAsync<RespuestaInicioSesionDTO>();
+                var body = await response.Content.ReadAsStringAsync();
+                var respuesta = TryReadAuthResponse(body);
                 if (respuesta == null)
                 {
                     ModelState.AddModelError(string.Empty, "No se recibió una respuesta válida del servidor.");
@@ -161,9 +164,56 @@ namespace PSA.WebApp.Controllers
             {
                 using var doc = JsonDocument.Parse(errorBody);
                 if (doc.RootElement.TryGetProperty("Mensaje", out var m)) return m.GetString() ?? "No fue posible completar la operación.";
+                if (doc.RootElement.TryGetProperty("message", out var m2)) return m2.GetString() ?? "No fue posible completar la operación.";
+                if (doc.RootElement.TryGetProperty("Message", out var m3)) return m3.GetString() ?? "No fue posible completar la operación.";
             }
             catch { }
             return "No fue posible completar la operación.";
+        }
+
+        private static RespuestaInicioSesionDTO? TryReadAuthResponse(string? json)
+        {
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return null;
+            }
+
+            try
+            {
+                var direct = JsonSerializer.Deserialize<RespuestaInicioSesionDTO>(json);
+                if (direct?.IdUsuario > 0)
+                {
+                    return direct;
+                }
+            }
+            catch
+            {
+                // Intenta formato envuelto
+            }
+
+            try
+            {
+                var wrapped = JsonSerializer.Deserialize<ApiEnvelope<RespuestaInicioSesionDTO>>(json);
+                if (wrapped?.Success == true && wrapped.Data?.IdUsuario > 0)
+                {
+                    return wrapped.Data;
+                }
+            }
+            catch
+            {
+                // Fallback nulo
+            }
+
+            return null;
+        }
+
+        private sealed class ApiEnvelope<T>
+        {
+            [JsonPropertyName("success")]
+            public bool Success { get; init; }
+
+            [JsonPropertyName("data")]
+            public T? Data { get; init; }
         }
     }
 }

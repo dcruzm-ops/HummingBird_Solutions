@@ -24,6 +24,7 @@
     <Compile Include="Controllers\PagosController.cs" />
     <Compile Include="Controllers\NotificacionesController.cs" />
     <Compile Include="Controllers\Middleware\ExceptionMiddleware.cs" />
+    <Compile Include="Controllers\Models\ApiErrorResponse.cs" />
     <Compile Include="Controllers\Models\ApiResponse.cs" />
     <Compile Include="Controllers\RecuperacionContrasenaController.cs" />
     <Compile Include="Program.cs" />
@@ -34,6 +35,7 @@
     <Compile Include="Services\Security\PermissionAuthorization.cs" />
     <Compile Include="Extensions\ControllerUserExtensions.cs" />
     <Compile Include="Services\Security\HeaderAuthenticationHandler.cs" />
+    <Compile Include="Services\Security\SecurityThrottleService.cs" />
     <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
     <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
