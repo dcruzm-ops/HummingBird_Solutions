@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using System.Data;
 using PSA.DataAccess;
 using PSA.EntidadesDTO.DTOs.Administracion;
 
@@ -78,6 +79,69 @@ ORDER BY {ordenFecha};";
         }
 
         return resultado;
+    }
+
+
+    public async Task<List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO>> ObtenerCuentasBancariasDuenoAsync(int idUsuario)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("dbo.SP_Pagos_ObtenerCuentasBancariasDueno", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.AddWithValue("@IdUsuario", idUsuario);
+
+        using var reader = await command.ExecuteReaderAsync();
+        var resultado = new List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO>();
+        while (await reader.ReadAsync())
+        {
+            resultado.Add(new PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO
+            {
+                IdCuentaBancaria = reader.GetInt32(reader.GetOrdinal("IdCuentaBancaria")),
+                Banco = reader["Banco"]?.ToString() ?? string.Empty,
+                NumeroCuenta = reader["NumeroCuenta"]?.ToString() ?? string.Empty,
+                TipoCuenta = reader["TipoCuenta"]?.ToString() ?? string.Empty,
+                Titular = reader["Titular"]?.ToString() ?? string.Empty,
+                EstadoValidacion = reader["EstadoValidacion"]?.ToString() ?? string.Empty,
+                Activa = reader.GetBoolean(reader.GetOrdinal("Activa")),
+                FechaRegistro = reader.GetDateTime(reader.GetOrdinal("FechaRegistro"))
+            });
+        }
+
+        return resultado;
+    }
+
+    public async Task<int> RegistrarCuentaBancariaDuenoAsync(PSA.EntidadesDTO.DTOs.Pagos.RegistrarCuentaBancariaDTO dto)
+    {
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        using var command = new SqlCommand("dbo.SP_Pagos_RegistrarCuentaBancariaDueno", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+
+        command.Parameters.AddWithValue("@IdUsuario", dto.IdUsuario);
+        command.Parameters.AddWithValue("@Banco", dto.Banco.Trim());
+        command.Parameters.AddWithValue("@NumeroCuenta", dto.NumeroCuenta.Trim());
+        command.Parameters.AddWithValue("@TipoCuenta", dto.TipoCuenta.Trim());
+        command.Parameters.AddWithValue("@Titular", dto.Titular.Trim());
+
+        try
+        {
+            var result = await command.ExecuteScalarAsync();
+            return Convert.ToInt32(result ?? 0);
+        }
+        catch (SqlException ex) when (ex.Number == 57011)
+        {
+            throw new InvalidOperationException("Ya existe una cuenta con ese número en estado pendiente o validada.", ex);
+        }
+        catch (SqlException ex) when (ex.Message.Contains("CK_Cuentas_TipoCuenta", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("El tipo de cuenta no es válido. Use: Ahorro, Corriente, IBAN, SINPE u Otra.", ex);
+        }
     }
 
     public async Task ValidarCuentaAsync(ValidacionCuentaBancariaDTO dto)

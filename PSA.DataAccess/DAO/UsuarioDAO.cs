@@ -99,6 +99,49 @@ namespace PSA.DataAccess.DAO
             };
         }
 
+
+        public async Task<int?> ObtenerIdRolPorNombreAsync(string nombreRol)
+        {
+            if (string.IsNullOrWhiteSpace(nombreRol))
+            {
+                return null;
+            }
+
+            const string sql = @"
+SELECT TOP 1 r.IdRol
+FROM dbo.Roles r
+WHERE LTRIM(RTRIM(r.Nombre)) = @NombreRol;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@NombreRol", nombreRol.Trim());
+
+            await connection.OpenAsync();
+            var result = await command.ExecuteScalarAsync();
+            return result == null || result == DBNull.Value ? null : Convert.ToInt32(result);
+        }
+
+        public async Task<string?> ObtenerNombreRolPorIdAsync(int idRol)
+        {
+            if (idRol <= 0)
+            {
+                return null;
+            }
+
+            const string sql = @"
+SELECT TOP 1 r.Nombre
+FROM dbo.Roles r
+WHERE r.IdRol = @IdRol;";
+
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand(sql, connection);
+            command.Parameters.AddWithValue("@IdRol", idRol);
+
+            await connection.OpenAsync();
+            var result = await command.ExecuteScalarAsync();
+            return result == null || result == DBNull.Value ? null : result.ToString();
+        }
+
         public async Task<bool> ExisteRolAsync(int idRol)
         {
             using var connection = _connectionFactory.CreateConnection();

@@ -17,17 +17,20 @@ namespace PSA.WebAPI.Controllers
         private readonly AutenticacionManager _autenticacionManager;
         private readonly IConfiguration _configuration;
         private readonly RolPermisoDAO _rolPermisoDao;
+        private readonly UsuarioDAO _usuarioDao;
         private readonly IJwtTokenService _jwtTokenService;
 
         public AutenticacionController(
             AutenticacionManager autenticacionManager,
             IConfiguration configuration,
             RolPermisoDAO rolPermisoDao,
+            UsuarioDAO usuarioDao,
             IJwtTokenService jwtTokenService)
         {
             _autenticacionManager = autenticacionManager;
             _configuration = configuration;
             _rolPermisoDao = rolPermisoDao;
+            _usuarioDao = usuarioDao;
             _jwtTokenService = jwtTokenService;
         }
 
@@ -64,12 +67,14 @@ namespace PSA.WebAPI.Controllers
                 var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
                 var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol);
                 respuesta.Permisos = permisos;
+                var nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
                 respuesta.TokenAcceso = _jwtTokenService.CreateToken(
                     respuesta.IdUsuario,
                     respuesta.IdRol,
                     respuesta.Email,
                     respuesta.NombreCompleto,
-                    permisos);
+                    permisos,
+                    nombreRol);
                 return Ok(respuesta);
             }
             catch (Exception ex)
