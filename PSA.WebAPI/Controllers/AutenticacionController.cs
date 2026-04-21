@@ -61,13 +61,42 @@ namespace PSA.WebAPI.Controllers
                 return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiados intentos. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
             }
 
+            RespuestaInicioSesionDTO respuesta;
             try
             {
-                var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
                 _securityThrottleService.RegisterSuccess("login", compositeKey);
-                var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol);
-                respuesta.Permisos = permisos;
-                var nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
+            }
+            catch (Exception ex)
+            {
+                _securityThrottleService.RegisterFailure("login", compositeKey);
+                return ApiValidationError("Credenciales inválidas.", ex.Message);
+            }
+
+            var permisos = new List<string>();
+            try
+            {
+                permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol) ?? [];
+            }
+            catch
+            {
+                // Fallback a lista vacía para no bloquear el inicio de sesión.
+            }
+
+            respuesta.Permisos = permisos;
+
+            string? nombreRol = null;
+            try
+            {
+                nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
+            }
+            catch
+            {
+                // El nombre de rol es opcional en el token.
+            }
+
+            try
+            {
                 respuesta.TokenAcceso = _jwtTokenService.CreateToken(
                     respuesta.IdUsuario,
                     respuesta.IdRol,
@@ -75,13 +104,14 @@ namespace PSA.WebAPI.Controllers
                     respuesta.NombreCompleto,
                     permisos,
                     nombreRol);
-                return ApiOk(respuesta, "Inicio de sesión exitoso.");
             }
-            catch (Exception ex)
+            catch
             {
-                _securityThrottleService.RegisterFailure("login", compositeKey);
-                return ApiValidationError("Credenciales inválidas.", ex.Message);
+                // No se bloquea el login web por falla de token API.
+                respuesta.TokenAcceso = string.Empty;
             }
+
+            return ApiOk(respuesta, "Inicio de sesión exitoso.");
         }
 
         [Authorize(Roles = "1")]
