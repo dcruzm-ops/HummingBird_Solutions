@@ -1,427 +1,395 @@
-# Informe de Análisis y Diseño de Software (IAS)
-## PSA Costa Rica - Versión Final Regenerada desde Implementación
+<a id="tabla-de-contenidos"></a>
+# Informe de Análisis y Diseño de Software – Sistema de Pago por Servicios Ambientales (PSA Costa Rica)
 
-> **Estado del documento:** Regenerado desde el estado real del repositorio y scripts de base de datos.
->
-> **Base de verdad usada:** implementación actual (WebApp, WebAPI, AppCore, DataAccess, Entidades/DTOs y SQL).
->
-> **Nota de alcance:** Este IAS sustituye la lectura operativa del documento histórico. El documento histórico se usa únicamente como referencia de estructura, no como fuente de verdad funcional.
+## Tabla de Contenidos
+- [1. Introducción](#sec-1)
+  - [1.1 Propósito](#sec-1-1)
+  - [1.2 Antecedentes](#sec-1-2)
+  - [1.3 Audiencia](#sec-1-3)
+  - [1.4 Visión General](#sec-1-4)
+- [2. Referencias](#sec-2)
+- [3. Especificación de Diseño](#sec-3)
+  - [3.1 Diseño Técnico](#sec-3-1)
+    - [3.1.1 Arquitectura de la aplicación](#sec-3-1-1)
+    - [3.1.2 Modelo de Base de Datos](#sec-3-1-2)
+    - [3.1.3 Modelo de Objetos](#sec-3-1-3)
+  - [3.2 Diseño Gráfico](#sec-3-2)
+    - [3.2.1 Paleta de Colores](#sec-3-2-1)
+    - [3.2.2 Tipografía](#sec-3-2-2)
+    - [3.2.3 Imágenes y Recursos](#sec-3-2-3)
+  - [3.3 Estructura de la Aplicación](#sec-3-3)
+    - [3.3.1 Estructura de Carpetas](#sec-3-3-1)
+    - [3.3.2 Convenciones Generales](#sec-3-3-2)
+  - [3.4 Mapa de Navegación](#sec-3-4)
+    - [3.4.1 Descripción](#sec-3-4-1)
+    - [3.4.2 Representación del Mapa de Navegación](#sec-3-4-2)
+  - [3.5 Wireframes](#sec-3-5)
+    - [3.5.1 Definición](#sec-3-5-1)
+    - [3.5.2 Consideraciones](#sec-3-5-2)
+    - [3.5.3 Ejemplo Wireframe](#sec-3-5-3)
+  - [3.6 Estándares](#sec-3-6)
+    - [3.6.1 Estándares CSS](#sec-3-6-1)
+    - [3.6.2 Estándares JavaScript](#sec-3-6-2)
+    - [3.6.3 Estándares HTML](#sec-3-6-3)
+- [4. Anexos](#sec-4)
+  - [4.1 Hallazgos, deuda técnica y observaciones](#sec-4-1)
+  - [4.2 Reglas de negocio consolidadas](#sec-4-2)
+  - [4.3 Seguridad y control de acceso](#sec-4-3)
+  - [4.4 Consideraciones no funcionales](#sec-4-4)
+  - [4.5 Decisiones de diseño](#sec-4-5)
+  - [4.6 Conclusión](#sec-4-6)
 
 ---
 
+<a id="sec-1"></a>
 ## 1. Introducción
 
+El presente documento regenera el **Informe de Análisis y Diseño de Software (IAS)** del sistema **PSA Costa Rica**, tomando como fuente principal el estado real del repositorio (WebApp, WebAPI, AppCore, DataAccess, DTOs/Entidades y scripts SQL).
+
+<a id="sec-1-1"></a>
 ### 1.1 Propósito
-Documentar de forma técnica y actualizada el análisis y diseño del sistema **PSA Costa Rica** conforme a su estado implementado, para facilitar mantenimiento, revisión académica/profesional y publicación en Wiki.
 
-### 1.2 Alcance
-Este IAS cubre:
-- Arquitectura real por capas de la solución.
-- Módulos funcionales disponibles en WebApp/WebAPI.
-- Reglas de negocio identificables en servicios, managers y scripts SQL.
-- Modelo de datos relacional vigente y artefactos de persistencia.
-- Seguridad, control de acceso, navegación y consideraciones no funcionales.
+Definir de forma trazable y actualizada el análisis y diseño final de la solución implementada, con formato listo para publicación en Wiki y alineado con la arquitectura y módulos efectivos del proyecto.
 
-### 1.3 Contexto del proyecto
-PSA Costa Rica es una solución web para gestionar el ciclo de registro de fincas, evaluación técnica, configuración de pagos, planes/cuotas y trazabilidad administrativa, con operación multirol (Administrador, Propietario y perfil técnico de ingeniería).
+<a id="sec-1-2"></a>
+### 1.2 Antecedentes
 
-### 1.4 Objetivos del sistema
-- Digitalizar el flujo de vida de una finca en PSA.
-- Permitir evaluación técnica con decisión y ajustes.
-- Generar y administrar planes de pago bajo configuración activa.
-- Registrar evidencia y auditoría de acciones críticas.
-- Controlar acceso por autenticación + autorización por rol/permisos.
+El sistema se desarrolló como una solución web por capas para gestionar:
 
----
+- Registro de fincas.
+- Evaluación técnica por rol de ingeniería.
+- Configuración y cálculo de pagos.
+- Seguimiento de planes, cuotas y estados.
+- Seguridad de acceso y auditoría de acciones.
 
-## 2. Descripción general de la solución
+El IAS histórico se usa únicamente como referencia de estructura documental; el contenido de esta versión se deriva de artefactos de implementación actuales.
 
-### 2.1 Problema que resuelve
-Centraliza procesos que históricamente tienden a fragmentarse: registro de finca, evaluación técnica, parametrización económica, seguimiento de pagos y control administrativo de seguridad/permisos.
+<a id="sec-1-3"></a>
+### 1.3 Audiencia
 
-### 2.2 Visión general del sistema
-La solución está compuesta por:
-- **PSA.WebApp** (UI MVC).
-- **PSA.WebAPI** (servicios HTTP, JWT, políticas de autorización).
-- **PSA.AppCore** (managers y servicios de reglas de negocio).
-- **PSA.DataAccess** (DAO + acceso SQL).
-- **PSA.EntidadesDTO** (entidades/DTOs compartidos).
-- **BaseDatos + scripts/sql** (modelo relacional, vistas, SPs, normalizaciones).
+- Equipo de desarrollo.
+- Equipo de calidad.
+- Coordinación/gestión de proyecto.
+- Docentes o revisores técnicos.
 
-### 2.3 Tipos de usuario / roles
-- **Administrador** (rol lógico 1): gestión de usuarios, roles/permisos, parámetros de pago, validación de cuentas, auditoría, reportes administrativos.
-- **Propietario / Dueño de finca** (rol lógico 2): registro/gestión de fincas, consulta de planes/cuotas, registro de cuenta bancaria, reportes propios, renovación anual.
-- **Ingeniero** (rol lógico 3): bandeja técnica, asignación/ejecución de evaluación, decisión técnica, acciones sobre continuidad de pagos.
+<a id="sec-1-4"></a>
+### 1.4 Visión General
 
-### 2.4 Resumen funcional de alto nivel
-Flujo dominante:
-1. Usuario propietario registra finca.
-2. Se crea evaluación pendiente.
-3. Ingeniero asigna/ejecuta evaluación y decide **Califica / No Califica**.
-4. Si califica, se genera plan preliminar de pago para ciclo siguiente.
-5. Propietario registra/asocia cuenta bancaria.
-6. Flujo pasa a aprobación final y activación del plan.
-7. Sistema mantiene cuotas, reportes y auditoría.
+Este documento conserva la estructura del IAS original, pero con contenido actualizado sobre:
+
+- Diseño técnico real.
+- Diseño de datos vigente.
+- Navegación y módulos implementados.
+- Seguridad, estándares y deuda técnica observable.
 
 ---
 
-## 3. Arquitectura del sistema
+<a id="sec-2"></a>
+## 2. Referencias
 
-### 3.1 Arquitectura por capas realmente usada
+Fuentes utilizadas para esta regeneración:
 
-```text
-PSA.WebApp (MVC / Cookie Auth)
-        |
-        v
-PSA.WebAPI (JWT + Policies + Controllers)
-        |
-        v
-PSA.AppCore (Managers / Services / reglas)
-        |
-        v
-PSA.DataAccess (DAO / SPs / consultas SQL)
-        |
-        v
-SQL Server (tablas, vistas, procedimientos, triggers)
-```
+- Código fuente actual del repositorio PSA Costa Rica.
+- Solución `.slnx` y proyectos por capa (WebApp/WebAPI/AppCore/DataAccess/EntidadesDTO).
+- Scripts SQL de `BaseDatos/` y `scripts/sql/`.
+- Flujo CI de `.github/workflows/ci.yml`.
+- Documento de despliegue `docs/deploy-azure-cicd.md`.
+
+Referencias de marco teórico (vigentes para contexto académico):
+
+- Pressman & Maxim (2020), *Software Engineering: A Practitioner's Approach*.
+- Sommerville (2016), *Software Engineering*.
+
+---
+
+<a id="sec-3"></a>
+## 3. Especificación de Diseño
+
+<a id="sec-3-1"></a>
+### 3.1 Diseño Técnico
+
+<a id="sec-3-1-1"></a>
+#### 3.1.1 Arquitectura de la aplicación
+
+La solución usa arquitectura por capas con separación clara de responsabilidades:
+
+- **PSA.WebApp (MVC)**: presentación, navegación, sesión web por cookies.
+- **PSA.WebAPI**: endpoints HTTP, JWT, autorización por rol/política.
+- **PSA.AppCore**: managers y servicios con reglas de negocio.
+- **PSA.DataAccess**: DAOs y acceso a SQL Server.
+- **SQL Server**: almacenamiento relacional, SPs, vistas, trazabilidad.
+
+Decisiones arquitectónicas observadas:
+
+- WebApp consume API; no hay acceso directo a base de datos desde UI.
+- API delega reglas de negocio relevantes a AppCore.
+- Seguridad híbrida por rol (`Authorize(Roles=...)`) y permisos (`Policy`, claim `perm`).
+
+##### 3.1.1.1 Diagrama de arquitectura
 
 [Insertar diagrama de arquitectura aquí]
 
-### 3.2 Responsabilidad por capa
-- **WebApp:** presentación, navegación, renderizado de vistas, manejo de sesión cookie e invocación HTTP a API.
-- **WebAPI:** contratos HTTP, validaciones de entrada, autorización por rol y permisos, traducción de errores.
-- **AppCore:** reglas funcionales de negocio, orquestación de procesos multi-módulo, notificaciones y auditoría funcional.
-- **DataAccess:** acceso a datos (DAO), ejecución de SPs y consultas para persistencia/lectura.
-- **BD:** integridad relacional, estado del dominio, catálogo/configuración y trazabilidad.
+##### 3.1.1.2 Diagrama de despliegue
 
-### 3.3 Flujo de comunicación entre capas
-- WebApp consume endpoints API con `HttpClientService`.
-- API delega en managers/servicios AppCore.
-- AppCore usa DAOs para operaciones SQL.
-- DAOs leen/escriben en SQL Server (tablas, vistas y SPs).
+[Insertar diagrama de despliegue aquí]
 
-### 3.4 Buenas prácticas observadas y esperadas
-- Separación de responsabilidades por proyectos.
-- Uso de DTOs para contratos entre capas.
-- Controles de autorización por rol y por política de permisos.
-- Registro de eventos en bitácora (`AuditoriaLog`) para acciones sensibles.
+<a id="sec-3-1-2"></a>
+#### 3.1.2 Modelo de Base de Datos
 
-### 3.5 Exclusión de lógica indebida
-- La WebApp no accede directamente a SQL.
-- La API no concentra toda la lógica de negocio compleja (delegación a AppCore).
-- Persistencia concentrada en DAOs/SPs.
+Modelo relacional principal (corroborado en scripts):
 
----
-
-## 4. Stack tecnológico
-
-| Categoría | Implementación corroborada |
-|---|---|
-| Lenguaje principal | C# |
-| Framework backend | ASP.NET Core Web API |
-| Framework frontend | ASP.NET Core MVC (Razor Views) |
-| Autenticación WebApp | Cookie Authentication |
-| Autenticación API | JWT Bearer |
-| Autorización | Roles + policies por permisos (`perm`) |
-| Persistencia | SQL Server |
-| Pruebas | xUnit (PSA.AppCore.Tests) |
-| CI | GitHub Actions (`dotnet restore/build/test`) |
-| Despliegue | Guía de publicación manual a Azure App Service (`Pendiente de validación` de despliegue real) |
-
----
-
-## 5. Módulos funcionales del sistema
-
-> Se listan módulos con evidencia en controladores, vistas, managers y scripts.
-
-### 5.1 Autenticación (inicio/cierre/registro)
-- **Propósito:** alta de usuarios, inicio de sesión y salida del sistema.
-- **Actores:** todos.
-- **Flujo general:** registro -> login -> emisión de token API + sesión web.
-- **Reglas relevantes:** normalización de rol lógico 1/2/3, control de intentos con throttle.
-- **Dependencias:** Usuarios, Roles, RolesPermisos, JWT, Cookie auth.
-
-### 5.2 Recuperación de contraseña
-- **Propósito:** recuperación segura mediante token temporal.
-- **Actores:** todos.
-- **Flujo general:** solicitar -> generar token -> validar token -> restablecer.
-- **Reglas relevantes:** token de 6 dígitos, invalida tokens activos previos, uso único, expiración configurable.
-- **Dependencias:** TokensRecuperacion, SMTP, PasswordPolicy, auditoría.
-
-### 5.3 Gestión de fincas
-- **Propósito:** registro, edición, consulta de fincas del propietario.
-- **Actores:** propietario.
-- **Flujo general:** registrar finca -> crear evaluación pendiente -> consulta detalle/historial.
-- **Reglas relevantes:** validación de provincia/cantón/distrito; validaciones de propiedad.
-- **Dependencias:** EvaluacionesTecnicas, FincaEvidencias, reportes.
-
-### 5.4 Evaluación técnica
-- **Propósito:** ejecución técnica de evaluación y decisión.
-- **Actores:** ingeniero.
-- **Flujo general:** tomar evaluación pendiente -> registrar visita/ajustes/decisión -> finalizar.
-- **Reglas relevantes:** decisión sólo `Califica` o `No Califica`; estados técnicos controlados.
-- **Dependencias:** generación de plan preliminar si califica, auditoría y notificaciones.
-
-### 5.5 Pagos y planes
-- **Propósito:** ciclo de planes/cuotas de pago por finca.
-- **Actores:** ingeniero, propietario, administrador.
-- **Flujo general:** generar plan preliminar -> asociar cuenta bancaria -> aprobación final -> activación -> seguimiento de cuotas.
-- **Reglas relevantes:** no recalcular/sobrescribir plan existente por finca-año; control de estados del plan.
-- **Dependencias:** ConfiguracionesPago, CuentasBancarias, CuotasPago, PlanesPagoDetalleCalculo.
-
-### 5.6 Gestión de cuentas bancarias
-- **Propósito:** registro por dueño y validación administrativa.
-- **Actores:** propietario, administrador.
-- **Flujo general:** dueño registra cuenta (pendiente) -> administración valida/rechaza -> asociación a plan.
-- **Reglas relevantes:** tipo de cuenta permitido; validación previa a activaciones.
-- **Dependencias:** CuentasBancarias, módulo Pagos, auditoría.
-
-### 5.7 Administración (usuarios, roles, permisos, pagos)
-- **Propósito:** gobierno del sistema.
-- **Actores:** administrador.
-- **Flujo general:** CRUD usuarios, roles/permisos, configuración de pagos, cuentas pendientes, auditoría.
-- **Reglas relevantes:** autorización por políticas específicas (no solo rol).
-- **Dependencias:** Permisos/RolesPermisos, ConfiguracionesPago, AuditoriaLog.
-
-### 5.8 Notificaciones
-- **Propósito:** informar hitos funcionales del flujo.
-- **Actores:** todos (según evento).
-- **Flujo general:** emisión in-app y, en eventos definidos, correo electrónico.
-- **Reglas relevantes:** catálogos de severidad `info/success/warning`; marca de leídas.
-- **Dependencias:** Notificaciones, servicios de correo.
-
-### 5.9 Reportes
-- **Propósito:** vistas operativas y administrativas para seguimiento.
-- **Actores:** propietario, ingeniero, administrador.
-- **Flujo general:** consumo de vistas/SPs/reportes API por rol.
-- **Reglas relevantes:** endpoints segmentados por rol y/o permisos.
-- **Dependencias:** vistas SQL de reporte, procedimientos y DAOs.
-
-### 5.10 Perfil de usuario
-- **Propósito:** consulta/edición de datos propios, cambio de contraseña e inactivación.
-- **Actores:** usuario autenticado.
-- **Flujo general:** ver perfil -> editar -> acciones de seguridad personal.
-- **Reglas relevantes:** autorización obligatoria.
-- **Dependencias:** Usuarios, autenticación, auditoría.
-
----
-
-## 6. Reglas de negocio identificadas
-
-> Solo se incluyen reglas corroboradas. Cuando aplica se marca explícitamente incertidumbre.
-
-1. **Estados de evaluación técnica controlados** por catálogo de estados permitidos en DTO de flujo.
-2. **Decisión técnica restringida** a `Califica` o `No Califica`.
-3. **Si evaluación califica, se genera plan preliminar** para el año siguiente (`DateTime.UtcNow.Year + 1`).
-4. **Tope de ajuste de pago:** se aplica tope de configuración y además tope institucional máximo de 40%.
-5. **No se sobrescribe plan por finca/año:** existe validación de existencia previa.
-6. **Renovación anual restringida:** se habilita cuando plan está finalizado/cancelado o queda una cuota, y no existe renovación pendiente activa del mismo ciclo.
-7. **Recuperación de contraseña con token:** un uso, expirable, invalida tokens previos activos.
-8. **Política de contraseña:** mínimo 10 caracteres con mayúscula, minúscula, número y símbolo.
-9. **Throttle de login:** bloqueo temporal por intentos fallidos repetidos (parámetros configurables con valores por defecto).
-10. **Una sola configuración de pago activa:** reforzada por script e índice único filtrado.
-11. **Trazabilidad:** eventos relevantes registran auditoría (módulo, acción, detalle, actor, IP cuando aplica).
-
-**Elementos con validación incompleta desde código:**
-- `Pendiente de validación`: operación completa de transacciones bancarias reales; existe tabla `TransaccionesPago`, pero el flujo principal observable está centrado en plan/cuotas/estados.
-
----
-
-## 7. Diseño de datos
-
-### 7.1 Entidades/tablas principales
 - Seguridad: `Roles`, `Permisos`, `RolesPermisos`, `Usuarios`, `TokensRecuperacion`.
-- Núcleo PSA: `Fincas`, `EvaluacionesTecnicas`, `FincaEvidencias`, `EvaluacionEvidencias`.
+- Núcleo: `Fincas`, `EvaluacionesTecnicas`, `FincaEvidencias`, `EvaluacionEvidencias`.
 - Pagos: `ConfiguracionesPago`, `ConfiguracionPagoDetalle`, `PlanesPago`, `PlanesPagoDetalleCalculo`, `CuotasPago`, `TransaccionesPago`.
 - Soporte: `CuentasBancarias`, `Notificaciones`, `AuditoriaLog`, `CatalogoFincaValores`.
 
-### 7.2 Relaciones clave (funcionales)
-- Usuario-rol y rol-permiso para seguridad.
-- Propietario-fincas y finca-evaluaciones para ciclo técnico.
-- Evaluación-plan-cuentas/cuotas para ciclo de pagos.
-- Usuario/auditoría y usuario/notificaciones para trazabilidad y comunicación.
+Relaciones funcionales relevantes:
 
-### 7.3 Tablas maestras/configurables
-- `CatalogoFincaValores` (valores de pendiente/vegetación/uso suelo).
-- `ConfiguracionesPago` + `ConfiguracionPagoDetalle` (motor de cálculo y topes).
-- `Permisos`/`RolesPermisos` (control de acceso granular).
+- Usuario -> Rol y Rol -> Permisos.
+- Propietario -> Fincas -> Evaluaciones.
+- Evaluación -> Plan -> Cuotas.
+- Usuario -> Notificaciones y Auditoría.
 
-### 7.4 Tablas transaccionales
-- `PlanesPago`, `PlanesPagoDetalleCalculo`, `CuotasPago`, `TransaccionesPago`.
-- `EvaluacionesTecnicas` y evidencias como traza operativa del proceso técnico.
+Observaciones de consistencia:
 
-### 7.5 Seguridad y auditoría en datos
-- `AuditoriaLog` para acciones críticas.
-- `TokensRecuperacion` con fechas y uso.
-- `Notificaciones` con estado de lectura y timestamps.
+- Existen scripts de normalización para variantes históricas de tabla (`RolesPermisos` / `RolPermisos`).
+- Se refuerza una única configuración de pago activa con índice filtrado.
+- `No se pudo corroborar en el código` una integración bancaria externa productiva, aunque existe tabla transaccional.
 
-### 7.6 Observaciones de consistencia
-- Existen scripts de normalización para resolver diferencias históricas (`RolesPermisos` vs `RolPermisos`) y permisos de login/autorización.
-- `No se pudo corroborar en el código` una política única de versionado documental del MER; sí hay scripts evolutivos con enfoque correctivo.
+##### 3.1.2.1 Diagrama de base de datos
 
 [Insertar modelo de datos aquí]
 
+<a id="sec-3-1-3"></a>
+#### 3.1.3 Modelo de Objetos
+
+Objetos/DTOs de negocio más relevantes en la versión final:
+
+- Autenticación y seguridad: `InicioSesionDTO`, `RegistrarUsuarioDTO`, `RespuestaInicioSesionDTO`, `TokenRecuperacion`.
+- Fincas: `RegistrarFincaDTO`, `FincaResumenDTO`, `FincaDetalleDTO`.
+- Evaluaciones: DTOs de flujo técnico y estados (`Pendiente`, `En proceso`, `Evaluada – Califica`, etc.).
+- Pagos: `PlanPagoDTO`, `CuotaPlanPagoDTO`, DTOs de lectura Owner/Engineer/Admin y estados de plan/cuota.
+- Perfil, administración, reportes y notificaciones con ViewModels/DTOs de soporte.
+
+##### 3.1.3.1 Diagrama de clases
+
+[Insertar diagrama de clases aquí]
+
 ---
 
-## 8. Navegación y experiencia funcional
+<a id="sec-3-2"></a>
+### 3.2 Diseño Gráfico
 
-### 8.1 Mapa de navegación textual
+<a id="sec-3-2-1"></a>
+#### 3.2.1 Paleta de Colores
+
+`Pendiente de validación`: el repositorio no centraliza en un solo documento final una paleta oficial homologada. Existen vistas y estilos distribuidos en WebApp.
+
+Recomendación para Wiki del proyecto:
+
+- Mantener línea visual orientada a sostenibilidad.
+- Definir tokens de color oficiales (modo claro/oscuro) en documento UI separado.
+
+<a id="sec-3-2-2"></a>
+#### 3.2.2 Tipografía
+
+`No se pudo corroborar en el código` una especificación tipográfica formal única como artefacto de diseño final. Se recomienda estandarizar tipografía en guía visual del proyecto.
+
+<a id="sec-3-2-3"></a>
+#### 3.2.3 Imágenes y Recursos
+
+Se identifican recursos gráficos en repositorio (`PSA.Images`) y vistas con componentes compartidos. Para Wiki:
+
+- Usar imágenes optimizadas y versionadas.
+- Mantener placeholders de diagramas en este IAS y ubicar arte final en carpeta de documentación.
+
+---
+
+<a id="sec-3-3"></a>
+### 3.3 Estructura de la Aplicación
+
+<a id="sec-3-3-1"></a>
+#### 3.3.1 Estructura de Carpetas
+
+Estructura base real de solución:
 
 ```text
-Público
-- Inicio
-- Iniciar sesión
-- Registro
-- Recuperar contraseña / validar token / restablecer
+/psa-costa-rica.slnx
+/PSA.WebApp
+/PSA.WebAPI
+/PSA.AppCore
+/PSA.DataAccess
+/PSA.EntidadesDTO
+/PSA.AppCore.Tests
+/BaseDatos
+/scripts/sql
+/docs
+```
+
+<a id="sec-3-3-2"></a>
+#### 3.3.2 Convenciones Generales
+
+Convenciones efectivas observables:
+
+- Separación por responsabilidad de capa/proyecto.
+- Managers/Services para reglas de negocio en AppCore.
+- DAO para persistencia y consultas SQL.
+- DTOs para intercambio de datos y contratos API.
+- Uso de auditoría para eventos sensibles.
+
+---
+
+<a id="sec-3-4"></a>
+### 3.4 Mapa de Navegación
+
+<a id="sec-3-4-1"></a>
+#### 3.4.1 Descripción
+
+La navegación se organiza por autenticación inicial y redirección por rol:
+
+- Público: inicio, login, registro, recuperación/restablecimiento.
+- Propietario: fincas, pagos, reportes propios, notificaciones, perfil.
+- Ingeniero: bandeja/evaluación técnica, pagos pendientes de aprobación final, reportes técnicos.
+- Administrador: usuarios, roles/permisos, configuración de pagos, validación de cuentas, auditoría, reportes.
+
+<a id="sec-3-4-2"></a>
+#### 3.4.2 Representación del Mapa de Navegación
+
+```text
+Inicio
+├── Iniciar sesión
+├── Registro
+└── Recuperación de contraseña
+    └── Validar token / restablecer
 
 Autenticado
-- Dashboard (redirección por rol)
-
-Propietario
-- Mis fincas / registrar finca / detalle finca
-- Renovación anual (según elegibilidad)
-- Pagos: planes, detalle, historial, cuenta bancaria
-- Reportes del dueño
-- Notificaciones
-- Mi perfil
-
-Ingeniero
-- Bandeja técnica pendiente
-- Evaluaciones: detalle, registrar resultado, historial/proceso
-- Pagos: planes pendientes y aprobación final
-- Reportes técnicos
-- Notificaciones
-- Mi perfil
-
-Administrador
-- Dashboard admin
-- Gestión de usuarios
-- Roles y permisos
-- Parámetros de pago
-- Validación de cuentas bancarias
-- Auditoría
-- Reportes administrativos
-- Mi perfil
+├── Dashboard por rol
+│
+├── Propietario
+│   ├── Mis fincas / Registrar finca / Detalle
+│   ├── Renovación anual
+│   ├── Pagos (planes, detalle, historial, cuenta bancaria)
+│   ├── Reportes dueño
+│   ├── Notificaciones
+│   └── Mi perfil
+│
+├── Ingeniero
+│   ├── Fincas pendientes / evaluaciones
+│   ├── Resultado técnico
+│   ├── Planes pendientes de aprobación final
+│   ├── Reportes ingeniero
+│   ├── Notificaciones
+│   └── Mi perfil
+│
+└── Administrador
+    ├── Gestión de usuarios
+    ├── Roles y permisos
+    ├── Parámetros de pago
+    ├── Validación de cuentas bancarias
+    ├── Auditoría
+    ├── Reportes administrativos
+    └── Mi perfil
 ```
 
 [Insertar mapa de navegación aquí]
 
-### 8.2 Accesos por rol
-El acceso se protege por:
-- Atributos `[Authorize(Roles="...")]`.
-- Policies por permiso (`ADMIN_*`, `ING_*`, `DUENO_*`).
+---
 
-### 8.3 Pantallas clave corroboradas
-Se identifican vistas MVC para autenticación, dashboard por rol, fincas, evaluaciones, pagos, administración, reportes, notificaciones y perfil.
+<a id="sec-3-5"></a>
+### 3.5 Wireframes
+
+<a id="sec-3-5-1"></a>
+#### 3.5.1 Definición
+
+Los wireframes se mantienen como artefacto de referencia UX/UI para validar estructura de pantallas y flujo por rol.
+
+<a id="sec-3-5-2"></a>
+#### 3.5.2 Consideraciones
+
+- Se corroboran vistas funcionales implementadas para autenticación, dashboards, fincas, evaluaciones, pagos, administración, reportes, notificaciones y perfil.
+- `Pendiente de validación`: consolidación final de un paquete único de wireframes finales alineado 1:1 con cada pantalla productiva.
+
+<a id="sec-3-5-3"></a>
+#### 3.5.3 Ejemplo Wireframe
+
+[Insertar ejemplo de wireframe aquí]
 
 ---
 
-## 9. Seguridad y control de acceso
+<a id="sec-3-6"></a>
+### 3.6 Estándares
 
-### 9.1 Autenticación
-- API: JWT Bearer con validación de issuer/audience/signing key y lifetime.
-- WebApp: Cookie Authentication con expiración deslizante (8 horas).
+<a id="sec-3-6-1"></a>
+#### 3.6.1 Estándares CSS
 
-### 9.2 Autorización
-- Modelo híbrido de **rol + permiso granular** (claim `perm`).
-- Policies explícitas para administración, reportes, auditoría, aprobación técnica y renovación de finca.
+- Evitar estilos inline.
+- Reutilizar componentes y estilos compartidos.
+- Mantener consistencia visual por rol/módulo.
 
-### 9.3 Recuperación de contraseña
-- Generación de token de 6 dígitos.
-- Vigencia configurable (por defecto 1 minuto en configuración actual).
-- Invalida tokens previos y marca token como usado al restablecer.
+<a id="sec-3-6-2"></a>
+#### 3.6.2 Estándares JavaScript
 
-### 9.4 Protección adicional
-- Throttle de intentos de login por clave compuesta email/IP.
-- Auditoría de eventos de autenticación y recuperación.
+- Separar scripts por responsabilidad.
+- Evitar lógica de negocio crítica en cliente.
+- Mantener validaciones de servidor como fuente de verdad.
 
-### 9.5 Protección de datos
-- Password hash en almacenamiento.
-- Manejo de secretos por variables de entorno/user secrets (no hardcodeados en repositorio).
+<a id="sec-3-6-3"></a>
+#### 3.6.3 Estándares HTML
 
----
-
-## 10. Consideraciones no funcionales
-
-### 10.1 Mantenibilidad
-- Separación por proyectos/capas y contratos DTO.
-- Presencia de pruebas unitarias en reglas críticas (cálculo y política de contraseña).
-
-### 10.2 Escalabilidad
-- API desacoplada de UI.
-- Modelo de permisos extensible por tabla `Permisos`.
-- Configuración de pagos versionada y activable.
-
-### 10.3 Rendimiento
-- Uso de vistas y SPs para reportes y operaciones frecuentes.
-- Caching en memoria para throttle de seguridad.
-
-### 10.4 Disponibilidad
-- CI existente para validación continua de build/test.
-- `Pendiente de validación` despliegue cloud ejecutado extremo a extremo.
-
-### 10.5 Usabilidad
-- Navegación por dashboard y menús por rol.
-- Mensajes de validación en español desde WebApp.
-
-### 10.6 Seguridad
-- JWT + cookies + authorization policies + auditoría + throttle.
-
-### 10.7 Trazabilidad
-- Registro sistemático de eventos sensibles en `AuditoriaLog`.
-
-### 10.8 Compatibilidad
-- Stack .NET y SQL Server estandarizado.
-- Scripts de compatibilidad para variaciones históricas en esquema de permisos.
+- Uso semántico de estructura en vistas.
+- Formularios con validación clara y mensajes comprensibles.
+- Consistencia de navegación y accesibilidad base.
 
 ---
 
-## 11. Decisiones de diseño
+<a id="sec-4"></a>
+## 4. Anexos
 
-1. **Arquitectura por capas (WebApp/WebAPI/AppCore/DataAccess/SQL).**
-   - Ventaja: separación clara, mantenibilidad.
-   - Riesgo: mayor coordinación intercapa.
+<a id="sec-4-1"></a>
+### 4.1 Hallazgos, deuda técnica y observaciones
 
-2. **Autorización por permisos además de rol.**
-   - Ventaja: control fino de acciones administrativas.
-   - Riesgo: requiere mantenimiento de catálogo y claims.
+1. Coexistencia de controladores con alcance similar (`FincaController` y `FincasController`) sugiere evolución incremental.
+2. En `04_creacion_stored_procedures.sql` existen bloques repetidos de procedimientos en el histórico del archivo.
+3. Persisten scripts de compatibilidad para normalizar roles/permisos por diferencias históricas de esquema.
+4. Tabla `TransaccionesPago` existe, pero `No se pudo corroborar en el código` integración bancaria real de extremo a extremo.
 
-3. **Motor de pagos con configuración activa versionada.**
-   - Ventaja: cambios funcionales sin recompilar lógica de cálculo.
-   - Riesgo: dependencia de calidad de datos de configuración.
+<a id="sec-4-2"></a>
+### 4.2 Reglas de negocio consolidadas
 
-4. **Generación automática de plan preliminar al calificar evaluación.**
-   - Ventaja: continuidad operativa del flujo.
-   - Riesgo: acoplamiento temporal (año siguiente) debe revisarse según política institucional real.
+- Decisión técnica válida: `Califica` / `No Califica`.
+- Si finca califica, se genera plan preliminar para ciclo siguiente.
+- Tope de ajuste de pago limitado por configuración y tope institucional de 40%.
+- No se recalcula/sobrescribe plan para misma finca-año cuando ya existe.
+- Renovación anual restringida por elegibilidad de estado de plan y existencia de evaluación pendiente.
+- Recuperación de contraseña: token expirable, un uso e invalidación de tokens previos.
 
-5. **Estrategia de notificaciones in-app + email.**
-   - Ventaja: mejor comunicación de hitos.
-   - Riesgo: dependencia de SMTP configurado.
+<a id="sec-4-3"></a>
+### 4.3 Seguridad y control de acceso
 
----
+- JWT en API y cookie auth en WebApp.
+- Autorización por rol + políticas por permisos.
+- Throttle de intentos de login por email/IP.
+- Auditoría de eventos de autenticación y operaciones sensibles.
 
-## 12. Hallazgos, deuda técnica y observaciones
+<a id="sec-4-4"></a>
+### 4.4 Consideraciones no funcionales
 
-1. **Evidencia de evolución histórica del esquema SQL** con scripts de normalización y compatibilidad (por ejemplo, variantes de tabla de relación de roles/permisos).
-2. **Duplicidad/solapamiento funcional en algunos controladores** (por ejemplo coexistencia de `FincaController` y `FincasController`) que sugiere transición incremental.
-3. **Script de procedimientos con bloques repetidos** (`SP_Fincas_Registrar`/`SP_Fincas_Actualizar` aparecen más de una vez en el archivo), lo cual eleva riesgo de mantenimiento.
-4. **Tabla `TransaccionesPago` existe en modelo**, pero su uso operativo de extremo a extremo no queda completamente evidente en los flujos principales actuales (`No se pudo corroborar en el código` para integración bancaria real).
-5. **Token lifetime de recuperación muy corto por defecto (1 min)**: útil para seguridad, pero puede impactar usabilidad en entornos reales.
-6. **Despliegue cloud declarado como pendiente operativo**: hay guía y CI, pero sin confirmación de release productivo ejecutado desde este entorno.
+- **Mantenibilidad:** separación por capas y proyectos.
+- **Escalabilidad:** modelo extensible de permisos y configuración de pagos.
+- **Rendimiento:** uso de SPs/vistas para operaciones de reporte.
+- **Disponibilidad:** pipeline CI activo; despliegue cloud real `Pendiente de validación`.
+- **Trazabilidad:** bitácora en `AuditoriaLog`.
 
----
+<a id="sec-4-5"></a>
+### 4.5 Decisiones de diseño
 
-## 13. Conclusión
+- Arquitectura por capas para desacoplar UI/API/negocio/datos.
+- Control de acceso granular por permisos.
+- Motor de pagos basado en configuración activa versionable.
+- Notificaciones in-app y correo para hitos de proceso.
 
-El sistema PSA Costa Rica presenta una base arquitectónica sólida por capas, con implementación funcional verificable para autenticación, gestión de fincas, evaluación técnica, administración de pagos, seguridad por permisos y trazabilidad por auditoría. La versión actual refleja una solución en estado de **madurez intermedia-alta para entorno académico/prototipo profesional**, con componentes críticos implementados y pruebas unitarias en reglas sensibles.
+<a id="sec-4-6"></a>
+### 4.6 Conclusión
 
-La alineación entre análisis, diseño e implementación es mayor que en el documento histórico cuando se observa el estado real del repositorio. Persisten oportunidades de mejora en homogeneización de artefactos heredados, consolidación de controladores y validación operativa final de despliegue/flujo bancario real.
-
----
-
-## Apéndice A - Estado de corroboración
-
-- **Corroborado en código**: arquitectura por capas, módulos funcionales principales, seguridad, reportes, notificaciones, auditoría, motor de cálculo, políticas.
-- **Pendiente de validación**: ejecución real de despliegue cloud y operación bancaria externa integral.
-- **No se pudo corroborar en el código**: evidencia de integración bancaria en producción y documentación única final del MER fuera de scripts.
+El sistema PSA Costa Rica, según su estado implementado en repositorio, evidencia una arquitectura y diseño funcionales coherentes para un entorno académico/profesional en fase madura de construcción. El documento queda actualizado al estado real del software, mantiene la estructura original del IAS y explicita vacíos de corroboración sin inventar comportamiento no sustentado en código.
 
