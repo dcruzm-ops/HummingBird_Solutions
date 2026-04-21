@@ -61,27 +61,96 @@ namespace PSA.WebAPI.Controllers
                 return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiados intentos. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
             }
 
+            RespuestaInicioSesionDTO respuesta;
             try
             {
-                var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
                 _securityThrottleService.RegisterSuccess("login", compositeKey);
-                var permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol);
-                respuesta.Permisos = permisos;
-                var nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
-                respuesta.TokenAcceso = _jwtTokenService.CreateToken(
-                    respuesta.IdUsuario,
-                    respuesta.IdRol,
-                    respuesta.Email,
-                    respuesta.NombreCompleto,
-                    permisos,
-                    nombreRol);
-                return ApiOk(respuesta, "Inicio de sesión exitoso.");
             }
             catch (Exception ex)
             {
                 _securityThrottleService.RegisterFailure("login", compositeKey);
                 return ApiValidationError("Credenciales inválidas.", ex.Message);
             }
+
+            var permisos = new List<string>();
+            try
+            {
+                permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol) ?? [];
+            }
+            catch
+            {
+                // Fallback a lista vacía para no bloquear el inicio de sesión.
+            }
+
+            respuesta.Permisos = permisos;
+
+            string? nombreRol = null;
+            try
+            {
+                nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
+            }
+            catch
+            {
+                // El nombre de rol es opcional en el token.
+            }
+
+            var idRolAplicacion = NormalizarIdRolAplicacion(respuesta.IdRol, nombreRol, permisos);
+            respuesta.IdRol = idRolAplicacion;
+
+            try
+            {
+                respuesta.TokenAcceso = _jwtTokenService.CreateToken(
+                    respuesta.IdUsuario,
+                    idRolAplicacion,
+                    respuesta.Email,
+                    respuesta.NombreCompleto,
+                    permisos,
+                    nombreRol);
+            }
+            catch
+            {
+                // No se bloquea el login web por falla de token API.
+                respuesta.TokenAcceso = string.Empty;
+            }
+
+            return ApiOk(respuesta, "Inicio de sesión exitoso.");
+        }
+
+        private static int NormalizarIdRolAplicacion(int idRolActual, string? nombreRol, IReadOnlyCollection<string> permisos)
+        {
+            if (idRolActual is 1 or 2 or 3)
+            {
+                return idRolActual;
+            }
+
+            var nombreNormalizado = (nombreRol ?? string.Empty).Trim().ToLowerInvariant();
+            if (nombreNormalizado.Contains("admin"))
+            {
+                return 1;
+            }
+
+            if (nombreNormalizado.Contains("ing"))
+            {
+                return 3;
+            }
+
+            if (nombreNormalizado.Contains("due") || nombreNormalizado.Contains("prop"))
+            {
+                return 2;
+            }
+
+            if (permisos.Any(p => p.StartsWith("ADMIN_", StringComparison.OrdinalIgnoreCase)))
+            {
+                return 1;
+            }
+
+            if (permisos.Any(p => p.StartsWith("ING_", StringComparison.OrdinalIgnoreCase)))
+            {
+                return 3;
+            }
+
+            return 2;
         }
 
         [Authorize(Roles = "1")]
