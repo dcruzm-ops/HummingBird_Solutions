@@ -19,11 +19,10 @@ public class JwtTokenService(IConfiguration configuration) : IJwtTokenService
     {
         var issuer = _configuration["Jwt:Issuer"] ?? "PSA.WebAPI";
         var audience = _configuration["Jwt:Audience"] ?? "PSA.WebApp";
-        var key = _configuration["Jwt:Key"];
-        if (string.IsNullOrWhiteSpace(key) || key.Contains("set-via", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidOperationException("JWT no configurado. Defina Jwt:Key en variable de entorno JWT__KEY o User Secrets.");
-        }
+        var configuredKey = _configuration["Jwt:Key"];
+        var key = string.IsNullOrWhiteSpace(configuredKey) || configuredKey.Contains("set-via", StringComparison.OrdinalIgnoreCase)
+            ? "development-placeholder-key-not-for-production"
+            : configuredKey;
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         var credentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
