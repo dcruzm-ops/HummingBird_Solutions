@@ -28,6 +28,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("usuarios/{id:int}")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosVer)]
         public async Task<ActionResult<UsuarioAdminEdicionDTO>> ObtenerUsuario(int id)
         {
             var usuario = await _administracionManager.ObtenerUsuarioAsync(id);
@@ -60,6 +61,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("usuarios/propietarios")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosVer)]
         public async Task<ActionResult<List<UsuarioAdminListadoDTO>>> ObtenerPropietarios()
         {
             var usuarios = await _administracionManager.ObtenerUsuariosAsync(2);
@@ -67,6 +69,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("usuarios/ingenieros")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosVer)]
         public async Task<ActionResult<List<UsuarioAdminListadoDTO>>> ObtenerIngenieros()
         {
             var usuarios = await _administracionManager.ObtenerUsuariosAsync(3);
@@ -75,6 +78,7 @@ namespace PSA.WebAPI.Controllers
 
         [HttpPost("usuarios/reasignar-cliente")]
         [HttpPost("reasignacion-cliente")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosEditar)]
         public async Task<ActionResult<bool>> ReasignarCliente([FromBody] ReasignacionClienteDTO model)
         {
             await _administracionManager.ReasignarClienteAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
@@ -82,6 +86,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("roles-basicos")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosVer)]
         public async Task<ActionResult<List<RolDTO>>> ObtenerRolesBasicos()
         {
             try
@@ -100,6 +105,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("roles")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosEditar)]
         public async Task<ActionResult<int>> CrearRol([FromBody] CrearRolDTO model)
         {
             var idRol = await _administracionManager.CrearRolAsync(model);
@@ -107,6 +113,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("roles-permisos")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosVer)]
         public async Task<ActionResult<List<RolPermisoDTO>>> ObtenerRolesPermisos()
         {
             try
@@ -125,6 +132,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("permisos")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosVer)]
         public async Task<ActionResult<List<PermisoDTO>>> ObtenerPermisos()
         {
             try
@@ -143,6 +151,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPost("roles-permisos")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosEditar)]
         public async Task<ActionResult<bool>> GuardarPermisosRolPost([FromBody] GuardarPermisosRolDTO model)
         {
             await _administracionManager.GuardarPermisosRolAsync(model, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
@@ -150,6 +159,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpPut("roles-permisos/{idRol:int}")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminUsuariosEditar)]
         public async Task<ActionResult<bool>> GuardarPermisosRol(int idRol, [FromBody] GuardarPermisosRolDTO model)
         {
             model.IdRol = idRol;
@@ -159,6 +169,7 @@ namespace PSA.WebAPI.Controllers
 
         [HttpGet("configuracion-pago/actual")]
         [HttpGet("configuracion-pago/vigente")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminPagosConfigurar)]
         public async Task<ActionResult<ConfiguracionPagoAdminDTO>> ObtenerConfiguracionPagoActual()
         {
             var configuracion = await _administracionManager.ObtenerConfiguracionVigenteAsync();
@@ -166,6 +177,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("configuracion-pago/historial")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminPagosConfigurar)]
         public async Task<ActionResult<List<ConfiguracionPagoAdminDTO>>> ObtenerHistorialConfiguracionPago()
         {
             var historial = await _administracionManager.ObtenerHistorialConfiguracionesAsync();
@@ -173,6 +185,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("configuracion-pago/{idConfiguracionPago:int}")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminPagosConfigurar)]
         public async Task<ActionResult<ConfiguracionPagoAdminDTO>> ObtenerDetalleConfiguracionPago(int idConfiguracionPago)
         {
             var detalle = await _administracionManager.ObtenerConfiguracionDetalleAsync(idConfiguracionPago);
@@ -188,6 +201,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("cuentas-bancarias/pendientes")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminCuentasValidar)]
         public async Task<ActionResult<List<CuentaBancariaPendienteDTO>>> ObtenerCuentasPendientes()
         {
             try
@@ -247,6 +261,7 @@ namespace PSA.WebAPI.Controllers
         }
 
         [HttpGet("auditoria/opciones-filtro")]
+        [Authorize(Policy = Services.Security.AppPermissions.AdminAuditoriaConsultar)]
         public async Task<ActionResult<AuditoriaOpcionesFiltroDTO>> ObtenerOpcionesFiltroAuditoria([FromQuery] string? modulo)
         {
             var opciones = await _administracionManager.ObtenerOpcionesFiltroAuditoriaAsync(modulo);
