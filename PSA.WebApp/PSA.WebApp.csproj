@@ -5,12 +5,42 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PSA.WebApp</RootNamespace>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PSA.AppCore\PSA.AppCore.csproj" />
-    <ProjectReference Include="..\PSA.DataAccess\PSA.DataAccess.csproj" />
+    <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="Controllers\AdministracionController.cs" />
+    <Compile Include="Controllers\AutenticacionController.cs" />
+    <Compile Include="Controllers\DashboardController.cs" />
+    <Compile Include="Controllers\EvaluacionesController.cs" />
+    <Compile Include="Controllers\FincasController.cs" />
+    <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\MiPerfilController.cs" />
+    <Compile Include="Controllers\NotificacionesController.cs" />
+    <Compile Include="Controllers\PagosController.cs" />
+    <Compile Include="Controllers\ReportesController.cs" />
+    <Compile Include="Models\DashboardViewModels.cs" />
+    <Compile Include="Models\AdministracionViewModels.cs" />
+    <Compile Include="Models\MiPerfilViewModel.cs" />
+    <Compile Include="Models\EvaluacionesViewModels.cs" />
+    <Compile Include="Models\ReportesViewModels.cs" />
+    <Compile Include="Models\NotificacionesViewModel.cs" />
+    <Compile Include="Models\RecuperarContrasenaViewModel.cs" />
+    <Compile Include="Models\RestablecerContrasenaViewModel.cs" />
+    <Compile Include="Services\HttpClientService.cs" />
+    <Compile Include="Services\Security\ApiUserHeadersHandler.cs" />
+    <Compile Include="Program.cs" />
     <ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Pages\**\*.cshtml" />
+    <Content Remove="Pages\**\*.cshtml.css" />
+    <None Remove="Pages\**\*.cshtml" />
+    <None Remove="Pages\**\*.cshtml.css" />
+    <RazorGenerate Remove="Pages\**\*.cshtml" />
+    <ScopedCssInput Remove="Pages\**\*.cshtml.css" />
   </ItemGroup>
 
 </Project>

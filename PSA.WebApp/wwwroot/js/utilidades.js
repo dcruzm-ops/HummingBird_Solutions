@@ -33,4 +33,41 @@
             });
         });
     };
+
+    window.psa.normalizarTextosInterfaz = function () {
+        var reemplazos = {
+            "NombreCompleto": "Nombre Completo",
+            "FechaNacimiento": "Fecha de Nacimiento",
+            "TipoVegetacion": "Tipo de Vegetación",
+            "EstadoEvaluacion": "Estado de Evaluación",
+            "DecisionTecnica": "Decisión Técnica",
+            "CuentaBancaria": "Cuenta Bancaria",
+            "HistorialPagos": "Historial de Pagos",
+            "PendienteDatosBancarios": "Pendiente de Datos Bancarios",
+            "PendienteAprobacionFinal": "Pendiente de Aprobación Final",
+            "NoCalifica": "No Califica"
+        };
+
+        var elementos = document.querySelectorAll('label, th, option, .badge-estado, .texto-normalizable');
+
+        elementos.forEach(function (el) {
+            var texto = (el.textContent || '').trim();
+            if (!texto) {
+                return;
+            }
+
+            if (reemplazos[texto]) {
+                el.textContent = reemplazos[texto];
+                return;
+            }
+
+            if (/^[A-Z][a-z]+([A-Z][a-z0-9]+)+$/.test(texto) || /^[a-z]+([A-Z][a-z0-9]+)+$/.test(texto)) {
+                el.textContent = texto.replace(/([a-z\d])([A-Z])/g, '$1 $2');
+            }
+        });
+    };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        window.psa.normalizarTextosInterfaz();
+    });
 })();

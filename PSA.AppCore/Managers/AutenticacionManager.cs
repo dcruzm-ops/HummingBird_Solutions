@@ -1,6 +1,8 @@
 using PSA.AppCore.Servicios;
+using PSA.AppCore.Services.Security;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.EntidadesDTO.Entidades;
 
 namespace PSA.AppCore.Managers
@@ -9,18 +11,24 @@ namespace PSA.AppCore.Managers
     {
         private readonly IServicioHashContrasena _servicioHashContrasena;
         private readonly UsuarioDAO _usuarioDAO;
+        private readonly AuditoriaLogDAO _auditoriaLogDAO;
+        private readonly IPasswordPolicy _passwordPolicy;
 
         public AutenticacionManager(
             IServicioHashContrasena servicioHashContrasena,
-            UsuarioDAO usuarioDAO)
+            UsuarioDAO usuarioDAO,
+            AuditoriaLogDAO auditoriaLogDAO,
+            IPasswordPolicy passwordPolicy)
         {
             _servicioHashContrasena = servicioHashContrasena;
             _usuarioDAO = usuarioDAO;
+            _auditoriaLogDAO = auditoriaLogDAO;
+            _passwordPolicy = passwordPolicy;
         }
 
         public async Task<int> RegistrarUsuarioAsync(RegistrarUsuarioDTO dto)
         {
-            const int idRolPropietario = 2;
+            const string nombreRolPropietario = "Propietario";
 
             if (string.IsNullOrWhiteSpace(dto.NombreCompleto))
                 throw new Exception("El nombre completo es requerido.");
@@ -34,9 +42,12 @@ namespace PSA.AppCore.Managers
             if (dto.Contrasena != dto.ConfirmacionContrasena)
                 throw new Exception("La contraseña y la confirmación no coinciden.");
 
-            var rolExiste = await _usuarioDAO.ExisteRolAsync(idRolPropietario);
-            if (!rolExiste)
-                throw new Exception("No existe el rol por defecto 'Propietario' (IdRol = 2).");
+            if (!_passwordPolicy.IsValid(dto.Contrasena))
+                throw new Exception(_passwordPolicy.RequirementsMessage);
+
+            var idRolPropietario = await _usuarioDAO.ObtenerIdRolPorNombreAsync(nombreRolPropietario);
+            if (!idRolPropietario.HasValue)
+                throw new Exception("No existe el rol por defecto 'Propietario'.");
 
             var usuarioExistente = await _usuarioDAO.ObtenerPorEmailAsync(dto.Email.Trim());
 
@@ -48,7 +59,7 @@ namespace PSA.AppCore.Managers
                 NombreCompleto = dto.NombreCompleto.Trim(),
                 Email = dto.Email.Trim(),
                 PasswordHash = _servicioHashContrasena.GenerarHash(dto.Contrasena),
-                IdRol = idRolPropietario,
+                IdRol = idRolPropietario.Value,
                 Estado = "Activo",
                 FechaCreacion = DateTime.Now,
                 UltimoAcceso = null
@@ -68,7 +79,17 @@ namespace PSA.AppCore.Managers
             var usuario = await _usuarioDAO.ObtenerPorEmailAsync(dto.Email.Trim());
 
             if (usuario == null)
+            {
+                await _auditoriaLogDAO.RegistrarEventoAsync(
+                    idUsuario: null,
+                    modulo: "Autenticacion",
+                    tablaAfectada: "Usuarios",
+                    accion: "LOGIN_FALLIDO",
+                    detalle: $"Intento fallido para correo no registrado: {dto.Email.Trim()}"
+                );
+
                 throw new Exception("Credenciales inválidas.");
+            }
 
             var contrasenaValida = _servicioHashContrasena.VerificarHash(
                 usuario.PasswordHash,
@@ -76,10 +97,30 @@ namespace PSA.AppCore.Managers
             );
 
             if (!contrasenaValida)
+            {
+                await _auditoriaLogDAO.RegistrarEventoAsync(
+                    idUsuario: usuario.IdUsuario,
+                    modulo: "Autenticacion",
+                    tablaAfectada: "Usuarios",
+                    idRegistroAfectado: usuario.IdUsuario,
+                    accion: "LOGIN_FALLIDO",
+                    detalle: $"Contraseña inválida para el usuario {usuario.Email}"
+                );
+
                 throw new Exception("Credenciales inválidas.");
+            }
 
             var fechaAcceso = DateTime.Now;
             await _usuarioDAO.ActualizarUltimoAccesoAsync(usuario.IdUsuario, fechaAcceso);
+
+            await _auditoriaLogDAO.RegistrarEventoAsync(
+                idUsuario: usuario.IdUsuario,
+                modulo: "Autenticacion",
+                tablaAfectada: "Usuarios",
+                idRegistroAfectado: usuario.IdUsuario,
+                accion: "LOGIN_EXITOSO",
+                detalle: $"Inicio de sesión exitoso para {usuario.Email}"
+            );
 
             return new RespuestaInicioSesionDTO
             {
@@ -90,6 +131,30 @@ namespace PSA.AppCore.Managers
                 UltimoAcceso = fechaAcceso,
                 Mensaje = "Inicio de sesión exitoso."
             };
+        }
+
+        public async Task AsignarRolAsync(AsignarRolUsuarioDTO dto)
+        {
+            if (dto.IdUsuario <= 0)
+                throw new Exception("El Id del usuario es inválido.");
+
+            if (dto.IdRol <= 0)
+                throw new Exception("El Id del rol es inválido.");
+
+            var rolExiste = await _usuarioDAO.ExisteRolAsync(dto.IdRol);
+            if (!rolExiste)
+                throw new Exception("El rol indicado no existe.");
+
+            await _usuarioDAO.AsignarRolAsync(dto.IdUsuario, dto.IdRol);
+
+            await _auditoriaLogDAO.RegistrarEventoAsync(
+                idUsuario: dto.IdUsuario,
+                modulo: "Autenticacion",
+                tablaAfectada: "Usuarios",
+                idRegistroAfectado: dto.IdUsuario,
+                accion: "ASIGNACION_ROL",
+                detalle: $"Rol {dto.IdRol} asignado al usuario {dto.IdUsuario}."
+            );
         }
     }
 }

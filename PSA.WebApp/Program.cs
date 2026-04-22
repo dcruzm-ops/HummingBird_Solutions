@@ -1,75 +1,55 @@
-using PSA.AppCore.Managers;
-using PSA.AppCore.Servicios;
-using PSA.DataAccess.DAO;
+using PSA.WebApp.Services.Security;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using PSA.WebApp.Servicios;
+using PSA.WebApp.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient();
+builder.Services.AddControllersWithViews(options =>
+{
+    var provider = options.ModelBindingMessageProvider;
+    provider.SetValueMustNotBeNullAccessor(_ => "Este campo es obligatorio.");
+    provider.SetMissingBindRequiredValueAccessor(_ => "Este campo es obligatorio.");
+    provider.SetMissingRequestBodyRequiredValueAccessor(() => "La solicitud es obligatoria.");
+    provider.SetAttemptedValueIsInvalidAccessor((valor, campo) => $"El valor '{valor}' no es válido para {campo}.");
+    provider.SetUnknownValueIsInvalidAccessor(campo => $"El valor seleccionado no es válido para {campo}.");
+    provider.SetValueIsInvalidAccessor(valor => $"El valor '{valor}' no es válido.");
+});
+
+var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"];
+if (string.IsNullOrWhiteSpace(apiBaseUrl))
+{
+    throw new InvalidOperationException("Debe configurar ApiSettings:BaseUrl en PSA.WebApp.");
+}
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<ApiUserHeadersHandler>();
+
+var httpClientBuilder = builder.Services.AddHttpClient("AuthApi", client =>
+{
+    client.BaseAddress = new Uri(apiBaseUrl.TrimEnd('/') + "/");
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
+
+httpClientBuilder.AddHttpMessageHandler<ApiUserHeadersHandler>();
+
+if (builder.Environment.IsDevelopment())
+{
+    httpClientBuilder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    });
+}
+
+builder.Services.AddScoped<HttpClientService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/Autenticacion/IniciarSesion";
-        options.AccessDeniedPath = "/Autenticacion/IniciarSesion";
+        options.AccessDeniedPath = "/Home/AccessDenied";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
     });
-
-builder.Services.AddHttpClient("AuthApi")
-    .ConfigurePrimaryHttpMessageHandler(() =>
-    {
-        var handler = new HttpClientHandler();
-        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-        return handler;
-    });
-
-builder.Services.AddScoped<IServicioHashContrasena, ServicioHashContrasena>();
-
-builder.Services.AddScoped<UsuarioDAO>(sp =>
-{
-    var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
-
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
-    }
-
-    return new UsuarioDAO(connectionString);
-});
-
-builder.Services.AddScoped<FincaDAO>(sp =>
-{
-    var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
-
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
-    }
-
-    return new FincaDAO(connectionString);
-});
-
-builder.Services.AddScoped<TokenRecuperacionDAO>(sp =>
-{
-    var configuration = sp.GetRequiredService<IConfiguration>();
-    var connectionString = configuration.GetConnectionString("PSAConnection");
-
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("No se encontró la cadena de conexión 'PSAConnection' en WebApp.");
-    }
-
-    return new TokenRecuperacionDAO(connectionString);
-});
-
-builder.Services.AddScoped<AutenticacionManager>();
-builder.Services.AddScoped<RecuperacionContrasenaManager>();
-builder.Services.AddScoped<IServicioCorreo, ServicioCorreoSmtp>();
 
 var app = builder.Build();
 
@@ -81,9 +61,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

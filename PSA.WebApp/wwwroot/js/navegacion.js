@@ -6,21 +6,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (botonTema) {
         botonTema.addEventListener("click", function () {
-            var temaActual = raizHtml.getAttribute("data-tema") || "claro";
-            var nuevoTema = temaActual === "claro" ? "oscuro" : "claro";
-            raizHtml.setAttribute("data-tema", nuevoTema);
+            var temaActual = raizHtml.getAttribute("data-theme") || "light";
+            var nuevoTema = temaActual === "light" ? "dark" : "light";
+            raizHtml.setAttribute("data-theme", nuevoTema);
             localStorage.setItem("psa-tema", nuevoTema);
         });
     }
 
     var temaGuardado = localStorage.getItem("psa-tema");
     if (temaGuardado) {
-        raizHtml.setAttribute("data-tema", temaGuardado);
+        raizHtml.setAttribute("data-theme", temaGuardado);
     }
 
     if (botonMenuLateral && barraLateral) {
+        var menuColapsadoGuardado = localStorage.getItem("psa-menu-colapsado");
+        if (menuColapsadoGuardado === "true") {
+            document.body.classList.add("menu-colapsado");
+        }
+
         botonMenuLateral.addEventListener("click", function () {
-            barraLateral.classList.toggle("abierta");
+            var esPantallaMovil = window.matchMedia("(max-width: 992px)").matches;
+            if (esPantallaMovil) {
+                barraLateral.classList.toggle("abierta");
+                return;
+            }
+
+            document.body.classList.toggle("menu-colapsado");
+            localStorage.setItem("psa-menu-colapsado", document.body.classList.contains("menu-colapsado") ? "true" : "false");
         });
     }
 

@@ -1,11 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
-using PSA.DataAccess.DAO;
+using Microsoft.AspNetCore.Mvc;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.Fincas;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace PSA.WebApp.Controllers
@@ -13,345 +12,254 @@ namespace PSA.WebApp.Controllers
     [Authorize(Roles = "2")]
     public class FincasController : Controller
     {
-        private readonly FincaDAO _fincaDAO;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IConfiguration _configuration;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-        public FincasController(
-            FincaDAO fincaDAO,
-            IConfiguration configuration,
-            IServiceProvider serviceProvider)
+        public FincasController(IHttpClientFactory httpClientFactory)
         {
-            _fincaDAO = fincaDAO;
-            _configuration = configuration;
-            _serviceProvider = serviceProvider;
+            _httpClientFactory = httpClientFactory;
         }
 
         [HttpGet]
         public IActionResult RegistrarFinca()
         {
-            ViewBag.ModuloActivo = "fincas";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Registrar finca";
-            ViewBag.SubtituloPagina = "Complete la información principal de la propiedad para iniciar el proceso.";
-            ViewBag.BreadcrumbPadreTexto = "Mis fincas";
-            ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
-            ViewBag.BreadcrumbActual = "Registrar finca";
-
+            CargarViewBag();
             CargarCatalogosFormularioFinca();
             return View(new RegistrarFincaDTO());
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RegistrarFinca(RegistrarFincaDTO dto)
+        public async Task<IActionResult> RegistrarFinca(RegistrarFincaDTO dto, List<IFormFile>? archivos)
         {
-            ViewBag.ModuloActivo = "fincas";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Registrar finca";
-            ViewBag.SubtituloPagina = "Complete la información principal de la propiedad para iniciar el proceso.";
-            ViewBag.BreadcrumbPadreTexto = "Mis fincas";
-            ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
-            ViewBag.BreadcrumbActual = "Registrar finca";
-
+            CargarViewBag();
             dto.IdPropietario = ObtenerIdUsuarioSesion();
-            if (dto.IdPropietario <= 0)
-            {
-                TempData["MensajeError"] = "Debe iniciar sesión para registrar una finca.";
-                return RedirectToAction("IniciarSesion", "Autenticacion");
-            }
-
+            if (dto.IdPropietario <= 0) return RedirectToAction("IniciarSesion", "Autenticacion");
             if (!ModelState.IsValid)
             {
                 CargarCatalogosFormularioFinca();
                 return View(dto);
             }
 
-            try
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var response = await client.PostAsJsonAsync("api/Fincas", dto);
+            if (!response.IsSuccessStatusCode)
             {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-                var baseUrl = GetApiBaseUrls().First();
-                var response = await client.PostAsJsonAsync($"{baseUrl}/api/Fincas", dto);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorBody = await response.Content.ReadAsStringAsync();
-                    ModelState.AddModelError(string.Empty, $"No fue posible registrar la finca. {errorBody}");
-                    CargarCatalogosFormularioFinca();
-                    return View(dto);
-                }
-
-                var idFincaRegistrada = await ObtenerIdFincaDesdeRespuestaAsync(response);
-                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada);
-                return RedirectToAction(nameof(MisFincas));
+                TempData["MensajeError"] = "No fue posible registrar la finca.";
+                CargarCatalogosFormularioFinca();
+                return View(dto);
             }
-            catch
-            {
-                var idFincaRegistrada = await _fincaDAO.CrearFincaAsync(dto);
-                TempData["MensajeExitoHtml"] = ConstruirMensajeExitoRegistroFinca(idFincaRegistrada, true);
-                return RedirectToAction(nameof(MisFincas));
-            }
-        }
 
-        private async Task<int> ObtenerIdFincaDesdeRespuestaAsync(HttpResponseMessage response)
-        {
-            try
+            var idFinca = await ExtraerIdFincaAsync(response);
+
+            if (idFinca > 0 && archivos != null && archivos.Count > 0)
             {
-                using var stream = await response.Content.ReadAsStreamAsync();
-                using var documento = await JsonDocument.ParseAsync(stream);
-                if (documento.RootElement.TryGetProperty("IdFinca", out var idFincaElemento)
-                    && idFincaElemento.TryGetInt32(out var idFinca))
+                var evidenciaResponse = await SubirEvidenciasAsync(client, idFinca, dto.IdPropietario, archivos);
+                if (!evidenciaResponse)
                 {
-                    return idFinca;
+                    TempData["MensajeError"] = "La finca se registró, pero no fue posible subir las evidencias.";
                 }
             }
-            catch
-            {
-                // Si no se puede leer el cuerpo, se mantiene el fallback en 0.
-            }
 
-            return 0;
-        }
-
-        private string ConstruirMensajeExitoRegistroFinca(int idFinca, bool modoLocal = false)
-        {
-            var sufijoModo = modoLocal ? " (modo local)" : string.Empty;
-            var mensajeBase = $"Finca registrada correctamente{sufijoModo}.";
-            if (idFinca <= 0)
-            {
-                return mensajeBase;
-            }
-
-            var urlDetalle = Url.Action("DetalleFinca", "Fincas", new { id = idFinca }) ?? "#";
-            return $"{mensajeBase} <a href=\"{urlDetalle}\">Ver detalle de la finca</a>.";
+            TempData["MensajeExito"] = "Finca registrada correctamente.";
+            return RedirectToAction(nameof(MisFincas));
         }
 
         [HttpGet]
         public async Task<IActionResult> MisFincas()
         {
-            ViewBag.ModuloActivo = "fincas";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Mis fincas";
-            ViewBag.SubtituloPagina = "Consulte el estado de sus propiedades registradas y sus procesos asociados.";
-            ViewBag.BreadcrumbActual = "Mis fincas";
-
+            CargarListadoViewBag();
             var idPropietario = ObtenerIdUsuarioSesion();
-            if (idPropietario <= 0)
-            {
-                return RedirectToAction("IniciarSesion", "Autenticacion");
-            }
+            if (idPropietario <= 0) return RedirectToAction("IniciarSesion", "Autenticacion");
 
-            var fincas = await ObtenerFincasDesdeApiConFallbackAsync(idPropietario);
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>($"api/Fincas/mis-fincas")
+                ?? new List<FincaResumenDTO>();
+
             return View(fincas);
         }
 
         [HttpGet]
         public async Task<IActionResult> DetalleFinca(int? id = null)
         {
-            ViewBag.ModuloActivo = "fincas";
-            ViewBag.RolActivo = "Dueno";
-            ViewBag.TituloPagina = "Detalle de finca";
-            ViewBag.SubtituloPagina = "Visualice la información general, evaluación, evidencias y plan de pago.";
-            ViewBag.BreadcrumbPadreTexto = "Mis fincas";
-            ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas");
-            ViewBag.BreadcrumbActual = "Detalle de finca";
-
-            var idFinca = id ?? 0;
-            if (idFinca <= 0)
-            {
-                return RedirectToAction(nameof(MisFincas));
-            }
-
+            CargarDetalleViewBag();
             var idPropietario = ObtenerIdUsuarioSesion();
-            if (idPropietario <= 0)
-            {
-                return RedirectToAction("IniciarSesion", "Autenticacion");
-            }
+            if (idPropietario <= 0) return RedirectToAction("IniciarSesion", "Autenticacion");
+            if ((id ?? 0) <= 0) return RedirectToAction(nameof(MisFincas));
 
-            var detalle = await ObtenerDetalleDesdeApiConFallbackAsync(idFinca, idPropietario);
-            if (detalle == null)
+            var client = _httpClientFactory.CreateClient("AuthApi");
+
+            FincaDetalleDTO? detalle;
+            try
             {
-                TempData["MensajeError"] = "No se encontró la finca solicitada para el propietario actual.";
+                detalle = await client.GetFromJsonAsync<FincaDetalleDTO>($"api/Fincas/{id}/detalle");
+                if (detalle == null)
+                {
+                    TempData["MensajeError"] = "No se encontró la finca solicitada.";
+                    return RedirectToAction(nameof(MisFincas));
+                }
+            }
+            catch (HttpRequestException)
+            {
+                TempData["MensajeError"] = "No fue posible conectarse con el API para cargar el detalle de la finca.";
                 return RedirectToAction(nameof(MisFincas));
             }
+            catch (TaskCanceledException)
+            {
+                TempData["MensajeError"] = "La consulta del detalle de finca tardó demasiado. Intente nuevamente.";
+                return RedirectToAction(nameof(MisFincas));
+            }
+            catch (Exception)
+            {
+                TempData["MensajeError"] = "Ocurrió un error al cargar el detalle de la finca.";
+                return RedirectToAction(nameof(MisFincas));
+            }
+
+            var evidencias = new List<FincaEvidenciaDTO>();
+            try
+            {
+                evidencias = await client.GetFromJsonAsync<List<FincaEvidenciaDTO>>($"api/FincaEvidencias/finca/{id}")
+                    ?? new List<FincaEvidenciaDTO>();
+            }
+            catch
+            {
+                // No se bloquea el render del detalle si falla la carga de evidencias.
+                TempData["MensajeError"] = "No fue posible cargar las evidencias de la finca en este momento.";
+            }
+
+            var baseAddress = client.BaseAddress?.ToString().TrimEnd('/') ?? string.Empty;
+            foreach (var evidencia in evidencias)
+            {
+                if (!string.IsNullOrWhiteSpace(evidencia.UrlDescarga) && evidencia.UrlDescarga.StartsWith('/'))
+                {
+                    evidencia.UrlDescarga = $"{baseAddress}{evidencia.UrlDescarga}";
+                }
+            }
+            ViewBag.Evidencias = evidencias;
+
+            EstadoRenovacionAnualDTO? estadoRenovacion = null;
+            try
+            {
+                estadoRenovacion = await client.GetFromJsonAsync<EstadoRenovacionAnualDTO>($"api/Fincas/{id}/renovacion-anual/estado");
+            }
+            catch
+            {
+                // No bloquea render; si falla, UI mantiene fallback conservador.
+            }
+            ViewBag.EstadoRenovacion = estadoRenovacion;
 
             return View(detalle);
         }
 
-        private async Task<(bool Exito, string Mensaje)> CrearFincaEnApiConFallbackAsync(FincaDTO model)
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RenovacionAnual(int idFinca)
         {
-            try
+            var idPropietario = ObtenerIdUsuarioSesion();
+            if (idPropietario <= 0) return RedirectToAction("IniciarSesion", "Autenticacion");
+            if (idFinca <= 0)
             {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-
-                Exception? ultimaExcepcion = null;
-                foreach (var baseUrl in GetApiBaseUrls())
-                {
-                    try
-                    {
-                        var response = await client.PostAsJsonAsync($"{baseUrl}/api/Finca/Create", model);
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return (true, string.Empty);
-                        }
-
-                        var detalle = await response.Content.ReadAsStringAsync();
-                        return (false, $"El API rechazó el registro: {detalle}");
-                    }
-                    catch (Exception ex)
-                    {
-                        ultimaExcepcion = ex;
-                    }
-                }
-
-                if (ultimaExcepcion != null)
-                {
-                    throw ultimaExcepcion;
-                }
+                TempData["MensajeError"] = "La finca indicada para renovación no es válida.";
+                return RedirectToAction(nameof(MisFincas));
             }
-            catch
+
+            var client = _httpClientFactory.CreateClient("AuthApi");
+            var response = await client.PostAsync($"api/Fincas/{idFinca}/renovacion-anual", null);
+            var body = await response.Content.ReadAsStringAsync();
+            string? mensajeApi = null;
+            if (!string.IsNullOrWhiteSpace(body))
             {
                 try
                 {
-                    _fincaDAO.Create(model);
-                    return (true, string.Empty);
+                    using var doc = JsonDocument.Parse(body);
+                    if (doc.RootElement.TryGetProperty("mensaje", out var m1)) mensajeApi = m1.GetString();
+                    if (string.IsNullOrWhiteSpace(mensajeApi) && doc.RootElement.TryGetProperty("Mensaje", out var m2)) mensajeApi = m2.GetString();
                 }
-                catch (Exception ex)
+                catch
                 {
-                    return (false, $"No fue posible registrar la finca: {ex.Message}");
+                    // Ignorado: fallback a mensaje estándar.
                 }
             }
 
-            return (false, "No fue posible registrar la finca.");
+            TempData[response.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = response.IsSuccessStatusCode
+                ? (mensajeApi ?? "Renovación anual solicitada correctamente.")
+                : (mensajeApi ?? "No fue posible solicitar la renovación anual.");
+            return RedirectToAction(nameof(DetalleFinca), new { id = idFinca });
         }
 
-        private async Task<List<FincaResumenDTO>> ObtenerFincasDesdeApiConFallbackAsync(int idPropietario)
+        private static async Task<int> ExtraerIdFincaAsync(HttpResponseMessage response)
         {
             try
             {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
-
-                foreach (var baseUrl in GetApiBaseUrls())
+                using var contenido = await response.Content.ReadAsStreamAsync();
+                using var documento = await JsonDocument.ParseAsync(contenido);
+                if (documento.RootElement.TryGetProperty("idFinca", out var idFincaLower))
                 {
-                    try
-                    {
-                        var fincas = await client.GetFromJsonAsync<List<FincaResumenDTO>>(
-                            $"{baseUrl}/api/Fincas/mis-fincas?idPropietario={idPropietario}"
-                        );
+                    return idFincaLower.GetInt32();
+                }
 
-                        if (fincas != null)
-                        {
-                            return fincas;
-                        }
-                    }
-                    catch
-                    {
-                        // Probar siguiente URL
-                    }
+                if (documento.RootElement.TryGetProperty("IdFinca", out var idFincaUpper))
+                {
+                    return idFincaUpper.GetInt32();
                 }
             }
             catch
             {
-                // Fallback local
+                // Se ignora para no bloquear flujo principal de registro.
             }
 
-            return await _fincaDAO.ObtenerPorPropietarioAsync(idPropietario);
+            return 0;
         }
 
-        private async Task<FincaDetalleDTO?> ObtenerDetalleDesdeApiConFallbackAsync(int idFinca, int idPropietario)
+        private static async Task<bool> SubirEvidenciasAsync(HttpClient client, int idFinca, int idUsuario, List<IFormFile> archivos)
         {
-            try
-            {
-                var client = _serviceProvider.GetService<IHttpClientFactory>()?.CreateClient("AuthApi")
-                    ?? throw new InvalidOperationException("IHttpClientFactory no está disponible.");
+            using var form = new MultipartFormDataContent();
+            form.Add(new StringContent(idFinca.ToString()), "idFinca");
+            form.Add(new StringContent(idUsuario.ToString()), "cargadoPor");
 
-                foreach (var baseUrl in GetApiBaseUrls())
-                {
-                    try
-                    {
-                        var detalle = await client.GetFromJsonAsync<FincaDetalleDTO>(
-                            $"{baseUrl}/api/Fincas/{idFinca}/detalle?idPropietario={idPropietario}"
-                        );
-
-                        if (detalle != null)
-                        {
-                            return detalle;
-                        }
-                    }
-                    catch
-                    {
-                        // Probar siguiente URL
-                    }
-                }
-            }
-            catch
+            foreach (var archivo in archivos.Where(a => a != null && a.Length > 0))
             {
-                // Fallback local
+                var contenido = new StreamContent(archivo.OpenReadStream());
+                contenido.Headers.ContentType = new MediaTypeHeaderValue(archivo.ContentType ?? "application/octet-stream");
+                form.Add(contenido, "archivos", archivo.FileName);
             }
 
-            return await _fincaDAO.ObtenerDetalleAsync(idFinca, idPropietario);
+            var response = await client.PostAsync("api/FincaEvidencias/subir", form);
+            return response.IsSuccessStatusCode;
         }
 
-        private IEnumerable<string> GetApiBaseUrls()
-        {
-            var configurada = _configuration["ApiSettings:BaseUrl"];
-            if (!string.IsNullOrWhiteSpace(configurada))
-            {
-                yield return configurada.TrimEnd('/');
-            }
-
-            yield return "https://localhost:59665";
-            yield return "http://localhost:59667";
-        }
-
-        private int ObtenerIdUsuarioSesion()
-        {
-            var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(idClaim, out var idUsuario) ? idUsuario : 0;
-        }
-
+        private int ObtenerIdUsuarioSesion() => int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : 0;
         private void CargarCatalogosFormularioFinca()
         {
-            var pendientes = _fincaDAO.ObtenerCatalogoFactorAsync("Pendiente").GetAwaiter().GetResult();
-            var vegetaciones = _fincaDAO.ObtenerCatalogoFactorAsync("Vegetacion").GetAwaiter().GetResult();
-            var usosSuelo = _fincaDAO.ObtenerCatalogoFactorAsync("UsoSuelo").GetAwaiter().GetResult();
+            var pendientes = new[] { "Plana", "Inclinada", "Muy inclinada" };
+            var vegetaciones = new[] { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" };
+            var usosSuelo = new[] { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Mixto" };
 
-            ViewBag.CatalogoPendiente = MezclarCatalogoBaseYBd(
-                new List<string> { "Plana", "Inclinada", "Muy inclinada" },
-                pendientes
-            );
+            ViewBag.OpcionesPendiente = pendientes;
+            ViewBag.OpcionesVegetacion = vegetaciones;
+            ViewBag.OpcionesUsoSuelo = usosSuelo;
 
-            ViewBag.CatalogoVegetacion = MezclarCatalogoBaseYBd(
-                new List<string> { "Bosque primario", "Bosque secundario", "Plantación forestal", "Pasto" },
-                vegetaciones
-            );
-
-            ViewBag.CatalogoUsoSuelo = MezclarCatalogoBaseYBd(
-                new List<string> { "Conservación", "Producción forestal", "Agroforestal", "Ganadería", "Uso mixto" },
-                usosSuelo
-            );
+            ViewBag.CatalogoPendiente = pendientes;
+            ViewBag.CatalogoVegetacion = vegetaciones;
+            ViewBag.CatalogoUsoSuelo = usosSuelo;
         }
 
-        private static List<string> MezclarCatalogoBaseYBd(List<string> baseCatalogo, List<string> catalogoBd)
+        private void CargarViewBag()
         {
-            var resultado = new List<string>(baseCatalogo);
-            var set = new HashSet<string>(baseCatalogo, StringComparer.OrdinalIgnoreCase);
-            foreach (var valorBd in catalogoBd)
-            {
-                if (!string.IsNullOrWhiteSpace(valorBd))
-                {
-                    var valorNormalizado = valorBd.Trim();
-                    if (set.Add(valorNormalizado))
-                    {
-                        resultado.Add(valorNormalizado);
-                    }
-                }
-            }
-
-            return resultado;
+            ViewBag.ModuloActivo = "fincas"; ViewBag.RolActivo = "Dueno"; ViewBag.TituloPagina = "Registrar finca";
+            ViewBag.SubtituloPagina = "Complete la información principal de la propiedad para iniciar el proceso.";
+            ViewBag.BreadcrumbPadreTexto = "Mis fincas"; ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas"); ViewBag.BreadcrumbActual = "Registrar finca";
+        }
+        private void CargarListadoViewBag()
+        {
+            ViewBag.ModuloActivo = "fincas"; ViewBag.RolActivo = "Dueno"; ViewBag.TituloPagina = "Mis fincas";
+            ViewBag.SubtituloPagina = "Consulte el estado de sus propiedades registradas y sus procesos asociados."; ViewBag.BreadcrumbActual = "Mis fincas";
+        }
+        private void CargarDetalleViewBag()
+        {
+            ViewBag.ModuloActivo = "fincas"; ViewBag.RolActivo = "Dueno"; ViewBag.TituloPagina = "Detalle de finca";
+            ViewBag.SubtituloPagina = "Visualice la información general, evaluación, evidencias y plan de pago.";
+            ViewBag.BreadcrumbPadreTexto = "Mis fincas"; ViewBag.BreadcrumbPadreUrl = Url.Action("MisFincas", "Fincas"); ViewBag.BreadcrumbActual = "Detalle de finca";
         }
     }
 }

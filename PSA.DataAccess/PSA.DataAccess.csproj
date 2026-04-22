@@ -10,11 +10,26 @@
 
 	<ItemGroup>
 		<Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+		<Compile Include="DAO\EvaluacionDAO.cs" />
+		<Compile Include="DAO\FincaEvidenciaDAO.cs" />
 		<Compile Include="DbContextHelper.cs" />
+		<Compile Include="IDbConnectionFactory.cs" />
+		<Compile Include="SqlConnectionFactory.cs" />
 		<Compile Include="DAO\FincaDAO.cs" />
+		<Compile Include="DAO\DashboardDAO.cs" />
+		<Compile Include="DAO\AuditoriaLogDAO.cs" />
+		<Compile Include="DAO\RolPermisoDAO.cs" />
+		<Compile Include="DAO\ConfiguracionPagoDAO.cs" />
+		<Compile Include="DAO\PlanPagoDAO.cs" />
+		<Compile Include="DAO\CuentaBancariaDAO.cs" />
+		<Compile Include="DAO\EvaluacionTecnicaDAO.cs" />
+		<Compile Include="DAO\EvaluacionEvidenciaDAO.cs" />
 		<Compile Include="DAO\RecuperacionContrasenaDAO.cs" />
+		<Compile Include="DAO\ReportesDAO.cs" />
 		<Compile Include="DAO\TokenRecuperacionDAO.cs" />
 		<Compile Include="DAO\UsuarioDAO.cs" />
+		<Compile Include="DAO\LandingDAO.cs" />
+		<Compile Include="DAO\NotificacionDAO.cs" />
 		<ProjectReference Include="..\PSA.EntidadesDTO\PSA.EntidadesDTO.csproj" />
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
 	</ItemGroup>

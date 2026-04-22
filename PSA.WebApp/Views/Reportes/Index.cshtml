@@ -1,30 +1,38 @@
+@model PSA.WebApp.Models.ReportesIndexViewModel
 @{
-    ViewData["Title"] = "Reportes";
+    ViewData["Title"] = "Inicio de reportes";
 }
 <section class="seccion-pagina">
     <div class="cabecera-pagina">
         <div>
-            <span class="eyebrow">Consulta analítica</span>
-            <h2>Reportes del sistema</h2>
-            <p>Punto de entrada para reportes operativos, técnicos y administrativos.</p>
+            <span class="eyebrow">Reportes</span>
+            <h2>Centro de reportes</h2>
+            <p>Seleccione el reporte que desea consultar.</p>
         </div>
     </div>
 
     <div class="grid-tarjetas-kpi">
-        <a class="tarjeta-kpi" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">
-            <span class="etiqueta-kpi">Reporte técnico</span>
-            <strong>Disponible</strong>
-            <small>Evaluaciones por período</small>
-        </a>
-        <a class="tarjeta-kpi" asp-controller="Pagos" asp-action="PlanesPago">
-            <span class="etiqueta-kpi">Reporte financiero</span>
-            <strong>Disponible</strong>
-            <small>Cuotas por estado</small>
-        </a>
-        <a class="tarjeta-kpi" asp-controller="Administracion" asp-action="AuditoriaLogs">
-            <span class="etiqueta-kpi">Reporte auditoría</span>
-            <strong>Disponible</strong>
-            <small>Eventos críticos</small>
-        </a>
+        @if (Model.EsDueno)
+        {
+            <a class="tarjeta-kpi" asp-action="DuenoFincas"><strong>Mis fincas</strong><small>Estado general y evaluación</small></a>
+            <a class="tarjeta-kpi" asp-action="DuenoPagos"><strong>Pagos</strong><small>Plan, cuotas y transacciones</small></a>
+        }
+
+        @if (Model.EsIngeniero)
+        {
+            <a class="tarjeta-kpi" asp-action="IngenieroPendientes"><strong>Fincas pendientes</strong><small>Bandeja de pendientes</small></a>
+            <a class="tarjeta-kpi" asp-action="IngenieroEvaluaciones"><strong>Evaluaciones</strong><small>En proceso y finalizadas</small></a>
+            <a class="tarjeta-kpi" asp-action="IngenieroTecnico"><strong>Reporte técnico</strong><small>Ajustes y decisión por finca</small></a>
+        }
+
+        @if (Model.EsAdmin)
+        {
+            <a class="tarjeta-kpi" asp-action="AdminUsuarios"><strong>Usuarios y roles</strong><small>Activos e inactivos</small></a>
+            <a class="tarjeta-kpi" asp-action="AdminFincasEstado"><strong>Fincas por estado</strong><small>Registradas y evaluación</small></a>
+            <a class="tarjeta-kpi" asp-action="AdminEvaluaciones"><strong>Evaluaciones técnicas</strong><small>Resultado y observaciones</small></a>
+            <a class="tarjeta-kpi" asp-action="AdminPagos"><strong>Pagos</strong><small>Planes y cuotas</small></a>
+            <a class="tarjeta-kpi" asp-action="AdminResumenActividad"><strong>Resumen de actividad</strong><small>Indicadores del sistema</small></a>
+            <a class="tarjeta-kpi" asp-action="AdminAuditoria"><strong>Auditoría crítica</strong><small>Movimientos relevantes</small></a>
+        }
     </div>
 </section>

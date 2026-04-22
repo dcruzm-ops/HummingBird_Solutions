@@ -1,5 +1,7 @@
+@model PSA.WebApp.Models.DashboardIngenieroViewModel
 @{
     ViewData["Title"] = "Dashboard del ingeniero";
+    var forecast = ViewBag.ForecastProvincias as Dictionary<string, string> ?? new Dictionary<string, string>();
 }
 <section class="seccion-pagina ingeniero-dashboard">
     <div class="cabecera-pagina">
@@ -14,29 +16,106 @@
     <div class="grid-tarjetas-kpi">
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Fincas pendientes</span>
-            <strong>6</strong>
-            <small>Por revisar esta semana</small>
+            <strong>@Model.FincasPendientes</strong>
+            <small>Con evaluación en estado Pendiente</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Evaluaciones abiertas</span>
-            <strong>4</strong>
-            <small>2 requieren visita</small>
+            <strong>@Model.EvaluacionesAbiertas</strong>
+            <small>Asignadas al ingeniero actual</small>
         </article>
         <article class="tarjeta-kpi">
             <span class="etiqueta-kpi">Decisiones emitidas</span>
-            <strong>12</strong>
+            <strong>@Model.DecisionesMesActual</strong>
             <small>Durante el mes actual</small>
         </article>
     </div>
 
-    <section class="tarjeta-panel">
+    <section class="tarjeta-panel mt-4">
         <div class="cabecera-bloque">
-            <h3>Próximas acciones</h3>
+            <h3>Pronóstico del tiempo para hoy</h3>
         </div>
-        <ul class="lista-timeline">
-            <li><a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="12">Registrar visita técnica de la finca #12.</a></li>
-            <li><a asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-fincaId="2">Adjuntar evidencia técnica de la finca “Río Verde”.</a></li>
-            <li><a asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Emitir decisión técnica para expediente PSA-2026-004.</a></li>
-        </ul>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Provincia</th>
+                        <th>Pronóstico</th>
+                        <th>Icono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (forecast.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="3">No hay pronóstico disponible en este momento.</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var item in forecast)
+                        {
+                            var icono = item.Value switch
+                            {
+                                "Soleado" => "☀️",
+                                "Lluvioso" => "🌧️",
+                                "Lluvias aisladas" => "🌦️",
+                                "Parcialmente nublado" => "⛅",
+                                _ => "🌤️"
+                            };
+                            <tr>
+                                <td>@item.Key</td>
+                                <td>@item.Value</td>
+                                <td class="celda-icono-pronostico" aria-label="icono pronóstico">@icono</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel mt-4">
+        <div class="cabecera-bloque">
+            <h3>Cola de propiedades pendientes de visita</h3>
+        </div>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Evaluación</th>
+                        <th>Finca</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.ColaPendientesVisita.Any())
+                    {
+                        @foreach (var item in Model.ColaPendientesVisita)
+                        {
+                            <tr>
+                                <td>#@item.IdEvaluacion</td>
+                                <td>@item.NombreFinca</td>
+                                <td>@item.Provincia, @item.Canton, @item.Distrito</td>
+                                <td>@item.EstadoEvaluacion</td>
+                                <td>
+                                    <a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
+                                        @(item.EstadoEvaluacion == "En proceso" ? "Continuar" : "Iniciar")
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">No hay propiedades pendientes de visita en este momento.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </section>
 </section>

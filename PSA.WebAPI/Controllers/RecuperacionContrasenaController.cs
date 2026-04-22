@@ -2,177 +2,155 @@ using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
-using PSA.WebAPI.Services;
+using PSA.WebAPI.Services.Security;
 
 namespace PSA.WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RecuperacionContrasenaController : ControllerBase
+    public class RecuperacionContrasenaController(
+        RecuperacionContrasenaManager manager,
+        ISecurityThrottleService securityThrottleService) : BaseApiController
     {
-        private readonly RecuperacionContrasenaManager _manager;
-        private readonly IConfiguration _configuration;
-
-        public RecuperacionContrasenaController(
-            IConfiguration configuration,
-            RecuperacionContrasenaManager manager)
-        {
-            _configuration = configuration;
-            _manager = manager;
-        }
+        private readonly RecuperacionContrasenaManager _manager = manager;
+        private readonly ISecurityThrottleService _securityThrottleService = securityThrottleService;
 
         [HttpPost("solicitar")]
         public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarContrasenaDTO dto)
         {
+            var correo = dto?.Correo?.Trim() ?? string.Empty;
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+            var key = $"{correo}|{ip}";
+            if (_securityThrottleService.IsBlocked("password-recovery-request", key, out var retryAfter))
+            {
+                return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiadas solicitudes. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
+            }
+
             try
             {
                 if (dto == null || string.IsNullOrWhiteSpace(dto.Correo))
                 {
-                    return BadRequest(new RespuestaRecuperacionDTO
-                    {
-                        Exito = false,
-                        Mensaje = "Debe enviar un correo válido."
-                    });
+                    _securityThrottleService.RegisterFailure("password-recovery-request", key);
+                    return ApiValidationError("Solicitud inválida.", "Debe enviar un correo válido.");
                 }
 
-                var (token, nombreUsuario) = await _manager.GenerarTokenConNombreAsync(dto.Correo);
-                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"]?.TrimEnd('/');
-                var linkRecuperacion = string.IsNullOrWhiteSpace(webAppBaseUrl)
-                    ? null
-                    : $"{webAppBaseUrl}/Autenticacion/RestablecerContrasena?tokenRecuperacion={Uri.EscapeDataString(token)}";
-
-                var respuesta = new RespuestaRecuperacionDTO
+                await _manager.SolicitarRecuperacionAsync(dto.Correo);
+                _securityThrottleService.RegisterSuccess("password-recovery-request", key);
+                return ApiOk(new RespuestaRecuperacionDTO
                 {
                     Exito = true,
-                    Mensaje = "Solicitud procesada correctamente.",
-                    LinkRecuperacion = linkRecuperacion,
-                    CorreoDestino = dto.Correo,
-                    NombreUsuario = nombreUsuario
-                };
-
-                var smtp = new SmtpSettingsDTO
-                {
-                    Host = _configuration["SmtpSettings:Host"] ?? string.Empty,
-                    Port = int.TryParse(_configuration["SmtpSettings:Port"], out var port) ? port : 587,
-                    EnableSsl = bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) ? ssl : true,
-                    FromName = _configuration["SmtpSettings:FromName"] ?? string.Empty,
-                    FromEmail = _configuration["SmtpSettings:FromEmail"] ?? string.Empty,
-                    Username = _configuration["SmtpSettings:Username"] ?? string.Empty,
-                    Password = _configuration["SmtpSettings:Password"] ?? string.Empty
-                };
-
-                var smtpConfigurado = !string.IsNullOrWhiteSpace(smtp.Host)
-                    && !string.IsNullOrWhiteSpace(smtp.FromEmail)
-                    && !string.IsNullOrWhiteSpace(smtp.Username)
-                    && !string.IsNullOrWhiteSpace(smtp.Password);
-
-                if (respuesta.Exito
-                    && smtpConfigurado
-                    && !string.IsNullOrWhiteSpace(respuesta.LinkRecuperacion)
-                    && !string.IsNullOrWhiteSpace(respuesta.CorreoDestino))
-                {
-                    var correoService = new CorreoService(smtp);
-                    correoService.EnviarCorreoRecuperacion(
-                        respuesta.CorreoDestino,
-                        respuesta.NombreUsuario ?? "usuario",
-                        respuesta.LinkRecuperacion
-                    );
-                }
-                else if (respuesta.Exito && !smtpConfigurado)
-                {
-                    respuesta.Mensaje = "Solicitud procesada. SMTP no configurado, por lo que no se envió correo de recuperación.";
-                }
-
-                respuesta.LinkRecuperacion = null;
-                respuesta.CorreoDestino = null;
-                respuesta.NombreUsuario = null;
-
-                return Ok(respuesta);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new RespuestaRecuperacionDTO
-                {
-                    Exito = false,
-                    Mensaje = $"Error al procesar la recuperación: {ex.Message}"
+                    Mensaje = "Solicitud procesada correctamente."
                 });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _securityThrottleService.RegisterFailure("password-recovery-request", key);
+                return ApiValidationError("No fue posible procesar la solicitud.", "Si el correo existe y está habilitado, recibirá instrucciones.", ex.Message);
+            }
+            catch (Exception)
+            {
+                _securityThrottleService.RegisterFailure("password-recovery-request", key);
+                return ApiError(StatusCodes.Status500InternalServerError, "internal_error", "Error al procesar la recuperación.");
             }
         }
 
         [HttpPost("validar-token")]
         public async Task<IActionResult> ValidarToken([FromBody] ValidarTokenDTO dto)
         {
+            var email = dto?.Email?.Trim() ?? string.Empty;
+            var token = dto?.Token?.Trim() ?? string.Empty;
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+            var key = $"{email}|{ip}|{token}";
+
+            if (_securityThrottleService.IsBlocked("password-recovery-validate", key, out var retryAfter))
+            {
+                return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiados intentos de validación. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
+            }
+
             try
             {
-                if (dto == null || string.IsNullOrWhiteSpace(dto.Token))
+                if (dto == null || string.IsNullOrWhiteSpace(dto.Token) || string.IsNullOrWhiteSpace(dto.Email))
                 {
-                    return BadRequest(new RespuestaRecuperacionDTO
-                    {
-                        Exito = false,
-                        Mensaje = "Debe enviar un token válido."
-                    });
+                    _securityThrottleService.RegisterFailure("password-recovery-validate", key);
+                    return ApiValidationError("Solicitud inválida.", "Debe enviar token y correo válidos.");
                 }
 
-                var esValido = await _manager.TokenEsValidoAsync(dto.Token);
-                var respuesta = new RespuestaRecuperacionDTO
+                var validacion = await _manager.ValidarTokenAsync(dto.Token, dto.Email);
+                var mensaje = validacion.Estado switch
                 {
-                    Exito = esValido,
-                    Mensaje = esValido
-                        ? "Token válido."
-                        : "El token es inválido o expiró."
+                    PSA.AppCore.Services.Security.EstadoTokenRecuperacion.Vigente => "Token válido.",
+                    PSA.AppCore.Services.Security.EstadoTokenRecuperacion.Expirado => "token expirado",
+                    PSA.AppCore.Services.Security.EstadoTokenRecuperacion.Utilizado => "token ya utilizado",
+                    _ => "token inválido"
                 };
-                return Ok(respuesta);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new RespuestaRecuperacionDTO
+
+                if (!validacion.EsValido)
                 {
-                    Exito = false,
-                    Mensaje = $"Error al validar el token: {ex.Message}"
+                    _securityThrottleService.RegisterFailure("password-recovery-validate", key);
+                    return ApiValidationError("No fue posible validar el token.", mensaje);
+                }
+
+                _securityThrottleService.RegisterSuccess("password-recovery-validate", key);
+                return ApiOk(new RespuestaRecuperacionDTO
+                {
+                    Exito = true,
+                    Mensaje = mensaje
                 });
+            }
+            catch (Exception)
+            {
+                _securityThrottleService.RegisterFailure("password-recovery-validate", key);
+                return ApiError(StatusCodes.Status500InternalServerError, "internal_error", "Error al validar el token.");
             }
         }
 
         [HttpPost("restablecer")]
         public async Task<IActionResult> Restablecer([FromBody] RestablecerContrasenaDTO dto)
         {
+            var email = dto?.Email?.Trim() ?? string.Empty;
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+            var key = $"{email}|{ip}";
+
+            if (_securityThrottleService.IsBlocked("password-recovery-reset", key, out var retryAfter))
+            {
+                return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiados intentos de restablecimiento. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
+            }
+
             try
             {
                 if (dto == null
+                    || string.IsNullOrWhiteSpace(dto.Email)
                     || string.IsNullOrWhiteSpace(dto.Token)
                     || string.IsNullOrWhiteSpace(dto.NuevaContrasena)
                     || string.IsNullOrWhiteSpace(dto.ConfirmarContrasena))
                 {
-                    return BadRequest(new RespuestaRecuperacionDTO
-                    {
-                        Exito = false,
-                        Mensaje = "Debe completar todos los campos."
-                    });
+                    _securityThrottleService.RegisterFailure("password-recovery-reset", key);
+                    return ApiValidationError("Solicitud inválida.", "Debe completar todos los campos.");
                 }
 
                 if (!string.Equals(dto.NuevaContrasena, dto.ConfirmarContrasena, StringComparison.Ordinal))
                 {
-                    return BadRequest(new RespuestaRecuperacionDTO
-                    {
-                        Exito = false,
-                        Mensaje = "Las contraseñas no coinciden."
-                    });
+                    _securityThrottleService.RegisterFailure("password-recovery-reset", key);
+                    return ApiValidationError("No fue posible restablecer la contraseña.", "Las contraseñas no coinciden.");
                 }
 
-                await _manager.RestablecerContrasenaAsync(dto.Token, dto.NuevaContrasena);
-                return Ok(new RespuestaRecuperacionDTO
+                await _manager.RestablecerContrasenaAsync(dto.Token, dto.Email, dto.NuevaContrasena);
+                _securityThrottleService.RegisterSuccess("password-recovery-reset", key);
+                return ApiOk(new RespuestaRecuperacionDTO
                 {
                     Exito = true,
                     Mensaje = "Contraseña restablecida correctamente."
                 });
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                return StatusCode(500, new RespuestaRecuperacionDTO
-                {
-                    Exito = false,
-                    Mensaje = $"Error al restablecer la contraseña: {ex.Message}"
-                });
+                _securityThrottleService.RegisterFailure("password-recovery-reset", key);
+                return ApiValidationError("No fue posible restablecer la contraseña.", ex.Message);
+            }
+            catch (Exception)
+            {
+                _securityThrottleService.RegisterFailure("password-recovery-reset", key);
+                return ApiError(StatusCodes.Status500InternalServerError, "internal_error", "Error al restablecer la contraseña.");
             }
         }
     }

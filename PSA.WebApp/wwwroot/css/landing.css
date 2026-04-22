@@ -92,7 +92,7 @@
 .hb-landing .btn-accent { background-color: var(--color-accent); color: #fff; }
 .hb-landing .btn-accent:hover { background-color: var(--color-accent-hover); transform: translateY(-2px); color: #fff; }
 .hb-landing .btn-outline { background: transparent; color: var(--color-text-primary); border: 1px solid var(--color-border-strong); }
-.hb-landing .btn-outline:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.hb-landing .btn-outline:hover { border-color: var(--color-secondary); color: var(--color-secondary); }
 
 .hb-navbar {
   position: sticky;
@@ -240,12 +240,28 @@
 }
 
 .hb-navbar nav a:hover {
-  color: #6eb6ff;
+  color: #7edfa7;
 }
 
 .hb-landing .card h3,
 .hb-landing .card h4 {
   color: #f3f9ff;
+}
+
+.hb-landing .card-equipo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.hb-landing .card-equipo .badge {
+  width: fit-content;
+}
+
+.hb-landing .card-equipo__descripcion {
+  margin-bottom: 0;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {

@@ -2,16 +2,27 @@ using Microsoft.Data.SqlClient;
     using PSA.EntidadesDTO.DTOs;
     using PSA.EntidadesDTO.DTOs.Fincas;
 
-    namespace PSA.DataAccess.DAO
+    using PSA.DataAccess;
+
+namespace PSA.DataAccess.DAO
     {
+        public sealed class RenovacionElegibilidadDbDTO
+        {
+            public bool TienePlanVigente { get; set; }
+            public string? EstadoPlanActual { get; set; }
+            public int CuotasRestantes { get; set; }
+            public int AnioPlanActual { get; set; }
+            public bool ExisteRenovacionPendienteMismoCiclo { get; set; }
+        }
+
         public class FincaDAO
         {
-            private readonly string _connectionString;
+            private readonly IDbConnectionFactory _connectionFactory;
 
-            public FincaDAO(string connectionString)
-            {
-                _connectionString = connectionString;
-            }
+            public FincaDAO(IDbConnectionFactory connectionFactory)
+        {
+            _connectionFactory = connectionFactory;
+        }
 
             public async Task<List<FincaResumenDTO>> ObtenerPorPropietarioAsync(int idPropietario)
             {
@@ -38,7 +49,7 @@ ORDER BY f.FechaRegistro DESC;";
 
                 var resultado = new List<FincaResumenDTO>();
 
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 using var command = new SqlCommand(sql, connection);
                 command.Parameters.AddWithValue("@IdPropietario", idPropietario);
 
@@ -118,7 +129,7 @@ OUTER APPLY (
 WHERE f.IdFinca = @IdFinca
   AND f.IdPropietario = @IdPropietario;";
 
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 using var command = new SqlCommand(sql, connection);
                 command.Parameters.AddWithValue("@IdFinca", idFinca);
                 command.Parameters.AddWithValue("@IdPropietario", idPropietario);
@@ -162,7 +173,7 @@ WHERE f.IdFinca = @IdFinca
             {
                 var list = new List<FincaDTO>();
 
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 SELECT IdFinca, IdPropietario, NombreFinca, Provincia, Canton, Distrito,
        DireccionExacta, Latitud, Longitud, Hectareas, Vegetacion,
@@ -184,7 +195,7 @@ FROM dbo.Fincas";
 
             public FincaDTO? RetrieveById(int id)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 SELECT IdFinca, IdPropietario, NombreFinca, Provincia, Canton, Distrito,
        DireccionExacta, Latitud, Longitud, Hectareas, Vegetacion,
@@ -203,7 +214,7 @@ WHERE IdFinca = @IdFinca";
 
             public void Create(FincaDTO finca)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 INSERT INTO dbo.Fincas
 (IdPropietario, NombreFinca, Provincia, Canton, Distrito, DireccionExacta,
@@ -222,7 +233,7 @@ VALUES
 
             public void Update(FincaDTO finca)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = @"
 UPDATE dbo.Fincas
 SET IdPropietario = @IdPropietario,
@@ -251,7 +262,7 @@ WHERE IdFinca = @IdFinca";
 
             public void Delete(int id)
             {
-                using var connection = new SqlConnection(_connectionString);
+                using var connection = _connectionFactory.CreateConnection();
                 const string query = "DELETE FROM dbo.Fincas WHERE IdFinca = @IdFinca";
 
                 using var command = new SqlCommand(query, connection);
@@ -309,136 +320,172 @@ WHERE IdFinca = @IdFinca";
                 command.Parameters.AddWithValue("@FechaActualizacion", finca.FechaActualizacion);
             }
 
-            public async Task<int> CrearFincaAsync(RegistrarFincaDTO dto)
+        public async Task<int> CrearFincaAsync(RegistrarFincaDTO dto)
+        {
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                using var command = new SqlCommand("dbo.SP_Fincas_Registrar", connection)
+                {
+                    CommandType = System.Data.CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
+                command.Parameters.AddWithValue("@NombreFinca", dto.NombreFinca);
+                command.Parameters.AddWithValue("@Provincia", dto.Provincia);
+                command.Parameters.AddWithValue("@Canton", dto.Canton);
+                command.Parameters.AddWithValue("@Distrito", dto.Distrito);
+                command.Parameters.AddWithValue("@DireccionExacta", (object?)dto.DireccionExacta ?? DBNull.Value);
+                command.Parameters.AddWithValue("@Latitud", dto.Latitud);
+                command.Parameters.AddWithValue("@Longitud", dto.Longitud);
+                command.Parameters.AddWithValue("@Hectareas", dto.Hectareas);
+                command.Parameters.AddWithValue("@Vegetacion", dto.Vegetacion);
+                command.Parameters.AddWithValue("@TieneRecursosHidricos", dto.TieneRecursosHidricos);
+                command.Parameters.AddWithValue("@TieneRiosOQuebradas", dto.TieneRiosOQuebradas);
+                command.Parameters.AddWithValue("@TieneNacientes", dto.TieneNacientes);
+                command.Parameters.AddWithValue("@CantidadNacientes", dto.CantidadNacientes);
+                command.Parameters.AddWithValue("@UsoSuelo", dto.UsoSuelo);
+                command.Parameters.AddWithValue("@Pendiente", dto.Pendiente);
+
+                await connection.OpenAsync();
+                var resultado = await command.ExecuteScalarAsync();
+                return resultado != null ? Convert.ToInt32(resultado) : 0;
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException($"No fue posible registrar la finca: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error inesperado al registrar la finca.", ex);
+            }
+        }
+
+        public async Task<RenovacionElegibilidadDbDTO?> ObtenerElegibilidadRenovacionAsync(int idFinca, int idPropietario)
         {
             const string sql = @"
-INSERT INTO Fincas
-(
-    IdPropietario,
-    NombreFinca,
-    Provincia,
-    Canton,
-    Distrito,
-    DireccionExacta,
-    Latitud,
-    Longitud,
-    Hectareas,
-    Vegetacion,
-    TieneRecursosHidricos,
-    UsoSuelo,
-    Pendiente,
-    EstadoFinca
-)
-VALUES
-(
-    @IdPropietario,
-    @NombreFinca,
-    @Provincia,
-    @Canton,
-    @Distrito,
-    @DireccionExacta,
-    @Latitud,
-    @Longitud,
-    @Hectareas,
-    @Vegetacion,
-    @TieneRecursosHidricos,
-    @UsoSuelo,
-    @Pendiente,
-    'Registrada'
-);
-SELECT CAST(SCOPE_IDENTITY() AS INT);";
+SELECT TOP 1
+    CAST(CASE WHEN pp.IdPlanPago IS NULL THEN 0 ELSE 1 END AS bit) AS TienePlanVigente,
+    pp.EstadoPlan AS EstadoPlanActual,
+    ISNULL((
+        SELECT COUNT(1)
+        FROM dbo.CuotasPago c
+        WHERE c.IdPlanPago = pp.IdPlanPago
+          AND c.EstadoCuota <> 'Ejecutada'
+    ), 0) AS CuotasRestantes,
+    ISNULL(pp.Anio, YEAR(SYSDATETIME())) AS AnioPlanActual,
+    CAST(CASE WHEN EXISTS (
+        SELECT 1
+        FROM dbo.EvaluacionesTecnicas e
+        WHERE e.IdFinca = f.IdFinca
+          AND e.EstadoEvaluacion IN ('Pendiente','En Proceso')
+    ) THEN 1 ELSE 0 END AS bit) AS ExisteRenovacionPendienteMismoCiclo
+FROM dbo.Fincas f
+OUTER APPLY (
+    SELECT TOP 1 p.IdPlanPago, p.EstadoPlan, p.Anio
+    FROM dbo.PlanesPago p
+    WHERE p.IdFinca = f.IdFinca
+    ORDER BY p.Anio DESC, p.IdPlanPago DESC
+) pp
+WHERE f.IdFinca = @IdFinca
+  AND f.IdPropietario = @IdPropietario;";
 
-            using var connection = new SqlConnection(_connectionString);
+            using var connection = _connectionFactory.CreateConnection();
             using var command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
-            command.Parameters.AddWithValue("@NombreFinca", dto.NombreFinca);
-            command.Parameters.AddWithValue("@Provincia", dto.Provincia);
-            command.Parameters.AddWithValue("@Canton", dto.Canton);
-            command.Parameters.AddWithValue("@Distrito", dto.Distrito);
-            command.Parameters.AddWithValue("@DireccionExacta", (object?)dto.DireccionExacta ?? DBNull.Value);
-            command.Parameters.AddWithValue("@Latitud", dto.Latitud);
-            command.Parameters.AddWithValue("@Longitud", dto.Longitud);
-            command.Parameters.AddWithValue("@Hectareas", dto.Hectareas);
-            command.Parameters.AddWithValue("@Vegetacion", dto.Vegetacion);
-            command.Parameters.AddWithValue("@TieneRecursosHidricos", dto.TieneRecursosHidricos);
-            command.Parameters.AddWithValue("@UsoSuelo", dto.UsoSuelo);
-            command.Parameters.AddWithValue("@Pendiente", dto.Pendiente);
-
+            command.Parameters.AddWithValue("@IdFinca", idFinca);
+            command.Parameters.AddWithValue("@IdPropietario", idPropietario);
             await connection.OpenAsync();
-            var resultado = await command.ExecuteScalarAsync();
-            return resultado != null ? Convert.ToInt32(resultado) : 0;
+            using var reader = await command.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+            {
+                return null;
+            }
+
+            return new RenovacionElegibilidadDbDTO
+            {
+                TienePlanVigente = reader.GetBoolean(reader.GetOrdinal("TienePlanVigente")),
+                EstadoPlanActual = reader["EstadoPlanActual"] == DBNull.Value ? null : reader["EstadoPlanActual"]?.ToString(),
+                CuotasRestantes = reader.GetInt32(reader.GetOrdinal("CuotasRestantes")),
+                AnioPlanActual = reader.GetInt32(reader.GetOrdinal("AnioPlanActual")),
+                ExisteRenovacionPendienteMismoCiclo = reader.GetBoolean(reader.GetOrdinal("ExisteRenovacionPendienteMismoCiclo"))
+            };
         }
 
         public async Task<bool> ActualizarFincaAsync(int idFinca, RegistrarFincaDTO dto)
         {
-            const string sql = @"
-UPDATE Fincas
-SET NombreFinca = @NombreFinca,
-    Provincia = @Provincia,
-    Canton = @Canton,
-    Distrito = @Distrito,
-    DireccionExacta = @DireccionExacta,
-    Latitud = @Latitud,
-    Longitud = @Longitud,
-    Hectareas = @Hectareas,
-    Vegetacion = @Vegetacion,
-    TieneRecursosHidricos = @TieneRecursosHidricos,
-    UsoSuelo = @UsoSuelo,
-    Pendiente = @Pendiente,
-    FechaActualizacion = SYSDATETIME()
-WHERE IdFinca = @IdFinca
-  AND IdPropietario = @IdPropietario;";
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                using var command = new SqlCommand("dbo.SP_Fincas_Actualizar", connection)
+                {
+                    CommandType = System.Data.CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@IdFinca", idFinca);
+                command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
+                command.Parameters.AddWithValue("@NombreFinca", dto.NombreFinca);
+                command.Parameters.AddWithValue("@Provincia", dto.Provincia);
+                command.Parameters.AddWithValue("@Canton", dto.Canton);
+                command.Parameters.AddWithValue("@Distrito", dto.Distrito);
+                command.Parameters.AddWithValue("@DireccionExacta", (object?)dto.DireccionExacta ?? DBNull.Value);
+                command.Parameters.AddWithValue("@Latitud", dto.Latitud);
+                command.Parameters.AddWithValue("@Longitud", dto.Longitud);
+                command.Parameters.AddWithValue("@Hectareas", dto.Hectareas);
+                command.Parameters.AddWithValue("@Vegetacion", dto.Vegetacion);
+                command.Parameters.AddWithValue("@TieneRecursosHidricos", dto.TieneRecursosHidricos);
+                command.Parameters.AddWithValue("@TieneRiosOQuebradas", dto.TieneRiosOQuebradas);
+                command.Parameters.AddWithValue("@TieneNacientes", dto.TieneNacientes);
+                command.Parameters.AddWithValue("@CantidadNacientes", dto.CantidadNacientes);
+                command.Parameters.AddWithValue("@UsoSuelo", dto.UsoSuelo);
+                command.Parameters.AddWithValue("@Pendiente", dto.Pendiente);
 
-            using var connection = new SqlConnection(_connectionString);
-            using var command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@IdFinca", idFinca);
-            command.Parameters.AddWithValue("@IdPropietario", dto.IdPropietario);
-            command.Parameters.AddWithValue("@NombreFinca", dto.NombreFinca);
-            command.Parameters.AddWithValue("@Provincia", dto.Provincia);
-            command.Parameters.AddWithValue("@Canton", dto.Canton);
-            command.Parameters.AddWithValue("@Distrito", dto.Distrito);
-            command.Parameters.AddWithValue("@DireccionExacta", (object?)dto.DireccionExacta ?? DBNull.Value);
-            command.Parameters.AddWithValue("@Latitud", dto.Latitud);
-            command.Parameters.AddWithValue("@Longitud", dto.Longitud);
-            command.Parameters.AddWithValue("@Hectareas", dto.Hectareas);
-            command.Parameters.AddWithValue("@Vegetacion", dto.Vegetacion);
-            command.Parameters.AddWithValue("@TieneRecursosHidricos", dto.TieneRecursosHidricos);
-            command.Parameters.AddWithValue("@UsoSuelo", dto.UsoSuelo);
-            command.Parameters.AddWithValue("@Pendiente", dto.Pendiente);
-
-            await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+                await connection.OpenAsync();
+                var filasAfectadas = Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
+                return filasAfectadas > 0;
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException($"No fue posible actualizar la finca: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error inesperado al actualizar la finca.", ex);
+            }
         }
 
         public async Task<bool> EliminarFincaAsync(int idFinca, int idPropietario)
         {
-            const string sql = @"
-DELETE FROM Fincas
-WHERE IdFinca = @IdFinca
-  AND IdPropietario = @IdPropietario;";
+            try
+            {
+                using var connection = _connectionFactory.CreateConnection();
+                using var command = new SqlCommand("dbo.SP_Fincas_Eliminar", connection)
+                {
+                    CommandType = System.Data.CommandType.StoredProcedure
+                };
+                command.Parameters.AddWithValue("@IdFinca", idFinca);
+                command.Parameters.AddWithValue("@IdPropietario", idPropietario);
 
-            using var connection = new SqlConnection(_connectionString);
-            using var command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@IdFinca", idFinca);
-            command.Parameters.AddWithValue("@IdPropietario", idPropietario);
-
-            await connection.OpenAsync();
-            return await command.ExecuteNonQueryAsync() > 0;
+                await connection.OpenAsync();
+                var filasAfectadas = Convert.ToInt32(await command.ExecuteScalarAsync() ?? 0);
+                return filasAfectadas > 0;
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException($"No fue posible eliminar la finca: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Error inesperado al eliminar la finca.", ex);
+            }
         }
 
         public async Task<List<string>> ObtenerCatalogoFactorAsync(string tipoFactor)
         {
-            const string sql = @"
-SELECT Valor
-FROM CatalogoFincaValores
-WHERE TipoCatalogo = @TipoCatalogo
-  AND Activo = 1
-ORDER BY OrdenVisual, Valor;";
-
             var resultados = new List<string>();
 
-            using var connection = new SqlConnection(_connectionString);
-            using var command = new SqlCommand(sql, connection);
+            using var connection = _connectionFactory.CreateConnection();
+            using var command = new SqlCommand("dbo.SP_Fincas_CatalogoValores", connection)
+            {
+                CommandType = System.Data.CommandType.StoredProcedure
+            };
             command.Parameters.AddWithValue("@TipoCatalogo", tipoFactor);
 
             await connection.OpenAsync();

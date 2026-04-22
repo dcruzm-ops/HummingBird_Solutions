@@ -1,26 +1,33 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PSA.AppCore.Managers;
+using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
+using PSA.EntidadesDTO.DTOs.Usuarios;
 using PSA.WebAPI.Services;
+using PSA.WebAPI.Services.Security;
 
 namespace PSA.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AutenticacionController : ControllerBase
+    public class AutenticacionController(
+        AutenticacionManager autenticacionManager,
+        IConfiguration configuration,
+        RolPermisoDAO rolPermisoDao,
+        UsuarioDAO usuarioDao,
+        IJwtTokenService jwtTokenService,
+        ISecurityThrottleService securityThrottleService) : BaseApiController
     {
-        private readonly AutenticacionManager _autenticacionManager;
-        private readonly IConfiguration _configuration;
+        private readonly AutenticacionManager _autenticacionManager = autenticacionManager;
+        private readonly IConfiguration _configuration = configuration;
+        private readonly RolPermisoDAO _rolPermisoDao = rolPermisoDao;
+        private readonly UsuarioDAO _usuarioDao = usuarioDao;
+        private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
+        private readonly ISecurityThrottleService _securityThrottleService = securityThrottleService;
 
-        public AutenticacionController(
-            AutenticacionManager autenticacionManager,
-            IConfiguration configuration)
-        {
-            _autenticacionManager = autenticacionManager;
-            _configuration = configuration;
-        }
-
+        [AllowAnonymous]
         [HttpPost("registrar")]
         public async Task<IActionResult> Registrar([FromBody] RegistrarUsuarioDTO dto)
         {
@@ -29,7 +36,7 @@ namespace PSA.WebAPI.Controllers
                 var idUsuario = await _autenticacionManager.RegistrarUsuarioAsync(dto);
                 await IntentarEnviarCorreoBienvenidaAsync(dto);
 
-                return Ok(new
+                return ApiCreated(new
                 {
                     IdUsuario = idUsuario,
                     Mensaje = "Usuario registrado correctamente."
@@ -37,27 +44,127 @@ namespace PSA.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Mensaje = ex.Message
-                });
+                return ApiValidationError("No fue posible registrar el usuario.", ex.Message);
             }
         }
 
+        [AllowAnonymous]
         [HttpPost("iniciar-sesion")]
         public async Task<IActionResult> IniciarSesion([FromBody] InicioSesionDTO dto)
         {
+            var email = dto.Email?.Trim() ?? string.Empty;
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-ip";
+            var compositeKey = $"{email}|{ip}";
+
+            if (_securityThrottleService.IsBlocked("login", compositeKey, out var retryAfter))
+            {
+                return ApiError(StatusCodes.Status429TooManyRequests, "rate_limited", $"Demasiados intentos. Intente nuevamente en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).");
+            }
+
+            RespuestaInicioSesionDTO respuesta;
             try
             {
-                var respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
-                return Ok(respuesta);
+                respuesta = await _autenticacionManager.IniciarSesionAsync(dto);
+                _securityThrottleService.RegisterSuccess("login", compositeKey);
             }
             catch (Exception ex)
             {
-                return BadRequest(new
-                {
-                    Mensaje = ex.Message
-                });
+                _securityThrottleService.RegisterFailure("login", compositeKey);
+                return ApiValidationError("Credenciales inválidas.", ex.Message);
+            }
+
+            var permisos = new List<string>();
+            try
+            {
+                permisos = await _rolPermisoDao.ObtenerCodigosPermisoPorRolAsync(respuesta.IdRol) ?? [];
+            }
+            catch
+            {
+                // Fallback a lista vacía para no bloquear el inicio de sesión.
+            }
+
+            respuesta.Permisos = permisos;
+
+            string? nombreRol = null;
+            try
+            {
+                nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(respuesta.IdRol);
+            }
+            catch
+            {
+                // El nombre de rol es opcional en el token.
+            }
+
+            var idRolAplicacion = NormalizarIdRolAplicacion(respuesta.IdRol, nombreRol, permisos);
+            respuesta.IdRol = idRolAplicacion;
+
+            try
+            {
+                respuesta.TokenAcceso = _jwtTokenService.CreateToken(
+                    respuesta.IdUsuario,
+                    idRolAplicacion,
+                    respuesta.Email,
+                    respuesta.NombreCompleto,
+                    permisos,
+                    nombreRol);
+            }
+            catch
+            {
+                // No se bloquea el login web por falla de token API.
+                respuesta.TokenAcceso = string.Empty;
+            }
+
+            return ApiOk(respuesta, "Inicio de sesión exitoso.");
+        }
+
+        private static int NormalizarIdRolAplicacion(int idRolActual, string? nombreRol, IReadOnlyCollection<string> permisos)
+        {
+            if (idRolActual is 1 or 2 or 3)
+            {
+                return idRolActual;
+            }
+
+            var nombreNormalizado = (nombreRol ?? string.Empty).Trim().ToLowerInvariant();
+            if (nombreNormalizado.Contains("admin"))
+            {
+                return 1;
+            }
+
+            if (nombreNormalizado.Contains("ing"))
+            {
+                return 3;
+            }
+
+            if (nombreNormalizado.Contains("due") || nombreNormalizado.Contains("prop"))
+            {
+                return 2;
+            }
+
+            if (permisos.Any(p => p.StartsWith("ADMIN_", StringComparison.OrdinalIgnoreCase)))
+            {
+                return 1;
+            }
+
+            if (permisos.Any(p => p.StartsWith("ING_", StringComparison.OrdinalIgnoreCase)))
+            {
+                return 3;
+            }
+
+            return 2;
+        }
+
+        [Authorize(Roles = "1")]
+        [HttpPost("asignar-rol")]
+        public async Task<IActionResult> AsignarRol([FromBody] AsignarRolUsuarioDTO dto)
+        {
+            try
+            {
+                await _autenticacionManager.AsignarRolAsync(dto);
+                return ApiOk(new { Mensaje = "Rol asignado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return ApiValidationError("No fue posible asignar el rol.", ex.Message);
             }
         }
 
@@ -74,7 +181,7 @@ namespace PSA.WebAPI.Controllers
                 {
                     Host = _configuration["SmtpSettings:Host"] ?? string.Empty,
                     Port = int.TryParse(_configuration["SmtpSettings:Port"], out var port) ? port : 587,
-                    EnableSsl = bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) ? ssl : true,
+                    EnableSsl = !bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) || ssl,
                     FromName = _configuration["SmtpSettings:FromName"] ?? string.Empty,
                     FromEmail = _configuration["SmtpSettings:FromEmail"] ?? string.Empty,
                     Username = _configuration["SmtpSettings:Username"] ?? string.Empty,
@@ -91,35 +198,20 @@ namespace PSA.WebAPI.Controllers
                     return Task.CompletedTask;
                 }
 
-                var urlLogin = $"{Request.Scheme}://{Request.Host}/Autenticacion/IniciarSesion";
-                var correoSoporte = _configuration["SmtpSettings:SupportEmail"] ?? "soporte@psacostarica.cr";
-                var fechaRegistro = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"]?.TrimEnd('/');
+                var baseUrl = string.IsNullOrWhiteSpace(webAppBaseUrl)
+                    ? "https://localhost:59664"
+                    : webAppBaseUrl;
+                var urlLogin = $"{baseUrl}/Autenticacion/IniciarSesion";
                 var nombreUsuario = string.IsNullOrWhiteSpace(dto.NombreCompleto) ? "usuario" : dto.NombreCompleto.Trim();
-
-                var cuerpo = $@"Hola {nombreUsuario},
-
-Tu registro en PSA Costa Rica se completó de manera exitosa el {fechaRegistro}.
-
-Ya puedes ingresar al sistema mediante el siguiente enlace:
-{urlLogin}
-
-Te recomendamos conservar este correo como comprobante de tu registro.
-
-Si no reconoces esta acción o consideras que el registro fue realizado por error, por favor contacta al equipo de soporte:
-{correoSoporte}
-
-Gracias por formar parte de PSA Costa Rica.
-
-Saludos,
-Equipo PSA Costa Rica
-
-Este es un correo automático. Por favor, no respondas a este mensaje.";
+                var rol = "Dueño de finca";
 
                 var correoService = new CorreoService(smtp);
-                correoService.EnviarCorreoTextoPlano(
+                correoService.EnviarCorreoBienvenida(
                     dto.Email.Trim(),
-                    "Bienvenido(a) a PSA Costa Rica",
-                    cuerpo
+                    nombreUsuario,
+                    rol,
+                    urlLogin
                 );
             }
             catch

@@ -115,6 +115,7 @@ main {
     padding: var(--espacio-6);
     max-width: calc(var(--ancho-contenido) + 2 * var(--espacio-6));
     width: 100%;
+    margin-inline: auto;
 }
 
 .grid-dos-columnas,
@@ -155,6 +156,72 @@ main {
     margin: 0;
     padding-left: 1.25rem;
     color: var(--color-texto-secundario);
+}
+
+.notificacion-item {
+    list-style: none;
+    margin-bottom: var(--espacio-3);
+    padding: var(--espacio-3) var(--espacio-4);
+    border: 1px solid var(--color-borde-suave);
+    border-left: 4px solid color-mix(in srgb, var(--color-texto-secundario) 55%, transparent);
+    background: var(--color-superficie-secundaria);
+    border-radius: var(--radio-md);
+    color: var(--color-texto-principal);
+}
+
+.notificacion-item--success {
+    border-left-color: var(--color-exito);
+    background: color-mix(in srgb, var(--color-exito) 12%, var(--color-superficie) 88%);
+}
+
+.notificacion-item--warning {
+    border-left-color: var(--color-advertencia);
+    background: color-mix(in srgb, var(--color-advertencia) 14%, var(--color-superficie) 86%);
+}
+
+.notificacion-item--error {
+    border-left-color: var(--color-error);
+    background: color-mix(in srgb, var(--color-error) 13%, var(--color-superficie) 87%);
+}
+
+.notificacion-item--info {
+    border-left-color: var(--color-info);
+    background: color-mix(in srgb, var(--color-info) 12%, var(--color-superficie) 88%);
+}
+
+.notificacion-item strong {
+    color: var(--color-texto-principal);
+}
+
+.notificacion-fecha {
+    display: inline-block;
+    margin-top: var(--espacio-1);
+    color: color-mix(in srgb, var(--color-texto-principal) 72%, var(--color-texto-secundario) 28%);
+    font-weight: var(--peso-seminegrita, 600);
+}
+
+html[data-theme="dark"] .notificacion-item {
+    background: color-mix(in srgb, var(--color-superficie-secundaria) 84%, #000 16%);
+}
+
+html[data-theme="dark"] .notificacion-item--success {
+    background: color-mix(in srgb, var(--color-exito) 16%, var(--color-superficie) 84%);
+}
+
+html[data-theme="dark"] .notificacion-item--warning {
+    background: color-mix(in srgb, var(--color-advertencia) 18%, var(--color-superficie) 82%);
+}
+
+html[data-theme="dark"] .notificacion-item--error {
+    background: color-mix(in srgb, var(--color-error) 18%, var(--color-superficie) 82%);
+}
+
+html[data-theme="dark"] .notificacion-item--info {
+    background: color-mix(in srgb, var(--color-info) 16%, var(--color-superficie) 84%);
+}
+
+html[data-theme="dark"] .notificacion-fecha {
+    color: #7CF7A1;
 }
 
 .lista-detalle {

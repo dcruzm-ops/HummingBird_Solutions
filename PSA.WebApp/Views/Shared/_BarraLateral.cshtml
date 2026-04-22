@@ -1,12 +1,28 @@
+@using System.Security.Claims
 @{
     var moduloActivo = (ViewBag.ModuloActivo as string ?? string.Empty).ToLowerInvariant();
-    var rolActivo = (ViewBag.RolActivo as string ?? "Dueno").ToLowerInvariant();
+    var controllerActual = (ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty).ToLowerInvariant();
+    var accionActual = (ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty).ToLowerInvariant();
+    var rolClaim = User.FindFirstValue(ClaimTypes.Role);
+    var rolActivo = rolClaim switch
+    {
+        "1" => "administrador",
+        "3" => "ingeniero",
+        _ => "dueno"
+    };
+
     var accionDashboard = rolActivo switch
     {
         "administrador" => "Administrador",
         "ingeniero" => "Ingeniero",
         _ => "Dueno"
     };
+
+    var ingenieroInicioActivo = controllerActual == "dashboard" && accionActual == "ingeniero";
+    var ingenieroPendientesActivo = controllerActual == "evaluaciones"
+        && (accionActual == "fincaspendientes" || accionActual == "nuevaevaluacion" || accionActual == "evaluacionesenproceso");
+    var ingenieroResultadosActivo = controllerActual == "evaluaciones"
+        && (accionActual == "historialevaluaciones" || accionActual == "detalleevaluacion" || accionActual == "fincasingeniero");
 }
 <aside class="barra-lateral" id="barraLateral">
     <div class="barra-lateral__marca">
@@ -17,38 +33,35 @@
     <nav class="menu-lateral" aria-label="Navegación principal">
         @if (rolActivo == "ingeniero")
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Dashboard</a>
-            <a class="item-menu @(moduloActivo == "evaluaciones" ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Evaluaciones</a>
+            <a class="item-menu @(ingenieroInicioActivo ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Ingeniero">Inicio</a>
+            <a class="item-menu @(ingenieroPendientesActivo ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="FincasPendientes">Visitas técnicas pendientes</a>
+            <a class="item-menu @(ingenieroResultadosActivo ? "activo" : string.Empty)" asp-controller="Evaluaciones" asp-action="HistorialEvaluaciones">Resultados de visitas técnicas</a>
             <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
-
-            <p class="menu-lateral__seccion">Próximamente</p>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Visitas técnicas</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Fincas en proceso</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Renovaciones anuales</a>
+            <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
+            <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
         }
         else if (rolActivo == "administrador")
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Dashboard</a>
-            <a class="item-menu @(moduloActivo == "administracion" ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Administración</a>
-            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Pagos</a>
-            <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
-
-            <p class="menu-lateral__seccion">Próximamente</p>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Roles y permisos</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Catálogos</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Auditoría</a>
+            <a class="item-menu @((controllerActual == "dashboard" && accionActual == "administrador") ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Administrador">Inicio</a>
+            <a class="item-menu @((controllerActual == "administracion" && (accionActual == "gestionusuarios" || accionActual == "crearusuario" || accionActual == "editarusuario" || accionActual == "reasignarcliente")) ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="GestionUsuarios">Usuarios</a>
+            <a class="item-menu @((controllerActual == "administracion" && accionActual == "rolespermisos") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="RolesPermisos">Roles y permisos</a>
+            <a class="item-menu @((controllerActual == "administracion" && accionActual == "validacioncuentasbancarias") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="ValidacionCuentasBancarias">Cuentas bancarias</a>
+            <a class="item-menu @((controllerActual == "administracion" && accionActual == "parametrospago") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="ParametrosPago">Configuración de pagos</a>
+            <a class="item-menu @((controllerActual == "pagos" && (accionActual == "planespago" || accionActual == "detalleplanpago")) ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesPago">Planes de pago</a>
+            <a class="item-menu @(moduloActivo == "reportes" || controllerActual == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
+            <a class="item-menu @((controllerActual == "administracion" && accionActual == "auditorialogs") ? "activo" : string.Empty)" asp-controller="Administracion" asp-action="AuditoriaLogs">Auditoría</a>
+            <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
+            <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
         }
         else
         {
-            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Dueno">Dashboard</a>
+            <a class="item-menu @(moduloActivo == "dashboard" ? "activo" : string.Empty)" asp-controller="Dashboard" asp-action="Dueno">Inicio</a>
             <a class="item-menu @(moduloActivo == "fincas" ? "activo" : string.Empty)" asp-controller="Fincas" asp-action="MisFincas">Mis fincas</a>
-            <a class="item-menu @(moduloActivo == "pagos" ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="HistorialPagos">Pagos</a>
+            <a class="item-menu @((controllerActual == "pagos" && accionActual == "cuentabancaria") ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="CuentaBancaria">Cuenta bancaria</a>
+            <a class="item-menu @((controllerActual == "pagos" && (accionActual == "planesdueno" || accionActual == "detalleplanpago" || accionActual == "historialpagos")) ? "activo" : string.Empty)" asp-controller="Pagos" asp-action="PlanesDueno">Mis pagos</a>
+            <a class="item-menu @(moduloActivo == "reportes" ? "activo" : string.Empty)" asp-controller="Reportes" asp-action="Index">Reportes</a>
             <a class="item-menu @(moduloActivo == "notificaciones" ? "activo" : string.Empty)" asp-controller="Notificaciones" asp-action="Index">Notificaciones</a>
-
-            <p class="menu-lateral__seccion">Próximamente</p>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Registrar finca</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Cuenta bancaria</a>
-            <a class="item-menu item-menu--proximamente" href="#" data-omitir-trobber-global="true" aria-disabled="true">Planes de pago</a>
+            <a class="item-menu @(moduloActivo == "mi-perfil" ? "activo" : string.Empty)" asp-controller="MiPerfil" asp-action="Index">Mi perfil</a>
         }
 
         <form asp-controller="Autenticacion" asp-action="CerrarSesion" method="post" class="w-100">

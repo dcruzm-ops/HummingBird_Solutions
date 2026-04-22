@@ -1,0 +1,97 @@
+@model List<PSA.EntidadesDTO.DTOs.Pagos.CuentaBancariaDuenoDTO>
+@{
+    ViewData["Title"] = "Cuenta bancaria";
+    var cuentaNueva = ViewBag.CuentaNueva as PSA.EntidadesDTO.DTOs.Pagos.RegistrarCuentaBancariaDTO ?? new();
+}
+<section class="seccion-pagina">
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Consulta del propietario</span>
+            <h2>Cuenta bancaria</h2>
+            <p>Registre cuentas para habilitar pagos y consulte su estado de validación.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="boton-primario" data-bs-toggle="modal" data-bs-target="#modalNuevaCuenta">Nueva cuenta bancaria</button>
+            <a class="boton-secundario" asp-controller="Pagos" asp-action="PlanesDueno">Ver planes</a>
+        </div>
+    </div>
+
+    <section class="tarjeta-panel">
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Banco</th>
+                        <th>Cuenta</th>
+                        <th>Tipo</th>
+                        <th>Titular</th>
+                        <th>Estado validación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr><td colspan="5" class="text-center text-muted">No tiene cuentas bancarias registradas.</td></tr>
+                    }
+                    else
+                    {
+                        @foreach (var cuenta in Model)
+                        {
+                            <tr>
+                                <td>@cuenta.Banco</td>
+                                <td>@cuenta.NumeroCuenta</td>
+                                <td>@cuenta.TipoCuenta</td>
+                                <td>@cuenta.Titular</td>
+                                <td><span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion</span></td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</section>
+
+<div class="modal fade" id="modalNuevaCuenta" tabindex="-1" aria-labelledby="modalNuevaCuentaTitulo" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-sistema">
+            <form asp-action="RegistrarCuentaBancaria" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="IdUsuario" value="@cuentaNueva.IdUsuario" />
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalNuevaCuentaTitulo">Nueva cuenta bancaria</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="campo-formulario mb-3">
+                        <label class="form-label">Banco</label>
+                        <input name="Banco" required />
+                    </div>
+                    <div class="campo-formulario mb-3">
+                        <label class="form-label">Número de cuenta</label>
+                        <input name="NumeroCuenta" required />
+                    </div>
+                    <div class="campo-formulario mb-3">
+                        <label class="form-label">Tipo de cuenta</label>
+                        <select name="TipoCuenta" required>
+                            <option value="">Seleccione un tipo</option>
+                            <option value="Ahorro">Ahorro</option>
+                            <option value="Corriente">Corriente</option>
+                            <option value="IBAN">IBAN</option>
+                            <option value="SINPE">SINPE</option>
+                            <option value="Otra">Otra</option>
+                        </select>
+                    </div>
+                    <div class="campo-formulario mb-3">
+                        <label class="form-label">Titular</label>
+                        <input name="Titular" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="boton-secundario" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="boton-primario">Registrar cuenta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

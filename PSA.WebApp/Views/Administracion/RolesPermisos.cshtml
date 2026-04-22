@@ -1,0 +1,63 @@
+@model PSA.WebApp.Models.RolesPermisosViewModel
+@{
+    ViewData["Title"] = "Roles y permisos";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="mb-0">Configuración de roles y permisos</h2>
+            <small class="text-muted">Asigne permisos funcionales a cada rol del sistema.</small>
+        </div>
+    </div>
+
+    @if (Model.Roles.Count == 0)
+    {
+        <div class="alert alert-warning">No hay roles disponibles para configurar.</div>
+    }
+
+    @if (Model.PermisosDisponibles.Count == 0)
+    {
+        <div class="alert alert-info">No hay permisos registrados en el catálogo. Ejecuta el script de base de datos de administración para cargar permisos.</div>
+    }
+
+    @for (var i = 0; i < Model.Roles.Count; i++)
+    {
+        var rol = Model.Roles[i];
+        <div class="card shadow-sm mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@rol.NombreRol</strong>
+                    <div class="text-muted small">@rol.DescripcionRol</div>
+                </div>
+                <span class="badge bg-light text-dark">@(rol.Activo ? "Activo" : "Inactivo")</span>
+            </div>
+            <div class="card-body">
+                <form asp-action="GuardarPermisosRol" method="post">
+                    <input type="hidden" name="IdRol" value="@rol.IdRol" />
+
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+                        @foreach (var permiso in Model.PermisosDisponibles)
+                        {
+                            var checkedPermiso = rol.CodigosPermisoAsignados.Contains(permiso.Codigo);
+                            var controlId = $"permiso_{rol.IdRol}_{permiso.IdPermiso}";
+                            <div class="col">
+                                <div class="form-check border rounded p-3 h-100">
+                                    <input class="form-check-input" type="checkbox" name="CodigosPermiso" value="@permiso.Codigo" id="@controlId" @(checkedPermiso ? "checked" : string.Empty) />
+                                    <label class="form-check-label ms-1" for="@controlId">
+                                        <strong>@permiso.Nombre</strong><br />
+                                        <span class="text-muted small">@permiso.Descripcion</span>
+                                    </label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="submit" class="btn btn-primary">Guardar permisos</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    }
+</div>

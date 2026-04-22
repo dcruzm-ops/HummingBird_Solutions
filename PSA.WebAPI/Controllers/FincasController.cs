@@ -1,103 +1,73 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PSA.DataAccess.DAO;
-using PSA.EntidadesDTO.DTOs;
+using PSA.AppCore.Managers;
+using PSA.WebAPI.Extensions;
 
 namespace PSA.WebAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class FincasController : ControllerBase
     {
-        private readonly FincaDAO _fincaDAO;
+        private readonly FincaManager _fincaManager;
 
-        public FincasController(FincaDAO fincaDAO)
+        public FincasController(FincaManager fincaManager)
         {
-            _fincaDAO = fincaDAO;
+            _fincaManager = fincaManager;
         }
 
         [HttpGet("mis-fincas")]
-        public async Task<IActionResult> ObtenerMisFincas([FromQuery] int idPropietario = 2)
-        {
-            if (idPropietario <= 0)
-            {
-                return BadRequest(new { Mensaje = "El idPropietario debe ser mayor a 0." });
-            }
-
-            var fincas = await _fincaDAO.ObtenerPorPropietarioAsync(idPropietario);
-            return Ok(fincas);
-        }
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> ObtenerMisFincas() => Ok(await _fincaManager.ObtenerPorPropietarioAsync(this.GetUserId()));
 
         [HttpGet("{idFinca:int}/detalle")]
-        public async Task<IActionResult> ObtenerDetalle([FromRoute] int idFinca, [FromQuery] int idPropietario = 2)
+        [Authorize(Roles = "2,3")]
+        public async Task<IActionResult> ObtenerDetalle([FromRoute] int idFinca)
         {
-            if (idFinca <= 0 || idPropietario <= 0)
-            {
-                return BadRequest(new { Mensaje = "Los parámetros idFinca e idPropietario deben ser mayores a 0." });
-            }
+            var detalle = await _fincaManager.ObtenerDetalleAsync(idFinca, this.GetUserId());
+            return detalle == null ? NotFound(new { Mensaje = "No se encontró la finca solicitada." }) : Ok(detalle);
+        }
 
-            var detalle = await _fincaDAO.ObtenerDetalleAsync(idFinca, idPropietario);
-            if (detalle == null)
+        [HttpGet("{idFinca:int}/renovacion-anual/estado")]
+        [Authorize(Roles = "2")]
+        [Authorize(Policy = Services.Security.AppPermissions.PropietarioRenovarFinca)]
+        public async Task<IActionResult> ObtenerEstadoRenovacionAnual([FromRoute] int idFinca)
+        {
+            try
             {
-                return NotFound(new { Mensaje = "No se encontró la finca solicitada." });
+                return Ok(await _fincaManager.ObtenerEstadoRenovacionAnualAsync(idFinca, this.GetUserId()));
             }
-
-            return Ok(detalle);
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegistrarFinca([FromBody] RegistrarFincaDTO dto)
+        [Authorize(Roles = "2")]
+        public async Task<IActionResult> RegistrarFinca([FromBody] PSA.EntidadesDTO.DTOs.RegistrarFincaDTO dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return ValidationProblem(ModelState);
-            }
-
-            if (dto.IdPropietario <= 0)
-            {
-                return BadRequest(new { Mensaje = "El propietario de la finca es inválido." });
-            }
-
-            var idFinca = await _fincaDAO.CrearFincaAsync(dto);
-            return CreatedAtAction(nameof(ObtenerDetalle), new { idFinca, idPropietario = dto.IdPropietario }, new { IdFinca = idFinca, Mensaje = "Finca registrada correctamente." });
+            if (!ModelState.IsValid) return ValidationProblem(ModelState);
+            dto.IdPropietario = this.GetUserId();
+            var idFinca = await _fincaManager.RegistrarFincaAsync(dto);
+            return CreatedAtAction(nameof(ObtenerDetalle), new { idFinca }, new { IdFinca = idFinca, Mensaje = "Finca registrada correctamente." });
         }
 
-        [HttpPut("{idFinca:int}")]
-        public async Task<IActionResult> ActualizarFinca([FromRoute] int idFinca, [FromBody] RegistrarFincaDTO dto)
+        [HttpPost("{idFinca:int}/renovacion-anual")]
+        [Authorize(Roles = "2")]
+        [Authorize(Policy = Services.Security.AppPermissions.PropietarioRenovarFinca)]
+        public async Task<IActionResult> RenovacionAnual([FromRoute] int idFinca)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return ValidationProblem(ModelState);
+                var idEvaluacion = await _fincaManager.GenerarRenovacionAnualAsync(idFinca, this.GetUserId(), HttpContext.Connection.RemoteIpAddress?.ToString());
+                return Ok(new { IdEvaluacion = idEvaluacion, Mensaje = "Se generó la renovación anual y quedó en cola de pendientes." });
             }
-
-            if (idFinca <= 0 || dto.IdPropietario <= 0)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest(new { Mensaje = "Datos de actualización inválidos." });
+                return BadRequest(new { Mensaje = ex.Message });
             }
-
-            var actualizado = await _fincaDAO.ActualizarFincaAsync(idFinca, dto);
-            if (!actualizado)
-            {
-                return NotFound(new { Mensaje = "No fue posible actualizar la finca solicitada." });
-            }
-
-            return Ok(new { Mensaje = "Finca actualizada correctamente." });
-        }
-
-        [HttpDelete("{idFinca:int}")]
-        public async Task<IActionResult> EliminarFinca([FromRoute] int idFinca, [FromQuery] int idPropietario)
-        {
-            if (idFinca <= 0 || idPropietario <= 0)
-            {
-                return BadRequest(new { Mensaje = "Datos inválidos para eliminar la finca." });
-            }
-
-            var eliminado = await _fincaDAO.EliminarFincaAsync(idFinca, idPropietario);
-            if (!eliminado)
-            {
-                return NotFound(new { Mensaje = "No se encontró la finca para eliminar." });
-            }
-
-            return Ok(new { Mensaje = "Finca eliminada correctamente." });
         }
     }
 }
