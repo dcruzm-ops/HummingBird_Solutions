@@ -11,7 +11,9 @@
 <li>Nacientes (original → final): @d.CantidadNacientesOriginal → @d.CantidadNacientesFinal</li>
 <li>Pendiente (original → final): @d.PendienteOriginal → @d.PendienteFinal</li>
 <li>Precio base por hectárea: ₡@d.PrecioBasePorHectarea.ToString("N2")</li></ul></section>
-<section class="tarjeta-panel"><h3>Desglose progresivo del cálculo</h3><ul class="lista-timeline">
+<section class="tarjeta-panel"><h3>Desglose progresivo del cálculo</h3>
+<p class="texto-secundario">Los porcentajes de ajuste se aplican exclusivamente sobre el monto base mensual, calculado como <strong>hectáreas aprobadas por ingeniería forestal × precio base por hectárea vigente</strong>. No se aplican porcentajes sobre montos acumulados de ajustes previos.</p>
+<ul class="lista-timeline">
 <li>1) Base por hectáreas: ₡@d.MontoBaseMensual.ToString("N2")</li>
 <li>2) + Ajuste por vegetación (@d.PorcentajeVegetacion.ToString("N2")%): ₡@d.MontoAjusteVegetacion.ToString("N2")</li>
 <li>3) + Ajuste por ríos/quebradas (@d.PorcentajeRiosQuebradas.ToString("N2")%): ₡@d.MontoAjusteRiosQuebradas.ToString("N2")</li>
