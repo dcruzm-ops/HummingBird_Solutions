@@ -9,13 +9,14 @@ public class PaymentCalculationServiceTests
     private readonly IPaymentCalculationService _service = new PaymentCalculationService();
 
     [Fact]
-    public void Calculate_AppliesCapAtFortyPercent()
+    public void Calculate_AppliesConfiguredCap()
     {
         var context = new PlanPagoGenerationContextDTO
         {
             HectareasAprobadas = 10.5m,
             VegetacionFinal = "bosque primario",
             TieneRecursosHidricosFinal = true,
+            TieneRiosOQuebradasFinal = true,
             CantidadNacientesFinal = 2,
             PendienteFinal = "muy inclinada"
         };
@@ -36,6 +37,10 @@ public class PaymentCalculationServiceTests
         Assert.Equal(40m, result.PorcentajeAjusteAplicado);
         Assert.Equal(420m, result.MontoAjusteMensual);
         Assert.Equal(1470m, result.MontoMensualTotal);
+        Assert.Equal(315m, result.MontoAjusteVegetacion);
+        Assert.Equal(105m, result.MontoAjusteRiosQuebradas);
+        Assert.Equal(105m, result.MontoAjusteNacientes);
+        Assert.Equal(210m, result.MontoAjustePendiente);
     }
 
     [Fact]
@@ -46,6 +51,7 @@ public class PaymentCalculationServiceTests
             HectareasAprobadas = 3.75m,
             VegetacionFinal = "plantación / arbustos",
             TieneRecursosHidricosFinal = false,
+            TieneRiosOQuebradasFinal = false,
             CantidadNacientesFinal = 0,
             PendienteFinal = "inclinada"
         };
@@ -75,6 +81,7 @@ public class PaymentCalculationServiceTests
             HectareasAprobadas = -0.01m,
             VegetacionFinal = "bosque",
             TieneRecursosHidricosFinal = false,
+            TieneRiosOQuebradasFinal = false,
             CantidadNacientesFinal = 0,
             PendienteFinal = "plana"
         };
@@ -98,6 +105,7 @@ public class PaymentCalculationServiceTests
             HectareasAprobadas = 1m,
             VegetacionFinal = "  bosque secundario  ",
             TieneRecursosHidricosFinal = true,
+            TieneRiosOQuebradasFinal = true,
             CantidadNacientesFinal = 1,
             PendienteFinal = "desconocida"
         };
@@ -122,13 +130,58 @@ public class PaymentCalculationServiceTests
     }
 
     [Fact]
-    public void Calculate_ClampsConfiguredCap_WhenItExceedsInstitutionalMaximum()
+    public void Calculate_AcceptsLegacyHydricAliasFromConfiguration()
+    {
+        var context = new PlanPagoGenerationContextDTO
+        {
+            HectareasAprobadas = 2m,
+            TieneRiosOQuebradasFinal = true
+        };
+
+        var config = new PaymentConfigurationVersionDTO
+        {
+            PrecioBasePorHectarea = 100m,
+            TopePorcentajeAjuste = 40m,
+            HidricosAjustes = new(StringComparer.OrdinalIgnoreCase) { ["Con recursos"] = 10m }
+        };
+
+        var result = _service.Calculate(context, config);
+
+        Assert.Equal(10m, result.PorcentajeRiosQuebradas);
+        Assert.Equal(20m, result.MontoAjusteRiosQuebradas);
+    }
+
+    [Fact]
+    public void Calculate_AcceptsHydricLabelWithSlashAndAccent()
+    {
+        var context = new PlanPagoGenerationContextDTO
+        {
+            HectareasAprobadas = 4m,
+            TieneRiosOQuebradasFinal = true
+        };
+
+        var config = new PaymentConfigurationVersionDTO
+        {
+            PrecioBasePorHectarea = 100m,
+            TopePorcentajeAjuste = 40m,
+            HidricosAjustes = new(StringComparer.OrdinalIgnoreCase) { ["Ríos/quebradas"] = 10m }
+        };
+
+        var result = _service.Calculate(context, config);
+
+        Assert.Equal(10m, result.PorcentajeRiosQuebradas);
+        Assert.Equal(40m, result.MontoAjusteRiosQuebradas);
+    }
+
+    [Fact]
+    public void Calculate_UsesConfiguredCapWithoutHardcode()
     {
         var context = new PlanPagoGenerationContextDTO
         {
             HectareasAprobadas = 12m,
             VegetacionFinal = "bosque",
             TieneRecursosHidricosFinal = true,
+            TieneRiosOQuebradasFinal = true,
             CantidadNacientesFinal = 2,
             PendienteFinal = "inclinada"
         };
@@ -136,7 +189,7 @@ public class PaymentCalculationServiceTests
         var config = new PaymentConfigurationVersionDTO
         {
             PrecioBasePorHectarea = 200m,
-            TopePorcentajeAjuste = 80m,
+            TopePorcentajeAjuste = 65m,
             VegetacionAjustes = new(StringComparer.OrdinalIgnoreCase) { ["bosque"] = 30m },
             HidricosAjustes = new(StringComparer.OrdinalIgnoreCase) { ["Si"] = 20m, ["Naciente"] = 10m },
             PendienteAjustes = new(StringComparer.OrdinalIgnoreCase) { ["inclinada"] = 20m }
@@ -145,7 +198,25 @@ public class PaymentCalculationServiceTests
         var result = _service.Calculate(context, config);
 
         Assert.Equal(70m, result.PorcentajeAjusteTotalBruto);
-        Assert.Equal(40m, result.PorcentajeAjusteAplicado);
-        Assert.Equal(40m, result.TopePorcentajeAjuste);
+        Assert.Equal(65m, result.PorcentajeAjusteAplicado);
+        Assert.Equal(65m, result.TopePorcentajeAjuste);
+    }
+
+    [Fact]
+    public void Calculate_Throws_WhenNacientesAreNegative()
+    {
+        var context = new PlanPagoGenerationContextDTO
+        {
+            HectareasAprobadas = 1m,
+            CantidadNacientesFinal = -1
+        };
+        var config = new PaymentConfigurationVersionDTO
+        {
+            PrecioBasePorHectarea = 100m,
+            TopePorcentajeAjuste = 40m
+        };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => _service.Calculate(context, config));
+        Assert.Equal("La cantidad de nacientes no puede ser negativa.", ex.Message);
     }
 }
