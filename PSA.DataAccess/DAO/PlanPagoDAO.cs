@@ -45,25 +45,41 @@ public class PlanPagoDAO(IDbConnectionFactory connectionFactory)
 
     public async Task<PlanPagoGenerationContextDTO?> ObtenerContextoGeneracionDesdeEvaluacionAsync(int idEvaluacion)
     {
-        const string sql = @"
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        var existeColumnaRiosAjustado = await ExisteColumnaAsync(connection, "EvaluacionesTecnicas", "TieneRiosOQuebradasAjustado");
+        var existeColumnaNacientesAjustada = await ExisteColumnaAsync(connection, "EvaluacionesTecnicas", "CantidadNacientesAjustada");
+
+        var exprRiosFinal = existeColumnaRiosAjustado
+            ? "COALESCE(e.TieneRiosOQuebradasAjustado, f.TieneRiosOQuebradas)"
+            : "f.TieneRiosOQuebradas";
+        var exprNacientesFinal = existeColumnaNacientesAjustada
+            ? "COALESCE(e.CantidadNacientesAjustada, f.CantidadNacientes, 0)"
+            : "COALESCE(f.CantidadNacientes, 0)";
+
+        var sql = $@"
 SELECT TOP 1
     e.IdEvaluacion,
     f.IdFinca,
     f.IdPropietario,
     f.NombreFinca,
+    f.Hectareas AS HectareasOriginales,
     COALESCE(e.HectareasAjustadas, f.Hectareas) AS HectareasAprobadas,
+    f.Vegetacion AS VegetacionOriginal,
     COALESCE(NULLIF(e.VegetacionAjustada, ''), f.Vegetacion) AS VegetacionFinal,
-    COALESCE(e.RecursosHidricosAjustado, f.TieneRecursosHidricos) AS TieneRecursosHidricosFinal,
-    COALESCE(f.CantidadNacientes, 0) AS CantidadNacientesFinal,
+    f.TieneRiosOQuebradas AS TieneRiosOQuebradasOriginal,
+    {exprRiosFinal} AS TieneRiosOQuebradasFinal,
+    CAST(CASE WHEN {exprRiosFinal} = 1 OR {exprNacientesFinal} > 0 THEN 1 ELSE 0 END AS bit) AS TieneRecursosHidricosFinal,
+    COALESCE(f.CantidadNacientes, 0) AS CantidadNacientesOriginal,
+    {exprNacientesFinal} AS CantidadNacientesFinal,
+    f.Pendiente AS PendienteOriginal,
     COALESCE(NULLIF(e.PendienteAjustada, ''), f.Pendiente) AS PendienteFinal
 FROM dbo.EvaluacionesTecnicas e
 INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
 WHERE e.IdEvaluacion = @IdEvaluacion
   AND e.DecisionTecnica = 'Califica'
   AND e.EstadoEvaluacion IN ('Evaluada – Califica', 'FinalizadaCalifica');";
-
-        using var connection = _connectionFactory.CreateConnection();
-        await connection.OpenAsync();
 
         using var command = new SqlCommand(sql, connection);
         command.Parameters.AddWithValue("@IdEvaluacion", idEvaluacion);
@@ -80,10 +96,16 @@ WHERE e.IdEvaluacion = @IdEvaluacion
             IdFinca = reader.GetInt32(reader.GetOrdinal("IdFinca")),
             IdPropietario = reader.GetInt32(reader.GetOrdinal("IdPropietario")),
             NombreFinca = reader["NombreFinca"]?.ToString() ?? string.Empty,
+            HectareasOriginales = reader.GetDecimal(reader.GetOrdinal("HectareasOriginales")),
             HectareasAprobadas = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
+            VegetacionOriginal = reader["VegetacionOriginal"]?.ToString() ?? string.Empty,
             VegetacionFinal = reader["VegetacionFinal"]?.ToString() ?? string.Empty,
+            TieneRiosOQuebradasOriginal = reader.GetBoolean(reader.GetOrdinal("TieneRiosOQuebradasOriginal")),
+            TieneRiosOQuebradasFinal = reader.GetBoolean(reader.GetOrdinal("TieneRiosOQuebradasFinal")),
             TieneRecursosHidricosFinal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
+            CantidadNacientesOriginal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesOriginal")),
             CantidadNacientesFinal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesFinal")),
+            PendienteOriginal = reader["PendienteOriginal"]?.ToString() ?? string.Empty,
             PendienteFinal = reader["PendienteFinal"]?.ToString() ?? string.Empty
         };
     }
@@ -128,7 +150,7 @@ ORDER BY FechaVigenciaDesde DESC, IdConfiguracionPago DESC;";
             IdConfiguracionPago = configReader.GetInt32(configReader.GetOrdinal("IdConfiguracionPago")),
             Version = configReader["Version"] == DBNull.Value ? 0 : configReader.GetInt32(configReader.GetOrdinal("Version")),
             PrecioBasePorHectarea = configReader.GetDecimal(configReader.GetOrdinal("PrecioBasePorHectarea")),
-            TopePorcentajeAjuste = Math.Min(configReader.GetDecimal(configReader.GetOrdinal("TopePorcentajeAjuste")), 40m)
+            TopePorcentajeAjuste = configReader.GetDecimal(configReader.GetOrdinal("TopePorcentajeAjuste"))
         };
 
         await configReader.CloseAsync();
@@ -149,6 +171,7 @@ ORDER BY FechaVigenciaDesde DESC, IdConfiguracionPago DESC;";
                     config.VegetacionAjustes[valor] = porcentaje;
                     break;
                 case "RecursosHidricos":
+                case "Recursos Hidricos":
                     config.HidricosAjustes[valor] = porcentaje;
                     break;
                 case "Pendiente":
@@ -217,21 +240,38 @@ WHERE s.name = 'dbo'
             FechaGeneracion = DateTime.UtcNow,
             DetalleCalculo = new PlanPagoCalculoDetalleDTO
             {
+                IdConfiguracionPago = config.IdConfiguracionPago,
+                VersionConfiguracionPago = config.Version,
+                HectareasOriginales = context.HectareasOriginales,
                 HectareasAprobadas = context.HectareasAprobadas,
+                HectareasFinalesAprobadas = context.HectareasAprobadas,
                 PrecioBasePorHectarea = config.PrecioBasePorHectarea,
                 MontoBaseMensual = calculation.MontoBaseMensual,
                 PorcentajeVegetacion = calculation.PorcentajeVegetacion,
+                MontoAjusteVegetacion = calculation.MontoAjusteVegetacion,
+                PorcentajeRiosQuebradas = calculation.PorcentajeRiosQuebradas,
+                MontoAjusteRiosQuebradas = calculation.MontoAjusteRiosQuebradas,
                 PorcentajeHidrico = calculation.PorcentajeHidrico,
                 PorcentajeNacientes = calculation.PorcentajeNacientes,
+                MontoAjusteNacientes = calculation.MontoAjusteNacientes,
                 PorcentajePendiente = calculation.PorcentajePendiente,
+                MontoAjustePendiente = calculation.MontoAjustePendiente,
                 PorcentajeTotalAntesTope = calculation.PorcentajeAjusteTotalBruto,
                 PorcentajeTopeAplicado = calculation.TopePorcentajeAjuste,
                 PorcentajeTotalAplicado = calculation.PorcentajeAjusteAplicado,
+                PorcentajeRecortadoPorTope = calculation.PorcentajeRecortadoPorTope,
                 MontoAjusteMensual = calculation.MontoAjusteMensual,
+                MontoAjusteBrutoMensual = calculation.MontoAjusteBrutoMensual,
+                MontoRecortadoPorTope = calculation.MontoRecortadoPorTope,
                 MontoFinalMensual = calculation.MontoMensualTotal,
+                VegetacionOriginal = context.VegetacionOriginal,
                 VegetacionFinal = context.VegetacionFinal,
+                TieneRiosOQuebradasOriginal = context.TieneRiosOQuebradasOriginal,
+                TieneRiosOQuebradasFinal = context.TieneRiosOQuebradasFinal,
                 TieneRecursosHidricosFinal = context.TieneRecursosHidricosFinal,
+                CantidadNacientesOriginal = context.CantidadNacientesOriginal,
                 CantidadNacientesFinal = context.CantidadNacientesFinal,
+                PendienteOriginal = context.PendienteOriginal,
                 PendienteFinal = context.PendienteFinal
             }
         };
@@ -615,6 +655,7 @@ ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
         return new OwnerPaymentPlanDetailDto
         {
             Plan = plan,
+            Calculo = await ObtenerDetalleCalculoPorPlanAsync(idPlanPago),
             Cuotas = await ObtenerCuotasPorPlanAsync(idPlanPago)
         };
     }
@@ -811,11 +852,6 @@ ORDER BY pp.Anio DESC, pp.IdPlanPago DESC;";
             return null;
         }
 
-        const string sqlDetalle = @"
-SELECT TOP 1 *
-FROM dbo.PlanesPagoDetalleCalculo
-WHERE IdPlanPago = @IdPlanPago;";
-
         const string sqlBitacora = @"
 SELECT TOP 20 FechaAccion, Accion, Detalle, IdUsuario
 FROM dbo.AuditoriaLog
@@ -826,35 +862,7 @@ ORDER BY FechaAccion DESC;";
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        using var commandDetalle = new SqlCommand(sqlDetalle, connection);
-        commandDetalle.Parameters.AddWithValue("@IdPlanPago", idPlanPago);
-        using var readerDetalle = await commandDetalle.ExecuteReaderAsync();
-
-        var calculo = new PlanPagoCalculoDetalleDTO();
-        if (await readerDetalle.ReadAsync())
-        {
-            calculo = new PlanPagoCalculoDetalleDTO
-            {
-                HectareasAprobadas = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("HectareasAprobadas")),
-                PrecioBasePorHectarea = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PrecioBasePorHectarea")),
-                MontoBaseMensual = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("MontoBaseMensual")),
-                PorcentajeVegetacion = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeVegetacion")),
-                PorcentajeHidrico = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeHidrico")),
-                PorcentajeNacientes = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeNacientes")),
-                PorcentajePendiente = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajePendiente")),
-                PorcentajeTotalAntesTope = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeTotalAntesTope")),
-                PorcentajeTopeAplicado = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeTopeAplicado")),
-                PorcentajeTotalAplicado = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("PorcentajeTotalAplicado")),
-                MontoAjusteMensual = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("MontoAjusteMensual")),
-                MontoFinalMensual = readerDetalle.GetDecimal(readerDetalle.GetOrdinal("MontoFinalMensual")),
-                VegetacionFinal = readerDetalle["VegetacionFinal"]?.ToString() ?? string.Empty,
-                TieneRecursosHidricosFinal = readerDetalle.GetBoolean(readerDetalle.GetOrdinal("TieneRecursosHidricosFinal")),
-                CantidadNacientesFinal = readerDetalle.GetInt32(readerDetalle.GetOrdinal("CantidadNacientesFinal")),
-                PendienteFinal = readerDetalle["PendienteFinal"]?.ToString() ?? string.Empty
-            };
-        }
-
-        await readerDetalle.CloseAsync();
+        var calculo = await ObtenerDetalleCalculoPorPlanAsync(idPlanPago) ?? new PlanPagoCalculoDetalleDTO();
 
         var bitacora = new List<AuditoriaPlanPagoDto>();
         using var commandBitacora = new SqlCommand(sqlBitacora, connection);
@@ -918,6 +926,59 @@ ORDER BY c.Mes;";
         return cuotas;
     }
 
+    private async Task<PlanPagoCalculoDetalleDTO?> ObtenerDetalleCalculoPorPlanAsync(int idPlanPago)
+    {
+        const string sql = @"SELECT TOP 1 * FROM dbo.PlanesPagoDetalleCalculo WHERE IdPlanPago = @IdPlanPago;";
+        using var connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@IdPlanPago", idPlanPago);
+        using var reader = await command.ExecuteReaderAsync();
+        if (!await reader.ReadAsync())
+        {
+            return null;
+        }
+
+        var baseMensual = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual"));
+        var porcentajeBruto = reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAntesTope"));
+        var montoBruto = Math.Round(baseMensual * (porcentajeBruto / 100m), 2, MidpointRounding.AwayFromZero);
+        var montoAplicado = reader.GetDecimal(reader.GetOrdinal("MontoAjusteMensual"));
+        return new PlanPagoCalculoDetalleDTO
+        {
+            HectareasOriginales = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
+            HectareasAprobadas = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
+            HectareasFinalesAprobadas = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
+            PrecioBasePorHectarea = reader.GetDecimal(reader.GetOrdinal("PrecioBasePorHectarea")),
+            MontoBaseMensual = baseMensual,
+            PorcentajeVegetacion = reader.GetDecimal(reader.GetOrdinal("PorcentajeVegetacion")),
+            MontoAjusteVegetacion = Math.Round(baseMensual * (reader.GetDecimal(reader.GetOrdinal("PorcentajeVegetacion")) / 100m), 2, MidpointRounding.AwayFromZero),
+            PorcentajeRiosQuebradas = reader.GetDecimal(reader.GetOrdinal("PorcentajeHidrico")),
+            MontoAjusteRiosQuebradas = Math.Round(baseMensual * (reader.GetDecimal(reader.GetOrdinal("PorcentajeHidrico")) / 100m), 2, MidpointRounding.AwayFromZero),
+            PorcentajeHidrico = reader.GetDecimal(reader.GetOrdinal("PorcentajeHidrico")),
+            PorcentajeNacientes = reader.GetDecimal(reader.GetOrdinal("PorcentajeNacientes")),
+            MontoAjusteNacientes = Math.Round(baseMensual * (reader.GetDecimal(reader.GetOrdinal("PorcentajeNacientes")) / 100m), 2, MidpointRounding.AwayFromZero),
+            PorcentajePendiente = reader.GetDecimal(reader.GetOrdinal("PorcentajePendiente")),
+            MontoAjustePendiente = Math.Round(baseMensual * (reader.GetDecimal(reader.GetOrdinal("PorcentajePendiente")) / 100m), 2, MidpointRounding.AwayFromZero),
+            PorcentajeTotalAntesTope = porcentajeBruto,
+            PorcentajeTopeAplicado = reader.GetDecimal(reader.GetOrdinal("PorcentajeTopeAplicado")),
+            PorcentajeTotalAplicado = reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAplicado")),
+            PorcentajeRecortadoPorTope = reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAntesTope")) - reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAplicado")),
+            MontoAjusteMensual = montoAplicado,
+            MontoAjusteBrutoMensual = montoBruto,
+            MontoRecortadoPorTope = Math.Round(montoBruto - montoAplicado, 2, MidpointRounding.AwayFromZero),
+            MontoFinalMensual = reader.GetDecimal(reader.GetOrdinal("MontoFinalMensual")),
+            VegetacionOriginal = reader["VegetacionFinal"]?.ToString() ?? string.Empty,
+            VegetacionFinal = reader["VegetacionFinal"]?.ToString() ?? string.Empty,
+            TieneRiosOQuebradasOriginal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
+            TieneRiosOQuebradasFinal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
+            TieneRecursosHidricosFinal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
+            CantidadNacientesOriginal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesFinal")),
+            CantidadNacientesFinal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesFinal")),
+            PendienteOriginal = reader["PendienteFinal"]?.ToString() ?? string.Empty,
+            PendienteFinal = reader["PendienteFinal"]?.ToString() ?? string.Empty
+        };
+    }
+
     private static string? MascaraCuenta(string? numeroCuenta)
     {
         if (string.IsNullOrWhiteSpace(numeroCuenta))
@@ -976,18 +1037,28 @@ ORDER BY c.Mes;";
             DetalleCalculo = new PlanPagoCalculoDetalleDTO
             {
                 HectareasAprobadas = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
+                HectareasFinalesAprobadas = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
                 PrecioBasePorHectarea = reader.GetDecimal(reader.GetOrdinal("PrecioBasePorHectarea")),
                 MontoBaseMensual = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")),
                 PorcentajeVegetacion = reader.GetDecimal(reader.GetOrdinal("PorcentajeVegetacion")),
+                MontoAjusteVegetacion = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")) * reader.GetDecimal(reader.GetOrdinal("PorcentajeVegetacion")) / 100m,
+                PorcentajeRiosQuebradas = reader.GetDecimal(reader.GetOrdinal("PorcentajeHidrico")),
+                MontoAjusteRiosQuebradas = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")) * reader.GetDecimal(reader.GetOrdinal("PorcentajeHidrico")) / 100m,
                 PorcentajeHidrico = reader.GetDecimal(reader.GetOrdinal("PorcentajeHidrico")),
                 PorcentajeNacientes = reader.GetDecimal(reader.GetOrdinal("PorcentajeNacientes")),
+                MontoAjusteNacientes = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")) * reader.GetDecimal(reader.GetOrdinal("PorcentajeNacientes")) / 100m,
                 PorcentajePendiente = reader.GetDecimal(reader.GetOrdinal("PorcentajePendiente")),
+                MontoAjustePendiente = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")) * reader.GetDecimal(reader.GetOrdinal("PorcentajePendiente")) / 100m,
                 PorcentajeTotalAntesTope = reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAntesTope")),
                 PorcentajeTopeAplicado = reader.GetDecimal(reader.GetOrdinal("PorcentajeTopeAplicado")),
                 PorcentajeTotalAplicado = reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAplicado")),
+                PorcentajeRecortadoPorTope = reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAntesTope")) - reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAplicado")),
                 MontoAjusteMensual = reader.GetDecimal(reader.GetOrdinal("MontoAjusteMensual")),
+                MontoAjusteBrutoMensual = reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")) * reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAntesTope")) / 100m,
+                MontoRecortadoPorTope = (reader.GetDecimal(reader.GetOrdinal("MontoBaseMensual")) * reader.GetDecimal(reader.GetOrdinal("PorcentajeTotalAntesTope")) / 100m) - reader.GetDecimal(reader.GetOrdinal("MontoAjusteMensual")),
                 MontoFinalMensual = reader.GetDecimal(reader.GetOrdinal("MontoFinalMensual")),
                 VegetacionFinal = reader["VegetacionFinal"]?.ToString() ?? string.Empty,
+                TieneRiosOQuebradasFinal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
                 TieneRecursosHidricosFinal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
                 CantidadNacientesFinal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesFinal")),
                 PendienteFinal = reader["PendienteFinal"]?.ToString() ?? string.Empty
@@ -1067,14 +1138,22 @@ BEGIN
     SET HectareasAprobadas = @HectareasAprobadas,
         PrecioBasePorHectarea = @PrecioBasePorHectarea,
         PorcentajeVegetacion = @PorcentajeVegetacion,
+        MontoAjusteVegetacion = @MontoAjusteVegetacion,
+        PorcentajeRiosQuebradas = @PorcentajeRiosQuebradas,
+        MontoAjusteRiosQuebradas = @MontoAjusteRiosQuebradas,
         PorcentajeHidrico = @PorcentajeHidrico,
         PorcentajeNacientes = @PorcentajeNacientes,
+        MontoAjusteNacientes = @MontoAjusteNacientes,
         PorcentajePendiente = @PorcentajePendiente,
+        MontoAjustePendiente = @MontoAjustePendiente,
         PorcentajeTotalAntesTope = @PorcentajeTotalAntesTope,
         PorcentajeTopeAplicado = @PorcentajeTopeAplicado,
         PorcentajeTotalAplicado = @PorcentajeTotalAplicado,
+        PorcentajeRecortadoPorTope = @PorcentajeRecortadoPorTope,
         MontoBaseMensual = @MontoBaseMensual,
+        MontoAjusteBrutoMensual = @MontoAjusteBrutoMensual,
         MontoAjusteMensual = @MontoAjusteMensual,
+        MontoRecortadoPorTope = @MontoRecortadoPorTope,
         MontoFinalMensual = @MontoFinalMensual,
         VegetacionFinal = @VegetacionFinal,
         TieneRecursosHidricosFinal = @TieneRecursosHidricosFinal,
@@ -1087,17 +1166,19 @@ BEGIN
     INSERT INTO dbo.PlanesPagoDetalleCalculo
     (
         IdPlanPago, HectareasAprobadas, PrecioBasePorHectarea,
-        PorcentajeVegetacion, PorcentajeHidrico, PorcentajeNacientes, PorcentajePendiente,
-        PorcentajeTotalAntesTope, PorcentajeTopeAplicado, PorcentajeTotalAplicado,
-        MontoBaseMensual, MontoAjusteMensual, MontoFinalMensual,
+        PorcentajeVegetacion, MontoAjusteVegetacion, PorcentajeRiosQuebradas, MontoAjusteRiosQuebradas,
+        PorcentajeHidrico, PorcentajeNacientes, MontoAjusteNacientes, PorcentajePendiente, MontoAjustePendiente,
+        PorcentajeTotalAntesTope, PorcentajeTopeAplicado, PorcentajeTotalAplicado, PorcentajeRecortadoPorTope,
+        MontoBaseMensual, MontoAjusteBrutoMensual, MontoAjusteMensual, MontoRecortadoPorTope, MontoFinalMensual,
         VegetacionFinal, TieneRecursosHidricosFinal, CantidadNacientesFinal, PendienteFinal
     )
     VALUES
     (
         @IdPlanPago, @HectareasAprobadas, @PrecioBasePorHectarea,
-        @PorcentajeVegetacion, @PorcentajeHidrico, @PorcentajeNacientes, @PorcentajePendiente,
-        @PorcentajeTotalAntesTope, @PorcentajeTopeAplicado, @PorcentajeTotalAplicado,
-        @MontoBaseMensual, @MontoAjusteMensual, @MontoFinalMensual,
+        @PorcentajeVegetacion, @MontoAjusteVegetacion, @PorcentajeRiosQuebradas, @MontoAjusteRiosQuebradas,
+        @PorcentajeHidrico, @PorcentajeNacientes, @MontoAjusteNacientes, @PorcentajePendiente, @MontoAjustePendiente,
+        @PorcentajeTotalAntesTope, @PorcentajeTopeAplicado, @PorcentajeTotalAplicado, @PorcentajeRecortadoPorTope,
+        @MontoBaseMensual, @MontoAjusteBrutoMensual, @MontoAjusteMensual, @MontoRecortadoPorTope, @MontoFinalMensual,
         @VegetacionFinal, @TieneRecursosHidricosFinal, @CantidadNacientesFinal, @PendienteFinal
     );
 END";
@@ -1107,14 +1188,22 @@ END";
         command.Parameters.AddWithValue("@HectareasAprobadas", context.HectareasAprobadas);
         command.Parameters.AddWithValue("@PrecioBasePorHectarea", config.PrecioBasePorHectarea);
         command.Parameters.AddWithValue("@PorcentajeVegetacion", calculation.PorcentajeVegetacion);
+        command.Parameters.AddWithValue("@MontoAjusteVegetacion", calculation.MontoAjusteVegetacion);
+        command.Parameters.AddWithValue("@PorcentajeRiosQuebradas", calculation.PorcentajeRiosQuebradas);
+        command.Parameters.AddWithValue("@MontoAjusteRiosQuebradas", calculation.MontoAjusteRiosQuebradas);
         command.Parameters.AddWithValue("@PorcentajeHidrico", calculation.PorcentajeHidrico);
         command.Parameters.AddWithValue("@PorcentajeNacientes", calculation.PorcentajeNacientes);
+        command.Parameters.AddWithValue("@MontoAjusteNacientes", calculation.MontoAjusteNacientes);
         command.Parameters.AddWithValue("@PorcentajePendiente", calculation.PorcentajePendiente);
+        command.Parameters.AddWithValue("@MontoAjustePendiente", calculation.MontoAjustePendiente);
         command.Parameters.AddWithValue("@PorcentajeTotalAntesTope", calculation.PorcentajeAjusteTotalBruto);
         command.Parameters.AddWithValue("@PorcentajeTopeAplicado", calculation.TopePorcentajeAjuste);
         command.Parameters.AddWithValue("@PorcentajeTotalAplicado", calculation.PorcentajeAjusteAplicado);
+        command.Parameters.AddWithValue("@PorcentajeRecortadoPorTope", calculation.PorcentajeRecortadoPorTope);
         command.Parameters.AddWithValue("@MontoBaseMensual", calculation.MontoBaseMensual);
+        command.Parameters.AddWithValue("@MontoAjusteBrutoMensual", calculation.MontoAjusteBrutoMensual);
         command.Parameters.AddWithValue("@MontoAjusteMensual", calculation.MontoAjusteMensual);
+        command.Parameters.AddWithValue("@MontoRecortadoPorTope", calculation.MontoRecortadoPorTope);
         command.Parameters.AddWithValue("@MontoFinalMensual", calculation.MontoMensualTotal);
         command.Parameters.AddWithValue("@VegetacionFinal", context.VegetacionFinal);
         command.Parameters.AddWithValue("@TieneRecursosHidricosFinal", context.TieneRecursosHidricosFinal);

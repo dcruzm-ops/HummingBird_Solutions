@@ -16,11 +16,12 @@
         <section class="tarjeta-panel">
             <h3>Datos originales</h3>
             <ul class="lista-timeline">
-                <li>Hectáreas: @Model.Hectareas</li>
-                <li>Vegetación: @Model.Vegetacion</li>
-                <li>Uso de suelo: @Model.UsoSuelo</li>
-                <li>Pendiente: @Model.Pendiente</li>
-                <li>Recursos hídricos: @(Model.TieneRecursosHidricos ? "Sí" : "No")</li>
+                <li>Hectáreas: @Model.HectareasOriginales</li>
+                <li>Vegetación: @Model.VegetacionOriginal</li>
+                <li>Uso de suelo: @Model.UsoSueloOriginal</li>
+                <li>Pendiente: @Model.PendienteOriginal</li>
+                <li>Ríos/Quebradas: @(Model.TieneRiosOQuebradasOriginal ? "Sí" : "No")</li>
+                <li>Cantidad de nacientes: @Model.CantidadNacientesOriginal</li>
                 <li>Estado evaluación: @Model.EstadoEvaluacion</li>
             </ul>
         </section>
@@ -43,7 +44,8 @@
             <li>Vegetación ajustada: @(string.IsNullOrWhiteSpace(Model.VegetacionAjustada) ? "Sin ajuste" : Model.VegetacionAjustada)</li>
             <li>Uso de suelo ajustado: @(string.IsNullOrWhiteSpace(Model.UsoSueloAjustado) ? "Sin ajuste" : Model.UsoSueloAjustado)</li>
             <li>Pendiente ajustada: @(string.IsNullOrWhiteSpace(Model.PendienteAjustada) ? "Sin ajuste" : Model.PendienteAjustada)</li>
-            <li>Recursos hídricos ajustados: @(Model.RecursosHidricosAjustado.HasValue ? (Model.RecursosHidricosAjustado.Value ? "Sí" : "No") : "Sin ajuste")</li>
+            <li>Ríos/Quebradas ajustado: @(Model.TieneRiosOQuebradasAjustado.HasValue ? (Model.TieneRiosOQuebradasAjustado.Value ? "Sí" : "No") : "Sin ajuste")</li>
+            <li>Cantidad nacientes ajustada: @(Model.CantidadNacientesAjustada.HasValue ? Model.CantidadNacientesAjustada.Value.ToString() : "Sin ajuste")</li>
         </ul>
     </section>
 
