@@ -19,6 +19,11 @@
 <li>3) + Ajuste por ríos/quebradas (@d.PorcentajeRiosQuebradas.ToString("N2")%): ₡@d.MontoAjusteRiosQuebradas.ToString("N2")</li>
 <li>4) + Ajuste por nacientes (@d.CantidadNacientesFinal × 5% = @d.PorcentajeNacientes.ToString("N2")%): ₡@d.MontoAjusteNacientes.ToString("N2")</li>
 <li>5) + Ajuste por pendiente (@d.PorcentajePendiente.ToString("N2")%): ₡@d.MontoAjustePendiente.ToString("N2")</li>
+@if (d.PorcentajeTotalAntesTope > d.PorcentajeTotalAplicado)
+{
+<li>6) + Aplicación de tope administrativo: porcentaje bruto @d.PorcentajeTotalAntesTope.ToString("N2")% limitado a @d.PorcentajeTotalAplicado.ToString("N2")% (tope de configuración).</li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;Monto máximo reconocible por ajuste: ₡@d.MontoAjusteMensual.ToString("N2"). Excedente no pagable por tope: ₡@d.MontoRecortadoPorTope.ToString("N2").</li>
+}
 <li><strong>Total mensual calculado: ₡@d.MontoFinalMensual.ToString("N2")</strong></li>
 <li>Equivalente anual estimado: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
 </ul></section>
