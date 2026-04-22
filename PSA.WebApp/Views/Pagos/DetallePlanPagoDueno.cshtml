@@ -1,46 +1,34 @@
 @model PSA.EntidadesDTO.DTOs.Pagos.OwnerPaymentPlanDetailDto
-@{ ViewData["Title"] = "Detalle del plan"; }
+@{ ViewData["Title"] = "Detalle del plan"; var d = Model.Calculo; }
 <section class="seccion-pagina">
-    <div class="cabecera-pagina">
-        <div>
-            <span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span>
-            <h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2>
-            <p>Resumen simple del cálculo y estado de cuotas.</p>
-        </div>
-        <a class="boton-secundario" asp-action="PlanesDueno">Volver</a>
-    </div>
-
-    <section class="tarjeta-panel">
-        <ul class="lista-timeline">
-            <li>Estado general: @Model.Plan.EstadoPlan</li>
-            <li>Monto mensual: ₡@Model.Plan.MontoMensual.ToString("N2")</li>
-            <li>Monto anual: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
-            <li>Cuenta bancaria: @Model.Plan.EstadoCuentaBancaria (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</li>
-            <li>Hectáreas aprobadas: @Model.Plan.ResumenCalculo.HectareasAprobadas.ToString("N2")</li>
-            <li>Cobertura/vegetación: @Model.Plan.ResumenCalculo.CoberturaVegetacion</li>
-            <li>Ajuste aplicado: @Model.Plan.ResumenCalculo.AjusteAplicadoPorcentaje.ToString("N2")%</li>
-            <li>Tope aplicado: @(Model.Plan.ResumenCalculo.SeAplicoTope ? $"Sí ({Model.Plan.ResumenCalculo.TopeAplicadoPorcentaje:N2}%)" : "No")</li>
-        </ul>
-    </section>
-
-    <section class="tarjeta-panel">
-        <h3>Cuotas mensuales</h3>
-        <div class="tabla-responsive">
-            <table class="tabla-base">
-                <thead><tr><th>Mes</th><th>Fecha programada</th><th>Monto</th><th>Estado</th><th>Fecha pago</th></tr></thead>
-                <tbody>
-                @foreach (var cuota in Model.Cuotas)
-                {
-                    <tr>
-                        <td>@cuota.Mes</td>
-                        <td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td>
-                        <td>₡@cuota.MontoProgramado.ToString("N2")</td>
-                        <td>@cuota.EstadoCuota</td>
-                        <td>@(cuota.FechaPago?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    </section>
+<div class="cabecera-pagina"><div><span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span><h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2></div><a class="boton-secundario" asp-action="PlanesDueno">Volver</a></div>
+@if (d is not null)
+{
+<section class="tarjeta-panel"><h3>Datos usados para cálculo</h3><ul class="lista-timeline">
+<li>Hectáreas (original → aprobadas): @d.HectareasOriginales.ToString("N2") → @d.HectareasAprobadas.ToString("N2")</li>
+<li>Vegetación (original → final): @d.VegetacionOriginal → @d.VegetacionFinal</li>
+<li>Ríos/quebradas (original → final): @(d.TieneRiosOQuebradasOriginal?"Sí":"No") → @(d.TieneRiosOQuebradasFinal?"Sí":"No")</li>
+<li>Nacientes (original → final): @d.CantidadNacientesOriginal → @d.CantidadNacientesFinal</li>
+<li>Pendiente (original → final): @d.PendienteOriginal → @d.PendienteFinal</li>
+<li>Precio base por hectárea: ₡@d.PrecioBasePorHectarea.ToString("N2")</li></ul></section>
+<section class="tarjeta-panel"><h3>Desglose progresivo del cálculo</h3>
+<p class="texto-secundario">Los porcentajes de ajuste se aplican exclusivamente sobre el monto base mensual, calculado como <strong>hectáreas aprobadas por ingeniería forestal × precio base por hectárea vigente</strong>. No se aplican porcentajes sobre montos acumulados de ajustes previos.</p>
+<ul class="lista-timeline">
+<li>1) Base por hectáreas: ₡@d.MontoBaseMensual.ToString("N2")</li>
+<li>2) + Ajuste por vegetación (@d.PorcentajeVegetacion.ToString("N2")%): ₡@d.MontoAjusteVegetacion.ToString("N2")</li>
+<li>3) + Ajuste por ríos/quebradas (@d.PorcentajeRiosQuebradas.ToString("N2")%): ₡@d.MontoAjusteRiosQuebradas.ToString("N2")</li>
+<li>4) + Ajuste por nacientes (@d.CantidadNacientesFinal × 5% = @d.PorcentajeNacientes.ToString("N2")%): ₡@d.MontoAjusteNacientes.ToString("N2")</li>
+<li>5) + Ajuste por pendiente (@d.PorcentajePendiente.ToString("N2")%): ₡@d.MontoAjustePendiente.ToString("N2")</li>
+@if (d.PorcentajeTotalAntesTope > d.PorcentajeTotalAplicado)
+{
+<li>6) + Aplicación de tope administrativo: porcentaje bruto @d.PorcentajeTotalAntesTope.ToString("N2")% limitado a @d.PorcentajeTotalAplicado.ToString("N2")% (tope de configuración).</li>
+<li>&nbsp;&nbsp;&nbsp;&nbsp;Monto máximo reconocible por ajuste: ₡@d.MontoAjusteMensual.ToString("N2"). Excedente no pagable por tope: ₡@d.MontoRecortadoPorTope.ToString("N2").</li>
+}
+<li><strong>Total mensual calculado: ₡@d.MontoFinalMensual.ToString("N2")</strong></li>
+<li>Equivalente anual estimado: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
+</ul></section>
+}
+<section class="tarjeta-panel"><h3>Cuotas mensuales</h3><div class="tabla-responsive"><table class="tabla-base"><thead><tr><th>Periodo</th><th>Estado</th><th>Programada</th><th>Ejecución</th><th>Monto</th></tr></thead><tbody>
+@foreach (var cuota in Model.Cuotas){<tr><td>@Model.Plan.Anio-@cuota.Mes.ToString("00")</td><td>@cuota.EstadoCuota</td><td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td><td>@(cuota.FechaPago?.ToString("dd/MM/yyyy")??"Pendiente")</td><td>₡@cuota.MontoProgramado.ToString("N2")</td></tr>}
+</tbody></table></div></section>
 </section>

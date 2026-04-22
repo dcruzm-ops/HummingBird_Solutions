@@ -130,6 +130,15 @@ namespace PSA.AppCore.Managers
             dto.UsoSueloAjustado = string.IsNullOrWhiteSpace(dto.UsoSueloAjustado) ? null : dto.UsoSueloAjustado.Trim();
             dto.PendienteAjustada = string.IsNullOrWhiteSpace(dto.PendienteAjustada) ? null : dto.PendienteAjustada.Trim();
             dto.Observaciones = string.IsNullOrWhiteSpace(dto.Observaciones) ? null : dto.Observaciones.Trim();
+            if (dto.CantidadNacientesAjustada.HasValue && dto.CantidadNacientesAjustada.Value < 0)
+            {
+                throw new InvalidOperationException("La cantidad de nacientes ajustada no puede ser negativa.");
+            }
+
+            if (dto.RecursosHidricosAjustado.HasValue && !dto.TieneRiosOQuebradasAjustado.HasValue)
+            {
+                dto.TieneRiosOQuebradasAjustado = dto.RecursosHidricosAjustado.Value;
+            }
 
             var antes = await _evaluacionTecnicaDAO.ObtenerDetalleParaEvaluacionAsync(idEvaluacion);
             var resultado = await _evaluacionTecnicaDAO.RegistrarResultadoAsync(idEvaluacion, dto);
@@ -202,7 +211,8 @@ namespace PSA.AppCore.Managers
 
             if (dto.HectareasAjustadas.HasValue) cambios.Add($"Hectáreas ajustadas a {dto.HectareasAjustadas.Value:N2}");
             if (!string.IsNullOrWhiteSpace(dto.VegetacionAjustada)) cambios.Add($"Vegetación: {dto.VegetacionAjustada}");
-            if (dto.RecursosHidricosAjustado.HasValue) cambios.Add($"Recursos hídricos: {(dto.RecursosHidricosAjustado.Value ? "Sí" : "No")}");
+            if (dto.TieneRiosOQuebradasAjustado.HasValue) cambios.Add($"Ríos/Quebradas: {(dto.TieneRiosOQuebradasAjustado.Value ? "Sí" : "No")}");
+            if (dto.CantidadNacientesAjustada.HasValue) cambios.Add($"Cantidad de nacientes: {dto.CantidadNacientesAjustada.Value}");
             if (!string.IsNullOrWhiteSpace(dto.UsoSueloAjustado)) cambios.Add($"Uso de suelo: {dto.UsoSueloAjustado}");
             if (!string.IsNullOrWhiteSpace(dto.PendienteAjustada)) cambios.Add($"Pendiente: {dto.PendienteAjustada}");
 
@@ -218,7 +228,8 @@ namespace PSA.AppCore.Managers
             {
                 ("Hectareas", antes.Hectareas.ToString("0.##"), despues.HectareasAjustadas?.ToString("0.##") ?? antes.Hectareas.ToString("0.##")),
                 ("Vegetacion", antes.Vegetacion, despues.VegetacionAjustada ?? antes.Vegetacion),
-                ("RecursosHidricos", antes.TieneRecursosHidricos ? "true" : "false", (despues.RecursosHidricosAjustado ?? antes.TieneRecursosHidricos) ? "true" : "false"),
+                ("RiosQuebradas", antes.TieneRiosOQuebradas ? "true" : "false", (despues.TieneRiosOQuebradasAjustado ?? antes.TieneRiosOQuebradas) ? "true" : "false"),
+                ("CantidadNacientes", antes.CantidadNacientes.ToString(), (despues.CantidadNacientesAjustada ?? antes.CantidadNacientes).ToString()),
                 ("UsoSuelo", antes.UsoSuelo, despues.UsoSueloAjustado ?? antes.UsoSuelo),
                 ("Pendiente", antes.Pendiente, despues.PendienteAjustada ?? antes.Pendiente)
             };

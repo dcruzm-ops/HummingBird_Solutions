@@ -288,13 +288,48 @@ VALUES (@IdConfiguracionPago, @TipoFactor, @ValorFactor, @PorcentajeAjuste);";
 
         foreach (var ajuste in ajustes)
         {
+            var tipoFactor = NormalizarTipoFactor(ajuste.TipoFactor);
+            var valorFactor = NormalizarValorFactor(tipoFactor, ajuste.ValorFactor);
             using var command = new SqlCommand(sql, connection, tx);
             command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
-            command.Parameters.AddWithValue("@TipoFactor", ajuste.TipoFactor ?? string.Empty);
-            command.Parameters.AddWithValue("@ValorFactor", ajuste.ValorFactor ?? string.Empty);
+            command.Parameters.AddWithValue("@TipoFactor", tipoFactor);
+            command.Parameters.AddWithValue("@ValorFactor", valorFactor);
             command.Parameters.AddWithValue("@PorcentajeAjuste", ajuste.PorcentajeAjuste);
             await command.ExecuteNonQueryAsync();
         }
+    }
+
+    private static string NormalizarTipoFactor(string? tipoFactor)
+    {
+        if (string.Equals(tipoFactor?.Trim(), "Recursos Hidricos", StringComparison.OrdinalIgnoreCase))
+        {
+            return "RecursosHidricos";
+        }
+
+        return tipoFactor?.Trim() ?? string.Empty;
+    }
+
+    private static string NormalizarValorFactor(string? tipoFactor, string? valorFactor)
+    {
+        if (!string.Equals(tipoFactor, "RecursosHidricos", StringComparison.OrdinalIgnoreCase))
+        {
+            return valorFactor?.Trim() ?? string.Empty;
+        }
+
+        var valor = valorFactor?.Trim() ?? string.Empty;
+        if (string.Equals(valor, "Si", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(valor, "Con recursos", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(valor, "Rios o quebradas", StringComparison.OrdinalIgnoreCase))
+        {
+            return "RiosQuebradas";
+        }
+
+        if (string.Equals(valor, "Nacientes", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Naciente";
+        }
+
+        return valor;
     }
 
     private static async Task AsegurarUnicaConfiguracionActivaAsync(SqlConnection connection, SqlTransaction tx, int idConfiguracionPago, HashSet<string> columnas)

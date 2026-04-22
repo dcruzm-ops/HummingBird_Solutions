@@ -37,21 +37,41 @@
 
     public class PlanPagoCalculoDetalleDTO
     {
+        public int IdConfiguracionPago { get; set; }
+        public int VersionConfiguracionPago { get; set; }
         public decimal HectareasAprobadas { get; set; }
         public decimal PrecioBasePorHectarea { get; set; }
         public decimal MontoBaseMensual { get; set; }
         public decimal PorcentajeVegetacion { get; set; }
+        public decimal MontoAjusteVegetacion { get; set; }
+        public decimal PorcentajeRiosQuebradas { get; set; }
+        public decimal MontoAjusteRiosQuebradas { get; set; }
         public decimal PorcentajeHidrico { get; set; }
         public decimal PorcentajeNacientes { get; set; }
+        public decimal MontoAjusteNacientes { get; set; }
         public decimal PorcentajePendiente { get; set; }
+        public decimal MontoAjustePendiente { get; set; }
         public decimal PorcentajeTotalAntesTope { get; set; }
         public decimal PorcentajeTopeAplicado { get; set; }
         public decimal PorcentajeTotalAplicado { get; set; }
+        public decimal PorcentajeRecortadoPorTope { get; set; }
         public decimal MontoAjusteMensual { get; set; }
+        public decimal MontoAjusteBrutoMensual { get; set; }
+        public decimal MontoRecortadoPorTope { get; set; }
         public decimal MontoFinalMensual { get; set; }
+        public string? GeneradoPorNombre { get; set; }
+        public string? AprobadoPorNombre { get; set; }
+        public DateTime? FechaAprobacionFinal { get; set; }
+        public decimal HectareasOriginales { get; set; }
+        public decimal HectareasFinalesAprobadas { get; set; }
+        public string VegetacionOriginal { get; set; } = string.Empty;
         public string VegetacionFinal { get; set; } = string.Empty;
+        public bool TieneRiosOQuebradasOriginal { get; set; }
+        public bool TieneRiosOQuebradasFinal { get; set; }
         public bool TieneRecursosHidricosFinal { get; set; }
+        public int CantidadNacientesOriginal { get; set; }
         public int CantidadNacientesFinal { get; set; }
+        public string PendienteOriginal { get; set; } = string.Empty;
         public string PendienteFinal { get; set; } = string.Empty;
     }
 
@@ -158,6 +178,7 @@
     public class OwnerPaymentPlanDetailDto
     {
         public OwnerPaymentPlanDto Plan { get; set; } = new();
+        public PlanPagoCalculoDetalleDTO? Calculo { get; set; }
         public List<CuotaPlanPagoDTO> Cuotas { get; set; } = new();
     }
 
@@ -235,10 +256,16 @@
         public int IdEvaluacion { get; set; }
         public int IdPropietario { get; set; }
         public string NombreFinca { get; set; } = string.Empty;
+        public decimal HectareasOriginales { get; set; }
         public decimal HectareasAprobadas { get; set; }
+        public string VegetacionOriginal { get; set; } = string.Empty;
         public string VegetacionFinal { get; set; } = string.Empty;
+        public bool TieneRiosOQuebradasOriginal { get; set; }
+        public bool TieneRiosOQuebradasFinal { get; set; }
         public bool TieneRecursosHidricosFinal { get; set; }
+        public int CantidadNacientesOriginal { get; set; }
         public int CantidadNacientesFinal { get; set; }
+        public string PendienteOriginal { get; set; } = string.Empty;
         public string PendienteFinal { get; set; } = string.Empty;
     }
 
@@ -260,11 +287,19 @@
         public decimal MontoMensualTotal { get; set; }
         public decimal MontoAnualTotal { get; set; }
         public decimal PorcentajeVegetacion { get; set; }
+        public decimal MontoAjusteVegetacion { get; set; }
+        public decimal PorcentajeRiosQuebradas { get; set; }
+        public decimal MontoAjusteRiosQuebradas { get; set; }
         public decimal PorcentajeHidrico { get; set; }
         public decimal PorcentajeNacientes { get; set; }
+        public decimal MontoAjusteNacientes { get; set; }
         public decimal PorcentajePendiente { get; set; }
+        public decimal MontoAjustePendiente { get; set; }
         public decimal PorcentajeAjusteTotalBruto { get; set; }
         public decimal PorcentajeAjusteAplicado { get; set; }
+        public decimal PorcentajeRecortadoPorTope { get; set; }
         public decimal TopePorcentajeAjuste { get; set; }
+        public decimal MontoAjusteBrutoMensual { get; set; }
+        public decimal MontoRecortadoPorTope { get; set; }
     }
 }
