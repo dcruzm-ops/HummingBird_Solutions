@@ -28,9 +28,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("https://localhost:59664")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.WithOrigins(
+                "https://localhost:59664",
+                "https://psa-web.azurewebsites.net"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
