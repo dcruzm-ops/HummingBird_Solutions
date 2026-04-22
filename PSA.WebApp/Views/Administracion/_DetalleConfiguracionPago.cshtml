@@ -31,7 +31,7 @@
                 @foreach (var ajuste in Model.Ajustes)
                 {
                     <tr>
-                        <td>@ajuste.TipoFactor</td>
+                        <td>@ajuste.TipoFactor.Replace("RecursosHidricos", "Recursos Hidricos")</td>
                         <td>@ajuste.ValorFactor</td>
                         <td>@ajuste.PorcentajeAjuste.ToString("N2")</td>
                     </tr>

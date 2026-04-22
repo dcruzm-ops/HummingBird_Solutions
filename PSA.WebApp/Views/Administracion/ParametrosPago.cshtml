@@ -121,7 +121,8 @@
                                 {
                                     <tr>
                                         <td>
-                                            <input asp-for="NuevaConfiguracion.Ajustes[i].TipoFactor" class="form-control" readonly />
+                                            <input asp-for="NuevaConfiguracion.Ajustes[i].TipoFactor" type="hidden" />
+                                            <input class="form-control" readonly value="@(Model.NuevaConfiguracion.Ajustes[i].TipoFactor.Replace(\"RecursosHidricos\", \"Recursos Hidricos\"))" />
                                         </td>
                                         <td>
                                             <input asp-for="NuevaConfiguracion.Ajustes[i].ValorFactor" class="form-control" readonly />

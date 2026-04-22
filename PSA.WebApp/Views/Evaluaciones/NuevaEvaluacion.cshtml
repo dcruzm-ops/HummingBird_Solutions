@@ -82,6 +82,14 @@
                         }
                     </select>
                 </div>
+                <div class="campo-formulario">
+                    <label>Ríos/Quebradas</label>
+                    <input value="@(Model.Detalle.TieneRiosOQuebradasOriginal ? "Sí" : "No")" readonly />
+                </div>
+                <div class="campo-formulario">
+                    <label>Cantidad de nacientes</label>
+                    <input value="@Model.Detalle.CantidadNacientesOriginal" readonly />
+                </div>
 
                 <div class="campo-formulario">
                     <label>Estado evaluación</label>
@@ -215,12 +223,16 @@
                     </select>
                 </div>
                 <div class="campo-formulario campo-ajustable">
-                    <label asp-for="Formulario.RecursosHidricosAjustado">Recursos hídricos ajustados</label>
-                    <select asp-for="Formulario.RecursosHidricosAjustado">
+                    <label asp-for="Formulario.TieneRiosOQuebradasAjustado">Ríos/Quebradas ajustado</label>
+                    <select asp-for="Formulario.TieneRiosOQuebradasAjustado">
                         <option value="">Sin ajuste</option>
                         <option value="true">Sí</option>
                         <option value="false">No</option>
                     </select>
+                </div>
+                <div class="campo-formulario campo-ajustable">
+                    <label asp-for="Formulario.CantidadNacientesAjustada">Cantidad de nacientes ajustada</label>
+                    <input asp-for="Formulario.CantidadNacientesAjustada" type="number" min="0" step="1" />
                 </div>
             </div>
         </div>
@@ -235,5 +247,4 @@
 @section Scripts {
     <script src="~/js/evaluaciones.js" asp-append-version="true"></script>
 }
-
 
