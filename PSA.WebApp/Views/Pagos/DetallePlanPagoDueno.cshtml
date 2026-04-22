@@ -1,5 +1,5 @@
 @model PSA.EntidadesDTO.DTOs.Pagos.OwnerPaymentPlanDetailDto
-@{ ViewData["Title"] = "Detalle del plan"; var d = Model.Calculo; }
+@{ ViewData["Title"] = "Detalle del plan"; var d = Model.Calculo; var subtotalBruto = d is null ? 0m : (d.MontoBaseMensual + d.MontoAjusteBrutoMensual); }
 <section class="seccion-pagina">
 <div class="cabecera-pagina"><div><span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span><h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2></div><a class="boton-secundario" asp-action="PlanesDueno">Volver</a></div>
 @if (d is not null)
@@ -25,7 +25,7 @@
 <tr><td>Ajuste por ríos/quebradas</td><td>@d.PorcentajeRiosQuebradas.ToString("N2")%</td><td>₡@d.MontoAjusteRiosQuebradas.ToString("N2")</td></tr>
 <tr><td>Ajuste por nacientes</td><td>@d.CantidadNacientesFinal × 5% = @d.PorcentajeNacientes.ToString("N2")%</td><td>₡@d.MontoAjusteNacientes.ToString("N2")</td></tr>
 <tr><td>Ajuste por pendiente</td><td>@d.PorcentajePendiente.ToString("N2")%</td><td>₡@d.MontoAjustePendiente.ToString("N2")</td></tr>
-<tr><td><strong>Subtotal con ajuste bruto</strong></td><td>@d.PorcentajeTotalAntesTope.ToString("N2")% sobre base</td><td><strong>₡@(d.MontoBaseMensual + d.MontoAjusteBrutoMensual).ToString("N2")</strong></td></tr>
+<tr><td><strong>Subtotal con ajuste bruto</strong></td><td>@d.PorcentajeTotalAntesTope.ToString("N2")% sobre base</td><td><strong>₡@subtotalBruto.ToString("N2")</strong></td></tr>
 @if (d.PorcentajeTotalAntesTope > d.PorcentajeTotalAplicado)
 {
 <tr><td>Aplicación de tope administrativo</td><td>Bruto @d.PorcentajeTotalAntesTope.ToString("N2")% limitado a @d.PorcentajeTotalAplicado.ToString("N2")%</td><td>-₡@d.MontoRecortadoPorTope.ToString("N2")</td></tr>
