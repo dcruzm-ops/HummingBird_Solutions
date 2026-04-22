@@ -1,66 +1,9 @@
 @model PSA.EntidadesDTO.DTOs.Pagos.AdminPaymentPlanDetailDto
-@{ ViewData["Title"] = "Detalle del plan"; }
+@{ ViewData["Title"] = "Detalle del plan"; var c = Model.Calculo; }
 <section class="seccion-pagina">
-    <div class="cabecera-pagina">
-        <div>
-            <span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span>
-            <h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2>
-            <p>Detalle operativo: cálculo, cuotas y auditoría.</p>
-        </div>
-        <a class="boton-secundario" asp-action="PlanesPago">Volver</a>
-    </div>
-
-    <section class="tarjeta-panel">
-        <ul class="lista-timeline">
-            <li>Propietario: @Model.Plan.Propietario</li>
-            <li>Ingeniero: @Model.Plan.Ingeniero</li>
-            <li>Estado del plan: @Model.Plan.EstadoPlan</li>
-            <li>Estado bancario: @Model.Plan.EstadoBancario (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</li>
-            <li>Versión de configuración: @Model.Plan.VersionConfiguracion</li>
-            <li>Precio base por hectárea: ₡@Model.Calculo.PrecioBasePorHectarea.ToString("N2")</li>
-            <li>Hectáreas aprobadas: @Model.Calculo.HectareasAprobadas.ToString("N2")</li>
-            <li>Porcentaje total aplicado: @Model.Calculo.PorcentajeTotalAplicado.ToString("N2")%</li>
-            <li>Monto mensual: ₡@Model.Plan.MontoMensual.ToString("N2")</li>
-            <li>Monto anual: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
-        </ul>
-    </section>
-
-    <section class="tarjeta-panel">
-        <h3>Cuotas</h3>
-        <div class="tabla-responsive">
-            <table class="tabla-base">
-                <thead><tr><th>Mes</th><th>Programada</th><th>Monto</th><th>Pendiente</th><th>Estado</th><th>Pago</th></tr></thead>
-                <tbody>
-                @foreach (var cuota in Model.Cuotas)
-                {
-                    <tr>
-                        <td>@cuota.Mes</td>
-                        <td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td>
-                        <td>₡@cuota.MontoProgramado.ToString("N2")</td>
-                        <td>₡@cuota.MontoPendiente.ToString("N2")</td>
-                        <td>@cuota.EstadoCuota</td>
-                        <td>@(cuota.FechaPago?.ToString("dd/MM/yyyy") ?? "N/A")</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <section class="tarjeta-panel">
-        <h3>Bitácora del plan</h3>
-        <ul class="lista-timeline">
-            @if (!Model.Bitacora.Any())
-            {
-                <li>Sin registros de auditoría disponibles para este plan.</li>
-            }
-            else
-            {
-                @foreach (var log in Model.Bitacora)
-                {
-                    <li>@log.FechaAccion.ToString("dd/MM/yyyy HH:mm") - @log.Accion - @(log.Detalle ?? "Sin detalle")</li>
-                }
-            }
-        </ul>
-    </section>
+<div class="cabecera-pagina"><div><span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span><h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2></div><a class="boton-secundario" asp-action="PlanesPago">Volver</a></div>
+<section class="tarjeta-panel"><h3>Sección 1 — Datos base de la cuota</h3><ul class="lista-timeline"><li>Finca: @Model.Plan.NombreFinca</li><li>Propietario: @Model.Plan.Propietario</li><li>Estado plan: @Model.Plan.EstadoPlan</li><li>Ingeniero: @Model.Plan.Ingeniero</li><li>Estado bancario: @Model.Plan.EstadoBancario (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</li></ul></section>
+<section class="tarjeta-panel"><h3>Sección 2 — Datos usados para cálculo</h3><ul class="lista-timeline"><li>Hectáreas aprobadas: @c.HectareasAprobadas:N2</li><li>Vegetación final: @c.VegetacionFinal</li><li>Tiene ríos/quebradas: @(c.TieneRiosOQuebradasFinal?"Sí":"No")</li><li>Cantidad de nacientes: @c.CantidadNacientesFinal</li><li>Pendiente final: @c.PendienteFinal</li><li>Precio base por hectárea: ₡@c.PrecioBasePorHectarea.ToString("N2")</li><li>Configuración usada: Id @Model.Plan.VersionConfiguracion</li></ul></section>
+<section class="tarjeta-panel"><h3>Sección 3 — Desglose del cálculo</h3><ul class="lista-timeline"><li>Base por hectáreas: ₡@c.MontoBaseMensual.ToString("N2")</li><li>Ajuste vegetación: @c.PorcentajeVegetacion:N2% => ₡@c.MontoAjusteVegetacion.ToString("N2")</li><li>Ajuste ríos/quebradas: @c.PorcentajeRiosQuebradas:N2% => ₡@c.MontoAjusteRiosQuebradas.ToString("N2")</li><li>Ajuste nacientes: @c.CantidadNacientesFinal × 5% => @c.PorcentajeNacientes:N2% => ₡@c.MontoAjusteNacientes.ToString("N2")</li><li>Ajuste pendiente: @c.PorcentajePendiente:N2% => ₡@c.MontoAjustePendiente.ToString("N2")</li><li>Porcentaje bruto: @c.PorcentajeTotalAntesTope:N2%</li><li>Tope permitido: @c.PorcentajeTopeAplicado:N2%</li><li>Porcentaje aplicado: @c.PorcentajeTotalAplicado:N2%</li><li>Monto recortado por tope: ₡@c.MontoRecortadoPorTope.ToString("N2")</li><li><strong>Total mensual: ₡@c.MontoFinalMensual.ToString("N2")</strong></li></ul></section>
+<section class="tarjeta-panel"><h3>Sección 4 — Trazabilidad</h3><ul class="lista-timeline"><li>Vegetación original/final: @c.VegetacionOriginal / @c.VegetacionFinal</li><li>Ríos original/final: @(c.TieneRiosOQuebradasOriginal?"Sí":"No") / @(c.TieneRiosOQuebradasFinal?"Sí":"No")</li><li>Nacientes original/final: @c.CantidadNacientesOriginal / @c.CantidadNacientesFinal</li><li>Pendiente original/final: @c.PendienteOriginal / @c.PendienteFinal</li></ul></section>
 </section>
