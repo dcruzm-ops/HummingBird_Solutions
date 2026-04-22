@@ -1,12 +1,12 @@
-name: Deploy to Azure Web App
+name: Deploy PSA API
 
 on:
   push:
     branches:
-      - development  
+      - development
 
 jobs:
-  build-and-deploy:
+  deploy-api:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,17 +19,20 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore ./PSA.WebAPI/PSA.WebAPI.csproj
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build ./PSA.WebAPI/PSA.WebAPI.csproj --configuration Release --no-restore
 
-      - name: Publish
-        run: dotnet publish ./PSA.WebApp/PSA.WebApp.csproj -c Release -o ./publish
+      - name: Publish API
+        run: dotnet publish ./PSA.WebAPI/PSA.WebAPI.csproj -c Release -o ./publish-api
 
-      - name: Deploy to Azure
+      - name: Show published files
+        run: ls -la ./publish-api
+
+      - name: Deploy API
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'psa-web'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ./publish
+          app-name: 'psa-api'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
+          package: ./publish-api
