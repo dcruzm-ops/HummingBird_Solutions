@@ -1,46 +1,40 @@
 @model PSA.EntidadesDTO.DTOs.Pagos.OwnerPaymentPlanDetailDto
-@{ ViewData["Title"] = "Detalle del plan"; }
+@{ ViewData["Title"] = "Detalle del plan"; var d = Model.Calculo; }
 <section class="seccion-pagina">
-    <div class="cabecera-pagina">
-        <div>
-            <span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span>
-            <h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2>
-            <p>Resumen simple del cálculo y estado de cuotas.</p>
-        </div>
-        <a class="boton-secundario" asp-action="PlanesDueno">Volver</a>
-    </div>
-
-    <section class="tarjeta-panel">
-        <ul class="lista-timeline">
-            <li>Estado general: @Model.Plan.EstadoPlan</li>
-            <li>Monto mensual: ₡@Model.Plan.MontoMensual.ToString("N2")</li>
-            <li>Monto anual: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
-            <li>Cuenta bancaria: @Model.Plan.EstadoCuentaBancaria (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</li>
-            <li>Hectáreas aprobadas: @Model.Plan.ResumenCalculo.HectareasAprobadas.ToString("N2")</li>
-            <li>Cobertura/vegetación: @Model.Plan.ResumenCalculo.CoberturaVegetacion</li>
-            <li>Ajuste aplicado: @Model.Plan.ResumenCalculo.AjusteAplicadoPorcentaje.ToString("N2")%</li>
-            <li>Tope aplicado: @(Model.Plan.ResumenCalculo.SeAplicoTope ? $"Sí ({Model.Plan.ResumenCalculo.TopeAplicadoPorcentaje:N2}%)" : "No")</li>
-        </ul>
-    </section>
-
-    <section class="tarjeta-panel">
-        <h3>Cuotas mensuales</h3>
-        <div class="tabla-responsive">
-            <table class="tabla-base">
-                <thead><tr><th>Mes</th><th>Fecha programada</th><th>Monto</th><th>Estado</th><th>Fecha pago</th></tr></thead>
-                <tbody>
-                @foreach (var cuota in Model.Cuotas)
-                {
-                    <tr>
-                        <td>@cuota.Mes</td>
-                        <td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td>
-                        <td>₡@cuota.MontoProgramado.ToString("N2")</td>
-                        <td>@cuota.EstadoCuota</td>
-                        <td>@(cuota.FechaPago?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
-                    </tr>
-                }
-                </tbody>
-            </table>
-        </div>
-    </section>
+<div class="cabecera-pagina"><div><span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span><h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2></div><a class="boton-secundario" asp-action="PlanesDueno">Volver</a></div>
+@if (d is not null)
+{
+<section class="tarjeta-panel"><h3>Datos usados para cálculo</h3>
+<div class="tabla-responsive"><table class="tabla-base">
+<thead><tr><th>Rubro</th><th>Valor original</th><th>Valor aplicado</th></tr></thead>
+<tbody>
+<tr><td>Hectáreas</td><td>@d.HectareasOriginales.ToString("N2")</td><td>@d.HectareasAprobadas.ToString("N2")</td></tr>
+<tr><td>Vegetación</td><td>@d.VegetacionOriginal</td><td>@d.VegetacionFinal</td></tr>
+<tr><td>Ríos/quebradas</td><td>@(d.TieneRiosOQuebradasOriginal?"Sí":"No")</td><td>@(d.TieneRiosOQuebradasFinal?"Sí":"No")</td></tr>
+<tr><td>Nacientes</td><td>@d.CantidadNacientesOriginal</td><td>@d.CantidadNacientesFinal</td></tr>
+<tr><td>Pendiente</td><td>@d.PendienteOriginal</td><td>@d.PendienteFinal</td></tr>
+<tr><td>Precio base por hectárea</td><td>-</td><td>₡@d.PrecioBasePorHectarea.ToString("N2")</td></tr>
+</tbody></table></div></section>
+<section class="tarjeta-panel"><h3>Desglose progresivo del cálculo</h3>
+<p class="texto-secundario">Los porcentajes de ajuste se aplican exclusivamente sobre el monto base mensual, calculado como <strong>hectáreas aprobadas por ingeniería forestal × precio base por hectárea vigente</strong>. No se aplican porcentajes sobre montos acumulados de ajustes previos.</p>
+<div class="tabla-responsive"><table class="tabla-base">
+<thead><tr><th>Rubro</th><th>Detalle</th><th>Monto</th></tr></thead>
+<tbody>
+<tr><td>Base por hectáreas</td><td>@d.HectareasAprobadas.ToString("N2") × ₡@d.PrecioBasePorHectarea.ToString("N2")</td><td>₡@d.MontoBaseMensual.ToString("N2")</td></tr>
+<tr><td>Ajuste por vegetación</td><td>@d.PorcentajeVegetacion.ToString("N2")%</td><td>₡@d.MontoAjusteVegetacion.ToString("N2")</td></tr>
+<tr><td>Ajuste por ríos/quebradas</td><td>@d.PorcentajeRiosQuebradas.ToString("N2")%</td><td>₡@d.MontoAjusteRiosQuebradas.ToString("N2")</td></tr>
+<tr><td>Ajuste por nacientes</td><td>@d.CantidadNacientesFinal × 5% = @d.PorcentajeNacientes.ToString("N2")%</td><td>₡@d.MontoAjusteNacientes.ToString("N2")</td></tr>
+<tr><td>Ajuste por pendiente</td><td>@d.PorcentajePendiente.ToString("N2")%</td><td>₡@d.MontoAjustePendiente.ToString("N2")</td></tr>
+<tr><td><strong>Subtotal con ajuste bruto</strong></td><td>@d.PorcentajeTotalAntesTope.ToString("N2")% sobre base</td><td><strong>₡@(d.MontoBaseMensual + d.MontoAjusteBrutoMensual).ToString("N2")</strong></td></tr>
+@if (d.PorcentajeTotalAntesTope > d.PorcentajeTotalAplicado)
+{
+<tr><td>Aplicación de tope administrativo</td><td>Bruto @d.PorcentajeTotalAntesTope.ToString("N2")% limitado a @d.PorcentajeTotalAplicado.ToString("N2")%</td><td>-₡@d.MontoRecortadoPorTope.ToString("N2")</td></tr>
+}
+<tr><td><strong>Total mensual calculado</strong></td><td>Ajuste aplicado @d.PorcentajeTotalAplicado.ToString("N2")%</td><td><strong>₡@d.MontoFinalMensual.ToString("N2")</strong></td></tr>
+<tr><td>Equivalente anual estimado</td><td>12 cuotas mensuales</td><td>₡@Model.Plan.MontoAnual.ToString("N2")</td></tr>
+</tbody></table></div></section>
+}
+<section class="tarjeta-panel"><h3>Cuotas mensuales</h3><div class="tabla-responsive"><table class="tabla-base"><thead><tr><th>Periodo</th><th>Estado</th><th>Programada</th><th>Ejecución</th><th>Monto</th></tr></thead><tbody>
+@foreach (var cuota in Model.Cuotas){<tr><td>@Model.Plan.Anio-@cuota.Mes.ToString("00")</td><td>@cuota.EstadoCuota</td><td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td><td>@(cuota.FechaPago?.ToString("dd/MM/yyyy")??"Pendiente")</td><td>₡@cuota.MontoProgramado.ToString("N2")</td></tr>}
+</tbody></table></div></section>
 </section>
