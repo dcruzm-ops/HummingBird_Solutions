@@ -143,15 +143,12 @@ builder.Services.AddSingleton<ISecurityThrottleService, SecurityThrottleService>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("./v1/swagger.json", "PSA.WebAPI v1");
-        options.RoutePrefix = "swagger";
-    });
-}
+    options.SwaggerEndpoint("./v1/swagger.json", "PSA.WebAPI v1");
+    options.RoutePrefix = "swagger";
+});
 
 app.MapGet("/openapi/v1.json", () => Results.Redirect("/swagger/v1/swagger.json"));
 
