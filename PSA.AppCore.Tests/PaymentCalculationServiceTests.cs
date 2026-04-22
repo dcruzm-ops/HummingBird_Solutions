@@ -130,6 +130,28 @@ public class PaymentCalculationServiceTests
     }
 
     [Fact]
+    public void Calculate_AcceptsLegacyHydricAliasFromConfiguration()
+    {
+        var context = new PlanPagoGenerationContextDTO
+        {
+            HectareasAprobadas = 2m,
+            TieneRiosOQuebradasFinal = true
+        };
+
+        var config = new PaymentConfigurationVersionDTO
+        {
+            PrecioBasePorHectarea = 100m,
+            TopePorcentajeAjuste = 40m,
+            HidricosAjustes = new(StringComparer.OrdinalIgnoreCase) { ["Con recursos"] = 10m }
+        };
+
+        var result = _service.Calculate(context, config);
+
+        Assert.Equal(10m, result.PorcentajeRiosQuebradas);
+        Assert.Equal(20m, result.MontoAjusteRiosQuebradas);
+    }
+
+    [Fact]
     public void Calculate_UsesConfiguredCapWithoutHardcode()
     {
         var context = new PlanPagoGenerationContextDTO

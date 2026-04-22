@@ -367,7 +367,8 @@ namespace PSA.WebApp.Controllers
                 new() { TipoFactor = "Vegetacion", ValorFactor = "Bosque secundario" },
                 new() { TipoFactor = "Vegetacion", ValorFactor = "Plantación" },
                 new() { TipoFactor = "Vegetacion", ValorFactor = "Pasto" },
-                new() { TipoFactor = "RecursosHidricos", ValorFactor = "Con recursos" },
+                new() { TipoFactor = "RecursosHidricos", ValorFactor = "RiosQuebradas" },
+                new() { TipoFactor = "RecursosHidricos", ValorFactor = "Naciente" },
                 new() { TipoFactor = "Pendiente", ValorFactor = "Plana" },
                 new() { TipoFactor = "Pendiente", ValorFactor = "Inclinada" },
                 new() { TipoFactor = "Pendiente", ValorFactor = "Muy inclinada" }

@@ -23,7 +23,7 @@ public class PaymentCalculationService : IPaymentCalculationService
 
         var porcentajeVegetacion = ResolvePercentage(config.VegetacionAjustes, context.VegetacionFinal);
         var porcentajeRiosQuebradas = context.TieneRiosOQuebradasFinal
-            ? ResolvePercentage(config.HidricosAjustes, "RiosQuebradas", "Si")
+            ? ResolvePercentage(config.HidricosAjustes, "RiosQuebradas", "Si", "Con recursos", "Rios o quebradas")
             : 0m;
         var porcentajePorNaciente = ResolvePercentage(config.HidricosAjustes, "Naciente", "Nacientes");
         var porcentajeNacientes = context.CantidadNacientesFinal > 0
