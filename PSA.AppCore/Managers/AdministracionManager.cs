@@ -340,5 +340,22 @@ public class AdministracionManager
                 throw new InvalidOperationException("El porcentaje de ajuste debe estar entre -100 y 100.");
             }
         }
+
+        var ajustesHidricos = model.Ajustes
+            .Where(a => string.Equals(a.TipoFactor, "RecursosHidricos", StringComparison.OrdinalIgnoreCase))
+            .Select(a => a.ValorFactor.Trim())
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var tieneRiosConfig = ajustesHidricos.Contains("RiosQuebradas")
+            || ajustesHidricos.Contains("Si")
+            || ajustesHidricos.Contains("Con recursos")
+            || ajustesHidricos.Contains("Rios o quebradas");
+        var tieneNacientesConfig = ajustesHidricos.Contains("Naciente")
+            || ajustesHidricos.Contains("Nacientes");
+
+        if (!tieneRiosConfig || !tieneNacientesConfig)
+        {
+            throw new InvalidOperationException("La configuración de pago debe incluir ajustes hídricos para 'RiosQuebradas' y 'Naciente'.");
+        }
     }
 }
