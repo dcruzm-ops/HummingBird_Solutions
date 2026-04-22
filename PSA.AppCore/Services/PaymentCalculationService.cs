@@ -1,4 +1,6 @@
 using PSA.EntidadesDTO.DTOs.Pagos;
+using System.Globalization;
+using System.Text;
 
 namespace PSA.AppCore.Services;
 
@@ -23,7 +25,7 @@ public class PaymentCalculationService : IPaymentCalculationService
 
         var porcentajeVegetacion = ResolvePercentage(config.VegetacionAjustes, context.VegetacionFinal);
         var porcentajeRiosQuebradas = context.TieneRiosOQuebradasFinal
-            ? ResolvePercentage(config.HidricosAjustes, "RiosQuebradas", "Si", "Con recursos", "Rios o quebradas")
+            ? ResolvePercentage(config.HidricosAjustes, "RiosQuebradas", "Rios/Quebradas", "Ríos/Quebradas", "Rios/quebradas", "Ríos/quebradas", "Si", "Con recursos", "Rios o quebradas", "True")
             : 0m;
         var porcentajePorNaciente = ResolvePercentage(config.HidricosAjustes, "Naciente", "Nacientes");
         var porcentajeNacientes = context.CantidadNacientesFinal > 0
@@ -72,20 +74,40 @@ public class PaymentCalculationService : IPaymentCalculationService
 
     private static decimal ResolvePercentage(IReadOnlyDictionary<string, decimal> source, params string[] keys)
     {
-        foreach (var key in keys)
-        {
-            if (string.IsNullOrWhiteSpace(key))
-            {
-                continue;
-            }
+        var requested = keys
+            .Where(k => !string.IsNullOrWhiteSpace(k))
+            .Select(CanonicalKey)
+            .ToHashSet(StringComparer.Ordinal);
 
-            if (source.TryGetValue(key.Trim(), out var percentage))
+        foreach (var entry in source)
+        {
+            if (requested.Contains(CanonicalKey(entry.Key)))
             {
-                return percentage;
+                return entry.Value;
             }
         }
 
         return 0m;
+    }
+
+    private static string CanonicalKey(string value)
+    {
+        var normalized = value.Trim().Normalize(NormalizationForm.FormD);
+        var sb = new StringBuilder(normalized.Length);
+        foreach (var c in normalized)
+        {
+            if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark)
+            {
+                continue;
+            }
+
+            if (char.IsLetterOrDigit(c))
+            {
+                sb.Append(char.ToLowerInvariant(c));
+            }
+        }
+
+        return sb.ToString();
     }
 
     private static decimal Round2(decimal value) => Math.Round(value, 2, MidpointRounding.AwayFromZero);
