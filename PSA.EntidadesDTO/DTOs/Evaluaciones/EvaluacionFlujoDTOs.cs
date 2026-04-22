@@ -48,6 +48,8 @@ namespace PSA.EntidadesDTO.DTOs.Evaluaciones
         public decimal? HectareasAjustadas { get; set; }
         public string? VegetacionAjustada { get; set; }
         public bool? RecursosHidricosAjustado { get; set; }
+        public bool? TieneRiosOQuebradasAjustado { get; set; }
+        public int? CantidadNacientesAjustada { get; set; }
         public string? UsoSueloAjustado { get; set; }
         public string? PendienteAjustada { get; set; }
     }
@@ -62,10 +64,18 @@ namespace PSA.EntidadesDTO.DTOs.Evaluaciones
         public string Canton { get; set; } = string.Empty;
         public string Distrito { get; set; } = string.Empty;
         public decimal Hectareas { get; set; }
+        public decimal HectareasOriginales { get; set; }
         public string Vegetacion { get; set; } = string.Empty;
+        public string VegetacionOriginal { get; set; } = string.Empty;
         public bool TieneRecursosHidricos { get; set; }
+        public bool TieneRiosOQuebradas { get; set; }
+        public bool TieneRiosOQuebradasOriginal { get; set; }
+        public int CantidadNacientes { get; set; }
+        public int CantidadNacientesOriginal { get; set; }
         public string UsoSuelo { get; set; } = string.Empty;
+        public string UsoSueloOriginal { get; set; } = string.Empty;
         public string Pendiente { get; set; } = string.Empty;
+        public string PendienteOriginal { get; set; } = string.Empty;
         public string EstadoFinca { get; set; } = string.Empty;
         public string EstadoEvaluacion { get; set; } = string.Empty;
         public int? IdIngeniero { get; set; }
@@ -75,6 +85,8 @@ namespace PSA.EntidadesDTO.DTOs.Evaluaciones
         public decimal? HectareasAjustadas { get; set; }
         public string? VegetacionAjustada { get; set; }
         public bool? RecursosHidricosAjustado { get; set; }
+        public bool? TieneRiosOQuebradasAjustado { get; set; }
+        public int? CantidadNacientesAjustada { get; set; }
         public string? UsoSueloAjustado { get; set; }
         public string? PendienteAjustada { get; set; }
         public DateTime? FechaDecision { get; set; }

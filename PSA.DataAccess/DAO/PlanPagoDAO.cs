@@ -171,6 +171,7 @@ ORDER BY FechaVigenciaDesde DESC, IdConfiguracionPago DESC;";
                     config.VegetacionAjustes[valor] = porcentaje;
                     break;
                 case "RecursosHidricos":
+                case "Recursos Hidricos":
                     config.HidricosAjustes[valor] = porcentaje;
                     break;
                 case "Pendiente":

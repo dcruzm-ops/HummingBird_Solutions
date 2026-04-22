@@ -109,10 +109,18 @@ SELECT TOP 1
     f.Canton,
     f.Distrito,
     f.Hectareas,
+    COALESCE(e.OriginalHectareas, f.Hectareas) AS HectareasOriginales,
     f.Vegetacion,
+    COALESCE(e.OriginalVegetacion, f.Vegetacion) AS VegetacionOriginal,
     f.TieneRecursosHidricos,
+    f.TieneRiosOQuebradas,
+    COALESCE(e.OriginalTieneRiosOQuebradas, f.TieneRiosOQuebradas) AS TieneRiosOQuebradasOriginal,
+    f.CantidadNacientes,
+    COALESCE(e.OriginalCantidadNacientes, f.CantidadNacientes) AS CantidadNacientesOriginal,
     f.UsoSuelo,
+    COALESCE(e.OriginalUsoSuelo, f.UsoSuelo) AS UsoSueloOriginal,
     f.Pendiente,
+    COALESCE(e.OriginalPendiente, f.Pendiente) AS PendienteOriginal,
     f.EstadoFinca,
     e.FechaVisita,
     e.Observaciones,
@@ -120,6 +128,8 @@ SELECT TOP 1
     e.HectareasAjustadas,
     e.VegetacionAjustada,
     e.RecursosHidricosAjustado,
+    e.TieneRiosOQuebradasAjustado,
+    e.CantidadNacientesAjustada,
     e.UsoSueloAjustado,
     e.PendienteAjustada,
     e.FechaDecision
@@ -151,10 +161,18 @@ WHERE e.IdEvaluacion = @IdEvaluacion;";
                 Canton = reader["Canton"]?.ToString() ?? string.Empty,
                 Distrito = reader["Distrito"]?.ToString() ?? string.Empty,
                 Hectareas = reader.GetDecimal(reader.GetOrdinal("Hectareas")),
+                HectareasOriginales = reader.GetDecimal(reader.GetOrdinal("HectareasOriginales")),
                 Vegetacion = reader["Vegetacion"]?.ToString() ?? string.Empty,
+                VegetacionOriginal = reader["VegetacionOriginal"]?.ToString() ?? string.Empty,
                 TieneRecursosHidricos = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricos")),
+                TieneRiosOQuebradas = reader.GetBoolean(reader.GetOrdinal("TieneRiosOQuebradas")),
+                TieneRiosOQuebradasOriginal = reader.GetBoolean(reader.GetOrdinal("TieneRiosOQuebradasOriginal")),
+                CantidadNacientes = reader.GetInt32(reader.GetOrdinal("CantidadNacientes")),
+                CantidadNacientesOriginal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesOriginal")),
                 UsoSuelo = reader["UsoSuelo"]?.ToString() ?? string.Empty,
+                UsoSueloOriginal = reader["UsoSueloOriginal"]?.ToString() ?? string.Empty,
                 Pendiente = reader["Pendiente"]?.ToString() ?? string.Empty,
+                PendienteOriginal = reader["PendienteOriginal"]?.ToString() ?? string.Empty,
                 EstadoFinca = reader["EstadoFinca"]?.ToString() ?? string.Empty,
                 FechaVisita = reader["FechaVisita"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaVisita")),
                 Observaciones = reader["Observaciones"] == DBNull.Value ? null : reader["Observaciones"]?.ToString(),
@@ -162,6 +180,8 @@ WHERE e.IdEvaluacion = @IdEvaluacion;";
                 HectareasAjustadas = reader["HectareasAjustadas"] == DBNull.Value ? null : reader.GetDecimal(reader.GetOrdinal("HectareasAjustadas")),
                 VegetacionAjustada = reader["VegetacionAjustada"] == DBNull.Value ? null : reader["VegetacionAjustada"]?.ToString(),
                 RecursosHidricosAjustado = reader["RecursosHidricosAjustado"] == DBNull.Value ? null : reader.GetBoolean(reader.GetOrdinal("RecursosHidricosAjustado")),
+                TieneRiosOQuebradasAjustado = reader["TieneRiosOQuebradasAjustado"] == DBNull.Value ? null : reader.GetBoolean(reader.GetOrdinal("TieneRiosOQuebradasAjustado")),
+                CantidadNacientesAjustada = reader["CantidadNacientesAjustada"] == DBNull.Value ? null : reader.GetInt32(reader.GetOrdinal("CantidadNacientesAjustada")),
                 UsoSueloAjustado = reader["UsoSueloAjustado"] == DBNull.Value ? null : reader["UsoSueloAjustado"]?.ToString(),
                 PendienteAjustada = reader["PendienteAjustada"] == DBNull.Value ? null : reader["PendienteAjustada"]?.ToString(),
                 FechaDecision = reader["FechaDecision"] == DBNull.Value ? null : reader.GetDateTime(reader.GetOrdinal("FechaDecision"))
@@ -175,8 +195,15 @@ BEGIN TRAN;
 
 UPDATE e
 SET e.IdIngeniero = @IdIngeniero,
-    e.EstadoEvaluacion = @EstadoEnProceso
+    e.EstadoEvaluacion = @EstadoEnProceso,
+    e.OriginalHectareas = COALESCE(e.OriginalHectareas, f.Hectareas),
+    e.OriginalVegetacion = COALESCE(e.OriginalVegetacion, f.Vegetacion),
+    e.OriginalUsoSuelo = COALESCE(e.OriginalUsoSuelo, f.UsoSuelo),
+    e.OriginalPendiente = COALESCE(e.OriginalPendiente, f.Pendiente),
+    e.OriginalTieneRiosOQuebradas = COALESCE(e.OriginalTieneRiosOQuebradas, f.TieneRiosOQuebradas),
+    e.OriginalCantidadNacientes = COALESCE(e.OriginalCantidadNacientes, f.CantidadNacientes)
 FROM EvaluacionesTecnicas e
+INNER JOIN Fincas f ON f.IdFinca = e.IdFinca
 WHERE e.IdEvaluacion = @IdEvaluacion
   AND e.EstadoEvaluacion = @EstadoPendiente;
 
@@ -230,6 +257,8 @@ SET e.FechaVisita = @FechaVisita,
     e.HectareasAjustadas = @HectareasAjustadas,
     e.VegetacionAjustada = @VegetacionAjustada,
     e.RecursosHidricosAjustado = @RecursosHidricosAjustado,
+    e.TieneRiosOQuebradasAjustado = @TieneRiosOQuebradasAjustado,
+    e.CantidadNacientesAjustada = @CantidadNacientesAjustada,
     e.UsoSueloAjustado = @UsoSueloAjustado,
     e.PendienteAjustada = @PendienteAjustada,
     e.FechaDecision = SYSDATETIME(),
@@ -248,7 +277,12 @@ END
 UPDATE f
 SET f.Hectareas = COALESCE(@HectareasAjustadas, f.Hectareas),
     f.Vegetacion = COALESCE(@VegetacionAjustada, f.Vegetacion),
-    f.TieneRecursosHidricos = COALESCE(@RecursosHidricosAjustado, f.TieneRecursosHidricos),
+    f.TieneRiosOQuebradas = COALESCE(@TieneRiosOQuebradasAjustado, f.TieneRiosOQuebradas),
+    f.CantidadNacientes = COALESCE(@CantidadNacientesAjustada, f.CantidadNacientes),
+    f.TieneRecursosHidricos = CASE
+        WHEN COALESCE(@TieneRiosOQuebradasAjustado, f.TieneRiosOQuebradas) = 1
+             OR COALESCE(@CantidadNacientesAjustada, f.CantidadNacientes) > 0
+            THEN 1 ELSE 0 END,
     f.UsoSuelo = COALESCE(@UsoSueloAjustado, f.UsoSuelo),
     f.Pendiente = COALESCE(@PendienteAjustada, f.Pendiente),
     f.EstadoFinca = @EstadoFinca,
@@ -269,6 +303,8 @@ SELECT CAST(1 AS bit);";
             command.Parameters.AddWithValue("@HectareasAjustadas", (object?)dto.HectareasAjustadas ?? DBNull.Value);
             command.Parameters.AddWithValue("@VegetacionAjustada", (object?)dto.VegetacionAjustada ?? DBNull.Value);
             command.Parameters.AddWithValue("@RecursosHidricosAjustado", (object?)dto.RecursosHidricosAjustado ?? DBNull.Value);
+            command.Parameters.AddWithValue("@TieneRiosOQuebradasAjustado", (object?)dto.TieneRiosOQuebradasAjustado ?? DBNull.Value);
+            command.Parameters.AddWithValue("@CantidadNacientesAjustada", (object?)dto.CantidadNacientesAjustada ?? DBNull.Value);
             command.Parameters.AddWithValue("@UsoSueloAjustado", (object?)dto.UsoSueloAjustado ?? DBNull.Value);
             command.Parameters.AddWithValue("@PendienteAjustada", (object?)dto.PendienteAjustada ?? DBNull.Value);
             command.Parameters.AddWithValue("@EstadoEvaluacion", estadoEvaluacion);

@@ -342,7 +342,8 @@ public class AdministracionManager
         }
 
         var ajustesHidricos = model.Ajustes
-            .Where(a => string.Equals(a.TipoFactor, "RecursosHidricos", StringComparison.OrdinalIgnoreCase))
+            .Where(a => string.Equals(a.TipoFactor, "RecursosHidricos", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(a.TipoFactor, "Recursos Hidricos", StringComparison.OrdinalIgnoreCase))
             .Select(a => a.ValorFactor.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 

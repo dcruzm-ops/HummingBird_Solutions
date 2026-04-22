@@ -288,14 +288,25 @@ VALUES (@IdConfiguracionPago, @TipoFactor, @ValorFactor, @PorcentajeAjuste);";
 
         foreach (var ajuste in ajustes)
         {
-            var valorFactor = NormalizarValorFactor(ajuste.TipoFactor, ajuste.ValorFactor);
+            var tipoFactor = NormalizarTipoFactor(ajuste.TipoFactor);
+            var valorFactor = NormalizarValorFactor(tipoFactor, ajuste.ValorFactor);
             using var command = new SqlCommand(sql, connection, tx);
             command.Parameters.AddWithValue("@IdConfiguracionPago", idConfiguracionPago);
-            command.Parameters.AddWithValue("@TipoFactor", ajuste.TipoFactor ?? string.Empty);
+            command.Parameters.AddWithValue("@TipoFactor", tipoFactor);
             command.Parameters.AddWithValue("@ValorFactor", valorFactor);
             command.Parameters.AddWithValue("@PorcentajeAjuste", ajuste.PorcentajeAjuste);
             await command.ExecuteNonQueryAsync();
         }
+    }
+
+    private static string NormalizarTipoFactor(string? tipoFactor)
+    {
+        if (string.Equals(tipoFactor?.Trim(), "Recursos Hidricos", StringComparison.OrdinalIgnoreCase))
+        {
+            return "RecursosHidricos";
+        }
+
+        return tipoFactor?.Trim() ?? string.Empty;
     }
 
     private static string NormalizarValorFactor(string? tipoFactor, string? valorFactor)
