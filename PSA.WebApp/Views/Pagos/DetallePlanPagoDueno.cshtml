@@ -4,29 +4,35 @@
 <div class="cabecera-pagina"><div><span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span><h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2></div><a class="boton-secundario" asp-action="PlanesDueno">Volver</a></div>
 @if (d is not null)
 {
-<section class="tarjeta-panel"><h3>Datos usados para cálculo</h3><ul class="lista-timeline">
-<li>Hectáreas (original → aprobadas): @d.HectareasOriginales.ToString("N2") → @d.HectareasAprobadas.ToString("N2")</li>
-<li>Vegetación (original → final): @d.VegetacionOriginal → @d.VegetacionFinal</li>
-<li>Ríos/quebradas (original → final): @(d.TieneRiosOQuebradasOriginal?"Sí":"No") → @(d.TieneRiosOQuebradasFinal?"Sí":"No")</li>
-<li>Nacientes (original → final): @d.CantidadNacientesOriginal → @d.CantidadNacientesFinal</li>
-<li>Pendiente (original → final): @d.PendienteOriginal → @d.PendienteFinal</li>
-<li>Precio base por hectárea: ₡@d.PrecioBasePorHectarea.ToString("N2")</li></ul></section>
+<section class="tarjeta-panel"><h3>Datos usados para cálculo</h3>
+<div class="tabla-responsive"><table class="tabla-base">
+<thead><tr><th>Rubro</th><th>Valor original</th><th>Valor aplicado</th></tr></thead>
+<tbody>
+<tr><td>Hectáreas</td><td>@d.HectareasOriginales.ToString("N2")</td><td>@d.HectareasAprobadas.ToString("N2")</td></tr>
+<tr><td>Vegetación</td><td>@d.VegetacionOriginal</td><td>@d.VegetacionFinal</td></tr>
+<tr><td>Ríos/quebradas</td><td>@(d.TieneRiosOQuebradasOriginal?"Sí":"No")</td><td>@(d.TieneRiosOQuebradasFinal?"Sí":"No")</td></tr>
+<tr><td>Nacientes</td><td>@d.CantidadNacientesOriginal</td><td>@d.CantidadNacientesFinal</td></tr>
+<tr><td>Pendiente</td><td>@d.PendienteOriginal</td><td>@d.PendienteFinal</td></tr>
+<tr><td>Precio base por hectárea</td><td>-</td><td>₡@d.PrecioBasePorHectarea.ToString("N2")</td></tr>
+</tbody></table></div></section>
 <section class="tarjeta-panel"><h3>Desglose progresivo del cálculo</h3>
 <p class="texto-secundario">Los porcentajes de ajuste se aplican exclusivamente sobre el monto base mensual, calculado como <strong>hectáreas aprobadas por ingeniería forestal × precio base por hectárea vigente</strong>. No se aplican porcentajes sobre montos acumulados de ajustes previos.</p>
-<ul class="lista-timeline">
-<li>1) Base por hectáreas: ₡@d.MontoBaseMensual.ToString("N2")</li>
-<li>2) + Ajuste por vegetación (@d.PorcentajeVegetacion.ToString("N2")%): ₡@d.MontoAjusteVegetacion.ToString("N2")</li>
-<li>3) + Ajuste por ríos/quebradas (@d.PorcentajeRiosQuebradas.ToString("N2")%): ₡@d.MontoAjusteRiosQuebradas.ToString("N2")</li>
-<li>4) + Ajuste por nacientes (@d.CantidadNacientesFinal × 5% = @d.PorcentajeNacientes.ToString("N2")%): ₡@d.MontoAjusteNacientes.ToString("N2")</li>
-<li>5) + Ajuste por pendiente (@d.PorcentajePendiente.ToString("N2")%): ₡@d.MontoAjustePendiente.ToString("N2")</li>
+<div class="tabla-responsive"><table class="tabla-base">
+<thead><tr><th>Rubro</th><th>Detalle</th><th>Monto</th></tr></thead>
+<tbody>
+<tr><td>Base por hectáreas</td><td>@d.HectareasAprobadas.ToString("N2") × ₡@d.PrecioBasePorHectarea.ToString("N2")</td><td>₡@d.MontoBaseMensual.ToString("N2")</td></tr>
+<tr><td>Ajuste por vegetación</td><td>@d.PorcentajeVegetacion.ToString("N2")%</td><td>₡@d.MontoAjusteVegetacion.ToString("N2")</td></tr>
+<tr><td>Ajuste por ríos/quebradas</td><td>@d.PorcentajeRiosQuebradas.ToString("N2")%</td><td>₡@d.MontoAjusteRiosQuebradas.ToString("N2")</td></tr>
+<tr><td>Ajuste por nacientes</td><td>@d.CantidadNacientesFinal × 5% = @d.PorcentajeNacientes.ToString("N2")%</td><td>₡@d.MontoAjusteNacientes.ToString("N2")</td></tr>
+<tr><td>Ajuste por pendiente</td><td>@d.PorcentajePendiente.ToString("N2")%</td><td>₡@d.MontoAjustePendiente.ToString("N2")</td></tr>
+<tr><td><strong>Subtotal con ajuste bruto</strong></td><td>@d.PorcentajeTotalAntesTope.ToString("N2")% sobre base</td><td><strong>₡@(d.MontoBaseMensual + d.MontoAjusteBrutoMensual).ToString("N2")</strong></td></tr>
 @if (d.PorcentajeTotalAntesTope > d.PorcentajeTotalAplicado)
 {
-<li>6) + Aplicación de tope administrativo: porcentaje bruto @d.PorcentajeTotalAntesTope.ToString("N2")% limitado a @d.PorcentajeTotalAplicado.ToString("N2")% (tope de configuración).</li>
-<li>&nbsp;&nbsp;&nbsp;&nbsp;Monto máximo reconocible por ajuste: ₡@d.MontoAjusteMensual.ToString("N2"). Excedente no pagable por tope: ₡@d.MontoRecortadoPorTope.ToString("N2").</li>
+<tr><td>Aplicación de tope administrativo</td><td>Bruto @d.PorcentajeTotalAntesTope.ToString("N2")% limitado a @d.PorcentajeTotalAplicado.ToString("N2")%</td><td>-₡@d.MontoRecortadoPorTope.ToString("N2")</td></tr>
 }
-<li><strong>Total mensual calculado: ₡@d.MontoFinalMensual.ToString("N2")</strong></li>
-<li>Equivalente anual estimado: ₡@Model.Plan.MontoAnual.ToString("N2")</li>
-</ul></section>
+<tr><td><strong>Total mensual calculado</strong></td><td>Ajuste aplicado @d.PorcentajeTotalAplicado.ToString("N2")%</td><td><strong>₡@d.MontoFinalMensual.ToString("N2")</strong></td></tr>
+<tr><td>Equivalente anual estimado</td><td>12 cuotas mensuales</td><td>₡@Model.Plan.MontoAnual.ToString("N2")</td></tr>
+</tbody></table></div></section>
 }
 <section class="tarjeta-panel"><h3>Cuotas mensuales</h3><div class="tabla-responsive"><table class="tabla-base"><thead><tr><th>Periodo</th><th>Estado</th><th>Programada</th><th>Ejecución</th><th>Monto</th></tr></thead><tbody>
 @foreach (var cuota in Model.Cuotas){<tr><td>@Model.Plan.Anio-@cuota.Mes.ToString("00")</td><td>@cuota.EstadoCuota</td><td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td><td>@(cuota.FechaPago?.ToString("dd/MM/yyyy")??"Pendiente")</td><td>₡@cuota.MontoProgramado.ToString("N2")</td></tr>}
