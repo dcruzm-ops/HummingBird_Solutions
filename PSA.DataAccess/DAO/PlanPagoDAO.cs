@@ -64,16 +64,16 @@ SELECT TOP 1
     f.IdFinca,
     f.IdPropietario,
     f.NombreFinca,
-    f.Hectareas AS HectareasOriginales,
+    COALESCE(e.OriginalHectareas, f.Hectareas) AS HectareasOriginales,
     COALESCE(e.HectareasAjustadas, f.Hectareas) AS HectareasAprobadas,
-    f.Vegetacion AS VegetacionOriginal,
+    COALESCE(e.OriginalVegetacion, f.Vegetacion) AS VegetacionOriginal,
     COALESCE(NULLIF(e.VegetacionAjustada, ''), f.Vegetacion) AS VegetacionFinal,
-    f.TieneRiosOQuebradas AS TieneRiosOQuebradasOriginal,
+    COALESCE(e.OriginalTieneRiosOQuebradas, f.TieneRiosOQuebradas) AS TieneRiosOQuebradasOriginal,
     {exprRiosFinal} AS TieneRiosOQuebradasFinal,
     CAST(CASE WHEN {exprRiosFinal} = 1 OR {exprNacientesFinal} > 0 THEN 1 ELSE 0 END AS bit) AS TieneRecursosHidricosFinal,
-    COALESCE(f.CantidadNacientes, 0) AS CantidadNacientesOriginal,
+    COALESCE(e.OriginalCantidadNacientes, f.CantidadNacientes, 0) AS CantidadNacientesOriginal,
     {exprNacientesFinal} AS CantidadNacientesFinal,
-    f.Pendiente AS PendienteOriginal,
+    COALESCE(NULLIF(e.OriginalPendiente, ''), f.Pendiente) AS PendienteOriginal,
     COALESCE(NULLIF(e.PendienteAjustada, ''), f.Pendiente) AS PendienteFinal
 FROM dbo.EvaluacionesTecnicas e
 INNER JOIN dbo.Fincas f ON f.IdFinca = e.IdFinca
@@ -945,7 +945,7 @@ ORDER BY c.Mes;";
         var montoAplicado = reader.GetDecimal(reader.GetOrdinal("MontoAjusteMensual"));
         return new PlanPagoCalculoDetalleDTO
         {
-            HectareasOriginales = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
+            HectareasOriginales = reader.GetDecimal(reader.GetOrdinal("HectareasOriginales")),
             HectareasAprobadas = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
             HectareasFinalesAprobadas = reader.GetDecimal(reader.GetOrdinal("HectareasAprobadas")),
             PrecioBasePorHectarea = reader.GetDecimal(reader.GetOrdinal("PrecioBasePorHectarea")),
@@ -967,14 +967,14 @@ ORDER BY c.Mes;";
             MontoAjusteBrutoMensual = montoBruto,
             MontoRecortadoPorTope = Math.Round(montoBruto - montoAplicado, 2, MidpointRounding.AwayFromZero),
             MontoFinalMensual = reader.GetDecimal(reader.GetOrdinal("MontoFinalMensual")),
-            VegetacionOriginal = reader["VegetacionFinal"]?.ToString() ?? string.Empty,
+            VegetacionOriginal = reader["VegetacionOriginal"]?.ToString() ?? string.Empty,
             VegetacionFinal = reader["VegetacionFinal"]?.ToString() ?? string.Empty,
-            TieneRiosOQuebradasOriginal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
+            TieneRiosOQuebradasOriginal = reader.GetBoolean(reader.GetOrdinal("TieneRiosOQuebradasOriginal")),
             TieneRiosOQuebradasFinal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
             TieneRecursosHidricosFinal = reader.GetBoolean(reader.GetOrdinal("TieneRecursosHidricosFinal")),
-            CantidadNacientesOriginal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesFinal")),
+            CantidadNacientesOriginal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesOriginal")),
             CantidadNacientesFinal = reader.GetInt32(reader.GetOrdinal("CantidadNacientesFinal")),
-            PendienteOriginal = reader["PendienteFinal"]?.ToString() ?? string.Empty,
+            PendienteOriginal = reader["PendienteOriginal"]?.ToString() ?? string.Empty,
             PendienteFinal = reader["PendienteFinal"]?.ToString() ?? string.Empty
         };
     }
@@ -1135,7 +1135,8 @@ WHERE IdPlanPago = @IdPlanPago;";
 IF EXISTS(SELECT 1 FROM dbo.PlanesPagoDetalleCalculo WHERE IdPlanPago = @IdPlanPago)
 BEGIN
     UPDATE dbo.PlanesPagoDetalleCalculo
-    SET HectareasAprobadas = @HectareasAprobadas,
+    SET HectareasOriginales = @HectareasOriginales,
+        HectareasAprobadas = @HectareasAprobadas,
         PrecioBasePorHectarea = @PrecioBasePorHectarea,
         PorcentajeVegetacion = @PorcentajeVegetacion,
         MontoAjusteVegetacion = @MontoAjusteVegetacion,
@@ -1155,9 +1156,13 @@ BEGIN
         MontoAjusteMensual = @MontoAjusteMensual,
         MontoRecortadoPorTope = @MontoRecortadoPorTope,
         MontoFinalMensual = @MontoFinalMensual,
+        VegetacionOriginal = @VegetacionOriginal,
         VegetacionFinal = @VegetacionFinal,
+        TieneRiosOQuebradasOriginal = @TieneRiosOQuebradasOriginal,
         TieneRecursosHidricosFinal = @TieneRecursosHidricosFinal,
+        CantidadNacientesOriginal = @CantidadNacientesOriginal,
         CantidadNacientesFinal = @CantidadNacientesFinal,
+        PendienteOriginal = @PendienteOriginal,
         PendienteFinal = @PendienteFinal
     WHERE IdPlanPago = @IdPlanPago;
 END
@@ -1165,26 +1170,27 @@ ELSE
 BEGIN
     INSERT INTO dbo.PlanesPagoDetalleCalculo
     (
-        IdPlanPago, HectareasAprobadas, PrecioBasePorHectarea,
+        IdPlanPago, HectareasOriginales, HectareasAprobadas, PrecioBasePorHectarea,
         PorcentajeVegetacion, MontoAjusteVegetacion, PorcentajeRiosQuebradas, MontoAjusteRiosQuebradas,
         PorcentajeHidrico, PorcentajeNacientes, MontoAjusteNacientes, PorcentajePendiente, MontoAjustePendiente,
         PorcentajeTotalAntesTope, PorcentajeTopeAplicado, PorcentajeTotalAplicado, PorcentajeRecortadoPorTope,
         MontoBaseMensual, MontoAjusteBrutoMensual, MontoAjusteMensual, MontoRecortadoPorTope, MontoFinalMensual,
-        VegetacionFinal, TieneRecursosHidricosFinal, CantidadNacientesFinal, PendienteFinal
+        VegetacionOriginal, VegetacionFinal, TieneRiosOQuebradasOriginal, TieneRecursosHidricosFinal, CantidadNacientesOriginal, CantidadNacientesFinal, PendienteOriginal, PendienteFinal
     )
     VALUES
     (
-        @IdPlanPago, @HectareasAprobadas, @PrecioBasePorHectarea,
+        @IdPlanPago, @HectareasOriginales, @HectareasAprobadas, @PrecioBasePorHectarea,
         @PorcentajeVegetacion, @MontoAjusteVegetacion, @PorcentajeRiosQuebradas, @MontoAjusteRiosQuebradas,
         @PorcentajeHidrico, @PorcentajeNacientes, @MontoAjusteNacientes, @PorcentajePendiente, @MontoAjustePendiente,
         @PorcentajeTotalAntesTope, @PorcentajeTopeAplicado, @PorcentajeTotalAplicado, @PorcentajeRecortadoPorTope,
         @MontoBaseMensual, @MontoAjusteBrutoMensual, @MontoAjusteMensual, @MontoRecortadoPorTope, @MontoFinalMensual,
-        @VegetacionFinal, @TieneRecursosHidricosFinal, @CantidadNacientesFinal, @PendienteFinal
+        @VegetacionOriginal, @VegetacionFinal, @TieneRiosOQuebradasOriginal, @TieneRecursosHidricosFinal, @CantidadNacientesOriginal, @CantidadNacientesFinal, @PendienteOriginal, @PendienteFinal
     );
 END";
 
         using var command = new SqlCommand(sql, connection, tx);
         command.Parameters.AddWithValue("@IdPlanPago", idPlanPago);
+        command.Parameters.AddWithValue("@HectareasOriginales", context.HectareasOriginales);
         command.Parameters.AddWithValue("@HectareasAprobadas", context.HectareasAprobadas);
         command.Parameters.AddWithValue("@PrecioBasePorHectarea", config.PrecioBasePorHectarea);
         command.Parameters.AddWithValue("@PorcentajeVegetacion", calculation.PorcentajeVegetacion);
@@ -1205,9 +1211,13 @@ END";
         command.Parameters.AddWithValue("@MontoAjusteMensual", calculation.MontoAjusteMensual);
         command.Parameters.AddWithValue("@MontoRecortadoPorTope", calculation.MontoRecortadoPorTope);
         command.Parameters.AddWithValue("@MontoFinalMensual", calculation.MontoMensualTotal);
+        command.Parameters.AddWithValue("@VegetacionOriginal", context.VegetacionOriginal);
         command.Parameters.AddWithValue("@VegetacionFinal", context.VegetacionFinal);
+        command.Parameters.AddWithValue("@TieneRiosOQuebradasOriginal", context.TieneRiosOQuebradasOriginal);
         command.Parameters.AddWithValue("@TieneRecursosHidricosFinal", context.TieneRecursosHidricosFinal);
+        command.Parameters.AddWithValue("@CantidadNacientesOriginal", context.CantidadNacientesOriginal);
         command.Parameters.AddWithValue("@CantidadNacientesFinal", context.CantidadNacientesFinal);
+        command.Parameters.AddWithValue("@PendienteOriginal", context.PendienteOriginal);
         command.Parameters.AddWithValue("@PendienteFinal", context.PendienteFinal);
         await command.ExecuteNonQueryAsync();
     }

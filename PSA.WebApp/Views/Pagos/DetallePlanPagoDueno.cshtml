@@ -5,7 +5,12 @@
 @if (d is not null)
 {
 <section class="tarjeta-panel"><h3>Datos usados para cálculo</h3><ul class="lista-timeline">
-<li>Hectáreas aprobadas: @d.HectareasAprobadas.ToString("N2")</li><li>Vegetación final: @d.VegetacionFinal</li><li>Ríos/quebradas: @(d.TieneRiosOQuebradasFinal?"Sí":"No")</li><li>Nacientes: @d.CantidadNacientesFinal</li><li>Pendiente final: @d.PendienteFinal</li><li>Precio base por hectárea: ₡@d.PrecioBasePorHectarea.ToString("N2")</li></ul></section>
+<li>Hectáreas (original → aprobadas): @d.HectareasOriginales.ToString("N2") → @d.HectareasAprobadas.ToString("N2")</li>
+<li>Vegetación (original → final): @d.VegetacionOriginal → @d.VegetacionFinal</li>
+<li>Ríos/quebradas (original → final): @(d.TieneRiosOQuebradasOriginal?"Sí":"No") → @(d.TieneRiosOQuebradasFinal?"Sí":"No")</li>
+<li>Nacientes (original → final): @d.CantidadNacientesOriginal → @d.CantidadNacientesFinal</li>
+<li>Pendiente (original → final): @d.PendienteOriginal → @d.PendienteFinal</li>
+<li>Precio base por hectárea: ₡@d.PrecioBasePorHectarea.ToString("N2")</li></ul></section>
 <section class="tarjeta-panel"><h3>Desglose progresivo del cálculo</h3><ul class="lista-timeline">
 <li>1) Base por hectáreas: ₡@d.MontoBaseMensual.ToString("N2")</li>
 <li>2) + Ajuste por vegetación (@d.PorcentajeVegetacion.ToString("N2")%): ₡@d.MontoAjusteVegetacion.ToString("N2")</li>
