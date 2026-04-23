@@ -98,8 +98,11 @@ Requerido:
 ### Paso 1: Azure SQL
 
 1. Crear `sqldb-psa-cr-{env}`.
-2. Ejecutar scripts en orden de `BaseDatos/00_ORDEN_EJECUCION.md` usando la sección **Azure SQL Database**.
+2. Ejecutar scripts en orden de `BaseDatos/00_ORDEN_EJECUCION.md` usando la sección **Azure SQL Database** (incluye `Azure/02_creacion_vistas_reportes_azure_safe.sql`).
 3. Probar conectividad con la cadena `ConnectionStrings__PSAConnection` que usará la API.
+
+
+> Si durante creación de vistas aparece `Invalid object name 'dbo.PlanesPago'` o `dbo.CuotasPago`, significa que el script de tablas no terminó completo en esa base de datos. Re-ejecute `Azure/01_creacion_tablas_azure_safe.sql` en una base limpia o complete las tablas faltantes antes de continuar.
 
 ### Paso 2: WebAPI
 

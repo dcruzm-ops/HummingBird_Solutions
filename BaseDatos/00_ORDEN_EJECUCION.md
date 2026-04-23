@@ -21,7 +21,7 @@ Ejecutar en este orden dentro de `BaseDatos`:
 
 1. `Azure/01_creacion_tablas_azure_safe.sql`
 2. `Seeds/01_insercion_datos_semilla_extensos.sql`
-3. `Views/01_creacion_vistas_reportes.sql`
+3. `Azure/02_creacion_vistas_reportes_azure_safe.sql`
 4. `StoredProcedures/01_creacion_stored_procedures.sql`
 5. `Triggers/01_creacion_triggers.sql`
 6. `Seeds/02_admin_config_pagos_y_roles_seed.sql`
@@ -33,3 +33,5 @@ Ejecutar en este orden dentro de `BaseDatos`:
 
 - `Azure/01_creacion_tablas_azure_safe.sql` elimina operaciones destructivas (`DROP`) y dependencias de cambio de base (`USE`).
 - Si aparece `Invalid object name 'dbo.Permisos'`, validar que primero corrió el script de tablas correspondiente al entorno (local o Azure).
+
+- `Azure/02_creacion_vistas_reportes_azure_safe.sql` crea/actualiza vistas sin `USE` y valida que las tablas de pagos existan antes de compilar vistas.
