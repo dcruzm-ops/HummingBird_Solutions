@@ -28,12 +28,22 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "https://localhost:59664",
-                "https://psa-web.azurewebsites.net"
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        var allowedOrigins = ObtenerCorsOrigins(builder.Configuration);
+
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+            return;
+        }
+
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
     });
 });
 
@@ -141,7 +151,10 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddSingleton<ISecurityThrottleService, SecurityThrottleService>();
 
+ValidarConfiguracionCritica(builder.Configuration, builder.Environment);
+
 var app = builder.Build();
+AsegurarCarpetasCarga(app.Environment);
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>
@@ -161,6 +174,53 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+static string[] ObtenerCorsOrigins(IConfiguration configuration)
+{
+    var originsSection = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+    var originsCsv = configuration["Cors:AllowedOriginsCsv"] ?? string.Empty;
+
+    var origins = originsSection
+        .Concat(originsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        .Where(origin => Uri.TryCreate(origin, UriKind.Absolute, out _))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToArray();
+
+    return origins;
+}
+
+static void ValidarConfiguracionCritica(IConfiguration configuration, IHostEnvironment environment)
+{
+    if (!environment.IsProduction())
+    {
+        return;
+    }
+
+    var connectionString = configuration.GetConnectionString("PSAConnection");
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Falta ConnectionStrings:PSAConnection para ambiente Production.");
+    }
+
+    var jwtKey = configuration["Jwt:Key"];
+    if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Contains("set-via", StringComparison.OrdinalIgnoreCase))
+    {
+        throw new InvalidOperationException("Falta Jwt:Key válido para ambiente Production.");
+    }
+
+    var corsOrigins = ObtenerCorsOrigins(configuration);
+    if (corsOrigins.Length == 0)
+    {
+        throw new InvalidOperationException("Falta configurar Cors:AllowedOrigins para ambiente Production.");
+    }
+}
+
+static void AsegurarCarpetasCarga(IHostEnvironment environment)
+{
+    var uploadsPath = Path.Combine(environment.ContentRootPath, "wwwroot", "uploads");
+    Directory.CreateDirectory(uploadsPath);
+}
 
 static void SanitizarAppSettingsSiEsNecesario()
 {
