@@ -1,18 +1,45 @@
+@using PSA.WebApp.Models
 @{
-    var inicioTexto = ViewBag.BreadcrumbInicioTexto as string ?? "Inicio";
-    var inicioControlador = ViewBag.BreadcrumbInicioControlador as string ?? "Dashboard";
-    var inicioAccion = ViewBag.BreadcrumbInicioAccion as string ?? "Index";
-    var padreTexto = ViewBag.BreadcrumbPadreTexto as string;
-    var padreUrl = ViewBag.BreadcrumbPadreUrl as string;
-    var actual = ViewBag.BreadcrumbActual as string ?? ViewBag.TituloPagina as string ?? "Página";
-}
-<nav class="migas-pan" aria-label="Migas de pan">
-    <a asp-controller="@inicioControlador" asp-action="@inicioAccion">@inicioTexto</a>
-    @if (!string.IsNullOrWhiteSpace(padreTexto) && !string.IsNullOrWhiteSpace(padreUrl))
+    var items = ViewBag.BreadcrumbItems as IEnumerable<BreadcrumbItemViewModel>;
+
+    if (items == null || !items.Any())
     {
-        <span>/</span>
-        <a href="@padreUrl">@padreTexto</a>
+        var inicioTexto = ViewBag.BreadcrumbInicioTexto as string ?? "Inicio";
+        var inicioControlador = ViewBag.BreadcrumbInicioControlador as string ?? "Dashboard";
+        var inicioAccion = ViewBag.BreadcrumbInicioAccion as string ?? "Index";
+        var padreTexto = ViewBag.BreadcrumbPadreTexto as string;
+        var padreUrl = ViewBag.BreadcrumbPadreUrl as string;
+        var actual = ViewBag.BreadcrumbActual as string ?? ViewBag.TituloPagina as string ?? "Página";
+
+        var fallback = new List<BreadcrumbItemViewModel>
+        {
+            new() { Label = inicioTexto, Url = Url.Action(inicioAccion, inicioControlador) }
+        };
+
+        if (!string.IsNullOrWhiteSpace(padreTexto))
+        {
+            fallback.Add(new BreadcrumbItemViewModel { Label = padreTexto, Url = padreUrl });
+        }
+
+        fallback.Add(new BreadcrumbItemViewModel { Label = actual, IsCurrent = true });
+        items = fallback;
     }
-    <span>/</span>
-    <span class="actual">@actual</span>
+}
+
+<nav class="migas-pan" aria-label="Migas de pan">
+    <ol class="migas-pan__lista">
+        @foreach (var item in items)
+        {
+            <li class="migas-pan__item @(item.IsCurrent ? "actual" : string.Empty)">
+                @if (!item.IsCurrent && !string.IsNullOrWhiteSpace(item.Url))
+                {
+                    <a href="@item.Url">@item.Label</a>
+                }
+                else
+                {
+                    <span aria-current="@(item.IsCurrent ? "page" : null)">@item.Label</span>
+                }
+            </li>
+        }
+    </ol>
 </nav>

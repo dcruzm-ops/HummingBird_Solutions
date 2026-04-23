@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Remove="bin\**\*.cs;obj\**\*.cs" />
+    <Compile Include="Controllers\AppControllerBase.cs" />
     <Compile Include="Controllers\AdministracionController.cs" />
     <Compile Include="Controllers\AutenticacionController.cs" />
     <Compile Include="Controllers\DashboardController.cs" />
@@ -22,6 +23,7 @@
     <Compile Include="Controllers\ReportesController.cs" />
     <Compile Include="Models\DashboardViewModels.cs" />
     <Compile Include="Models\AdministracionViewModels.cs" />
+    <Compile Include="Models\BreadcrumbItemViewModel.cs" />
     <Compile Include="Models\MiPerfilViewModel.cs" />
     <Compile Include="Models\EvaluacionesViewModels.cs" />
     <Compile Include="Models\ReportesViewModels.cs" />
