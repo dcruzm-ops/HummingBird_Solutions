@@ -6,7 +6,21 @@ public static class NotificationCatalog
     public const string TipoSuccess = "success";
     public const string TipoWarning = "warning";
 
-    public static string EmailResultadoEvaluacion(string nombreUsuario, string nombreFinca, string decision, DateTime fecha, string? observaciones, string? resumenCambios, string? enlaceSistema)
+    
+    public static string EmailBienvenida(string nombreUsuario, string rol, string? enlaceSistema)
+        => ConstruirPlantillaMarca(
+            "Registro de cuenta confirmado",
+            $"""
+<p>Hola {nombreUsuario},</p>
+<p>Tu cuenta en PSA Costa Rica fue creada correctamente.</p>
+<p><strong>Rol asignado:</strong> {rol}</p>
+<p>Ya puedes ingresar al sistema para registrar fincas y dar seguimiento a tus procesos.</p>
+{ConstruirBloqueEnlace(enlaceSistema)}
+<p style='font-size:13px;color:#4b5563;'>Si no realizaste este registro, por favor comunícate con el administrador del sistema.</p>
+<p>PSA Costa Rica</p>
+""");
+
+public static string EmailResultadoEvaluacion(string nombreUsuario, string nombreFinca, string decision, DateTime fecha, string? observaciones, string? resumenCambios, string? enlaceSistema)
     {
         var observacionesTexto = string.IsNullOrWhiteSpace(observaciones) ? "Sin observaciones adicionales." : observaciones.Trim();
         var resumenTexto = string.IsNullOrWhiteSpace(resumenCambios) ? "No se registraron ajustes adicionales." : resumenCambios.Trim();

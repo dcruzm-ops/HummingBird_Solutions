@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace PSA.WebApp.Controllers
 {
-    public class AuthController : Controller
+    public class AuthController : AppControllerBase
     {
         [HttpGet]
         public IActionResult Login()

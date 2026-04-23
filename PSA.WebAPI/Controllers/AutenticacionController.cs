@@ -5,7 +5,6 @@ using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
 using PSA.EntidadesDTO.DTOs.RecuperacionContrasena;
 using PSA.EntidadesDTO.DTOs.Usuarios;
-using PSA.WebAPI.Services;
 using PSA.WebAPI.Services.Security;
 
 namespace PSA.WebAPI.Controllers
@@ -14,14 +13,12 @@ namespace PSA.WebAPI.Controllers
     [Route("api/[controller]")]
     public class AutenticacionController(
         AutenticacionManager autenticacionManager,
-        IConfiguration configuration,
         RolPermisoDAO rolPermisoDao,
         UsuarioDAO usuarioDao,
         IJwtTokenService jwtTokenService,
         ISecurityThrottleService securityThrottleService) : BaseApiController
     {
         private readonly AutenticacionManager _autenticacionManager = autenticacionManager;
-        private readonly IConfiguration _configuration = configuration;
         private readonly RolPermisoDAO _rolPermisoDao = rolPermisoDao;
         private readonly UsuarioDAO _usuarioDao = usuarioDao;
         private readonly IJwtTokenService _jwtTokenService = jwtTokenService;
@@ -34,7 +31,6 @@ namespace PSA.WebAPI.Controllers
             try
             {
                 var idUsuario = await _autenticacionManager.RegistrarUsuarioAsync(dto);
-                await IntentarEnviarCorreoBienvenidaAsync(dto);
 
                 return ApiCreated(new
                 {
@@ -166,60 +162,6 @@ namespace PSA.WebAPI.Controllers
             {
                 return ApiValidationError("No fue posible asignar el rol.", ex.Message);
             }
-        }
-
-        private Task IntentarEnviarCorreoBienvenidaAsync(RegistrarUsuarioDTO dto)
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(dto.Email))
-                {
-                    return Task.CompletedTask;
-                }
-
-                var smtp = new SmtpSettingsDTO
-                {
-                    Host = _configuration["SmtpSettings:Host"] ?? string.Empty,
-                    Port = int.TryParse(_configuration["SmtpSettings:Port"], out var port) ? port : 587,
-                    EnableSsl = !bool.TryParse(_configuration["SmtpSettings:EnableSsl"], out var ssl) || ssl,
-                    FromName = _configuration["SmtpSettings:FromName"] ?? string.Empty,
-                    FromEmail = _configuration["SmtpSettings:FromEmail"] ?? string.Empty,
-                    Username = _configuration["SmtpSettings:Username"] ?? string.Empty,
-                    Password = _configuration["SmtpSettings:Password"] ?? string.Empty
-                };
-
-                var smtpConfigurado = !string.IsNullOrWhiteSpace(smtp.Host)
-                    && !string.IsNullOrWhiteSpace(smtp.FromEmail)
-                    && !string.IsNullOrWhiteSpace(smtp.Username)
-                    && !string.IsNullOrWhiteSpace(smtp.Password);
-
-                if (!smtpConfigurado)
-                {
-                    return Task.CompletedTask;
-                }
-
-                var webAppBaseUrl = _configuration["AppSettings:WebAppBaseUrl"]?.TrimEnd('/');
-                var baseUrl = string.IsNullOrWhiteSpace(webAppBaseUrl)
-                    ? "https://localhost:59664"
-                    : webAppBaseUrl;
-                var urlLogin = $"{baseUrl}/Autenticacion/IniciarSesion";
-                var nombreUsuario = string.IsNullOrWhiteSpace(dto.NombreCompleto) ? "usuario" : dto.NombreCompleto.Trim();
-                var rol = "Dueño de finca";
-
-                var correoService = new CorreoService(smtp);
-                correoService.EnviarCorreoBienvenida(
-                    dto.Email.Trim(),
-                    nombreUsuario,
-                    rol,
-                    urlLogin
-                );
-            }
-            catch
-            {
-                // No se bloquea el registro si falla el correo de bienvenida.
-            }
-
-            return Task.CompletedTask;
         }
     }
 }

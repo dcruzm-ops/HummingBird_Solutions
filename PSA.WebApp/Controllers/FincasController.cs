@@ -10,7 +10,7 @@ using System.Text.Json;
 namespace PSA.WebApp.Controllers
 {
     [Authorize(Roles = "2")]
-    public class FincasController : Controller
+    public class FincasController : AppControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
 

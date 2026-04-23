@@ -73,6 +73,15 @@ public class AdministracionManager
 
         var idCreado = await _usuarioDao.CrearUsuarioAsync(nuevo);
 
+        var nombreRol = await _usuarioDao.ObtenerNombreRolPorIdAsync(model.IdRol) ?? "Usuario";
+        await _notificationDispatcher.NotifyEmailAsync(
+            nuevo.Email,
+            "Bienvenido a PSA Costa Rica",
+            NotificationCatalog.EmailBienvenida(
+                nuevo.NombreCompleto,
+                nombreRol,
+                enlaceSistema: null));
+
         await _auditoriaLogDao.RegistrarEventoAsync(
             idUsuario: idAdmin,
             modulo: "Administracion",
