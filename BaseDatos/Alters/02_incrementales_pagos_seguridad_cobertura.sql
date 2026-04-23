@@ -163,12 +163,19 @@ END
 GO
 
 /* 4) Permisos funcionales para enforcement runtime */
-IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'ADMIN_REPORTES_CONSULTAR')
-    INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('ADMIN_REPORTES_CONSULTAR', 'Consultar reportes administrativos', 'Permite consultar reportes de administración');
-IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'ING_PLAN_APROBAR')
-    INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('ING_PLAN_APROBAR', 'Aprobar plan técnico', 'Permite aprobación final de planes por ingeniero');
-IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'DUENO_FINCAS_RENOVAR')
-    INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('DUENO_FINCAS_RENOVAR', 'Renovar finca', 'Permite solicitar renovación anual de finca');
+IF OBJECT_ID('dbo.Permisos', 'U') IS NOT NULL
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'ADMIN_REPORTES_CONSULTAR')
+        INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('ADMIN_REPORTES_CONSULTAR', 'Consultar reportes administrativos', 'Permite consultar reportes de administración');
+    IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'ING_PLAN_APROBAR')
+        INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('ING_PLAN_APROBAR', 'Aprobar plan técnico', 'Permite aprobación final de planes por ingeniero');
+    IF NOT EXISTS (SELECT 1 FROM dbo.Permisos WHERE Codigo = 'DUENO_FINCAS_RENOVAR')
+        INSERT INTO dbo.Permisos (Codigo, Nombre, Descripcion) VALUES ('DUENO_FINCAS_RENOVAR', 'Renovar finca', 'Permite solicitar renovación anual de finca');
+END
+ELSE
+BEGIN
+    PRINT 'No existe dbo.Permisos. Se omite bootstrap de permisos.';
+END
 GO
 
 /* Asignaciones base por rol */
@@ -179,6 +186,12 @@ DECLARE @TablaRolPermisos SYSNAME = CASE
     WHEN OBJECT_ID('dbo.RolesPermisos', 'U') IS NOT NULL THEN 'dbo.RolesPermisos'
     WHEN OBJECT_ID('dbo.RolPermisos', 'U') IS NOT NULL THEN 'dbo.RolPermisos'
     ELSE NULL
+END;
+
+IF OBJECT_ID('dbo.Permisos', 'U') IS NULL
+BEGIN
+    PRINT 'No existe dbo.Permisos. Se omiten asignaciones base de permisos por rol.';
+    RETURN;
 END;
 
 IF @IdRolAdmin IS NOT NULL AND @TablaRolPermisos IS NOT NULL
@@ -343,4 +356,3 @@ BEGIN
     ALTER TABLE dbo.PlanesPagoDetalleCalculo ADD MontoRecortadoPorTope DECIMAL(12,2) NOT NULL CONSTRAINT DF_PlanDet_MontoRecortado DEFAULT(0);
 END;
 GO
-
