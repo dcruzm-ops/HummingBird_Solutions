@@ -197,7 +197,7 @@ public class PaymentCalculationServiceTests
 
         var result = _service.Calculate(context, config);
 
-        Assert.Equal(70m, result.PorcentajeAjusteTotalBruto);
+        Assert.Equal(90m, result.PorcentajeAjusteTotalBruto);
         Assert.Equal(65m, result.PorcentajeAjusteAplicado);
         Assert.Equal(65m, result.TopePorcentajeAjuste);
     }

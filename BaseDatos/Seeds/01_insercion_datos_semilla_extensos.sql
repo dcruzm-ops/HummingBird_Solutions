@@ -1,4 +1,4 @@
-USE PSA_CostaRica;
+
 GO
 
 SET NOCOUNT ON;
