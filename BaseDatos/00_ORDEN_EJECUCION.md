@@ -1,6 +1,8 @@
 # Orden de ejecución de scripts SQL
 
-Ejecutar en este orden (rutas actuales dentro de `BaseDatos`):
+## Ruta SQL Server local / laboratorio (mantiene comportamiento actual)
+
+Ejecutar en este orden dentro de `BaseDatos`:
 
 1. `Tablas/01_creacion_bd_y_tablas.sql`
 2. `Seeds/01_insercion_datos_semilla_extensos.sql`
@@ -9,11 +11,25 @@ Ejecutar en este orden (rutas actuales dentro de `BaseDatos`):
 5. `Triggers/01_creacion_triggers.sql`
 6. `Seeds/02_admin_config_pagos_y_roles_seed.sql`
 7. `StoredProcedures/02_admin_y_perfil_sprocs_consolidado.sql`
-8. `Alters/01_roles_permisos_bootstrap_y_normalizacion.sql` *(recomendado para bootstrap/normalización de roles y permisos)*
-9. `Alters/02_incrementales_pagos_seguridad_cobertura.sql` *(ajustes incrementales de pagos, seguridad, cobertura y snapshots)*
+8. `Alters/01_roles_permisos_bootstrap_y_normalizacion.sql`
+9. `Alters/02_incrementales_pagos_seguridad_cobertura.sql`
 
-> Nota: Todos los scripts `.sql` quedaron consolidados dentro de `BaseDatos`.
-> Los scripts de administración/roles soportan las variantes de tabla
-> `dbo.RolesPermisos` y `dbo.RolPermisos`.
-> Si aparece `Invalid object name 'dbo.Permisos'`, ejecute primero
-> `Tablas/01_creacion_bd_y_tablas.sql` dentro de la base `PSA_CostaRica`.
+## Ruta Azure SQL Database (cloud-safe)
+
+> Ejecutar conectado directamente a la **base de datos Azure SQL** destino.
+> No ejecutar `CREATE DATABASE` ni `USE` en Azure SQL Query Editor.
+
+1. `Azure/01_creacion_tablas_azure_safe.sql`
+2. `Seeds/01_insercion_datos_semilla_extensos.sql`
+3. `Views/01_creacion_vistas_reportes.sql`
+4. `StoredProcedures/01_creacion_stored_procedures.sql`
+5. `Triggers/01_creacion_triggers.sql`
+6. `Seeds/02_admin_config_pagos_y_roles_seed.sql`
+7. `StoredProcedures/02_admin_y_perfil_sprocs_consolidado.sql`
+8. `Alters/01_roles_permisos_bootstrap_y_normalizacion.sql`
+9. `Alters/02_incrementales_pagos_seguridad_cobertura.sql`
+
+## Notas
+
+- `Azure/01_creacion_tablas_azure_safe.sql` elimina operaciones destructivas (`DROP`) y dependencias de cambio de base (`USE`).
+- Si aparece `Invalid object name 'dbo.Permisos'`, validar que primero corrió el script de tablas correspondiente al entorno (local o Azure).
