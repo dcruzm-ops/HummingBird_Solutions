@@ -1,15 +1,21 @@
 /*
-    Variante Azure SQL Database (bootstrap cloud-safe).
+    Variante Azure SQL Database (bootstrap cloud-safe e idempotente).
     Basado en: BaseDatos/Tablas/01_creacion_bd_y_tablas.sql
 
     Diferencias clave:
     - NO crea la base de datos (CREATE DATABASE).
     - NO usa USE [BaseDeDatos].
     - NO incluye DROP de objetos destructivos.
+    - CREATE TABLE / INDEX protegidos para re-ejecución segura en Azure.
 
     Ejecutar conectado directamente a la Azure SQL Database destino.
 */
 
+/* =========================================
+   Limpieza de objetos si ya existen
+   ========================================= */
+-- Azure-safe: se omite limpieza destructiva (DROP VIEW / DROP TABLE).
+GO
 
 /*
     Script SQL Server (SSMS) basado en la hoja "Tablas Final" del archivo "tablas sql.xlsx".
@@ -19,18 +25,13 @@
     - Se incluye una vista vw_FincasMapa para consumir fincas en el módulo de mapa de la app.
 */
 
-
-/* =========================================
-   Limpieza de objetos si ya existen
-   ========================================= */
--- Azure-safe: se omite limpieza destructiva (DROP VIEW / DROP TABLE).
-GO
-
 /* =========================================
    4.1 Catálogos configurables para Finca
    ========================================= */
-CREATE TABLE dbo.CatalogoFincaValores
-(
+IF OBJECT_ID(N'dbo.CatalogoFincaValores', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CatalogoFincaValores
+    (
     IdCatalogoFincaValor     INT IDENTITY(1,1) NOT NULL,
     TipoCatalogo             VARCHAR(50) NOT NULL,
     Valor                    VARCHAR(100) NOT NULL,
@@ -40,28 +41,36 @@ CREATE TABLE dbo.CatalogoFincaValores
     CONSTRAINT PK_CatalogoFincaValores PRIMARY KEY (IdCatalogoFincaValor),
     CONSTRAINT UQ_CatalogoFincaValores UNIQUE (TipoCatalogo, Valor),
     CONSTRAINT CK_CatalogoFincaValores_TipoCatalogo CHECK (TipoCatalogo IN ('Pendiente', 'Vegetacion', 'UsoSuelo'))
-);
+
+    );
+END
 GO
 
 /* =========================================
    1. Roles
    ========================================= */
-CREATE TABLE dbo.Roles
-(
+IF OBJECT_ID(N'dbo.Roles', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Roles
+    (
     IdRol           INT IDENTITY(1,1) NOT NULL,
     Nombre          VARCHAR(50) NOT NULL,
     Descripcion     VARCHAR(150) NULL,
     Activo          BIT NOT NULL CONSTRAINT DF_Roles_Activo DEFAULT (1),
     CONSTRAINT PK_Roles PRIMARY KEY (IdRol),
     CONSTRAINT UQ_Roles_Nombre UNIQUE (Nombre)
-);
+
+    );
+END
 GO
 
 /* =========================================
    2. Permisos
    ========================================= */
-CREATE TABLE dbo.Permisos
-(
+IF OBJECT_ID(N'dbo.Permisos', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Permisos
+    (
     IdPermiso       INT IDENTITY(1,1) NOT NULL,
     Codigo          NVARCHAR(100) NOT NULL,
     Nombre          NVARCHAR(150) NOT NULL,
@@ -69,14 +78,18 @@ CREATE TABLE dbo.Permisos
     Activo          BIT NOT NULL CONSTRAINT DF_Permisos_Activo DEFAULT (1),
     CONSTRAINT PK_Permisos PRIMARY KEY (IdPermiso),
     CONSTRAINT UQ_Permisos_Codigo UNIQUE (Codigo)
-);
+
+    );
+END
 GO
 
 /* =========================================
    3. Usuarios
    ========================================= */
-CREATE TABLE dbo.Usuarios
-(
+IF OBJECT_ID(N'dbo.Usuarios', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Usuarios
+    (
     IdUsuario       INT IDENTITY(1,1) NOT NULL,
     NombreCompleto  VARCHAR(150) NOT NULL,
     Email           VARCHAR(150) NOT NULL,
@@ -89,31 +102,42 @@ CREATE TABLE dbo.Usuarios
     CONSTRAINT UQ_Usuarios_Email UNIQUE (Email),
     CONSTRAINT FK_Usuarios_Roles FOREIGN KEY (IdRol) REFERENCES dbo.Roles(IdRol),
     CONSTRAINT CK_Usuarios_Estado CHECK (Estado IN ('Activo', 'Inactivo', 'Bloqueado'))
-);
+
+    );
+END
 GO
 
-ALTER TABLE Usuarios
-ALTER COLUMN PasswordHash NVARCHAR(500) NULL;
+IF OBJECT_ID(N'dbo.Usuarios', N'U') IS NOT NULL AND COL_LENGTH('dbo.Usuarios', 'PasswordHash') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.Usuarios
+    ALTER COLUMN PasswordHash NVARCHAR(500) NULL;
+END
 GO
 
 /* =========================================
    4. RolesPermisos
    ========================================= */
-CREATE TABLE dbo.RolesPermisos
-(
+IF OBJECT_ID(N'dbo.RolesPermisos', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.RolesPermisos
+    (
     IdRol           INT NOT NULL,
     IdPermiso       INT NOT NULL,
     CONSTRAINT PK_RolesPermisos PRIMARY KEY (IdRol, IdPermiso),
     CONSTRAINT FK_RolesPermisos_Roles FOREIGN KEY (IdRol) REFERENCES dbo.Roles(IdRol),
     CONSTRAINT FK_RolesPermisos_Permisos FOREIGN KEY (IdPermiso) REFERENCES dbo.Permisos(IdPermiso)
-);
+
+    );
+END
 GO
 
 /* =========================================
    5. TokensRecuperacion
    ========================================= */
-CREATE TABLE dbo.TokensRecuperacion
-(
+IF OBJECT_ID(N'dbo.TokensRecuperacion', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TokensRecuperacion
+    (
     IdToken             INT IDENTITY(1,1) NOT NULL,
     IdUsuario           INT NOT NULL,
     Token               VARCHAR(100) NOT NULL,
@@ -125,14 +149,18 @@ CREATE TABLE dbo.TokensRecuperacion
     CONSTRAINT UQ_TokensRecuperacion_Token UNIQUE (Token),
     CONSTRAINT FK_TokensRecuperacion_Usuarios FOREIGN KEY (IdUsuario) REFERENCES dbo.Usuarios(IdUsuario),
     CONSTRAINT CK_Tokens_Fechas CHECK (FechaExpiracion > FechaCreacion)
-);
+
+    );
+END
 GO
 
 /* =========================================
    4. Fincas
    ========================================= */
-CREATE TABLE dbo.Fincas
-(
+IF OBJECT_ID(N'dbo.Fincas', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Fincas
+    (
     IdFinca                  INT IDENTITY(1,1) NOT NULL,
     IdPropietario            INT NOT NULL,
     NombreFinca              VARCHAR(150) NOT NULL,
@@ -160,14 +188,18 @@ CREATE TABLE dbo.Fincas
     CONSTRAINT CK_Fincas_Hectareas CHECK (Hectareas > 0),
     CONSTRAINT CK_Fincas_CantidadNacientes CHECK (CantidadNacientes >= 0 AND (TieneNacientes = 1 OR CantidadNacientes = 0)),
     CONSTRAINT CK_Fincas_Estado CHECK (EstadoFinca IN ('Registrada', 'Pendiente', 'EnRevision', 'En proceso', 'Aprobada', 'Rechazada', 'Suspendida', 'Inactiva'))
-);
+
+    );
+END
 GO
 
 /* =========================================
    5. EvaluacionesTecnicas
    ========================================= */
-CREATE TABLE dbo.EvaluacionesTecnicas
-(
+IF OBJECT_ID(N'dbo.EvaluacionesTecnicas', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.EvaluacionesTecnicas
+    (
     IdEvaluacion                 INT IDENTITY(1,1) NOT NULL,
     IdFinca                      INT NOT NULL,
     IdIngeniero                  INT NULL,
@@ -199,14 +231,18 @@ CREATE TABLE dbo.EvaluacionesTecnicas
     ),
     CONSTRAINT CK_Evaluaciones_Decision CHECK (DecisionTecnica IS NULL OR DecisionTecnica IN ('Califica', 'No Califica')),
     CONSTRAINT CK_Evaluaciones_HectareasAjustadas CHECK (HectareasAjustadas IS NULL OR HectareasAjustadas > 0)
-);
+
+    );
+END
 GO
 
 /* =========================================
    6. CuentasBancarias
    ========================================= */
-CREATE TABLE dbo.CuentasBancarias
-(
+IF OBJECT_ID(N'dbo.CuentasBancarias', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CuentasBancarias
+    (
     IdCuentaBancaria         INT IDENTITY(1,1) NOT NULL,
     IdUsuario                INT NOT NULL,
     Banco                    VARCHAR(100) NOT NULL,
@@ -224,14 +260,18 @@ CREATE TABLE dbo.CuentasBancarias
     CONSTRAINT FK_CuentasBancarias_Usuarios_Validador FOREIGN KEY (ValidadoPor) REFERENCES dbo.Usuarios(IdUsuario),
     CONSTRAINT CK_Cuentas_TipoCuenta CHECK (TipoCuenta IN ('Ahorro', 'Corriente', 'IBAN', 'SINPE', 'Otra')),
     CONSTRAINT CK_Cuentas_EstadoValidacion CHECK (EstadoValidacion IN ('Pendiente', 'Validada', 'Rechazada'))
-);
+
+    );
+END
 GO
 
 /* =========================================
    7. ConfiguracionesPago
    ========================================= */
-CREATE TABLE dbo.ConfiguracionesPago
-(
+IF OBJECT_ID(N'dbo.ConfiguracionesPago', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ConfiguracionesPago
+    (
     IdConfiguracionPago      INT IDENTITY(1,1) NOT NULL,
     Version                  INT NOT NULL,
     NombreVersion            VARCHAR(100) NOT NULL,
@@ -248,14 +288,18 @@ CREATE TABLE dbo.ConfiguracionesPago
     CONSTRAINT CK_ConfiguracionesPago_PrecioBase CHECK (PrecioBasePorHectarea >= 0),
     CONSTRAINT CK_ConfiguracionesPago_Tope CHECK (TopePorcentajeAjuste >= 0),
     CONSTRAINT CK_ConfiguracionesPago_Fechas CHECK (FechaVigenciaHasta IS NULL OR FechaVigenciaHasta >= FechaVigenciaDesde)
-);
+
+    );
+END
 GO
 
 /* =========================================
    8. ConfiguracionPagoDetalle
    ========================================= */
-CREATE TABLE dbo.ConfiguracionPagoDetalle
-(
+IF OBJECT_ID(N'dbo.ConfiguracionPagoDetalle', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.ConfiguracionPagoDetalle
+    (
     IdDetalleConfiguracion   INT IDENTITY(1,1) NOT NULL,
     IdConfiguracionPago      INT NOT NULL,
     TipoFactor               VARCHAR(50) NOT NULL,
@@ -265,14 +309,18 @@ CREATE TABLE dbo.ConfiguracionPagoDetalle
     CONSTRAINT FK_ConfiguracionPagoDetalle_ConfiguracionesPago FOREIGN KEY (IdConfiguracionPago) REFERENCES dbo.ConfiguracionesPago(IdConfiguracionPago),
     CONSTRAINT CK_ConfiguracionPagoDetalle_TipoFactor CHECK (TipoFactor IN ('Vegetacion', 'RecursosHidricos', 'Pendiente', 'UsoSuelo')),
     CONSTRAINT UQ_ConfiguracionPagoDetalle UNIQUE (IdConfiguracionPago, TipoFactor, ValorFactor)
-);
+
+    );
+END
 GO
 
 /* =========================================
    9. PlanesPago
    ========================================= */
-CREATE TABLE dbo.PlanesPago
-(
+IF OBJECT_ID(N'dbo.PlanesPago', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PlanesPago
+    (
     IdPlanPago                  INT IDENTITY(1,1) NOT NULL,
     IdFinca                     INT NOT NULL,
     IdEvaluacion                INT NOT NULL,
@@ -292,14 +340,18 @@ CREATE TABLE dbo.PlanesPago
     CONSTRAINT CK_PlanesPago_Anio CHECK (Anio BETWEEN 2000 AND 2100),
     CONSTRAINT CK_PlanesPago_Montos CHECK (MontoBaseMensual >= 0 AND MontoMensualCalculado >= 0),
     CONSTRAINT CK_PlanesPago_Estado CHECK (EstadoPlan IN ('BorradorGenerado', 'PendienteDatosBancarios', 'PendienteAprobacionFinal', 'Activo', 'Finalizado', 'Cancelado'))
-);
+
+    );
+END
 GO
 
 /* =========================================
    10. PlanesPagoDetalleCalculo
    ========================================= */
-CREATE TABLE dbo.PlanesPagoDetalleCalculo
-(
+IF OBJECT_ID(N'dbo.PlanesPagoDetalleCalculo', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.PlanesPagoDetalleCalculo
+    (
     IdDetalleCalculo            INT IDENTITY(1,1) NOT NULL,
     IdPlanPago                  INT NOT NULL,
     HectareasAprobadas          DECIMAL(12,2) NOT NULL,
@@ -322,14 +374,18 @@ CREATE TABLE dbo.PlanesPagoDetalleCalculo
     CONSTRAINT PK_PlanesPagoDetalleCalculo PRIMARY KEY (IdDetalleCalculo),
     CONSTRAINT FK_PlanesPagoDetalleCalculo_PlanesPago FOREIGN KEY (IdPlanPago) REFERENCES dbo.PlanesPago(IdPlanPago),
     CONSTRAINT UQ_PlanesPagoDetalleCalculo_IdPlanPago UNIQUE (IdPlanPago)
-);
+
+    );
+END
 GO
 
 /* =========================================
    11. CuotasPago
    ========================================= */
-CREATE TABLE dbo.CuotasPago
-(
+IF OBJECT_ID(N'dbo.CuotasPago', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.CuotasPago
+    (
     IdCuotaPago             INT IDENTITY(1,1) NOT NULL,
     IdPlanPago              INT NOT NULL,
     Mes                     INT NOT NULL,
@@ -344,14 +400,18 @@ CREATE TABLE dbo.CuotasPago
     CONSTRAINT CK_CuotasPago_Mes CHECK (Mes BETWEEN 1 AND 12),
     CONSTRAINT CK_CuotasPago_Montos CHECK (MontoProgramado >= 0 AND MontoPendiente >= 0),
     CONSTRAINT CK_CuotasPago_Estado CHECK (EstadoCuota IN ('Pendiente', 'Ejecutada', 'Notificada'))
-);
+
+    );
+END
 GO
 
 /* =========================================
    12. TransaccionesPago (opcional para MVP)
    ========================================= */
-CREATE TABLE dbo.TransaccionesPago
-(
+IF OBJECT_ID(N'dbo.TransaccionesPago', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.TransaccionesPago
+    (
     IdTransaccionPago       INT IDENTITY(1,1) NOT NULL,
     IdPlanPago              INT NOT NULL,
     FechaTransaccion        DATETIME2 NOT NULL CONSTRAINT DF_TransaccionesPago_Fecha DEFAULT (SYSDATETIME()),
@@ -363,14 +423,18 @@ CREATE TABLE dbo.TransaccionesPago
     CONSTRAINT FK_TransaccionesPago_PlanesPago FOREIGN KEY (IdPlanPago) REFERENCES dbo.PlanesPago(IdPlanPago),
     CONSTRAINT CK_TransaccionesPago_Monto CHECK (MontoTotal >= 0),
     CONSTRAINT CK_TransaccionesPago_Estado CHECK (EstadoTransaccion IN ('Pendiente', 'Procesada', 'Rechazada', 'Anulada'))
-);
+
+    );
+END
 GO
 
 /* =========================================
    13. AuditoriaLog
    ========================================= */
-CREATE TABLE dbo.AuditoriaLog
-(
+IF OBJECT_ID(N'dbo.AuditoriaLog', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.AuditoriaLog
+    (
     IdLog                   INT IDENTITY(1,1) NOT NULL,
     IdUsuario               INT NULL,
     Modulo                  VARCHAR(50) NOT NULL,
@@ -384,14 +448,18 @@ CREATE TABLE dbo.AuditoriaLog
     Detalle                 VARCHAR(250) NULL,
     CONSTRAINT PK_AuditoriaLog PRIMARY KEY (IdLog),
     CONSTRAINT FK_AuditoriaLog_Usuarios FOREIGN KEY (IdUsuario) REFERENCES dbo.Usuarios(IdUsuario)
-);
+
+    );
+END
 GO
 
 /* =========================================
    14. FincaEvidencias
    ========================================= */
-CREATE TABLE dbo.FincaEvidencias
-(
+IF OBJECT_ID(N'dbo.FincaEvidencias', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.FincaEvidencias
+    (
     IdEvidencia             INT IDENTITY(1,1) NOT NULL,
     IdFinca                 INT NOT NULL,
     NombreArchivo           NVARCHAR(255) NOT NULL,
@@ -402,14 +470,18 @@ CREATE TABLE dbo.FincaEvidencias
     CONSTRAINT PK_FincaEvidencias PRIMARY KEY (IdEvidencia),
     CONSTRAINT FK_FincaEvidencias_Fincas FOREIGN KEY (IdFinca) REFERENCES dbo.Fincas(IdFinca),
     CONSTRAINT FK_FincaEvidencias_Usuarios FOREIGN KEY (CargadoPor) REFERENCES dbo.Usuarios(IdUsuario)
-);
+
+    );
+END
 GO
 
 /* =========================================
    14. EvaluacionEvidencias
    ========================================= */
-CREATE TABLE dbo.EvaluacionEvidencias
-(
+IF OBJECT_ID(N'dbo.EvaluacionEvidencias', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.EvaluacionEvidencias
+    (
     IdEvidenciaEvaluacion   INT IDENTITY(1,1) NOT NULL,
     IdEvaluacion            INT NOT NULL,
     NombreArchivo           NVARCHAR(255) NOT NULL,
@@ -420,14 +492,18 @@ CREATE TABLE dbo.EvaluacionEvidencias
     CONSTRAINT PK_EvaluacionEvidencias PRIMARY KEY (IdEvidenciaEvaluacion),
     CONSTRAINT FK_EvaluacionEvidencias_Evaluaciones FOREIGN KEY (IdEvaluacion) REFERENCES dbo.EvaluacionesTecnicas(IdEvaluacion),
     CONSTRAINT FK_EvaluacionEvidencias_Usuarios FOREIGN KEY (CargadoPor) REFERENCES dbo.Usuarios(IdUsuario)
-);
+
+    );
+END
 GO
 
 /* =========================================
    15. Notificaciones
    ========================================= */
-CREATE TABLE dbo.Notificaciones
-(
+IF OBJECT_ID(N'dbo.Notificaciones', N'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Notificaciones
+    (
     IdNotificacion          INT IDENTITY(1,1) NOT NULL,
     IdUsuario               INT NOT NULL,
     Tipo                    VARCHAR(50) NOT NULL,
@@ -439,29 +515,46 @@ CREATE TABLE dbo.Notificaciones
     IdEntidadReferencia     INT NULL,
     CONSTRAINT PK_Notificaciones PRIMARY KEY (IdNotificacion),
     CONSTRAINT FK_Notificaciones_Usuarios FOREIGN KEY (IdUsuario) REFERENCES dbo.Usuarios(IdUsuario)
-);
+
+    );
+END
 GO
 
 /* =========================================
    Índices recomendados
    ========================================= */
-CREATE INDEX IX_Usuarios_IdRol ON dbo.Usuarios(IdRol);
-CREATE INDEX IX_TokensRecuperacion_IdUsuario ON dbo.TokensRecuperacion(IdUsuario);
-CREATE INDEX IX_Fincas_IdPropietario ON dbo.Fincas(IdPropietario);
-CREATE INDEX IX_Fincas_Latitud_Longitud ON dbo.Fincas(Latitud, Longitud);
-CREATE INDEX IX_EvaluacionesTecnicas_IdFinca ON dbo.EvaluacionesTecnicas(IdFinca);
-CREATE INDEX IX_EvaluacionesTecnicas_IdIngeniero ON dbo.EvaluacionesTecnicas(IdIngeniero);
-CREATE INDEX IX_CuentasBancarias_IdUsuario ON dbo.CuentasBancarias(IdUsuario);
-CREATE INDEX IX_ConfiguracionPagoDetalle_IdConfiguracionPago ON dbo.ConfiguracionPagoDetalle(IdConfiguracionPago);
-CREATE INDEX IX_PlanesPago_IdFinca ON dbo.PlanesPago(IdFinca);
-CREATE INDEX IX_PlanesPago_IdEvaluacion ON dbo.PlanesPago(IdEvaluacion);
-CREATE INDEX IX_CuotasPago_IdPlanPago ON dbo.CuotasPago(IdPlanPago);
-CREATE INDEX IX_TransaccionesPago_IdPlanPago ON dbo.TransaccionesPago(IdPlanPago);
-CREATE INDEX IX_AuditoriaLog_IdUsuario ON dbo.AuditoriaLog(IdUsuario);
-CREATE INDEX IX_FincaEvidencias_IdFinca ON dbo.FincaEvidencias(IdFinca);
-CREATE INDEX IX_EvaluacionEvidencias_IdEvaluacion ON dbo.EvaluacionEvidencias(IdEvaluacion);
-CREATE INDEX IX_Notificaciones_IdUsuario ON dbo.Notificaciones(IdUsuario);
-GO
+IF OBJECT_ID(N'dbo.Usuarios', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Usuarios_IdRol' AND object_id = OBJECT_ID(N'dbo.Usuarios'))
+    CREATE INDEX IX_Usuarios_IdRol ON dbo.Usuarios(IdRol);
+IF OBJECT_ID(N'dbo.TokensRecuperacion', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_TokensRecuperacion_IdUsuario' AND object_id = OBJECT_ID(N'dbo.TokensRecuperacion'))
+    CREATE INDEX IX_TokensRecuperacion_IdUsuario ON dbo.TokensRecuperacion(IdUsuario);
+IF OBJECT_ID(N'dbo.Fincas', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Fincas_IdPropietario' AND object_id = OBJECT_ID(N'dbo.Fincas'))
+    CREATE INDEX IX_Fincas_IdPropietario ON dbo.Fincas(IdPropietario);
+IF OBJECT_ID(N'dbo.Fincas', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Fincas_Latitud_Longitud' AND object_id = OBJECT_ID(N'dbo.Fincas'))
+    CREATE INDEX IX_Fincas_Latitud_Longitud ON dbo.Fincas(Latitud, Longitud);
+IF OBJECT_ID(N'dbo.EvaluacionesTecnicas', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_EvaluacionesTecnicas_IdFinca' AND object_id = OBJECT_ID(N'dbo.EvaluacionesTecnicas'))
+    CREATE INDEX IX_EvaluacionesTecnicas_IdFinca ON dbo.EvaluacionesTecnicas(IdFinca);
+IF OBJECT_ID(N'dbo.EvaluacionesTecnicas', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_EvaluacionesTecnicas_IdIngeniero' AND object_id = OBJECT_ID(N'dbo.EvaluacionesTecnicas'))
+    CREATE INDEX IX_EvaluacionesTecnicas_IdIngeniero ON dbo.EvaluacionesTecnicas(IdIngeniero);
+IF OBJECT_ID(N'dbo.CuentasBancarias', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CuentasBancarias_IdUsuario' AND object_id = OBJECT_ID(N'dbo.CuentasBancarias'))
+    CREATE INDEX IX_CuentasBancarias_IdUsuario ON dbo.CuentasBancarias(IdUsuario);
+IF OBJECT_ID(N'dbo.ConfiguracionPagoDetalle', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_ConfiguracionPagoDetalle_IdConfiguracionPago' AND object_id = OBJECT_ID(N'dbo.ConfiguracionPagoDetalle'))
+    CREATE INDEX IX_ConfiguracionPagoDetalle_IdConfiguracionPago ON dbo.ConfiguracionPagoDetalle(IdConfiguracionPago);
+IF OBJECT_ID(N'dbo.PlanesPago', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_PlanesPago_IdFinca' AND object_id = OBJECT_ID(N'dbo.PlanesPago'))
+    CREATE INDEX IX_PlanesPago_IdFinca ON dbo.PlanesPago(IdFinca);
+IF OBJECT_ID(N'dbo.PlanesPago', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_PlanesPago_IdEvaluacion' AND object_id = OBJECT_ID(N'dbo.PlanesPago'))
+    CREATE INDEX IX_PlanesPago_IdEvaluacion ON dbo.PlanesPago(IdEvaluacion);
+IF OBJECT_ID(N'dbo.CuotasPago', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CuotasPago_IdPlanPago' AND object_id = OBJECT_ID(N'dbo.CuotasPago'))
+    CREATE INDEX IX_CuotasPago_IdPlanPago ON dbo.CuotasPago(IdPlanPago);
+IF OBJECT_ID(N'dbo.TransaccionesPago', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_TransaccionesPago_IdPlanPago' AND object_id = OBJECT_ID(N'dbo.TransaccionesPago'))
+    CREATE INDEX IX_TransaccionesPago_IdPlanPago ON dbo.TransaccionesPago(IdPlanPago);
+IF OBJECT_ID(N'dbo.AuditoriaLog', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_AuditoriaLog_IdUsuario' AND object_id = OBJECT_ID(N'dbo.AuditoriaLog'))
+    CREATE INDEX IX_AuditoriaLog_IdUsuario ON dbo.AuditoriaLog(IdUsuario);
+IF OBJECT_ID(N'dbo.FincaEvidencias', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_FincaEvidencias_IdFinca' AND object_id = OBJECT_ID(N'dbo.FincaEvidencias'))
+    CREATE INDEX IX_FincaEvidencias_IdFinca ON dbo.FincaEvidencias(IdFinca);
+IF OBJECT_ID(N'dbo.EvaluacionEvidencias', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_EvaluacionEvidencias_IdEvaluacion' AND object_id = OBJECT_ID(N'dbo.EvaluacionEvidencias'))
+    CREATE INDEX IX_EvaluacionEvidencias_IdEvaluacion ON dbo.EvaluacionEvidencias(IdEvaluacion);
+IF OBJECT_ID(N'dbo.Notificaciones', N'U') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_Notificaciones_IdUsuario' AND object_id = OBJECT_ID(N'dbo.Notificaciones'))
+    CREATE INDEX IX_Notificaciones_IdUsuario ON dbo.Notificaciones(IdUsuario);
 GO
 
 /* =========================================

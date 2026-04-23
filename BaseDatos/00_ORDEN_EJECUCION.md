@@ -32,6 +32,7 @@ Ejecutar en este orden dentro de `BaseDatos`:
 ## Notas
 
 - `Azure/01_creacion_tablas_azure_safe.sql` elimina operaciones destructivas (`DROP`) y dependencias de cambio de base (`USE`).
+- `Azure/01_creacion_tablas_azure_safe.sql` ahora es idempotente: crea solo objetos faltantes y permite re-ejecución segura en Azure SQL.
 - Si aparece `Invalid object name 'dbo.Permisos'`, validar que primero corrió el script de tablas correspondiente al entorno (local o Azure).
 
 - `Azure/02_creacion_vistas_reportes_azure_safe.sql` crea/actualiza vistas sin `USE` y valida que las tablas de pagos existan antes de compilar vistas.
