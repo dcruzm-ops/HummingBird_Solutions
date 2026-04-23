@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace PSA.WebApp.Controllers
 {
     [Authorize]
-    public class PagosController : Controller
+    public class PagosController : AppControllerBase
     {
         private readonly HttpClientService _httpClientService;
 
