@@ -12,7 +12,7 @@ using System.Text.Json;
 namespace PSA.WebApp.Controllers
 {
     [Authorize(Roles = "3")]
-    public class EvaluacionesController : Controller
+    public class EvaluacionesController : AppControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
 

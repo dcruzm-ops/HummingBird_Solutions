@@ -257,18 +257,45 @@ html[data-theme="dark"] .modal-sistema .btn-close {
 }
 
 .migas-pan {
-    display: flex;
-    align-items: center;
-    gap: var(--espacio-2);
     margin-bottom: var(--espacio-5);
     color: var(--color-texto-secundario);
     font-size: 0.92rem;
 }
 
-    .migas-pan .actual {
-        color: var(--color-texto-principal);
-        font-weight: 700;
-    }
+.migas-pan__lista {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--espacio-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.migas-pan__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--espacio-2);
+}
+
+.migas-pan__item + .migas-pan__item::before {
+    content: "/";
+    color: var(--color-texto-secundario);
+}
+
+.migas-pan__item a {
+    color: var(--color-primario);
+    text-decoration: none;
+}
+
+.migas-pan__item a:hover {
+    text-decoration: underline;
+}
+
+.migas-pan__item.actual {
+    color: var(--color-texto-principal);
+    font-weight: 700;
+}
 
 .estado-vacio,
 .estado-vacio-inline {
