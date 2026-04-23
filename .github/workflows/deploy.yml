@@ -1,13 +1,15 @@
-name: Deploy PSA API
+name: Deploy WebApp
 
 on:
   push:
-    branches:
-      - development
+    branches: [development, main]
+  workflow_dispatch:
 
 jobs:
-  deploy-api:
+  deploy-webapp-dev:
+    if: github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
+    environment: development
 
     steps:
       - name: Checkout
@@ -16,23 +18,38 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: 10.0.x
 
-      - name: Restore
-        run: dotnet restore ./PSA.WebAPI/PSA.WebAPI.csproj
+      - name: Publish WebApp
+        run: dotnet publish ./PSA.WebApp/PSA.WebApp.csproj -c Release -o ./publish-webapp
 
-      - name: Build
-        run: dotnet build ./PSA.WebAPI/PSA.WebAPI.csproj --configuration Release --no-restore
-
-      - name: Publish API
-        run: dotnet publish ./PSA.WebAPI/PSA.WebAPI.csproj -c Release -o ./publish-api
-
-      - name: Show published files
-        run: ls -la ./publish-api
-
-      - name: Deploy API
+      - name: Deploy WebApp (Development)
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'psa-api'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
-          package: ./publish-api
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_WEBAPP_DEV }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_WEBAPP_DEV }}
+          package: ./publish-webapp
+
+  deploy-webapp-prod:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish WebApp
+        run: dotnet publish ./PSA.WebApp/PSA.WebApp.csproj -c Release -o ./publish-webapp
+
+      - name: Deploy WebApp (Production)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_WEBAPP_PROD }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_WEBAPP_PROD }}
+          package: ./publish-webapp

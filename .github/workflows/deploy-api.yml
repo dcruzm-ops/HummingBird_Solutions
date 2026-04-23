@@ -1,13 +1,15 @@
-name: Deploy PSA API to Azure
+name: Deploy WebAPI
 
 on:
   push:
-    branches:
-      - development
+    branches: [development, main]
+  workflow_dispatch:
 
 jobs:
-  build-and-deploy-api:
+  deploy-api-dev:
+    if: github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
+    environment: development
 
     steps:
       - name: Checkout
@@ -16,20 +18,38 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: 10.0.x
 
-      - name: Restore
-        run: dotnet restore
-
-      - name: Build API
-        run: dotnet build ./PSA.WebAPI/PSA.WebAPI.csproj --configuration Release --no-restore
-
-      - name: Publish API
+      - name: Publish WebAPI
         run: dotnet publish ./PSA.WebAPI/PSA.WebAPI.csproj -c Release -o ./publish-api
 
-      - name: Deploy API to Azure
+      - name: Deploy WebAPI (Development)
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'psa-api'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API }}
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_API_DEV }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API_DEV }}
+          package: ./publish-api
+
+  deploy-api-prod:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish WebAPI
+        run: dotnet publish ./PSA.WebAPI/PSA.WebAPI.csproj -c Release -o ./publish-api
+
+      - name: Deploy WebAPI (Production)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME_API_PROD }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_API_PROD }}
           package: ./publish-api
