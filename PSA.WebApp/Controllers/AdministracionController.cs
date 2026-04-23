@@ -8,7 +8,7 @@ using PSA.WebApp.Services;
 namespace PSA.WebApp.Controllers
 {
     [Authorize(Roles = "1")]
-    public class AdministracionController : Controller
+    public class AdministracionController : AppControllerBase
     {
         private readonly HttpClientService _httpClientService;
 

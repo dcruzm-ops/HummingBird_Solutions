@@ -1,9 +1,159 @@
 @model PSA.EntidadesDTO.DTOs.Pagos.AdminPaymentPlanDetailDto
-@{ ViewData["Title"] = "Detalle del plan"; var c = Model.Calculo; }
+@{
+    ViewData["Title"] = "Detalle del plan";
+    var c = Model.Calculo;
+    var subtotalBruto = c.MontoBaseMensual + c.MontoAjusteBrutoMensual;
+}
+
 <section class="seccion-pagina">
-<div class="cabecera-pagina"><div><span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span><h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2></div><a class="boton-secundario" asp-action="PlanesPago">Volver</a></div>
-<section class="tarjeta-panel"><h3>Sección 1 — Datos base</h3><ul class="lista-timeline"><li>Finca: @Model.Plan.NombreFinca</li><li>Propietario: @Model.Plan.Propietario</li><li>Estado plan: @Model.Plan.EstadoPlan</li><li>Ingeniero: @Model.Plan.Ingeniero</li><li>Estado bancario: @Model.Plan.EstadoBancario (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</li></ul></section>
-<section class="tarjeta-panel"><h3>Sección 2 — Datos aplicados</h3><ul class="lista-timeline"><li>Hectáreas aprobadas: @c.HectareasAprobadas.ToString("N2")</li><li>Vegetación final: @c.VegetacionFinal</li><li>Ríos/quebradas: @(c.TieneRiosOQuebradasFinal?"Sí":"No")</li><li>Nacientes: @c.CantidadNacientesFinal</li><li>Pendiente final: @c.PendienteFinal</li><li>Precio base por hectárea: ₡@c.PrecioBasePorHectarea.ToString("N2")</li></ul></section>
-<section class="tarjeta-panel"><h3>Sección 3 — Desglose técnico</h3><ul class="lista-timeline"><li>Base: ₡@c.MontoBaseMensual.ToString("N2")</li><li>Vegetación (@c.PorcentajeVegetacion.ToString("N2")%): ₡@c.MontoAjusteVegetacion.ToString("N2")</li><li>Ríos/quebradas (@c.PorcentajeRiosQuebradas.ToString("N2")%): ₡@c.MontoAjusteRiosQuebradas.ToString("N2")</li><li>Nacientes (@c.CantidadNacientesFinal × 5% = @c.PorcentajeNacientes.ToString("N2")%): ₡@c.MontoAjusteNacientes.ToString("N2")</li><li>Pendiente (@c.PorcentajePendiente.ToString("N2")%): ₡@c.MontoAjustePendiente.ToString("N2")</li><li>Porcentaje bruto: @c.PorcentajeTotalAntesTope.ToString("N2")%</li><li>Tope: @c.PorcentajeTopeAplicado.ToString("N2")%</li><li>Aplicado: @c.PorcentajeTotalAplicado.ToString("N2")%</li><li><strong>Total mensual: ₡@c.MontoFinalMensual.ToString("N2")</strong></li></ul></section>
-<section class="tarjeta-panel"><h3>Sección 4 — Trazabilidad</h3><ul class="lista-timeline"><li>Vegetación original/final: @c.VegetacionOriginal / @c.VegetacionFinal</li><li>Ríos original/final: @(c.TieneRiosOQuebradasOriginal?"Sí":"No") / @(c.TieneRiosOQuebradasFinal?"Sí":"No")</li><li>Nacientes original/final: @c.CantidadNacientesOriginal / @c.CantidadNacientesFinal</li><li>Pendiente original/final: @c.PendienteOriginal / @c.PendienteFinal</li></ul></section>
+    <div class="cabecera-pagina">
+        <div>
+            <span class="eyebrow">Plan #@Model.Plan.IdPlanPago</span>
+            <h2>@Model.Plan.NombreFinca (@Model.Plan.Anio)</h2>
+            <p class="texto-secundario">Detalle administrativo y técnico del cálculo aplicado al plan.</p>
+        </div>
+        <a class="boton-secundario" asp-action="PlanesPago">Volver</a>
+    </div>
+
+    <section class="tarjeta-panel">
+        <h3>Datos base del plan</h3>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Rubro</th>
+                        <th>Valor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Finca</td><td>@Model.Plan.NombreFinca</td></tr>
+                    <tr><td>Propietario</td><td>@Model.Plan.Propietario</td></tr>
+                    <tr><td>Ingeniero</td><td>@Model.Plan.Ingeniero</td></tr>
+                    <tr><td>Estado del plan</td><td>@Model.Plan.EstadoPlan</td></tr>
+                    <tr><td>Estado bancario</td><td>@Model.Plan.EstadoBancario (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</td></tr>
+                    <tr><td>Monto mensual</td><td>₡@Model.Plan.MontoMensual.ToString("N2")</td></tr>
+                    <tr><td>Monto anual</td><td>₡@Model.Plan.MontoAnual.ToString("N2")</td></tr>
+                    <tr><td>Versión de configuración</td><td>@Model.Plan.VersionConfiguracion</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <h3>Datos usados para cálculo</h3>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Rubro</th>
+                        <th>Valor original</th>
+                        <th>Valor aplicado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Hectáreas</td><td>@c.HectareasOriginales.ToString("N2")</td><td>@c.HectareasAprobadas.ToString("N2")</td></tr>
+                    <tr><td>Vegetación</td><td>@c.VegetacionOriginal</td><td>@c.VegetacionFinal</td></tr>
+                    <tr><td>Ríos/quebradas</td><td>@(c.TieneRiosOQuebradasOriginal ? "Sí" : "No")</td><td>@(c.TieneRiosOQuebradasFinal ? "Sí" : "No")</td></tr>
+                    <tr><td>Nacientes</td><td>@c.CantidadNacientesOriginal</td><td>@c.CantidadNacientesFinal</td></tr>
+                    <tr><td>Pendiente</td><td>@c.PendienteOriginal</td><td>@c.PendienteFinal</td></tr>
+                    <tr><td>Precio base por hectárea</td><td>-</td><td>₡@c.PrecioBasePorHectarea.ToString("N2")</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <h3>Desglose progresivo del cálculo</h3>
+        <p class="texto-secundario">Los ajustes se aplican sobre el monto base mensual, calculado como <strong>hectáreas aprobadas × precio base por hectárea</strong>.</p>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Rubro</th>
+                        <th>Detalle</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Base por hectáreas</td><td>@c.HectareasAprobadas.ToString("N2") × ₡@c.PrecioBasePorHectarea.ToString("N2")</td><td>₡@c.MontoBaseMensual.ToString("N2")</td></tr>
+                    <tr><td>Ajuste por vegetación</td><td>@c.PorcentajeVegetacion.ToString("N2")%</td><td>₡@c.MontoAjusteVegetacion.ToString("N2")</td></tr>
+                    <tr><td>Ajuste por ríos/quebradas</td><td>@c.PorcentajeRiosQuebradas.ToString("N2")%</td><td>₡@c.MontoAjusteRiosQuebradas.ToString("N2")</td></tr>
+                    <tr><td>Ajuste por nacientes</td><td>@c.CantidadNacientesFinal × 5% = @c.PorcentajeNacientes.ToString("N2")%</td><td>₡@c.MontoAjusteNacientes.ToString("N2")</td></tr>
+                    <tr><td>Ajuste por pendiente</td><td>@c.PorcentajePendiente.ToString("N2")%</td><td>₡@c.MontoAjustePendiente.ToString("N2")</td></tr>
+                    <tr><td><strong>Subtotal con ajuste bruto</strong></td><td>@c.PorcentajeTotalAntesTope.ToString("N2")% sobre base</td><td><strong>₡@subtotalBruto.ToString("N2")</strong></td></tr>
+                    @if (c.PorcentajeTotalAntesTope > c.PorcentajeTotalAplicado)
+                    {
+                        <tr><td>Aplicación de tope administrativo</td><td>Bruto @c.PorcentajeTotalAntesTope.ToString("N2")% limitado a @c.PorcentajeTotalAplicado.ToString("N2")%</td><td>-₡@c.MontoRecortadoPorTope.ToString("N2")</td></tr>
+                    }
+                    <tr><td><strong>Total mensual calculado</strong></td><td>Ajuste aplicado @c.PorcentajeTotalAplicado.ToString("N2")%</td><td><strong>₡@c.MontoFinalMensual.ToString("N2")</strong></td></tr>
+                    <tr><td>Equivalente anual estimado</td><td>12 cuotas mensuales</td><td>₡@Model.Plan.MontoAnual.ToString("N2")</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <h3>Cuotas mensuales</h3>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Periodo</th>
+                        <th>Estado</th>
+                        <th>Programada</th>
+                        <th>Ejecución</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cuota in Model.Cuotas)
+                    {
+                        <tr>
+                            <td>@Model.Plan.Anio-@cuota.Mes.ToString("00")</td>
+                            <td>@cuota.EstadoCuota</td>
+                            <td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                            <td>@(cuota.FechaPago?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
+                            <td>₡@cuota.MontoProgramado.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="tarjeta-panel">
+        <h3>Bitácora reciente</h3>
+        <div class="tabla-responsive">
+            <table class="tabla-base">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Acción</th>
+                        <th>Detalle</th>
+                        <th>Usuario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Bitacora.Any())
+                    {
+                        @foreach (var evento in Model.Bitacora)
+                        {
+                            <tr>
+                                <td>@evento.FechaAccion.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@evento.Accion</td>
+                                <td>@(string.IsNullOrWhiteSpace(evento.Detalle) ? "Sin detalle" : evento.Detalle)</td>
+                                <td>@(evento.IdUsuario?.ToString() ?? "N/D")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="texto-secundario">No hay eventos de auditoría para este plan.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </section>
 </section>

@@ -1,4 +1,5 @@
 using PSA.AppCore.Servicios;
+using PSA.AppCore.Services.Notifications;
 using PSA.AppCore.Services.Security;
 using PSA.DataAccess.DAO;
 using PSA.EntidadesDTO.DTOs;
@@ -13,17 +14,20 @@ namespace PSA.AppCore.Managers
         private readonly UsuarioDAO _usuarioDAO;
         private readonly AuditoriaLogDAO _auditoriaLogDAO;
         private readonly IPasswordPolicy _passwordPolicy;
+        private readonly INotificationDispatcher _notificationDispatcher;
 
         public AutenticacionManager(
             IServicioHashContrasena servicioHashContrasena,
             UsuarioDAO usuarioDAO,
             AuditoriaLogDAO auditoriaLogDAO,
-            IPasswordPolicy passwordPolicy)
+            IPasswordPolicy passwordPolicy,
+            INotificationDispatcher notificationDispatcher)
         {
             _servicioHashContrasena = servicioHashContrasena;
             _usuarioDAO = usuarioDAO;
             _auditoriaLogDAO = auditoriaLogDAO;
             _passwordPolicy = passwordPolicy;
+            _notificationDispatcher = notificationDispatcher;
         }
 
         public async Task<int> RegistrarUsuarioAsync(RegistrarUsuarioDTO dto)
@@ -65,7 +69,17 @@ namespace PSA.AppCore.Managers
                 UltimoAcceso = null
             };
 
-            return await _usuarioDAO.CrearUsuarioAsync(usuario);
+            var idUsuario = await _usuarioDAO.CrearUsuarioAsync(usuario);
+
+            await _notificationDispatcher.NotifyEmailAsync(
+                usuario.Email,
+                "Bienvenido a PSA Costa Rica",
+                NotificationCatalog.EmailBienvenida(
+                    usuario.NombreCompleto,
+                    "Propietario",
+                    enlaceSistema: null));
+
+            return idUsuario;
         }
 
         public async Task<RespuestaInicioSesionDTO> IniciarSesionAsync(InicioSesionDTO dto)

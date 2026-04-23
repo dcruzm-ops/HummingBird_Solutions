@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace PSA.WebApp.Controllers;
 
 [Authorize(Roles = "1,2,3")]
-public class ReportesController : Controller
+public class ReportesController : AppControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
 

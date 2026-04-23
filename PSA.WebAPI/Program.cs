@@ -55,7 +55,7 @@ builder.Services.AddAuthentication(options =>
         jwtKey = "development-placeholder-key-not-for-production";
     }
 
-    var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+    var keyBytes = Encoding.UTF8.GetBytes(jwtKey ?? string.Empty);
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,

@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 
 namespace PSA.WebApp.Controllers
 {
-    public class AutenticacionController : Controller
+    public class AutenticacionController : AppControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
 

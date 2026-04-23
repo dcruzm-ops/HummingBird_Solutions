@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace PSA.WebApp.Controllers
 {
     [Authorize]
-    public class DashboardController : Controller
+    public class DashboardController : AppControllerBase
     {
         private readonly IHttpClientFactory _httpClientFactory;
 
