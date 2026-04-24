@@ -402,6 +402,33 @@
   color: inherit;
 }
 
+.hb-js .js-reveal,
+.hb-js .js-reveal-item {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+  will-change: opacity, transform;
+}
+
+.hb-js .js-reveal-item {
+  transform: translateY(20px) scale(0.985);
+}
+
+.hb-js .js-reveal.is-visible,
+.hb-js .js-reveal-item.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hb-js .js-reveal,
+  .hb-js .js-reveal-item {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 @media (max-width: 768px) {
   .hb-footer {
     padding-inline: 20px;
