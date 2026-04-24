@@ -7,14 +7,14 @@
 }
 
 <div class="psa-producto">
-    <section class="psa-topbar">
+    <section class="psa-topbar js-reveal">
         <div class="container">
             <span>PSA Costa Rica</span>
             <strong>Solución digital para la gestión integral del Pago por Servicios Ambientales</strong>
         </div>
     </section>
 
-    <section class="psa-hero" id="inicio">
+    <section class="psa-hero js-reveal" id="inicio">
         <div class="psa-hero__overlay">
             <div class="container py-5">
                 <span class="psa-pill">Plataforma institucional</span>
@@ -38,7 +38,7 @@
         </div>
     </section>
 
-    <section class="container py-5" id="vision-general">
+    <section class="container py-5 js-reveal" id="vision-general">
         <div class="text-center mb-5">
             <h2>Una plataforma orientada a la formalidad operativa y al control institucional</h2>
             <p>
@@ -53,7 +53,7 @@
         </div>
     </section>
 
-    <section class="container pb-5" id="modulos">
+    <section class="container pb-5 js-reveal" id="modulos">
         <div class="text-center mb-4">
             <h2>Capacidades clave de la solución</h2>
         </div>
@@ -69,25 +69,25 @@
                 <strong>PSA Costa Rica</strong>
             </div>
 
-            <article class="capacidad-item capacidad-item--fincas">
+            <article class="capacidad-item capacidad-item--fincas js-reveal-item">
                 <div class="capacidad-icono" aria-hidden="true">🌿</div>
                 <h4>Gestión de fincas</h4>
                 <p>Registro y administración de fincas con información consolidada y visibilidad del estado de cada expediente.</p>
             </article>
 
-            <article class="capacidad-item capacidad-item--evaluaciones">
+            <article class="capacidad-item capacidad-item--evaluaciones js-reveal-item">
                 <div class="capacidad-icono" aria-hidden="true">🧾</div>
                 <h4>Evaluaciones técnicas</h4>
                 <p>Seguimiento de evaluaciones por etapa, documentación asociada y soporte para validación técnica.</p>
             </article>
 
-            <article class="capacidad-item capacidad-item--pagos">
+            <article class="capacidad-item capacidad-item--pagos js-reveal-item">
                 <div class="capacidad-icono" aria-hidden="true">💳</div>
                 <h4>Control administrativo de pagos</h4>
                 <p>Visualización del estado de pagos e historial del proceso conforme a reglas de validación definidas.</p>
             </article>
 
-            <article class="capacidad-item capacidad-item--trazabilidad">
+            <article class="capacidad-item capacidad-item--trazabilidad js-reveal-item">
                 <div class="capacidad-icono" aria-hidden="true">📍</div>
                 <h4>Trazabilidad por perfil y etapa</h4>
                 <p>Acceso por rol con claridad sobre acciones, estados y continuidad del proceso en cada fase operativa.</p>
@@ -95,7 +95,7 @@
         </div>
     </section>
 
-    <section class="psa-beneficios py-5">
+    <section class="psa-beneficios py-5 js-reveal">
         <div class="container">
             <div class="text-center mb-4">
                 <h2>Beneficios para la operación</h2>
@@ -128,7 +128,7 @@
         </div>
     </section>
 
-    <section class="container py-5" id="flujo-operativo">
+    <section class="container py-5 js-reveal" id="flujo-operativo">
         <div class="text-center mb-4">
             <h2>Un proceso estructurado de principio a fin</h2>
         </div>
@@ -140,7 +140,7 @@
         </div>
     </section>
 
-    <section class="psa-roles py-5">
+    <section class="psa-roles py-5 js-reveal">
         <div class="container">
             <div class="text-center mb-4">
                 <h2>Diseñado para una operación multirol</h2>
@@ -153,7 +153,7 @@
         </div>
     </section>
 
-    <section class="container py-5 text-center">
+    <section class="container py-5 text-center js-reveal">
         <h2>Transformando la gestión del PSA en una operación más visible, conectada y eficiente</h2>
         <p class="mx-auto psa-cierre-texto">
             PSA Costa Rica integra registro, evaluación, seguimiento y control administrativo en un solo entorno.
@@ -165,10 +165,33 @@
         </div>
     </section>
 
-    <section class="psa-footer-institucional py-4">
-        <div class="container text-center">
-            <h5>Desarrollado por HummingBird Solutions</h5>
-            <p class="mb-0">Propuesta conceptual y técnica orientada a la digitalización del proceso PSA en Costa Rica.</p>
-        </div>
-    </section>
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const revealTargets = document.querySelectorAll('.js-reveal, .js-reveal-item');
+            if (!revealTargets.length) return;
+
+            document.documentElement.classList.add('psa-js');
+
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
+                });
+            }, {
+                threshold: 0.2,
+                rootMargin: '0px 0px -10% 0px'
+            });
+
+            revealTargets.forEach((target, index) => {
+                if (target.classList.contains('js-reveal-item')) {
+                    target.style.transitionDelay = `${Math.min((index % 4) * 90, 270)}ms`;
+                }
+                observer.observe(target);
+            });
+        })();
+    </script>
+}

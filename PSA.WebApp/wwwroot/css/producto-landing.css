@@ -274,6 +274,33 @@
     margin-bottom: 0;
 }
 
+.psa-js .js-reveal,
+.psa-js .js-reveal-item {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+    will-change: opacity, transform;
+}
+
+.psa-js .js-reveal-item {
+    transform: translateY(20px) scale(0.985);
+}
+
+.psa-js .js-reveal.is-visible,
+.psa-js .js-reveal-item.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .psa-js .js-reveal,
+    .psa-js .js-reveal-item {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
 @media (max-width: 992px) {
     .capacidades-core {
         min-height: auto;

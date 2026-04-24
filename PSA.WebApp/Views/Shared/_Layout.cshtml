@@ -2,6 +2,10 @@
     var titulo = ViewBag.TituloPagina as string ?? ViewData["Title"]?.ToString() ?? "PSA Costa Rica";
     var rolActivo = ViewBag.RolActivo as string ?? "Dueno";
     var usuarioAutenticado = User?.Identity?.IsAuthenticated ?? false;
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var accionActual = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    var esLandingInstitucional = string.Equals(controladorActual, "Home", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(accionActual, "Index", StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
 <html lang="es" data-theme="light">
@@ -44,6 +48,11 @@
             @await Html.PartialAsync("_MensajesSistema")
             @RenderBody()
         </main>
+
+        @if (!esLandingInstitucional)
+        {
+            @await Html.PartialAsync("_PiePagina")
+        }
     }
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
