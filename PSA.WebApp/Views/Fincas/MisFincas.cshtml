@@ -83,8 +83,8 @@
                                 <td>@finca.NombreFinca</td>
                                 <td>@expediente</td>
                                 <td>@finca.Provincia, @finca.Canton</td>
-                                <td><span class="badge-estado @badgeClase">@finca.EstadoFinca</span></td>
-                                <td>@finca.EstadoEvaluacion</td>
+                                <td><span class="badge-estado @badgeClase">@finca.EstadoFinca.FormatearEstado()</span></td>
+                                <td>@finca.EstadoEvaluacion.FormatearEstado()</td>
                                 <td><a class="boton-link" asp-controller="Fincas" asp-action="DetalleFinca" asp-route-id="@finca.IdFinca">Ver detalle</a></td>
                             </tr>
                         }

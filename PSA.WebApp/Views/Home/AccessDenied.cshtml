@@ -1,5 +1,6 @@
 @{
     ViewData["Title"] = "Acceso denegado";
+    var dashboardAction = ViewBag.DashboardAction as string ?? "Dueno";
 }
 
 <section class="container py-5">
@@ -7,5 +8,5 @@
         <h2 class="h4 mb-2">Acceso denegado</h2>
         <p class="mb-0">Su sesión está activa, pero su rol actual no tiene permisos para acceder a esta pantalla.</p>
     </div>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Volver al inicio</a>
+    <a asp-controller="Dashboard" asp-action="@dashboardAction" class="btn btn-primary">Ir a mi inicio</a>
 </section>

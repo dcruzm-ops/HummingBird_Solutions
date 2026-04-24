@@ -48,7 +48,7 @@
                             <td>@item.NombreFinca</td>
                             <td>@item.Provincia, @item.Canton, @item.Distrito</td>
                             <td>@item.Hectareas.ToString("N2")</td>
-                            <td><span class="badge-estado @(item.EstadoEvaluacion == "En proceso" ? "badge-info" : "badge-pendiente")">@item.EstadoEvaluacion</span></td>
+                            <td><span class="badge-estado @(item.EstadoEvaluacion == "En proceso" ? "badge-info" : "badge-pendiente")">@item.EstadoEvaluacion.FormatearEstado()</span></td>
                             <td>
                                 <a class="boton-link me-2" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
                                     @(item.EstadoEvaluacion == "En proceso" ? "Continuar" : "Evaluar")

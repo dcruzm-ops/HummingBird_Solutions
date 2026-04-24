@@ -264,7 +264,7 @@ namespace PSA.WebApp.Controllers
 
             TempData[resultado.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = resultado.IsSuccessStatusCode
                 ? "Plan de pago activado correctamente."
-                : "No fue posible activar el plan. Verifique que esté en PendienteAprobacionFinal y tenga cuenta válida.";
+                : "No fue posible activar el plan. Verifique que esté en Pendiente de Aprobación Final y tenga una cuenta válida.";
 
             return RedirectToAction(nameof(DetalleEvaluacion), new { idEvaluacion });
         }

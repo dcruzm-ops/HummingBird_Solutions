@@ -32,7 +32,7 @@
         <tbody>
             @foreach (var i in Model.Items)
             {
-                <tr><td>@i.NombreCompleto</td><td>@i.Email</td><td>@i.Rol</td><td>@i.Estado</td></tr>
+                <tr><td>@i.NombreCompleto</td><td>@i.Email</td><td>@i.Rol</td><td>@i.Estado.FormatearEstado()</td></tr>
             }
         </tbody>
     </table>

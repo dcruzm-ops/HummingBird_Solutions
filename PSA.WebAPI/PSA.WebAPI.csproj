@@ -29,6 +29,7 @@
     <Compile Include="Controllers\RecuperacionContrasenaController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="CorreoService.cs" />
+    <Compile Include="Services\SmtpSettingsResolver.cs" />
     <Compile Include="Services\SmtpNotificationEmailSender.cs" />
     <Compile Include="Services\PasswordRecoveryServices.cs" />
     <Compile Include="Services\Security\JwtTokenService.cs" />

@@ -28,7 +28,7 @@
 
         <div class="grid-dos-columnas detalle-resumen-grid">
             <div><strong>Propietario</strong><div>@Model.PropietarioNombre</div></div>
-            <div><strong>Estado de finca</strong><div>@Model.EstadoFinca</div></div>
+            <div><strong>Estado de finca</strong><div>@Model.EstadoFinca.FormatearEstado()</div></div>
             <div><strong>Provincia</strong><div>@Model.Provincia</div></div>
             <div><strong>Cantón</strong><div>@Model.Canton</div></div>
             <div><strong>Distrito</strong><div>@Model.Distrito</div></div>
@@ -36,7 +36,7 @@
             <div><strong>Vegetación</strong><div>@Model.Vegetacion</div></div>
             <div><strong>Uso de suelo</strong><div>@Model.UsoSuelo</div></div>
             <div><strong>Pendiente</strong><div>@Model.Pendiente</div></div>
-            <div><strong>Estado de evaluación</strong><div>@Model.EstadoEvaluacion</div></div>
+            <div><strong>Estado de evaluación</strong><div>@Model.EstadoEvaluacion.FormatearEstado()</div></div>
             <div><strong>Fecha de registro</strong><div>@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</div></div>
             <div><strong>Última actualización</strong><div>@Model.FechaActualizacion.ToString("dd/MM/yyyy HH:mm")</div></div>
         </div>

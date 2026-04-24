@@ -8,7 +8,7 @@
         <tbody>
             @foreach (var i in Model.Items)
             {
-                <tr><td>@i.EstadoFinca</td><td>@i.Cantidad</td></tr>
+                <tr><td>@i.EstadoFinca.FormatearEstado()</td><td>@i.Cantidad</td></tr>
             }
         </tbody>
     </table>

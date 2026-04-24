@@ -42,10 +42,10 @@
                             <tr>
                                 <td>@plan.NombreFinca</td>
                                 <td>@plan.Anio</td>
-                                <td>@plan.EstadoPlan</td>
+                                <td>@plan.EstadoPlan.FormatearEstado()</td>
                                 <td>₡@plan.MontoMensual.ToString("N2")</td>
                                 <td>₡@plan.MontoAnual.ToString("N2")</td>
-                                <td>@plan.EstadoCuentaBancaria (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
+                                <td>@plan.EstadoCuentaBancaria.FormatearEstado() (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
                                 <td>
                                     <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>
                                     @if (string.Equals(plan.EstadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase)

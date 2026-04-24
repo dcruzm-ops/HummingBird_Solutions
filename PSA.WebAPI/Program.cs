@@ -214,6 +214,13 @@ static void ValidarConfiguracionCritica(IConfiguration configuration, IHostEnvir
     {
         throw new InvalidOperationException("Falta configurar Cors:AllowedOrigins para ambiente Production.");
     }
+
+    var smtp = SmtpSettingsResolver.Resolve(configuration);
+    var missingSmtpKeys = SmtpSettingsResolver.GetMissingRequiredKeys(smtp);
+    if (missingSmtpKeys.Count > 0)
+    {
+        Console.Error.WriteLine($"[CONFIG] SMTP incompleto para Production. Variables faltantes: {string.Join(", ", missingSmtpKeys)}");
+    }
 }
 
 static void AsegurarCarpetasCarga(IHostEnvironment environment)

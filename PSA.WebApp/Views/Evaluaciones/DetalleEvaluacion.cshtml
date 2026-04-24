@@ -22,7 +22,7 @@
                 <li>Pendiente: @Model.PendienteOriginal</li>
                 <li>Ríos/Quebradas: @(Model.TieneRiosOQuebradasOriginal ? "Sí" : "No")</li>
                 <li>Cantidad de nacientes: @Model.CantidadNacientesOriginal</li>
-                <li>Estado evaluación: @Model.EstadoEvaluacion</li>
+                <li>Estado evaluación: @Model.EstadoEvaluacion.FormatearEstado()</li>
             </ul>
         </section>
 
@@ -31,7 +31,7 @@
             <ul class="lista-timeline">
                 <li>Fecha visita: @(Model.FechaVisita?.ToString("dd/MM/yyyy") ?? "N/A")</li>
                 <li>Fecha decisión: @(Model.FechaDecision?.ToString("dd/MM/yyyy") ?? "N/A")</li>
-                <li>Decisión técnica: @(string.IsNullOrWhiteSpace(Model.DecisionTecnica) ? "N/A" : Model.DecisionTecnica)</li>
+                <li>Decisión técnica: @(string.IsNullOrWhiteSpace(Model.DecisionTecnica) ? "N/A" : Model.DecisionTecnica.FormatearEstado())</li>
                 <li>Observaciones: @(string.IsNullOrWhiteSpace(Model.Observaciones) ? "N/A" : Model.Observaciones)</li>
             </ul>
         </section>
@@ -61,10 +61,10 @@
         else
         {
             <ul class="lista-timeline">
-                <li>Decisión técnica: @impacto.DecisionTecnica</li>
+                <li>Decisión técnica: @impacto.DecisionTecnica.FormatearEstado()</li>
                 <li>¿Generó plan?: @(impacto.GeneroPlan ? "Sí" : "No")</li>
-                <li>Estado de continuidad: @impacto.EstadoContinuidad</li>
-                <li>Cuenta bancaria: @impacto.EstadoCuentaBancaria (solo indicador)</li>
+                <li>Estado de continuidad: @impacto.EstadoContinuidad.FormatearEstado()</li>
+                <li>Cuenta bancaria: @impacto.EstadoCuentaBancaria.FormatearEstado() (solo indicador)</li>
                 <li>Monto mensual referencial: @(impacto.MontoMensualReferencial.HasValue ? $"₡{impacto.MontoMensualReferencial.Value:N2}" : "No aplica")</li>
                 <li>Monto anual referencial: @(impacto.MontoAnualReferencial.HasValue ? $"₡{impacto.MontoAnualReferencial.Value:N2}" : "No aplica")</li>
             </ul>

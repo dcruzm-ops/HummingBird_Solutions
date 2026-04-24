@@ -26,11 +26,11 @@
                         {
                             if (string.Equals(opcion, Model.Detalle.Pendiente, System.StringComparison.OrdinalIgnoreCase))
                             {
-                                <option selected="selected">@opcion</option>
+                                <option selected="selected">@opcion.FormatearEstado()</option>
                             }
                             else
                             {
-                                <option>@opcion</option>
+                                <option>@opcion.FormatearEstado()</option>
                             }
                         }
                     </select>
@@ -247,4 +247,3 @@
 @section Scripts {
     <script src="~/js/evaluaciones.js" asp-append-version="true"></script>
 }
-

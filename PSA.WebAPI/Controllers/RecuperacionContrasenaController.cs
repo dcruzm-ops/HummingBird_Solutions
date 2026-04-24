@@ -10,10 +10,12 @@ namespace PSA.WebAPI.Controllers
     [ApiController]
     public class RecuperacionContrasenaController(
         RecuperacionContrasenaManager manager,
-        ISecurityThrottleService securityThrottleService) : BaseApiController
+        ISecurityThrottleService securityThrottleService,
+        ILogger<RecuperacionContrasenaController> logger) : BaseApiController
     {
         private readonly RecuperacionContrasenaManager _manager = manager;
         private readonly ISecurityThrottleService _securityThrottleService = securityThrottleService;
+        private readonly ILogger<RecuperacionContrasenaController> _logger = logger;
 
         [HttpPost("solicitar")]
         public async Task<IActionResult> SolicitarRecuperacion([FromBody] RecuperarContrasenaDTO dto)
@@ -44,11 +46,13 @@ namespace PSA.WebAPI.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                _logger.LogWarning(ex, "Fallo controlado al solicitar recuperación para {Correo}", correo);
                 _securityThrottleService.RegisterFailure("password-recovery-request", key);
                 return ApiValidationError("No fue posible procesar la solicitud.", "Si el correo existe y está habilitado, recibirá instrucciones.", ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Fallo no controlado al solicitar recuperación para {Correo}", correo);
                 _securityThrottleService.RegisterFailure("password-recovery-request", key);
                 return ApiError(StatusCodes.Status500InternalServerError, "internal_error", "Error al procesar la recuperación.");
             }
@@ -97,8 +101,9 @@ namespace PSA.WebAPI.Controllers
                     Mensaje = mensaje
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Fallo no controlado al validar token de recuperación para {Email}", email);
                 _securityThrottleService.RegisterFailure("password-recovery-validate", key);
                 return ApiError(StatusCodes.Status500InternalServerError, "internal_error", "Error al validar el token.");
             }
@@ -144,11 +149,13 @@ namespace PSA.WebAPI.Controllers
             }
             catch (InvalidOperationException ex)
             {
+                _logger.LogWarning(ex, "Fallo controlado al restablecer contraseña para {Email}", email);
                 _securityThrottleService.RegisterFailure("password-recovery-reset", key);
                 return ApiValidationError("No fue posible restablecer la contraseña.", ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Fallo no controlado al restablecer contraseña para {Email}", email);
                 _securityThrottleService.RegisterFailure("password-recovery-reset", key);
                 return ApiError(StatusCodes.Status500InternalServerError, "internal_error", "Error al restablecer la contraseña.");
             }

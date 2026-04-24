@@ -46,7 +46,7 @@
         <tbody>
             @foreach (var i in Model.Items)
             {
-                <tr><td>@i.IdEvaluacion</td><td>@i.NombreFinca</td><td>@i.Ingeniero</td><td>@i.EstadoEvaluacion</td><td>@i.DecisionTecnica</td><td>@((i.FechaDecision ?? i.FechaVisita)?.ToString("yyyy-MM-dd"))</td></tr>
+                <tr><td>@i.IdEvaluacion</td><td>@i.NombreFinca</td><td>@i.Ingeniero</td><td>@i.EstadoEvaluacion.FormatearEstado()</td><td>@i.DecisionTecnica.FormatearEstado()</td><td>@((i.FechaDecision ?? i.FechaVisita)?.ToString("yyyy-MM-dd"))</td></tr>
             }
         </tbody>
     </table>

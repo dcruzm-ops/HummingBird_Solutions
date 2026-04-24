@@ -18,8 +18,8 @@
             <input type="number" name="anio" value="@anio" min="2000" max="2100" class="form-control filtro-w-180" placeholder="Año" />
             <select name="estadoPlan" class="form-select filtro-w-280">
                 <option value="" selected="@(string.IsNullOrWhiteSpace(estadoPlan) ? "selected" : null)">Pendientes (default)</option>
-                <option value="PendienteDatosBancarios" selected="@(string.Equals(estadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">PendienteDatosBancarios</option>
-                <option value="PendienteAprobacionFinal" selected="@(string.Equals(estadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">PendienteAprobacionFinal</option>
+                <option value="PendienteDatosBancarios" selected="@(string.Equals(estadoPlan, "PendienteDatosBancarios", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@("PendienteDatosBancarios".FormatearEstado())</option>
+                <option value="PendienteAprobacionFinal" selected="@(string.Equals(estadoPlan, "PendienteAprobacionFinal", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">@("PendienteAprobacionFinal".FormatearEstado())</option>
                 <option value="Activo" selected="@(string.Equals(estadoPlan, "Activo", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Activo</option>
                 <option value="Finalizado" selected="@(string.Equals(estadoPlan, "Finalizado", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Finalizado</option>
                 <option value="Cancelado" selected="@(string.Equals(estadoPlan, "Cancelado", StringComparison.OrdinalIgnoreCase) ? "selected" : null)">Cancelado</option>
@@ -54,7 +54,7 @@
                                 <td>@plan.Anio</td>
                                 <td>₡@plan.MontoMensualCalculado.ToString("N2")</td>
                                 <td>₡@plan.MontoAnualEstimado.ToString("N2")</td>
-                                <td><span class="badge-estado badge-pendiente">@plan.EstadoPlan</span></td>
+                                <td><span class="badge-estado badge-pendiente">@plan.EstadoPlan.FormatearEstado()</span></td>
                                 <td>@(plan.IdCuentaBancaria.HasValue ? $"#{plan.IdCuentaBancaria}" : "Sin cuenta")</td>
                                 <td>
                                     <a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a>

@@ -70,15 +70,37 @@ public abstract class AppControllerBase : Controller
         ViewBag.BreadcrumbItems = breadcrumbs;
     }
 
-    private string ResolverInicioPorRol()
+    protected bool UsuarioAutenticado => User?.Identity?.IsAuthenticated ?? false;
+
+    protected IActionResult RedirectToRoleDashboard()
     {
-        var rol = User?.Claims.FirstOrDefault(c => c.Type.EndsWith("role", StringComparison.OrdinalIgnoreCase))?.Value;
-        return rol switch
+        return RedirectToAction(GetDashboardActionByRoleClaim(User?.Claims.FirstOrDefault(c => c.Type.EndsWith("role", StringComparison.OrdinalIgnoreCase))?.Value), "Dashboard");
+    }
+
+    protected static string GetDashboardActionByRoleClaim(string? rolClaim)
+    {
+        return rolClaim switch
         {
             "1" => "Administrador",
             "3" => "Ingeniero",
             _ => "Dueno"
         };
+    }
+
+    protected static string GetDashboardActionByRoleId(int idRol)
+    {
+        return idRol switch
+        {
+            1 => "Administrador",
+            3 => "Ingeniero",
+            _ => "Dueno"
+        };
+    }
+
+    private string ResolverInicioPorRol()
+    {
+        var rol = User?.Claims.FirstOrDefault(c => c.Type.EndsWith("role", StringComparison.OrdinalIgnoreCase))?.Value;
+        return GetDashboardActionByRoleClaim(rol);
     }
 
     private static string Humanizar(string texto)

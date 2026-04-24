@@ -19,8 +19,8 @@
             <input class="form-control filtro-w-180" type="text" name="distrito" value="@ViewBag.Distrito" placeholder="Distrito" />
             <select class="form-select filtro-w-220" name="estadoPlan">
                 <option value="">Estado plan (todos)</option>
-                <option value="PendienteDatosBancarios">PendienteDatosBancarios</option>
-                <option value="PendienteAprobacionFinal">PendienteAprobacionFinal</option>
+                <option value="PendienteDatosBancarios">@("PendienteDatosBancarios".FormatearEstado())</option>
+                <option value="PendienteAprobacionFinal">@("PendienteAprobacionFinal".FormatearEstado())</option>
                 <option value="Activo">Activo</option>
                 <option value="Finalizado">Finalizado</option>
                 <option value="Cancelado">Cancelado</option>
@@ -62,8 +62,8 @@
                             <td>@plan.NombreFinca</td>
                             <td>@plan.Propietario</td>
                             <td>@plan.Provincia, @plan.Canton, @plan.Distrito</td>
-                            <td>@plan.EstadoPlan</td>
-                            <td>@plan.EstadoBancario (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
+                            <td>@plan.EstadoPlan.FormatearEstado()</td>
+                            <td>@plan.EstadoBancario.FormatearEstado() (@(plan.CuentaBancariaMascara ?? "Sin cuenta"))</td>
                             <td>₡@plan.MontoMensual.ToString("N2")</td>
                             <td><a class="boton-link" asp-action="DetallePlanPago" asp-route-id="@plan.IdPlanPago">Ver detalle</a></td>
                         </tr>
