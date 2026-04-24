@@ -19,16 +19,35 @@ namespace PSA.WebApp.Controllers
             _httpClientFactory = httpClientFactory;
         }
 
-        [HttpGet] public IActionResult IniciarSesion() => View(new InicioSesionDTO());
-        [HttpGet] public IActionResult RegistroUsuario() => View(new RegistrarUsuarioDTO());
-        [HttpGet] public IActionResult RecuperarContrasena() => View(new RecuperarContrasenaDTO());
+        [HttpGet]
+        public IActionResult IniciarSesion(string? returnUrl = null)
+        {
+            if (UsuarioAutenticado)
+            {
+                return RedirectToRoleDashboard();
+            }
+
+            ViewBag.ReturnUrl = returnUrl;
+            return View(new InicioSesionDTO());
+        }
+
+        [HttpGet]
+        public IActionResult RegistroUsuario()
+            => UsuarioAutenticado ? RedirectToRoleDashboard() : View(new RegistrarUsuarioDTO());
+
+        [HttpGet]
+        public IActionResult RecuperarContrasena()
+            => UsuarioAutenticado ? RedirectToRoleDashboard() : View(new RecuperarContrasenaDTO());
+
         [HttpGet]
         public IActionResult ValidarTokenRecuperacion(string? email = null)
-            => View(new ValidarTokenRecuperacionDTO { Email = email ?? string.Empty });
+            => UsuarioAutenticado
+                ? RedirectToRoleDashboard()
+                : View(new ValidarTokenRecuperacionDTO { Email = email ?? string.Empty });
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> IniciarSesion(InicioSesionDTO dto)
+        public async Task<IActionResult> IniciarSesion(InicioSesionDTO dto, string? returnUrl = null)
         {
             if (!ModelState.IsValid) return View(dto);
 
@@ -51,7 +70,11 @@ namespace PSA.WebApp.Controllers
                 }
 
                 await IniciarSesionWebAsync(respuesta);
-                return RedirectToAction(GetDashboardActionByRole(respuesta.IdRol), "Dashboard");
+                if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    return LocalRedirect(returnUrl);
+                }
+                return RedirectToAction(GetDashboardActionByRoleId(respuesta.IdRol), "Dashboard");
             }
             catch (HttpRequestException)
             {
@@ -95,9 +118,29 @@ namespace PSA.WebApp.Controllers
         public async Task<IActionResult> RecuperarContrasena(RecuperarContrasenaDTO dto)
         {
             if (!ModelState.IsValid) return View(dto);
-            var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/RecuperacionContrasena/solicitar", dto);
-            TempData[response.IsSuccessStatusCode ? "MensajeExito" : "MensajeError"] = response.IsSuccessStatusCode ? "Se procesó la solicitud de recuperación." : "No fue posible procesar la solicitud.";
-            return RedirectToAction(nameof(ValidarTokenRecuperacion), new { email = dto.Email });
+            try
+            {
+                var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/RecuperacionContrasena/solicitar", dto);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync();
+                    ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
+                    return View(dto);
+                }
+
+                TempData["MensajeExito"] = "Si el correo existe y está habilitado, recibirá instrucciones.";
+                return RedirectToAction(nameof(ValidarTokenRecuperacion), new { email = dto.Email });
+            }
+            catch (HttpRequestException)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo conectar con el API. Verifique la disponibilidad de PSA.WebAPI.");
+                return View(dto);
+            }
+            catch (TaskCanceledException)
+            {
+                ModelState.AddModelError(string.Empty, "El API tardó demasiado en responder. Intente nuevamente.");
+                return View(dto);
+            }
         }
 
         [HttpPost]
@@ -106,13 +149,20 @@ namespace PSA.WebApp.Controllers
         {
             if (!ModelState.IsValid) return View(dto);
             var response = await _httpClientFactory.CreateClient("AuthApi").PostAsJsonAsync("api/RecuperacionContrasena/validar-token", dto);
-            if (!response.IsSuccessStatusCode) { ModelState.AddModelError(string.Empty, "Token inválido."); return View(dto); }
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                ModelState.AddModelError(string.Empty, TryReadErrorMessage(errorBody));
+                return View(dto);
+            }
             return RedirectToAction(nameof(RestablecerContrasena), new { tokenRecuperacion = dto.Token, email = dto.Email });
         }
 
         [HttpGet]
         public IActionResult RestablecerContrasena(string? tokenRecuperacion = null, string? email = null)
-            => View(new RestablecerContrasenaDTO { Token = tokenRecuperacion ?? string.Empty, Email = email ?? string.Empty });
+            => UsuarioAutenticado
+                ? RedirectToRoleDashboard()
+                : View(new RestablecerContrasenaDTO { Token = tokenRecuperacion ?? string.Empty, Email = email ?? string.Empty });
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -137,8 +187,6 @@ namespace PSA.WebApp.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Producto", "Home");
         }
-
-        private static string GetDashboardActionByRole(int idRol) => idRol switch { 1 => "Administrador", 2 => "Dueno", 3 => "Ingeniero", _ => "Dueno" };
 
         private async Task IniciarSesionWebAsync(RespuestaInicioSesionDTO respuesta)
         {

@@ -64,6 +64,17 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        context.Response.Headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
+        context.Response.Headers["Pragma"] = "no-cache";
+        context.Response.Headers["Expires"] = "0";
+    }
+});
 
 app.MapControllerRoute(
     name: "default",
