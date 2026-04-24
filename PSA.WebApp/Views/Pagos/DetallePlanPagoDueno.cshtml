@@ -35,6 +35,6 @@
 </tbody></table></div></section>
 }
 <section class="tarjeta-panel"><h3>Cuotas mensuales</h3><div class="tabla-responsive"><table class="tabla-base"><thead><tr><th>Periodo</th><th>Estado</th><th>Programada</th><th>Ejecución</th><th>Monto</th></tr></thead><tbody>
-@foreach (var cuota in Model.Cuotas){<tr><td>@Model.Plan.Anio-@cuota.Mes.ToString("00")</td><td>@cuota.EstadoCuota</td><td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td><td>@(cuota.FechaPago?.ToString("dd/MM/yyyy")??"Pendiente")</td><td>₡@cuota.MontoProgramado.ToString("N2")</td></tr>}
+@foreach (var cuota in Model.Cuotas){<tr><td>@Model.Plan.Anio-@cuota.Mes.ToString("00")</td><td>@cuota.EstadoCuota.FormatearEstado()</td><td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td><td>@(cuota.FechaPago?.ToString("dd/MM/yyyy")??"Pendiente")</td><td>₡@cuota.MontoProgramado.ToString("N2")</td></tr>}
 </tbody></table></div></section>
 </section>

@@ -28,7 +28,7 @@
                 <p>@Model.Email</p>
                 <div class="perfil-resumen__meta">
                     <span class="badge-estado badge-info">@Model.RolNombre</span>
-                    <span class="badge-estado badge-exito">@Model.Estado</span>
+                    <span class="badge-estado badge-exito">@Model.Estado.FormatearEstado()</span>
                 </div>
             </div>
         </article>

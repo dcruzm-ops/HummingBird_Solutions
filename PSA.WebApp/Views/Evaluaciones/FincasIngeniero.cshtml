@@ -34,8 +34,8 @@
                                 <td>#@item.IdEvaluacion</td>
                                 <td>@item.NombreFinca</td>
                                 <td>@item.Provincia, @item.Canton, @item.Distrito</td>
-                                <td>@item.EstadoEvaluacion</td>
-                                <td>@(string.IsNullOrWhiteSpace(item.DecisionTecnica) ? "N/A" : item.DecisionTecnica)</td>
+                                <td>@item.EstadoEvaluacion.FormatearEstado()</td>
+                                <td>@(string.IsNullOrWhiteSpace(item.DecisionTecnica) ? "N/A" : item.DecisionTecnica.FormatearEstado())</td>
                                 <td><a class="boton-link" asp-controller="Evaluaciones" asp-action="DetalleEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">Ver detalle</a></td>
                             </tr>
                         }

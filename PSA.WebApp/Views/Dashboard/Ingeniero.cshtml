@@ -99,7 +99,7 @@
                                 <td>#@item.IdEvaluacion</td>
                                 <td>@item.NombreFinca</td>
                                 <td>@item.Provincia, @item.Canton, @item.Distrito</td>
-                                <td>@item.EstadoEvaluacion</td>
+                                <td>@item.EstadoEvaluacion.FormatearEstado()</td>
                                 <td>
                                     <a class="boton-link" asp-controller="Evaluaciones" asp-action="NuevaEvaluacion" asp-route-idEvaluacion="@item.IdEvaluacion">
                                         @(item.EstadoEvaluacion == "En proceso" ? "Continuar" : "Iniciar")

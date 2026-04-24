@@ -41,7 +41,7 @@
                                 <td>@cuota.NombreFinca</td>
                                 <td>@periodo</td>
                                 <td>₡@cuota.MontoProgramado.ToString("N2")</td>
-                                <td><span class="badge-estado @estadoCss">@cuota.EstadoCuota</span></td>
+                                <td><span class="badge-estado @estadoCss">@cuota.EstadoCuota.FormatearEstado()</span></td>
                                 <td><a class="boton-link" asp-controller="Pagos" asp-action="DetallePlanPago" asp-route-id="@cuota.IdPlanPago">Ver plan</a></td>
                             </tr>
                         }

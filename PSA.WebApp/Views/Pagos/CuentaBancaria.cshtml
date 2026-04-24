@@ -42,7 +42,7 @@
                                 <td>@cuenta.NumeroCuenta</td>
                                 <td>@cuenta.TipoCuenta</td>
                                 <td>@cuenta.Titular</td>
-                                <td><span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion</span></td>
+                                <td><span class="badge-estado badge-pendiente">@cuenta.EstadoValidacion.FormatearEstado()</span></td>
                             </tr>
                         }
                     }

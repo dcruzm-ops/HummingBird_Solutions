@@ -45,7 +45,7 @@
                                 <td>@usuario.Email</td>
                                 <td>@usuario.NombreRol</td>
                                 <td>
-                                    <span class="badge-estado @(activo ? "badge-exito" : "badge-pendiente")">@usuario.Estado</span>
+                                    <span class="badge-estado @(activo ? "badge-exito" : "badge-pendiente")">@usuario.Estado.FormatearEstado()</span>
                                 </td>
                                 <td>@(usuario.UltimoAcceso?.ToString("yyyy-MM-dd HH:mm") ?? "Sin registro")</td>
                                 <td>

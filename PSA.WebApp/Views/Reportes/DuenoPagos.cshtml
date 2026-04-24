@@ -41,7 +41,7 @@
                 <tr>
                     <td>@i.NombreFinca</td>
                     <td>@i.Anio/@i.Mes</td>
-                    <td>@i.EstadoCuota</td>
+                    <td>@i.EstadoCuota.FormatearEstado()</td>
                     <td>@i.MontoMensualCalculado.ToString("N2")</td>
                     <td>@(i.FechaPago?.ToString("yyyy-MM-dd") ?? i.FechaProgramada.ToString("yyyy-MM-dd"))</td>
                 </tr>
@@ -66,7 +66,7 @@
         <tbody>
             @foreach (var i in Model.Transacciones)
             {
-                <tr><td>@i.FechaTransaccion.ToString("yyyy-MM-dd")</td><td>@i.NombreFinca</td><td>@i.MontoTotal.ToString("N2")</td><td>@i.EstadoTransaccion</td></tr>
+                <tr><td>@i.FechaTransaccion.ToString("yyyy-MM-dd")</td><td>@i.NombreFinca</td><td>@i.MontoTotal.ToString("N2")</td><td>@i.EstadoTransaccion.FormatearEstado()</td></tr>
             }
         </tbody>
     </table>

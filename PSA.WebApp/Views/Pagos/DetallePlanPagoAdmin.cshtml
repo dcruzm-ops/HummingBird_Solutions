@@ -29,8 +29,8 @@
                     <tr><td>Finca</td><td>@Model.Plan.NombreFinca</td></tr>
                     <tr><td>Propietario</td><td>@Model.Plan.Propietario</td></tr>
                     <tr><td>Ingeniero</td><td>@Model.Plan.Ingeniero</td></tr>
-                    <tr><td>Estado del plan</td><td>@Model.Plan.EstadoPlan</td></tr>
-                    <tr><td>Estado bancario</td><td>@Model.Plan.EstadoBancario (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</td></tr>
+                    <tr><td>Estado del plan</td><td>@Model.Plan.EstadoPlan.FormatearEstado()</td></tr>
+                    <tr><td>Estado bancario</td><td>@Model.Plan.EstadoBancario.FormatearEstado() (@(Model.Plan.CuentaBancariaMascara ?? "Sin cuenta"))</td></tr>
                     <tr><td>Monto mensual</td><td>₡@Model.Plan.MontoMensual.ToString("N2")</td></tr>
                     <tr><td>Monto anual</td><td>₡@Model.Plan.MontoAnual.ToString("N2")</td></tr>
                     <tr><td>Versión de configuración</td><td>@Model.Plan.VersionConfiguracion</td></tr>
@@ -110,7 +110,7 @@
                     {
                         <tr>
                             <td>@Model.Plan.Anio-@cuota.Mes.ToString("00")</td>
-                            <td>@cuota.EstadoCuota</td>
+                            <td>@cuota.EstadoCuota.FormatearEstado()</td>
                             <td>@cuota.FechaProgramada.ToString("dd/MM/yyyy")</td>
                             <td>@(cuota.FechaPago?.ToString("dd/MM/yyyy") ?? "Pendiente")</td>
                             <td>₡@cuota.MontoProgramado.ToString("N2")</td>

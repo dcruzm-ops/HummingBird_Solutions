@@ -37,7 +37,7 @@
                                 <td>@cuenta.NombreUsuario</td>
                                 <td>@cuenta.Banco</td>
                                 <td>@cuenta.NumeroCuenta</td>
-                                <td><span class="badge-estado @(cuenta.EstadoValidacion == "Pendiente" ? "badge-pendiente" : "badge-activa")">@cuenta.EstadoValidacion</span></td>
+                                <td><span class="badge-estado @(cuenta.EstadoValidacion == "Pendiente" ? "badge-pendiente" : "badge-activa")">@cuenta.EstadoValidacion.FormatearEstado()</span></td>
                                 <td>
                                     @if (cuenta.EstadoValidacion == "Pendiente")
                                     {

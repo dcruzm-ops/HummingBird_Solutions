@@ -34,7 +34,7 @@
         <tbody>
             @foreach (var i in Model.Items)
             {
-                <tr><td>@i.NombreFinca</td><td>@i.Provincia, @i.Canton, @i.Distrito</td><td>@i.EstadoFinca</td><td>@i.EstadoEvaluacion</td><td>@i.ObservacionesEvaluacion</td></tr>
+                <tr><td>@i.NombreFinca</td><td>@i.Provincia, @i.Canton, @i.Distrito</td><td>@i.EstadoFinca.FormatearEstado()</td><td>@i.EstadoEvaluacion.FormatearEstado()</td><td>@i.ObservacionesEvaluacion</td></tr>
             }
         </tbody>
     </table>

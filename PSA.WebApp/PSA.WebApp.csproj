@@ -28,6 +28,7 @@
     <Compile Include="Models\EvaluacionesViewModels.cs" />
     <Compile Include="Models\ReportesViewModels.cs" />
     <Compile Include="Models\NotificacionesViewModel.cs" />
+    <Compile Include="Helpers\EstadoDisplayHelper.cs" />
     <Compile Include="Models\RecuperarContrasenaViewModel.cs" />
     <Compile Include="Models\RestablecerContrasenaViewModel.cs" />
     <Compile Include="Services\HttpClientService.cs" />
