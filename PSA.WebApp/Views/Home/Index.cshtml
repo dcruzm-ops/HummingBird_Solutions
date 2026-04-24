@@ -13,139 +13,216 @@
         </div>
         <nav>
             <a href="#nosotros">Nosotros</a>
-            <a href="#servicios">Servicios</a>
+            <a href="#capacidades">Capacidades</a>
+            <a href="#metodologia">Metodología</a>
             <a href="#equipo">Equipo</a>
-            <a asp-controller="Home" asp-action="Producto">Producto PSA</a>
+            <a href="#producto">PSA Costa Rica</a>
             <a href="#contacto">Contacto</a>
         </nav>
     </header>
 
-    <section class="hero hero--with-image">
+    <section class="hero hero--with-image js-reveal">
         <img class="section-watermark" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=2400&q=85" alt="Fondo tecnológico" />
-        <span class="badge badge-blue">Equipo universitario con presentación de empresa real</span>
-        <h1 class="hero-title">Diseñamos y construimos soluciones web con estructura, criterio y visión de producto.</h1>
+        <span class="badge badge-blue">Consultoría tecnológica con enfoque de producto</span>
+        <h1 class="hero-title">Diseñamos soluciones digitales con análisis, arquitectura y enfoque real de producto.</h1>
         <p class="hero-subtitle">
-            Somos un equipo enfocado en análisis, diseño y desarrollo de software. Convertimos requerimientos en soluciones
-            funcionales mediante arquitectura clara, documentación sólida y ejecución organizada.
+            HummingBird Solutions es una firma ficticia de consultoría y desarrollo de software creada para simular un entorno
+            profesional de entrega tecnológica. Nuestro enfoque combina análisis de negocio, diseño funcional, arquitectura por
+            capas, desarrollo web y control de calidad para construir soluciones alineadas con objetivos reales de negocio.
         </p>
         <div class="hb-actions">
-            <a class="btn btn-primary" asp-controller="Home" asp-action="Producto">Ver página principal de PSA Costa Rica</a>
-            <a class="btn btn-outline" href="#equipo">Conocer al equipo</a>
+            <a class="btn btn-primary" asp-controller="Home" asp-action="Producto">Conocer PSA Costa Rica</a>
+            <a class="btn btn-outline" href="#capacidades">Ver nuestras capacidades</a>
         </div>
     </section>
 
-    <section class="section section--soft">
+    <section class="section section--soft js-reveal" id="resumen">
         <div class="hb-grid-4">
-            <article class="card card-hover">
-                <p class="small-text">Equipo</p>
-                <h3>4 integrantes</h3>
-                <p class="small-text">Roles definidos y trabajo colaborativo.</p>
+            <article class="card card-hover js-reveal-item">
+                <p class="small-text">Modelo de trabajo</p>
+                <h3>Gestión profesional</h3>
+                <p class="small-text">Planificación, seguimiento y control orientados a entregables demostrables.</p>
             </article>
-            <article class="card card-hover">
+            <article class="card card-hover js-reveal-item">
                 <p class="small-text">Metodología</p>
                 <h3>Scrum</h3>
-                <p class="small-text">Seguimiento iterativo por sprint.</p>
+                <p class="small-text">Sprints con priorización funcional y coordinación permanente del equipo.</p>
             </article>
-            <article class="card card-hover">
-                <p class="small-text">Proyecto actual</p>
+            <article class="card card-hover js-reveal-item">
+                <p class="small-text">Producto destacado</p>
                 <h3>PSA Costa Rica</h3>
-                <p class="small-text">Gestión de procesos asociados a servicios ambientales.</p>
+                <p class="small-text">Plataforma web para gestión de procesos de pago por servicios ambientales.</p>
             </article>
-            <article class="card card-hover">
-                <p class="small-text">Enfoque</p>
-                <h3>Web + API + SQL</h3>
-                <p class="small-text">Arquitectura por capas y trazabilidad técnica.</p>
+            <article class="card card-hover js-reveal-item">
+                <p class="small-text">Arquitectura</p>
+                <h3>WebApp · WebAPI · SQL Server</h3>
+                <p class="small-text">Diseño por capas para trazabilidad técnica, mantenimiento y escalabilidad.</p>
             </article>
         </div>
     </section>
 
-    <section class="section section--with-image" id="nosotros">
+    <section class="section section--with-image js-reveal" id="nosotros">
         <img class="section-watermark" src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=2400&q=85" alt="Equipo colaborando" />
         <h2 class="section-title">Quiénes somos</h2>
         <p class="section-subtitle">
-            HummingBird Solutions nace como una iniciativa académica con ejecución profesional.
-            Combinamos gestión ágil, análisis de negocio, calidad y desarrollo técnico para entregar soluciones web bien estructuradas.
+            HummingBird Solutions surge en un contexto académico, pero opera bajo una dinámica profesional de consultoría tecnológica.
+            Nuestro trabajo parte del entendimiento del problema, continúa con el ordenamiento de requerimientos, avanza hacia el diseño
+            de la solución y culmina en una construcción funcional validada y presentada en entregables demostrables.
         </p>
         <div class="hb-grid-2">
-            <div class="card">Enfoque profesional</div>
-            <div class="card">Comunicación clara</div>
-            <div class="card">Arquitectura ordenada</div>
-            <div class="card">Calidad en entregables</div>
+            <div class="card">Entendimiento estructurado de necesidades y contexto.</div>
+            <div class="card">Priorización y ordenamiento funcional de requerimientos.</div>
+            <div class="card">Diseño técnico y funcional orientado a valor.</div>
+            <div class="card">Validación de resultados y entrega formal de la solución.</div>
         </div>
     </section>
 
-    <section class="section section--soft" id="servicios">
-        <h2 class="section-title">Nuestras capacidades principales</h2>
-        <p class="section-subtitle">Bloques orientados a valor real y ejecución técnica ordenada.</p>
+    <section class="section section--soft js-reveal" id="capacidades">
+        <h2 class="section-title">Capacidades</h2>
+        <p class="section-subtitle">Servicios orientados a la construcción de soluciones web robustas y trazables.</p>
         <div class="hb-grid-4">
-            <article class="card card-hover card--soft">
-                <h4>Análisis de requerimientos</h4>
-                <p>Transformamos necesidades del cliente en funcionalidades claras, medibles y viables.</p>
-            </article>
-            <article class="card card-hover card--soft">
-                <h4>Diseño de solución</h4>
-                <p>Definimos arquitectura, estructura del sistema y experiencia base para una implementación ordenada.</p>
-            </article>
-            <article class="card card-hover card--soft">
-                <h4>Desarrollo web por capas</h4>
-                <p>Construimos soluciones con separación clara entre interfaz, lógica de negocio y persistencia.</p>
-            </article>
-            <article class="card card-hover card--soft">
-                <h4>Documentación técnica</h4>
-                <p>Preparamos ERS, IAS, diagramas, backlog y evidencias con enfoque profesional y trazable.</p>
-            </article>
+            <article class="card card-hover card--soft"><h4>Análisis de negocio</h4><p>Definición de alcance, objetivos y criterios de valor para la solución.</p></article>
+            <article class="card card-hover card--soft"><h4>Diseño funcional</h4><p>Estructuración de flujos, reglas y componentes alineados con requerimientos.</p></article>
+            <article class="card card-hover card--soft"><h4>Arquitectura de software</h4><p>Diseño por capas para mantener separación de responsabilidades y mantenibilidad.</p></article>
+            <article class="card card-hover card--soft"><h4>Desarrollo web</h4><p>Implementación de interfaz y módulos operativos con enfoque en estabilidad funcional.</p></article>
+            <article class="card card-hover card--soft"><h4>Control de calidad</h4><p>Verificación de consistencia entre requerimientos, comportamiento y criterios de aceptación.</p></article>
+            <article class="card card-hover card--soft"><h4>Documentación técnica</h4><p>Trazabilidad de decisiones, estructura y evidencias clave de la solución.</p></article>
+            <article class="card card-hover card--soft"><h4>Gestión ágil</h4><p>Planificación iterativa, coordinación del equipo y seguimiento del avance por sprint.</p></article>
+            <article class="card card-hover card--soft"><h4>Preparación para despliegue</h4><p>Organización de entregables para presentación y operación en entorno de demostración.</p></article>
         </div>
     </section>
 
-    <section class="section section--with-image" id="equipo">
-        <img class="section-watermark" src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=2400&q=85" alt="Equipo de trabajo en oficina" />
-        <h2 class="section-title">Nuestro equipo</h2>
-        <p class="section-subtitle">Personas, roles y enfoque de trabajo en el proyecto.</p>
+    <section class="section section--with-image js-reveal" id="metodologia">
+        <img class="section-watermark" src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=2400&q=85" alt="Planeación de software" />
+        <h2 class="section-title">Metodología de trabajo</h2>
+        <p class="section-subtitle">Nuestro proceso se organiza en cuatro fases para asegurar control técnico y valor funcional.</p>
+        <div class="hb-grid-4">
+            <article class="card card-hover"><h4>1. Entendimiento</h4><p>Levantamiento del problema, identificación de actores y alineación de expectativas del producto.</p></article>
+            <article class="card card-hover"><h4>2. Diseño</h4><p>Definición de arquitectura, flujos y componentes para estructurar una solución viable y consistente.</p></article>
+            <article class="card card-hover"><h4>3. Construcción</h4><p>Implementación incremental de funcionalidades priorizadas, con seguimiento técnico continuo.</p></article>
+            <article class="card card-hover"><h4>4. Validación</h4><p>Revisión de calidad, cumplimiento funcional y preparación de entrega demostrable del sistema.</p></article>
+        </div>
+    </section>
+
+    <section class="section section--soft js-reveal" id="equipo">
+        <h2 class="section-title">Equipo</h2>
+        <p class="section-subtitle">Roles definidos para asegurar coordinación funcional, calidad y ejecución técnica.</p>
         <div class="hb-grid-4">
             <article class="card card-hover card-equipo">
                 <h4>Dennis Cruz Montiel</h4>
-                <p><span class="badge badge-green">Propietario del Producto</span></p>
-                <p class="card-equipo__descripcion">Responsable de definir la visión del producto, priorizar requerimientos y asegurar que el desarrollo avance alineado con los objetivos del negocio. Orienta la evolución de la solución para maximizar valor, funcionalidad y coherencia en cada entrega.</p>
+                <p><span class="badge badge-green">Product Owner</span></p>
+                <p class="card-equipo__descripcion">Responsable de representar la visión del producto, priorizar necesidades del cliente y asegurar que la solución mantenga coherencia con los objetivos funcionales y de negocio.</p>
             </article>
             <article class="card card-hover card-equipo">
                 <h4>Yoel Rojas Arguedas</h4>
                 <p><span class="badge badge-blue">Scrum Master</span></p>
-                <p class="card-equipo__descripcion">Responsable de facilitar la dinámica de trabajo del equipo, dar seguimiento al avance y apoyar la correcta ejecución del proyecto mediante una coordinación continua y estructurada.</p>
+                <p class="card-equipo__descripcion">Responsable de facilitar la dinámica de trabajo, dar seguimiento a los sprints, apoyar la coordinación del equipo y promover una ejecución ordenada.</p>
             </article>
             <article class="card card-hover card-equipo">
                 <h4>Kimberly Cascante Mora</h4>
-                <p><span class="badge badge-blue">Coordinación de Calidad</span></p>
-                <p class="card-equipo__descripcion">Responsable de velar por la calidad funcional de la solución, promoviendo consistencia entre requerimientos, diseño, validación y entregables a lo largo del desarrollo.</p>
+                <p><span class="badge badge-blue">Coordinadora de Calidad</span></p>
+                <p class="card-equipo__descripcion">Responsable de validar la consistencia entre requerimientos, diseño y funcionamiento del sistema, apoyando la revisión de flujos, criterios de aceptación y calidad de entregables.</p>
             </article>
             <article class="card card-hover card-equipo">
                 <h4>Jared Mendez Jimenez</h4>
                 <p><span class="badge badge-red">Líder de Desarrollo</span></p>
-                <p class="card-equipo__descripcion">Responsable de dirigir la implementación técnica del sistema, orientar la construcción de los módulos principales y asegurar que el desarrollo mantenga coherencia con la arquitectura y lineamientos definidos para el proyecto.</p>
+                <p class="card-equipo__descripcion">Responsable de orientar la implementación técnica, apoyar la definición de componentes clave y asegurar que el desarrollo mantenga alineación con la arquitectura establecida.</p>
             </article>
         </div>
     </section>
 
-    <section class="section section--soft" id="producto">
+    <section class="section section--with-image js-reveal" id="producto">
+        <img class="section-watermark" src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=2400&q=85" alt="Producto digital" />
         <article class="card">
-            <h2 class="section-title">Proyecto destacado: PSA Costa Rica</h2>
+            <h2 class="section-title">Producto destacado: PSA Costa Rica</h2>
             <p class="section-subtitle">
-                Plataforma web orientada a la gestión de fincas, evaluación técnica y administración de procesos asociados
-                a pagos por servicios ambientales.
+                PSA Costa Rica es una plataforma web para el registro y administración de fincas, gestión de información ambiental,
+                coordinación de evaluaciones técnicas, administración de usuarios por rol, gestión de parámetros y planes de pago,
+                y trazabilidad operativa del proceso.
             </p>
             <div class="hb-actions">
-                <a class="btn btn-primary" asp-controller="Autenticacion" asp-action="IniciarSesion">Entrar al inicio de sesión</a>
-                <a class="btn btn-secondary" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear cuenta</a>
+                <a class="btn btn-primary" asp-controller="Home" asp-action="Producto">Conocer PSA Costa Rica</a>
+                <a class="btn btn-secondary" asp-controller="Autenticacion" asp-action="IniciarSesion">Iniciar sesión</a>
+                <a class="btn btn-outline" asp-controller="Autenticacion" asp-action="RegistroUsuario">Crear cuenta</a>
             </div>
         </article>
     </section>
 
-    <section class="section section--with-image" id="contacto">
-        <img class="section-watermark" src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=2400&q=85" alt="Pantallas con análisis de software" />
+    <section class="section section--soft js-reveal" id="contacto">
         <h2 class="section-title">Contacto</h2>
-        <p class="section-subtitle">Listo para convertir esta base en la página principal institucional del equipo.</p>
+        <p class="section-subtitle">Para fines académicos y demostrativos, puede revisar el repositorio y la documentación funcional del proyecto.</p>
         <div class="hb-actions">
-            <a class="btn btn-outline" href="https://github.com/dcruzm-ops/HummingBird_Solutions" target="_blank" rel="noopener noreferrer">Ver repositorio</a>
-            <a class="btn btn-accent" asp-controller="Home" asp-action="Producto">Ir a la página del producto</a>
+            <a class="btn btn-outline" href="https://github.com/dcruzm-ops/HummingBird_Solutions" target="_blank" rel="noopener noreferrer">Repositorio del proyecto</a>
+            <a class="btn btn-accent" asp-controller="Home" asp-action="Producto">Ver PSA Costa Rica</a>
         </div>
     </section>
+
+    <footer class="hb-footer js-reveal">
+        <div class="hb-footer__grid">
+            <section class="hb-footer__brand">
+                <h3>HummingBird Solutions</h3>
+                <p>Firma ficticia de consultoría y desarrollo de software enfocada en análisis, diseño, construcción y validación de soluciones web.</p>
+            </section>
+            <section class="hb-footer__section">
+                <h4>Navegación</h4>
+                <ul>
+                    <li><a href="#nosotros">Nosotros</a></li>
+                    <li><a href="#capacidades">Capacidades</a></li>
+                    <li><a href="#metodologia">Metodología</a></li>
+                    <li><a href="#equipo">Equipo</a></li>
+                    <li><a href="#producto">PSA Costa Rica</a></li>
+                </ul>
+            </section>
+            <section class="hb-footer__section">
+                <h4>Información del proyecto</h4>
+                <ul>
+                    <li>Producto destacado: PSA Costa Rica</li>
+                    <li>Arquitectura: WebApp, WebAPI y SQL Server</li>
+                    <li>Modalidad: Proyecto académico con simulación empresarial</li>
+                </ul>
+            </section>
+            <section class="hb-footer__section">
+                <h4>Equipo</h4>
+                <ul>
+                    <li>Product Owner: Dennis Cruz Montiel</li>
+                    <li>Scrum Master: Yoel Rojas Arguedas</li>
+                    <li>Calidad: Kimberly Cascante Mora</li>
+                    <li>Desarrollo: Jared Mendez Jimenez</li>
+                </ul>
+            </section>
+        </div>
+        <div class="hb-footer__bottom">
+            <p>© 2026 HummingBird Solutions. Proyecto académico desarrollado con fines demostrativos.</p>
+            <p>Universidad CENFOTEC · Proyecto 2 · PSA Costa Rica</p>
+        </div>
+    </footer>
 </div>
+
+@section Scripts {
+    <script>
+        (() => {
+            const revealTargets = document.querySelectorAll('.js-reveal, .js-reveal-item');
+            if (!revealTargets.length) return;
+
+            document.documentElement.classList.add('hb-js');
+
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-visible');
+                    obs.unobserve(entry.target);
+                });
+            }, {
+                threshold: 0.2,
+                rootMargin: '0px 0px -10% 0px'
+            });
+
+            revealTargets.forEach((target, index) => {
+                if (target.classList.contains('js-reveal-item')) {
+                    target.style.transitionDelay = `${Math.min((index % 4) * 90, 270)}ms`;
+                }
+                observer.observe(target);
+            });
+        })();
+    </script>
+}
