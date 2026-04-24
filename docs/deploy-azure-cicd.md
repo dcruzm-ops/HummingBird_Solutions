@@ -159,3 +159,13 @@ Si alguno viene `NULL`, re-ejecutar `Azure/01_creacion_tablas_azure_safe.sql` y 
 - **WebApp no consume API**: `ApiSettings__BaseUrl` incorrecta.
 - **Error SQL al arrancar**: cadena `ConnectionStrings__PSAConnection` inválida o firewall SQL.
 - **Deploy falla en Actions**: publish profile vencido o secreto mal nombrado.
+
+
+## 9) Reactivación de correos SMTP en app ya publicada
+
+Si la app ya está desplegada pero olvidaste SMTP, sigue la guía operativa:
+
+- `docs/reactivar-servicio-correos-azure.md`
+
+Resumen rápido: configurar `SmtpSettings__*` en el App Service de **PSA.WebAPI**, reiniciar y validar flujo de recuperación.
+
